@@ -9,7 +9,6 @@ use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
-use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Quote\QuoteEngine;
 use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\InMemoryReservationRepository;
@@ -75,9 +74,6 @@ final class ReservationLifecycleEngineFactory
         $eventPublisher = isset($options['eventPublisherPort']) && $options['eventPublisherPort'] instanceof LifecycleEventPublisherPort
             ? $options['eventPublisherPort']
             : new TransactionalLifecycleEventPublisherAdapter(
-                fulfillmentService: isset($options['fulfillmentService']) && $options['fulfillmentService'] instanceof GuestLifecycleFulfillmentServiceInterface
-                    ? $options['fulfillmentService']
-                    : null,
                 cancellationRenderer: isset($options['cancellationRenderer']) && $options['cancellationRenderer'] instanceof CancellationEmailRendererInterface
                     ? $options['cancellationRenderer']
                     : null,

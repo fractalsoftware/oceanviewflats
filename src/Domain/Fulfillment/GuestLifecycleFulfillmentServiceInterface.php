@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Fulfillment;
 
-use OceanViewFlats\Domain\Reservation\Reservation;
-
 /**
  * Authoritative lifecycle and fulfillment service interface orchestrating:
  * 1. Guest registry submissions, validation, ADR 0001 access credential generation, and clearance reports.
  * 2. Administrative manual registry completion, PIN overrides, and PIN regeneration.
- * 3. Booking confirmation dispatch and external PMS spreadsheet synchronization.
  */
 interface GuestLifecycleFulfillmentServiceInterface
 {
@@ -46,15 +43,4 @@ interface GuestLifecycleFulfillmentServiceInterface
         string $reservationUid,
         ?AdminContext $admin = null
     ): DoorCodeResult;
-
-    /**
-     * Dispatches post-settlement confirmation emails and synchronizes PMS spreadsheet
-     * while strictly withholding access credentials per ADR 0001.
-     *
-     * @param array<string, mixed> $extra
-     */
-    public function fulfillBookingConfirmation(
-        Reservation $reservation,
-        array $extra = []
-    ): FulfillmentResult;
 }

@@ -8,7 +8,6 @@ use Throwable;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
-use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Reservation\Event\ReservationCancelledEvent;
 use OceanViewFlats\Domain\Reservation\Event\ReservationConfirmedEvent;
 use OceanViewFlats\Domain\Reservation\Port\AuditPort;
@@ -16,12 +15,11 @@ use OceanViewFlats\Domain\Reservation\Port\LifecycleEventPublisherPort;
 
 /**
  * Production transactional lifecycle event publisher adapter.
- * Dispatches confirmation emails via booking fulfillment (or fallback guest lifecycle service) and cancellation notices via email sender.
+ * Dispatches confirmation emails via booking fulfillment and cancellation notices via email sender.
  */
 final class TransactionalLifecycleEventPublisherAdapter implements LifecycleEventPublisherPort
 {
     public function __construct(
-        private readonly ?GuestLifecycleFulfillmentServiceInterface $fulfillmentService = null,
         private readonly ?CancellationEmailRendererInterface $cancellationRenderer = null,
         private readonly ?EmailSenderInterface $emailSender = null,
         private readonly ?BookingFulfillmentInterface $bookingFulfillment = null,
@@ -35,21 +33,17 @@ final class TransactionalLifecycleEventPublisherAdapter implements LifecycleEven
     public function publishConfirmed(ReservationConfirmedEvent $event): void
     {
         try {
-            if ($event->sendConfirmationEmail) {
+            if ($event->sendConfirmationEmail && $this->bookingFulfillment !== null) {
                 $reservation = $event->reservation->registryCompleted
                     ? $event->reservation
                     : $event->reservation->withDoorCode(null);
 
-                if ($this->bookingFulfillment !== null) {
-                    $extra = array_filter([
-                        'payment_id' => $reservation->mercadopagoPaymentId,
-                        'payment_status' => $reservation->paymentStatus,
-                    ], static fn(?string $v): bool => $v !== null);
+                $extra = array_filter([
+                    'payment_id' => $reservation->mercadopagoPaymentId,
+                    'payment_status' => $reservation->paymentStatus,
+                ], static fn(?string $v): bool => $v !== null);
 
-                    $this->bookingFulfillment->fulfillConfirmation($reservation, $extra);
-                } elseif ($this->fulfillmentService !== null) {
-                    $this->fulfillmentService->fulfillBookingConfirmation($reservation);
-                }
+                $this->bookingFulfillment->fulfillConfirmation($reservation, $extra);
             }
         } catch (Throwable) {
             // Best effort post-commit notification resilience
