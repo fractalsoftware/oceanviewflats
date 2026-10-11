@@ -6,6 +6,7 @@ on:
     paths:
       - 'admin/**'
       - 'src/Domain/**'
+      - 'src/Infrastructure/**'
       - '.github/workflows/admin-ci.yml'
       - 'scripts/schema.sql'
       - 'scripts/migrate.php'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'admin/**'
       - 'src/Domain/**'
+      - 'src/Infrastructure/**'
       - '.github/workflows/admin-ci.yml'
       - 'scripts/schema.sql'
       - 'scripts/migrate.php'
@@ -69,5 +71,5 @@ jobs:
       - name: Run Admin PHPUnit test suite
         run: composer admin:test
 
-      - name: Run Shared Domain regression test suite
-        run: ./vendor/bin/phpunit --filter Domain
+      - name: Run Shared Domain & Infrastructure regression test suite
+        run: ./vendor/bin/phpunit --filter "Domain|Infrastructure"

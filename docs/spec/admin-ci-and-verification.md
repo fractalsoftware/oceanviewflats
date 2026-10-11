@@ -10,7 +10,7 @@
 
 In accordance with [ADR 0005](../adr/0005-admin-interface-architecture-and-subdomain-isolation.md), the admin interface lives within the single repository at `admin/`. To prevent wasteful runner execution and preserve rapid feedback cycles:
 * Changes exclusively affecting the public static site generator (`src/components/`, `src/pages/`, etc.) do **not** trigger the Admin CI pipeline.
-* Changes touching administrative code (`admin/**`), shared domain entities (`src/Domain/**`), database migrations (`scripts/schema.sql`, `scripts/migrate.php`), or shared dependency manifests (`composer.json`, `composer.lock`) automatically trigger `.github/workflows/admin-ci.yml`.
+* Changes touching administrative code (`admin/**`), shared domain entities (`src/Domain/**`), infrastructure adapters (`src/Infrastructure/**`), database migrations (`scripts/schema.sql`, `scripts/migrate.php`), or shared dependency manifests (`composer.json`, `composer.lock`) automatically trigger `.github/workflows/admin-ci.yml`.
 
 ### Workflow Trigger Declaration
 ```yaml
@@ -22,6 +22,7 @@ on:
     paths:
       - 'admin/**'
       - 'src/Domain/**'
+      - 'src/Infrastructure/**'
       - '.github/workflows/admin-ci.yml'
       - 'scripts/schema.sql'
       - 'scripts/migrate.php'
@@ -32,6 +33,7 @@ on:
     paths:
       - 'admin/**'
       - 'src/Domain/**'
+      - 'src/Infrastructure/**'
       - '.github/workflows/admin-ci.yml'
       - 'scripts/schema.sql'
       - 'scripts/migrate.php'
@@ -50,7 +52,7 @@ The pipeline enforces four sequential quality gates:
 flowchart LR
     L[1. PHP Syntax Lint] --> S[2. PHPStan Level 8]
     S --> T1[3. Admin Unit Tests]
-    T1 --> T2[4. Domain Regression Tests]
+    T1 --> T2[4. Shared Domain & Infrastructure Tests]
 ```
 
 ### Gate 1: PHP Syntax Linting
@@ -85,12 +87,12 @@ Dedicated PHPUnit runner targeting `admin/tests/` configured via `admin/phpunit.
 * Runs with `colors="true"`, `failOnRisky="true"`, `failOnWarning="true"`, and `beStrictAboutOutputDuringTests="true"`.
 * Command: `composer admin:test`
 
-### Gate 4: Shared Domain Regression Suite
-Because administrative workflows rely on core domain services (`ReservationLedger`, `QuoteEngine`, `DoorCodeGenerator`, `PdoRateSource`), the CI pipeline executes the shared domain test suite:
+### Gate 4: Shared Domain & Infrastructure Regression Suite
+Because administrative workflows rely on core domain services (`ReservationLedger`, `QuoteEngine`, `DoorCodeGenerator`, `PdoRateSource`) and infrastructure adapters (`PdoReservationPersistenceAdapter`, `TransactionalLifecycleEventPublisherAdapter`), the CI pipeline executes the shared domain and infrastructure test suite:
 ```bash
-./vendor/bin/phpunit --filter Domain
+./vendor/bin/phpunit --filter "Domain|Infrastructure"
 ```
-This guarantees that changes within the administrative controllers or repository layers never introduce regressions to public booking calculations or calendar availability logic.
+This guarantees that changes within the administrative controllers or repository layers never introduce regressions to public booking calculations, calendar availability logic, or lifecycle persistence adapters.
 
 ---
 
@@ -104,7 +106,8 @@ The root `composer.json` defines isolated namespaces and dedicated scripts for a
     "psr-4": {
       "OceanViewFlats\\Api\\": "public/api/",
       "OceanViewFlats\\Domain\\": "src/Domain/",
-      "OceanViewFlats\\Admin\\": "admin/src/"
+      "OceanViewFlats\\Admin\\": "admin/src/",
+      "OceanViewFlats\\Infrastructure\\": "src/Infrastructure/"
     }
   },
   "autoload-dev": {

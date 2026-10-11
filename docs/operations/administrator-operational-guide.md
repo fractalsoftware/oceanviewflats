@@ -52,7 +52,8 @@ The administrative subsystem is deployed using **cPanel Pattern A**, which decou
 │   ├── src/                     <-- Admin Application Controllers, Auth, & Http Handlers
 │   └── templates/               <-- Server-rendered PHP Templates (HTMX Components)
 ├── src/
-│   └── Domain/                  <-- Shared Domain Models (QuoteEngine, Ledger, DoorCode, Reservation)
+│   ├── Domain/                  <-- Shared Domain Models (QuoteEngine, Ledger, DoorCode, Reservation)
+│   └── Infrastructure/          <-- Hexagonal Persistence & Event Adapters (PDO, Webhooks)
 ├── vendor/                      <-- Production Composer Autoloader & Dependencies
 └── scripts/                     <-- CLI Utilities (migrate.php, create-admin-user.php, sync-channels.php)
 ```
@@ -60,7 +61,7 @@ The administrative subsystem is deployed using **cPanel Pattern A**, which decou
 > [!IMPORTANT]
 > **Why Pattern A?**
 > In standard cPanel setups (Pattern B), subdomains are often created inside `public_html/admin`. If an Apache `.htaccess` rule fails or mod_rewrite is misconfigured, raw PHP files in nested folders can become readable over HTTP.
-> **Pattern A** places the subdomain DocumentRoot at `/home/<user>/admin/public`. The application logic (`admin/src/`), templates (`admin/templates/`), domain core (`src/Domain/`), Composer dependencies (`vendor/`), and migration scripts (`scripts/`) reside entirely **outside any web-accessible root**. They are physically impossible to access or execute via HTTP requests.
+> **Pattern A** places the subdomain DocumentRoot at `/home/<user>/admin/public`. The application logic (`admin/src/`), templates (`admin/templates/`), domain core (`src/Domain/`), persistence & event adapters (`src/Infrastructure/`), Composer dependencies (`vendor/`), and migration scripts (`scripts/`) reside entirely **outside any web-accessible root**. They are physically impossible to access or execute via HTTP requests.
 
 ### 3.2 Step-by-Step Subdomain Creation in cPanel
 
@@ -108,9 +109,9 @@ The repository utilizes two decoupled GitHub Actions deployment workflows to mai
    - **Target**: Deploys `./dist/.` to `FTP_REMOTE_PATH` (`/home/<user>/public_html/`) via SFTP.
    - **Purpose**: Fast marketing site updates without backend overhead.
 2. **Admin & Domain/Vendor Pipeline (`.github/workflows/admin-deploy.yml`)**:
-   - **Trigger**: Pushes to `main` modifying `admin/**`, `src/Domain/**`, `scripts/**`, `composer.json`, or `composer.lock`.
+   - **Trigger**: Pushes to `main` modifying `admin/**`, `src/Domain/**`, `src/Infrastructure/**`, `scripts/**`, `composer.json`, or `composer.lock`.
    - **Build**: Sets up PHP 8.3, installs production Composer dependencies with `composer install --no-dev --prefer-dist --optimize-autoloader`, and injects environment variables into `admin/public/.htaccess`.
-   - **Payload**: Packages `admin/`, `src/Domain/`, `vendor/`, and `scripts/` (excluding tests, PHPUnit configs, and PHPStan metadata).
+   - **Payload**: Packages `admin/`, `src/Domain/`, `src/Infrastructure/`, `vendor/`, and `scripts/` (excluding tests, PHPUnit configs, and PHPStan metadata).
    - **Target**: Deploys the staged payload to `REMOTE_DESTINATION` (`/home/<user>/`) via SFTP.
    - **Purpose**: Independent, zero-downtime releases for backend logic and administrative tools.
 
