@@ -213,6 +213,19 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
         $step1Url = sprintf('%s/reg_guest_owner_pre.php?unit=%s&check=%s', $productionBase, urlencode($propertyId), urlencode($checkToken));
 
         $step1Payload = [
+            // Authoritative portal form input names (DOM verified)
+            'apt' => $propertyId,
+            'indate' => $checkIn,
+            'horain' => '15:00',
+            'outdate' => $checkOut,
+            'horaout' => '11:00',
+            'fpay' => 'TRANSFERENCIA',
+            'cant_hp' => (string) count($occupants),
+            'price' => '0',
+            'car' => $carPlates ?? '',
+            'observacion' => $notes ?? '',
+
+            // Defensive backward-compatibility aliases
             'send_apt' => $propertyId,
             'send_indate' => $checkIn,
             'send_horain' => '15:00',
@@ -224,6 +237,7 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             'send_car' => $carPlates ?? '',
             'send_observacion' => $notes ?? '',
             'send_btn' => '1',
+            'btn_send' => '1',
         ];
 
         // 3. Step 1: Register reservation stay and acquire consecutivo (last_id)
@@ -294,6 +308,8 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
         $step2Url = sprintf('%s/reg_hpds_pre.php', $productionBase);
         $step2Payload = [
             'consecutivo' => (string) $lastId,
+            'btn_checkin' => '0',
+            'send_btn' => '1',
             'typeid' => $typeid,
             'ide' => $ide,
             'name' => $name,
@@ -363,10 +379,16 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
                 ) {
                     $isSuccess = true;
                 } else {
-                    $failureReason = sprintf('Step 2 returned HTTP 200 without recognized success indicator: %s', substr($response2['body'], 0, 250));
+                    $trimmedBody = trim($response2['body']);
+                    if ($trimmedBody === '') {
+                        $failureReason = 'Step 2 returned HTTP 200 with empty body (missing success redirect or confirmation text)';
+                    } else {
+                        $failureReason = sprintf('Step 2 returned HTTP 200 without recognized success indicator: %s', substr($trimmedBody, 0, 250));
+                    }
                 }
             } else {
-                $failureReason = sprintf('Step 2 returned unexpected HTTP status %d: %s', $status2, substr($response2['body'], 0, 250));
+                $trimmedBody = trim($response2['body']);
+                $failureReason = sprintf('Step 2 returned unexpected HTTP status %d: %s', $status2, substr($trimmedBody, 0, 250));
             }
         }
 

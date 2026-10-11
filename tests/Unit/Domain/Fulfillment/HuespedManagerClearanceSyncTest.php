@@ -976,5 +976,102 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $this->assertNotNull($saved);
         $this->assertSame('912', $saved->clearanceNumber);
     }
+
+    public function testPortalLiveContractRequiresBtnCheckinAndStandardFieldNames(): void
+    {
+        $requests = [];
+        $mockTransport = new class($requests) implements HttpTransportInterface {
+            /** @param array<int, array<string, mixed>> $requests */
+            public function __construct(public array &$requests) {}
+
+            public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
+            {
+                $this->requests[] = ['url' => $url, 'data' => $data];
+
+                if (str_contains($url, 'reg_guest_owner_pre.php')) {
+                    // Portal requires indate, outdate, car, cant_hp
+                    if (!isset($data['indate']) || !isset($data['outdate']) || !isset($data['car']) || !isset($data['cant_hp'])) {
+                        return [
+                            'statusCode' => 200,
+                            'body' => json_encode(['last_id' => 999]), // Step 1 still created ID in prod with defaults
+                            'headers' => [],
+                            'cookies' => ['PHPSESSID' => 'session123'],
+                            'error' => null,
+                        ];
+                    }
+                    return [
+                        'statusCode' => 200,
+                        'body' => json_encode(['last_id' => 1001]),
+                        'headers' => [],
+                        'cookies' => ['PHPSESSID' => 'session123'],
+                        'error' => null,
+                    ];
+                }
+
+                if (str_contains($url, 'reg_hpds_pre.php')) {
+                    // Portal requires btn_checkin. If missing, it exits 200 with empty body!
+                    if (!isset($data['btn_checkin'])) {
+                        return [
+                            'statusCode' => 200,
+                            'body' => '',
+                            'headers' => [],
+                            'cookies' => [],
+                            'error' => null,
+                        ];
+                    }
+
+                    return [
+                        'statusCode' => 302,
+                        'body' => '',
+                        'headers' => ['location' => 'success.php?hpsucc=succ&book=1001'],
+                        'cookies' => [],
+                        'error' => null,
+                    ];
+                }
+
+                return ['statusCode' => 404, 'body' => '', 'headers' => [], 'cookies' => [], 'error' => null];
+            }
+        };
+
+        $adapter = new HuespedManagerClearanceSync(
+            repository: $this->repository,
+            transport: $mockTransport
+        );
+
+        $occupants = [
+            $this->createSampleOccupant(index: 1, name: 'Julian Robles', phone: '3146452425'),
+        ];
+        $reservation = $this->createSampleReservation(
+            uid: 'ovf_res_prod_repro',
+            propertyId: '1707',
+            checkIn: '2026-10-10',
+            checkOut: '2026-10-11'
+        );
+        $submission = $this->createSampleSubmission(
+            uid: 'ovf_res_prod_repro',
+            propertyId: '1707',
+            checkIn: '2026-10-10',
+            checkOut: '2026-10-11',
+            occupants: $occupants,
+            carPlates: 'UUY109'
+        );
+
+        $clearance = $adapter->syncSubmission($reservation, $submission);
+
+        $this->assertTrue($clearance->isSynced());
+        $this->assertSame('1001', $clearance->clearanceNumber);
+
+        // Verify Step 1 authoritative fields
+        $step1 = $requests[0]['data'];
+        $this->assertSame('2026-10-10', $step1['indate']);
+        $this->assertSame('2026-10-11', $step1['outdate']);
+        $this->assertSame('UUY109', $step1['car']);
+        $this->assertSame('1', $step1['cant_hp']);
+
+        // Verify Step 2 submit token
+        $step2 = $requests[1]['data'];
+        $this->assertSame('0', $step2['btn_checkin']);
+    }
 }
+
 
