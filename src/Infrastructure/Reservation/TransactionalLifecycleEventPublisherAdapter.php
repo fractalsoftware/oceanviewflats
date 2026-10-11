@@ -16,7 +16,7 @@ use OceanViewFlats\Domain\Reservation\Port\LifecycleEventPublisherPort;
 
 /**
  * Production transactional lifecycle event publisher adapter.
- * Dispatches confirmation emails via fulfillment service and cancellation notices via email sender.
+ * Dispatches confirmation emails via booking fulfillment (or fallback guest lifecycle service) and cancellation notices via email sender.
  */
 final class TransactionalLifecycleEventPublisherAdapter implements LifecycleEventPublisherPort
 {
@@ -40,16 +40,15 @@ final class TransactionalLifecycleEventPublisherAdapter implements LifecycleEven
                     ? $event->reservation
                     : $event->reservation->withDoorCode(null);
 
-                if ($this->fulfillmentService !== null) {
+                if ($this->bookingFulfillment !== null) {
+                    $extra = array_filter([
+                        'payment_id' => $reservation->mercadopagoPaymentId,
+                        'payment_status' => $reservation->paymentStatus,
+                    ], static fn(?string $v): bool => $v !== null);
+
+                    $this->bookingFulfillment->fulfillConfirmation($reservation, $extra);
+                } elseif ($this->fulfillmentService !== null) {
                     $this->fulfillmentService->fulfillBookingConfirmation($reservation);
-                } elseif ($this->bookingFulfillment !== null) {
-                    $this->bookingFulfillment->fulfillConfirmation(
-                        $reservation,
-                        array_filter([
-                            'payment_id' => $reservation->mercadopagoPaymentId,
-                            'payment_status' => $reservation->paymentStatus,
-                        ], fn($v) => $v !== null)
-                    );
                 }
             }
         } catch (Throwable) {
