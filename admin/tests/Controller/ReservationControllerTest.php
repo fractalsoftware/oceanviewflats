@@ -12,6 +12,7 @@ use OceanViewFlats\Admin\Service\InMemoryMercadoPagoRefundClient;
 use OceanViewFlats\Admin\Service\MercadoPagoRefundException;
 use OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\ConfirmationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentService;
 use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
@@ -20,12 +21,15 @@ use OceanViewFlats\Domain\Quote\Quote;
 use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
 use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
+use OceanViewFlats\Domain\Reservation\ReservationLifecycleEngine;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Search\PdoReservationSearchAdapter;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
+use OceanViewFlats\Infrastructure\Reservation\TransactionalLifecycleEventPublisherAdapter;
 use PDO;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 final class ReservationControllerTest extends TestCase
 {
@@ -1997,5 +2001,38 @@ final class ReservationControllerTest extends TestCase
             INSERT INTO guest_registries (reservation_uid, property_id, check_in, check_out, guest_count, guests_payload, car_plates, car_model, ip_address)
             VALUES ('res-1', '1606', '2026-11-01', '2026-11-05', 1, '[{\"full_name\":\"Bob Smith\",\"doc_type\":\"CC\",\"doc_number\":\"12345678\",\"is_primary\":true}]', 'ABC-123', 'Toyota Corolla', '192.168.1.1');
         ");
+    }
+
+    public function testBuildFallbackLifecycleEngineWiresBookingFulfillment(): void
+    {
+        $controller = new ReservationController(
+            repository: $this->repository,
+            search: $this->search,
+            viewRenderer: $this->viewRenderer,
+            auditLogger: $this->auditLogger,
+            ledger: $this->ledger,
+            quoteEngine: $this->quoteEngine,
+            emailSender: $this->emailSender,
+            lifecycleService: $this->lifecycleService,
+            publicSiteUrl: 'https://oceanviewflats.com',
+            refundClient: $this->refundClient,
+            pdo: $this->pdo
+        );
+
+        $ref = new ReflectionClass($controller);
+        $engine = $ref->getProperty('lifecycleEngine')->getValue($controller);
+        $this->assertInstanceOf(ReservationLifecycleEngine::class, $engine);
+
+        $engineRef = new ReflectionClass($engine);
+        $publisher = $engineRef->getProperty('eventPublisherPort')->getValue($engine);
+        $this->assertInstanceOf(TransactionalLifecycleEventPublisherAdapter::class, $publisher);
+
+        $publisherRef = new ReflectionClass($publisher);
+        $fulfillment = $publisherRef->getProperty('bookingFulfillment')->getValue($publisher);
+        $this->assertInstanceOf(BookingFulfillment::class, $fulfillment);
+
+        $fRef = new ReflectionClass($fulfillment);
+        $sender = $fRef->getProperty('emailSender')->getValue($fulfillment);
+        $this->assertSame($this->emailSender, $sender);
     }
 }
