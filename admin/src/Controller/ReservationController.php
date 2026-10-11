@@ -14,6 +14,7 @@ use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Access\DoorCodeGenerator;
 use OceanViewFlats\Domain\Fulfillment\AdminContext;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
@@ -969,7 +970,7 @@ final class ReservationController
             'repository' => $this->repository,
             'mpRefundClient' => $this->refundClient,
             'auditPort' => $auditPort,
-            'fulfillmentService' => $this->lifecycleService,
+            'bookingFulfillment' => BookingFulfillment::createDefault(emailSender: $this->emailSender),
             'cancellationRenderer' => $this->cancellationEmailRenderer,
             'emailSender' => $this->emailSender,
             'ledger' => $this->ledger,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Infrastructure\Reservation;
 
 use OceanViewFlats\Admin\Service\MercadoPagoRefundClientInterface;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
@@ -67,6 +68,10 @@ final class ReservationLifecycleEngineFactory
                 ? new PdoAuditAdapter($pdo)
                 : new InMemoryAuditAdapter());
 
+        $bookingFulfillment = isset($options['bookingFulfillment']) && $options['bookingFulfillment'] instanceof BookingFulfillmentInterface
+            ? $options['bookingFulfillment']
+            : BookingFulfillment::createDefault();
+
         $eventPublisher = isset($options['eventPublisherPort']) && $options['eventPublisherPort'] instanceof LifecycleEventPublisherPort
             ? $options['eventPublisherPort']
             : new TransactionalLifecycleEventPublisherAdapter(
@@ -79,9 +84,7 @@ final class ReservationLifecycleEngineFactory
                 emailSender: isset($options['emailSender']) && $options['emailSender'] instanceof EmailSenderInterface
                     ? $options['emailSender']
                     : null,
-                bookingFulfillment: isset($options['bookingFulfillment']) && $options['bookingFulfillment'] instanceof BookingFulfillmentInterface
-                    ? $options['bookingFulfillment']
-                    : null,
+                bookingFulfillment: $bookingFulfillment,
                 auditPort: $audit
             );
 

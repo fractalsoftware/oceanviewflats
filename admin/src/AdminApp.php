@@ -30,6 +30,8 @@ use OceanViewFlats\Admin\Service\MercadoPagoRefundClient;
 use OceanViewFlats\Admin\Service\MercadoPagoRefundClientInterface;
 use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
@@ -203,11 +205,27 @@ final class AdminApp
         $paymentRefundPort = $options['payment_refund_port'] ?? new MercadoPagoPaymentRefundAdapter($refundClient);
         /** @var AuditPort $auditPort */
         $auditPort = $options['audit_port'] ?? new PdoAuditAdapter($pdo);
+
+        $recipientEmail = isset($options['recipient_email']) && is_string($options['recipient_email'])
+            ? $options['recipient_email']
+            : (isset($options['host_email']) && is_string($options['host_email'])
+                ? $options['host_email']
+                : (isset($options['host_notification_email']) && is_string($options['host_notification_email'])
+                    ? $options['host_notification_email']
+                    : null));
+
+        /** @var BookingFulfillmentInterface $bookingFulfillment */
+        $bookingFulfillment = $options['booking_fulfillment'] ?? BookingFulfillment::createDefault(
+            hostEmail: $recipientEmail ?? null,
+            emailSender: $emailSender
+        );
+
         /** @var LifecycleEventPublisherPort $eventPublisherPort */
         $eventPublisherPort = $options['lifecycle_event_publisher_port'] ?? new TransactionalLifecycleEventPublisherAdapter(
             fulfillmentService: $lifecycleService,
             cancellationRenderer: $cancellationEmailRenderer,
             emailSender: $emailSender,
+            bookingFulfillment: $bookingFulfillment,
             auditPort: $auditPort
         );
 
