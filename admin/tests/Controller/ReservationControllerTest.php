@@ -13,6 +13,7 @@ use OceanViewFlats\Admin\Service\MercadoPagoRefundException;
 use OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper;
 use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\ConfirmationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentService;
 use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
@@ -2034,5 +2035,40 @@ final class ReservationControllerTest extends TestCase
         $fRef = new ReflectionClass($fulfillment);
         $sender = $fRef->getProperty('emailSender')->getValue($fulfillment);
         $this->assertSame($this->emailSender, $sender);
+    }
+
+    public function testConstructorInjectionOfBookingFulfillment(): void
+    {
+        $mockFulfillment = $this->createMock(BookingFulfillmentInterface::class);
+
+        $controller = new ReservationController(
+            repository: $this->repository,
+            search: $this->search,
+            viewRenderer: $this->viewRenderer,
+            auditLogger: $this->auditLogger,
+            ledger: $this->ledger,
+            quoteEngine: $this->quoteEngine,
+            emailSender: $this->emailSender,
+            lifecycleService: $this->lifecycleService,
+            publicSiteUrl: 'https://oceanviewflats.com',
+            refundClient: $this->refundClient,
+            pdo: $this->pdo,
+            bookingFulfillment: $mockFulfillment
+        );
+
+        $ref = new ReflectionClass($controller);
+        $engine = $ref->getProperty('lifecycleEngine')->getValue($controller);
+        $this->assertInstanceOf(ReservationLifecycleEngine::class, $engine);
+
+        $engineRef = new ReflectionClass($engine);
+        $publisher = $engineRef->getProperty('eventPublisherPort')->getValue($engine);
+        $this->assertInstanceOf(TransactionalLifecycleEventPublisherAdapter::class, $publisher);
+
+        $publisherRef = new ReflectionClass($publisher);
+        $fulfillment = $publisherRef->getProperty('bookingFulfillment')->getValue($publisher);
+        $this->assertSame($mockFulfillment, $fulfillment);
+
+        $injectedFulfillment = $ref->getProperty('bookingFulfillment')->getValue($controller);
+        $this->assertSame($mockFulfillment, $injectedFulfillment);
     }
 }

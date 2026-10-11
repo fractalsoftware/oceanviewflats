@@ -9,6 +9,7 @@ use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\FulfillmentResult;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\Event\ReservationConfirmedEvent;
+use OceanViewFlats\Domain\Reservation\Port\AuditPort;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationStatus;
 use OceanViewFlats\Infrastructure\Reservation\TransactionalLifecycleEventPublisherAdapter;
@@ -203,6 +204,52 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
         $event = new ReservationConfirmedEvent(
             reservation: $reservation,
             actorContext: ActorContext::system()
+        );
+
+        $adapter->publishConfirmed($event);
+    }
+
+    public function testPublishConfirmedRecordsAuditEntryWhenFulfillmentFailsAndAuditPortPresent(): void
+    {
+        $reservation = $this->createReservation();
+        $actorContext = ActorContext::system();
+        $event = new ReservationConfirmedEvent(
+            reservation: $reservation,
+            actorContext: $actorContext
+        );
+
+        $failedResult = new FulfillmentResult(
+            isGuestEmailSent: false,
+            isHostEmailSent: true,
+            isSpreadsheetSynced: false,
+            errors: ['SMTP timeout error']
+        );
+
+        $bookingFulfillment = $this->createMock(BookingFulfillmentInterface::class);
+        $bookingFulfillment->expects($this->once())
+            ->method('fulfillConfirmation')
+            ->willReturn($failedResult);
+
+        $auditPort = $this->createMock(AuditPort::class);
+        $auditPort->expects($this->once())
+            ->method('record')
+            ->with(
+                'booking_fulfillment_failed',
+                'reservation',
+                $reservation->reservationUid,
+                null,
+                [
+                    'errors' => ['SMTP timeout error'],
+                    'guest_email_sent' => false,
+                    'host_email_sent' => true,
+                    'spreadsheet_synced' => false,
+                ],
+                $actorContext
+            );
+
+        $adapter = new TransactionalLifecycleEventPublisherAdapter(
+            bookingFulfillment: $bookingFulfillment,
+            auditPort: $auditPort
         );
 
         $adapter->publishConfirmed($event);
