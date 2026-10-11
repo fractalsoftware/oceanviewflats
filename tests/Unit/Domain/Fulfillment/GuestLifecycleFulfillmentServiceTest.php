@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use OceanViewFlats\Domain\Fulfillment\AdminContext;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceSyncInterface;
-use OceanViewFlats\Domain\Fulfillment\ConfirmationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentService;
 use OceanViewFlats\Domain\Fulfillment\GuestRegistrySubmission;
 use OceanViewFlats\Domain\Fulfillment\HostRegistryEmailRenderer;
@@ -28,7 +27,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
     private HostRegistryEmailRenderer $hostRegistryRenderer;
     private InMemoryEmailSender $emailSender;
     private InMemorySpreadsheetSync $spreadsheetSync;
-    private ConfirmationEmailRenderer $confirmationEmailRenderer;
     private GuestLifecycleFulfillmentService $service;
 
     protected function setUp(): void
@@ -114,7 +112,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->hostRegistryRenderer = new HostRegistryEmailRenderer(new DateTimeImmutable('2026-10-01 12:00:00'));
         $this->emailSender = new InMemoryEmailSender();
         $this->spreadsheetSync = new InMemorySpreadsheetSync();
-        $this->confirmationEmailRenderer = new ConfirmationEmailRenderer('https://oceanviewflats.com');
 
         $this->service = new GuestLifecycleFulfillmentService(
             pdo: $this->pdo,
@@ -122,7 +119,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             spreadsheetSync: $this->spreadsheetSync,
-            confirmationEmailRenderer: $this->confirmationEmailRenderer,
             hostNotificationEmail: 'rentals@oceanviewflats.com',
             publicSiteUrl: 'https://oceanviewflats.com'
         );
@@ -629,7 +625,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             spreadsheetSync: $this->spreadsheetSync,
-            confirmationEmailRenderer: $this->confirmationEmailRenderer,
             clearanceSync: $mockSync
         );
 
@@ -658,7 +653,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             spreadsheetSync: $this->spreadsheetSync,
-            confirmationEmailRenderer: $this->confirmationEmailRenderer,
             clearanceSync: $mockSync
         );
 
@@ -816,37 +810,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
 
         $this->assertFalse($result->success);
         $this->assertSame('Reservation not found', $result->error);
-    }
-
-    // ==========================================
-    // 5. fulfillBookingConfirmation Tests
-    // ==========================================
-
-    public function testFulfillBookingConfirmationDispatchesEmailsAndSyncsSheet(): void
-    {
-        $reservation = $this->createSampleReservation('ovf_confirm_ful');
-
-        $result = $this->service->fulfillBookingConfirmation($reservation, ['payment_id' => 'mp_12345']);
-
-        $this->assertTrue($result->isSuccess());
-        $this->assertTrue($result->isGuestEmailSent);
-        $this->assertTrue($result->isHostEmailSent);
-        $this->assertTrue($result->isSpreadsheetSynced);
-        $this->assertEmpty($result->errors);
-
-        // 2 emails dispatched: guest confirmation and host notification
-        $this->assertSame(2, $this->emailSender->count());
-        $sent = $this->emailSender->getSentMessages();
-        $this->assertSame('jane.smith@example.com', $sent[0]['to']);
-        $this->assertStringContainsString('/registry/', $sent[0]['htmlBody']);
-        $this->assertStringNotContainsString('/guide/', $sent[0]['htmlBody']);
-        $this->assertSame('rentals@oceanviewflats.com', $sent[1]['to']);
-
-        // Spreadsheet synced
-        $this->assertSame(1, $this->spreadsheetSync->count());
-        $sync = $this->spreadsheetSync->getSyncedRecords()[0];
-        $this->assertSame('ovf_confirm_ful', $sync['reservation']->reservationUid);
-        $this->assertSame('mp_12345', $sync['extra']['payment_id']);
     }
 
     public function testSubmitRegistryRejectsInvalidDates(): void
@@ -1058,7 +1021,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             spreadsheetSync: $this->spreadsheetSync,
-            confirmationEmailRenderer: $this->confirmationEmailRenderer,
             clearanceSync: $mockSync
         );
 
@@ -1096,7 +1058,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             spreadsheetSync: $this->spreadsheetSync,
-            confirmationEmailRenderer: $this->confirmationEmailRenderer,
             clearanceSync: $mockSync
         );
 
@@ -1138,7 +1099,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             spreadsheetSync: $this->spreadsheetSync,
-            confirmationEmailRenderer: $this->confirmationEmailRenderer,
             clearanceSync: $mockSync
         );
 

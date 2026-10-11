@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace OceanViewFlats\Infrastructure\Reservation;
 
 use OceanViewFlats\Admin\Service\MercadoPagoRefundClientInterface;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
-use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Quote\QuoteEngine;
 use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\InMemoryReservationRepository;
@@ -67,21 +67,22 @@ final class ReservationLifecycleEngineFactory
                 ? new PdoAuditAdapter($pdo)
                 : new InMemoryAuditAdapter());
 
+        $emailSender = isset($options['emailSender']) && $options['emailSender'] instanceof EmailSenderInterface
+            ? $options['emailSender']
+            : null;
+
+        $bookingFulfillment = isset($options['bookingFulfillment']) && $options['bookingFulfillment'] instanceof BookingFulfillmentInterface
+            ? $options['bookingFulfillment']
+            : BookingFulfillment::createDefault(emailSender: $emailSender);
+
         $eventPublisher = isset($options['eventPublisherPort']) && $options['eventPublisherPort'] instanceof LifecycleEventPublisherPort
             ? $options['eventPublisherPort']
             : new TransactionalLifecycleEventPublisherAdapter(
-                fulfillmentService: isset($options['fulfillmentService']) && $options['fulfillmentService'] instanceof GuestLifecycleFulfillmentServiceInterface
-                    ? $options['fulfillmentService']
-                    : null,
                 cancellationRenderer: isset($options['cancellationRenderer']) && $options['cancellationRenderer'] instanceof CancellationEmailRendererInterface
                     ? $options['cancellationRenderer']
                     : null,
-                emailSender: isset($options['emailSender']) && $options['emailSender'] instanceof EmailSenderInterface
-                    ? $options['emailSender']
-                    : null,
-                bookingFulfillment: isset($options['bookingFulfillment']) && $options['bookingFulfillment'] instanceof BookingFulfillmentInterface
-                    ? $options['bookingFulfillment']
-                    : null,
+                emailSender: $emailSender,
+                bookingFulfillment: $bookingFulfillment,
                 auditPort: $audit
             );
 

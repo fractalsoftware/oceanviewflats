@@ -11,8 +11,12 @@ use OceanViewFlats\Admin\Auth\InMemoryIpRateLimiter;
 use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
+use OceanViewFlats\Infrastructure\Reservation\TransactionalLifecycleEventPublisherAdapter;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 final class AdminAppTest extends TestCase
 {
@@ -301,5 +305,97 @@ final class AdminAppTest extends TestCase
         $this->assertSame(405, $response->getStatusCode());
         $this->assertSame('GET', $response->getHeaders()['Allow'] ?? null);
         $this->assertStringContainsString('405 Method Not Allowed', $response->getBody());
+    }
+
+    private function extractBookingFulfillment(AdminApp $app): ?BookingFulfillmentInterface
+    {
+        $appRef = new ReflectionClass($app);
+        $router = $appRef->getProperty('router')->getValue($app);
+
+        $routerRef = new ReflectionClass($router);
+        /** @var array<string, array<string, array{0: object, 1: string}>> $staticRoutes */
+        $staticRoutes = $routerRef->getProperty('staticRoutes')->getValue($router);
+
+        $handler = $staticRoutes['GET']['/reservations'] ?? null;
+        $this->assertIsArray($handler);
+        $controller = $handler[0];
+
+        $controllerRef = new ReflectionClass($controller);
+        $engine = $controllerRef->getProperty('lifecycleEngine')->getValue($controller);
+
+        $engineRef = new ReflectionClass($engine);
+        $publisher = $engineRef->getProperty('eventPublisherPort')->getValue($engine);
+        $this->assertInstanceOf(TransactionalLifecycleEventPublisherAdapter::class, $publisher);
+
+        $publisherRef = new ReflectionClass($publisher);
+        /** @var ?BookingFulfillmentInterface $fulfillment */
+        $fulfillment = $publisherRef->getProperty('bookingFulfillment')->getValue($publisher);
+
+        return $fulfillment;
+    }
+
+    public function testKernelConstructsWithDefaultBookingFulfillment(): void
+    {
+        $app = AdminApp::createDefault($this->pdo);
+        $fulfillment = $this->extractBookingFulfillment($app);
+
+        $this->assertInstanceOf(BookingFulfillmentInterface::class, $fulfillment);
+        $this->assertInstanceOf(BookingFulfillment::class, $fulfillment);
+    }
+
+    public function testKernelWiresCustomBookingFulfillmentOverride(): void
+    {
+        $mockFulfillment = $this->createMock(BookingFulfillmentInterface::class);
+        $app = AdminApp::createDefault($this->pdo, [
+            'booking_fulfillment' => $mockFulfillment,
+        ]);
+        $fulfillment = $this->extractBookingFulfillment($app);
+
+        $this->assertSame($mockFulfillment, $fulfillment);
+    }
+
+    public function testKernelWiresRecipientEmailIntoBookingFulfillment(): void
+    {
+        $app = AdminApp::createDefault($this->pdo, [
+            'recipient_email' => 'host-override@oceanviewflats.com',
+        ]);
+        $fulfillment = $this->extractBookingFulfillment($app);
+
+        $this->assertInstanceOf(BookingFulfillment::class, $fulfillment);
+        $fRef = new ReflectionClass($fulfillment);
+        $hostEmail = $fRef->getProperty('hostEmail')->getValue($fulfillment);
+        $this->assertSame('host-override@oceanviewflats.com', $hostEmail);
+    }
+
+    public function testKernelWiresHostEmailIntoBookingFulfillmentWhenRecipientEmailOmitted(): void
+    {
+        $app = AdminApp::createDefault($this->pdo, [
+            'host_email' => 'host-fallback@oceanviewflats.com',
+        ]);
+        $fulfillment = $this->extractBookingFulfillment($app);
+
+        $this->assertInstanceOf(BookingFulfillment::class, $fulfillment);
+        $fRef = new ReflectionClass($fulfillment);
+        $hostEmail = $fRef->getProperty('hostEmail')->getValue($fulfillment);
+        $this->assertSame('host-fallback@oceanviewflats.com', $hostEmail);
+    }
+
+    public function testKernelWiresBookingFulfillmentDirectlyIntoReservationController(): void
+    {
+        $mockFulfillment = $this->createMock(BookingFulfillmentInterface::class);
+        $app = AdminApp::createDefault($this->pdo, [
+            'booking_fulfillment' => $mockFulfillment,
+        ]);
+
+        $appRef = new ReflectionClass($app);
+        $router = $appRef->getProperty('router')->getValue($app);
+        $routerRef = new ReflectionClass($router);
+        /** @var array<string, array<string, array{0: object, 1: string}>> $staticRoutes */
+        $staticRoutes = $routerRef->getProperty('staticRoutes')->getValue($router);
+        $controller = $staticRoutes['GET']['/reservations'][0];
+
+        $controllerRef = new ReflectionClass($controller);
+        $injectedFulfillment = $controllerRef->getProperty('bookingFulfillment')->getValue($controller);
+        $this->assertSame($mockFulfillment, $injectedFulfillment);
     }
 }

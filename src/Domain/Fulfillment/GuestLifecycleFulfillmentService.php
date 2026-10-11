@@ -18,7 +18,7 @@ use Throwable;
 /**
  * Authoritative domain service managing the guest registration lifecycle,
  * ADR 0001 access credential generation and disclosure, administrative manual registry,
- * PIN overrides, PIN regeneration, and post-settlement booking fulfillment.
+ * PIN overrides, and PIN regeneration.
  */
 final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmentServiceInterface
 {
@@ -33,7 +33,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         private readonly HostRegistryEmailRendererInterface $hostRegistryRenderer,
         private readonly EmailSenderInterface $emailSender,
         private readonly SpreadsheetSyncInterface $spreadsheetSync,
-        private readonly ConfirmationEmailRendererInterface $confirmationEmailRenderer,
         private readonly string $hostNotificationEmail = 'rentals@oceanviewflats.com',
         private readonly string $publicSiteUrl = 'https://oceanviewflats.com',
         ?AccessDispatchEmailRendererInterface $accessDispatchRenderer = null,
@@ -78,8 +77,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         $emailSender = $options['email_sender'] ?? new PhpMailSender();
         /** @var SpreadsheetSyncInterface $spreadsheetSync */
         $spreadsheetSync = $options['spreadsheet_sync'] ?? GoogleSheetWebhookSync::createFromEnv();
-        /** @var ConfirmationEmailRendererInterface $confirmationEmailRenderer */
-        $confirmationEmailRenderer = $options['confirmation_email_renderer'] ?? new ConfirmationEmailRenderer($resolvedPublicSiteUrl);
         /** @var AccessDispatchEmailRendererInterface $accessDispatchRenderer */
         $accessDispatchRenderer = $options['access_dispatch_renderer'] ?? new AccessDispatchEmailRenderer($resolvedPublicSiteUrl);
         /** @var ?CondominiumClearanceSyncInterface $clearanceSync */
@@ -99,7 +96,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             hostRegistryRenderer: $hostRegistryRenderer,
             emailSender: $emailSender,
             spreadsheetSync: $spreadsheetSync,
-            confirmationEmailRenderer: $confirmationEmailRenderer,
             hostNotificationEmail: $resolvedHost,
             publicSiteUrl: $resolvedPublicSiteUrl,
             accessDispatchRenderer: $accessDispatchRenderer,
@@ -538,60 +534,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             }
             return DoorCodeResult::failure('Failed to regenerate door PIN: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function fulfillBookingConfirmation(
-        Reservation $reservation,
-        array $extra = []
-    ): FulfillmentResult {
-        $errors = [];
-
-        // 1. Spreadsheet Synchronization
-        $spreadsheetSynced = false;
-        try {
-            $spreadsheetSynced = $this->spreadsheetSync->sync($reservation, $extra);
-            if (!$spreadsheetSynced) {
-                $errors[] = 'Spreadsheet synchronization did not complete successfully.';
-            }
-        } catch (Throwable $e) {
-            $errors[] = 'Spreadsheet synchronization error: ' . $e->getMessage();
-        }
-
-        // 2. Localized Reservation Confirmation Email to Primary Guest
-        $guestEmailSent = false;
-        try {
-            $guestSubject = $this->confirmationEmailRenderer->renderGuestSubject($reservation);
-            $guestHtml = $this->confirmationEmailRenderer->renderGuestConfirmationHtml($reservation);
-            $guestEmailSent = $this->emailSender->send($reservation->guestEmail, $guestSubject, $guestHtml);
-            if (!$guestEmailSent) {
-                $errors[] = 'Failed to dispatch confirmation email to Primary Guest.';
-            }
-        } catch (Throwable $e) {
-            $errors[] = 'Primary Guest confirmation email error: ' . $e->getMessage();
-        }
-
-        // 3. Host Notification Email
-        $hostEmailSent = false;
-        try {
-            $hostSubject = $this->confirmationEmailRenderer->renderHostSubject($reservation);
-            $hostHtml = $this->confirmationEmailRenderer->renderHostNotificationHtml($reservation);
-            $hostEmailSent = $this->emailSender->send($this->hostNotificationEmail, $hostSubject, $hostHtml);
-            if (!$hostEmailSent) {
-                $errors[] = 'Failed to dispatch notification email to Host.';
-            }
-        } catch (Throwable $e) {
-            $errors[] = 'Host notification email error: ' . $e->getMessage();
-        }
-
-        return new FulfillmentResult(
-            isGuestEmailSent: $guestEmailSent,
-            isHostEmailSent: $hostEmailSent,
-            isSpreadsheetSynced: $spreadsheetSynced,
-            errors: $errors
-        );
     }
 
     /**
