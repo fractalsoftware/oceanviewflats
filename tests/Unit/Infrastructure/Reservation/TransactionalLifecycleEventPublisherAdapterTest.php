@@ -7,7 +7,6 @@ namespace OceanViewFlats\Tests\Unit\Infrastructure\Reservation;
 use DateTimeImmutable;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\FulfillmentResult;
-use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\Event\ReservationConfirmedEvent;
 use OceanViewFlats\Domain\Reservation\Reservation;
@@ -42,32 +41,6 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
             registryCompleted: $registryCompleted,
             doorCode: $doorCode
         );
-    }
-
-    public function testPublishConfirmedPrioritizesBookingFulfillmentOverGuestLifecycleService(): void
-    {
-        $bookingFulfillment = $this->createMock(BookingFulfillmentInterface::class);
-        $fulfillmentService = $this->createMock(GuestLifecycleFulfillmentServiceInterface::class);
-
-        $bookingFulfillment->expects($this->once())
-            ->method('fulfillConfirmation')
-            ->willReturn(new FulfillmentResult(true, true, true));
-
-        $fulfillmentService->expects($this->never())
-            ->method('fulfillBookingConfirmation');
-
-        $adapter = new TransactionalLifecycleEventPublisherAdapter(
-            fulfillmentService: $fulfillmentService,
-            bookingFulfillment: $bookingFulfillment
-        );
-
-        $reservation = $this->createReservation();
-        $event = new ReservationConfirmedEvent(
-            reservation: $reservation,
-            actorContext: ActorContext::system()
-        );
-
-        $adapter->publishConfirmed($event);
     }
 
     public function testPublishConfirmedMasksDoorCodeWhenRegistryCompletedIsFalse(): void
@@ -179,42 +152,13 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
         $adapter->publishConfirmed($event);
     }
 
-    public function testPublishConfirmedFallsBackToGuestLifecycleFulfillmentWhenBookingFulfillmentIsNull(): void
-    {
-        $fulfillmentService = $this->createMock(GuestLifecycleFulfillmentServiceInterface::class);
-        $fulfillmentService->expects($this->once())
-            ->method('fulfillBookingConfirmation')
-            ->with(
-                $this->callback(function (Reservation $res): bool {
-                    return $res->doorCode === null;
-                })
-            )
-            ->willReturn(new FulfillmentResult(true, true, true));
-
-        $adapter = new TransactionalLifecycleEventPublisherAdapter(
-            fulfillmentService: $fulfillmentService,
-            bookingFulfillment: null
-        );
-
-        $reservation = $this->createReservation(registryCompleted: false, doorCode: '5555#*');
-        $event = new ReservationConfirmedEvent(
-            reservation: $reservation,
-            actorContext: ActorContext::system()
-        );
-
-        $adapter->publishConfirmed($event);
-    }
-
     public function testPublishConfirmedSkipsFulfillmentWhenSendConfirmationEmailIsFalse(): void
     {
         $bookingFulfillment = $this->createMock(BookingFulfillmentInterface::class);
-        $fulfillmentService = $this->createMock(GuestLifecycleFulfillmentServiceInterface::class);
 
         $bookingFulfillment->expects($this->never())->method('fulfillConfirmation');
-        $fulfillmentService->expects($this->never())->method('fulfillBookingConfirmation');
 
         $adapter = new TransactionalLifecycleEventPublisherAdapter(
-            fulfillmentService: $fulfillmentService,
             bookingFulfillment: $bookingFulfillment
         );
 
@@ -237,28 +181,6 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
 
         $adapter = new TransactionalLifecycleEventPublisherAdapter(
             bookingFulfillment: $bookingFulfillment
-        );
-
-        $reservation = $this->createReservation();
-        $event = new ReservationConfirmedEvent(
-            reservation: $reservation,
-            actorContext: ActorContext::system()
-        );
-
-        // Should not throw and exception should be suppressed
-        $adapter->publishConfirmed($event);
-    }
-
-    public function testPublishConfirmedCatchesAndSuppressesFallbackServiceException(): void
-    {
-        $fulfillmentService = $this->createMock(GuestLifecycleFulfillmentServiceInterface::class);
-        $fulfillmentService->expects($this->once())
-            ->method('fulfillBookingConfirmation')
-            ->willThrowException(new RuntimeException('Legacy fulfillment error'));
-
-        $adapter = new TransactionalLifecycleEventPublisherAdapter(
-            fulfillmentService: $fulfillmentService,
-            bookingFulfillment: null
         );
 
         $reservation = $this->createReservation();

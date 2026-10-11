@@ -222,7 +222,6 @@ final class AdminApp
 
         /** @var LifecycleEventPublisherPort $eventPublisherPort */
         $eventPublisherPort = $options['lifecycle_event_publisher_port'] ?? new TransactionalLifecycleEventPublisherAdapter(
-            fulfillmentService: $lifecycleService,
             cancellationRenderer: $cancellationEmailRenderer,
             emailSender: $emailSender,
             bookingFulfillment: $bookingFulfillment,
