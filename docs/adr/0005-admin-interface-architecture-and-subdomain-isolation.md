@@ -33,7 +33,8 @@ Rather than nesting the administrative application inside `public_html/admin` (P
 │   ├── src/                     <-- Protected Admin Application Logic
 │   └── templates/               <-- Server-rendered PHP Templates (HTMX Components)
 ├── src/
-│   └── Domain/                  <-- Shared Domain Models (QuoteEngine, Ledger, DoorCode)
+│   ├── Domain/                  <-- Shared Domain Models (QuoteEngine, Ledger, DoorCode)
+│   └── Infrastructure/          <-- Hexagonal Infrastructure Adapters (Persistence, Events, Refunds)
 ├── vendor/                      <-- Production Composer Autoloader & Dependencies
 └── scripts/                     <-- CLI Utilities (migrate.php, create-admin-user.php)
 ```
@@ -46,10 +47,10 @@ Deployments are strictly segregated across two independent GitHub Actions workfl
    - Injects public environment secrets (`RECIPIENT_EMAIL`, `CAPTCHA_SECRET`, database and payment keys) into `public/.htaccess`.
    - Transfers `./dist/.` to `/home/<user>/public_html/` via SFTP on port 2223.
 2. **Admin & Backend Pipeline (`.github/workflows/admin-deploy.yml`)**:
-   - Triggers on changes to `admin/**`, `src/Domain/**`, `scripts/**`, `composer.json`, or `composer.lock`.
+   - Triggers on changes to `admin/**`, `src/Domain/**`, `src/Infrastructure/**`, `scripts/**`, `composer.json`, or `composer.lock`.
    - Installs production Composer dependencies (`composer install --no-dev --prefer-dist --optimize-autoloader`).
    - Injects production secrets (`DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `OVF_ADMIN_SESSION_SECRET`) into `admin/public/.htaccess`.
-   - Stages a clean payload containing `admin/`, `src/Domain/`, `vendor/`, and `scripts/` (omitting test files and dev configurations).
+   - Stages a clean payload containing `admin/`, `src/Domain/`, `src/Infrastructure/`, `vendor/`, and `scripts/` (omitting test files and dev configurations).
    - Transfers the payload to `/home/<user>/` via SFTP on port 2223.
 
 ### 3. Shared Runtime Autoloading, Path Resilience, and Environment Discovery
