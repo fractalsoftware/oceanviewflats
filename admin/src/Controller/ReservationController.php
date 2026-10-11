@@ -15,6 +15,7 @@ use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Access\DoorCodeGenerator;
 use OceanViewFlats\Domain\Fulfillment\AdminContext;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
+use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRendererInterface;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
@@ -81,7 +82,8 @@ final class ReservationController
         ?PublicUrlBuilder $urlBuilder = null,
         ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
         ?CondominiumClearanceSyncInterface $clearanceSync = null,
-        ?ReservationLifecycleEngineInterface $lifecycleEngine = null
+        ?ReservationLifecycleEngineInterface $lifecycleEngine = null,
+        private readonly ?BookingFulfillmentInterface $bookingFulfillment = null
     ) {
         $this->cancellationEmailRenderer = $cancellationEmailRenderer ?? new CancellationEmailRenderer($this->publicSiteUrl);
         $this->urlBuilder = $urlBuilder ?? new PublicUrlBuilder($this->publicSiteUrl);
@@ -970,7 +972,7 @@ final class ReservationController
             'repository' => $this->repository,
             'mpRefundClient' => $this->refundClient,
             'auditPort' => $auditPort,
-            'bookingFulfillment' => BookingFulfillment::createDefault(emailSender: $this->emailSender),
+            'bookingFulfillment' => $this->bookingFulfillment ?? BookingFulfillment::createDefault(emailSender: $this->emailSender),
             'cancellationRenderer' => $this->cancellationEmailRenderer,
             'emailSender' => $this->emailSender,
             'ledger' => $this->ledger,

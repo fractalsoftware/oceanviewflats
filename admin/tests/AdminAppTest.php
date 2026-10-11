@@ -366,4 +366,36 @@ final class AdminAppTest extends TestCase
         $hostEmail = $fRef->getProperty('hostEmail')->getValue($fulfillment);
         $this->assertSame('host-override@oceanviewflats.com', $hostEmail);
     }
+
+    public function testKernelWiresHostEmailIntoBookingFulfillmentWhenRecipientEmailOmitted(): void
+    {
+        $app = AdminApp::createDefault($this->pdo, [
+            'host_email' => 'host-fallback@oceanviewflats.com',
+        ]);
+        $fulfillment = $this->extractBookingFulfillment($app);
+
+        $this->assertInstanceOf(BookingFulfillment::class, $fulfillment);
+        $fRef = new ReflectionClass($fulfillment);
+        $hostEmail = $fRef->getProperty('hostEmail')->getValue($fulfillment);
+        $this->assertSame('host-fallback@oceanviewflats.com', $hostEmail);
+    }
+
+    public function testKernelWiresBookingFulfillmentDirectlyIntoReservationController(): void
+    {
+        $mockFulfillment = $this->createMock(BookingFulfillmentInterface::class);
+        $app = AdminApp::createDefault($this->pdo, [
+            'booking_fulfillment' => $mockFulfillment,
+        ]);
+
+        $appRef = new ReflectionClass($app);
+        $router = $appRef->getProperty('router')->getValue($app);
+        $routerRef = new ReflectionClass($router);
+        /** @var array<string, array<string, array{0: object, 1: string}>> $staticRoutes */
+        $staticRoutes = $routerRef->getProperty('staticRoutes')->getValue($router);
+        $controller = $staticRoutes['GET']['/reservations'][0];
+
+        $controllerRef = new ReflectionClass($controller);
+        $injectedFulfillment = $controllerRef->getProperty('bookingFulfillment')->getValue($controller);
+        $this->assertSame($mockFulfillment, $injectedFulfillment);
+    }
 }

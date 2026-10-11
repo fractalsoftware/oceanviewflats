@@ -43,7 +43,22 @@ final class TransactionalLifecycleEventPublisherAdapter implements LifecycleEven
                     'payment_status' => $reservation->paymentStatus,
                 ], static fn(?string $v): bool => $v !== null);
 
-                $this->bookingFulfillment->fulfillConfirmation($reservation, $extra);
+                $result = $this->bookingFulfillment->fulfillConfirmation($reservation, $extra);
+                if (!$result->isSuccess() && $this->auditPort !== null) {
+                    $this->auditPort->record(
+                        action: 'booking_fulfillment_failed',
+                        entityType: 'reservation',
+                        entityId: $reservation->reservationUid,
+                        payloadBefore: null,
+                        payloadAfter: [
+                            'errors' => $result->errors,
+                            'guest_email_sent' => $result->isGuestEmailSent,
+                            'host_email_sent' => $result->isHostEmailSent,
+                            'spreadsheet_synced' => $result->isSpreadsheetSynced,
+                        ],
+                        actor: $event->actorContext
+                    );
+                }
             }
         } catch (Throwable) {
             // Best effort post-commit notification resilience

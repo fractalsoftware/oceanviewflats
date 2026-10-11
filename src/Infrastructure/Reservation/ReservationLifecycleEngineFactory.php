@@ -67,9 +67,13 @@ final class ReservationLifecycleEngineFactory
                 ? new PdoAuditAdapter($pdo)
                 : new InMemoryAuditAdapter());
 
+        $emailSender = isset($options['emailSender']) && $options['emailSender'] instanceof EmailSenderInterface
+            ? $options['emailSender']
+            : null;
+
         $bookingFulfillment = isset($options['bookingFulfillment']) && $options['bookingFulfillment'] instanceof BookingFulfillmentInterface
             ? $options['bookingFulfillment']
-            : BookingFulfillment::createDefault();
+            : BookingFulfillment::createDefault(emailSender: $emailSender);
 
         $eventPublisher = isset($options['eventPublisherPort']) && $options['eventPublisherPort'] instanceof LifecycleEventPublisherPort
             ? $options['eventPublisherPort']
@@ -77,9 +81,7 @@ final class ReservationLifecycleEngineFactory
                 cancellationRenderer: isset($options['cancellationRenderer']) && $options['cancellationRenderer'] instanceof CancellationEmailRendererInterface
                     ? $options['cancellationRenderer']
                     : null,
-                emailSender: isset($options['emailSender']) && $options['emailSender'] instanceof EmailSenderInterface
-                    ? $options['emailSender']
-                    : null,
+                emailSender: $emailSender,
                 bookingFulfillment: $bookingFulfillment,
                 auditPort: $audit
             );
