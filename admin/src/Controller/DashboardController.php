@@ -58,6 +58,41 @@ final class DashboardController
     }
 
     /**
+     * GET /dashboard/day: Slide-over multi-stay and operational day drawer.
+     *
+     * @param array<string, mixed> $session
+     */
+    public function dayDrawer(Request $request, array &$session): Response
+    {
+        $date = (string) $request->getQuery('date', '');
+        if ($date === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return Response::html('<div class="p-6 text-rose-600 font-semibold">Invalid or missing date parameter. Expected format: YYYY-MM-DD.</div>', 400);
+        }
+
+        $propertyId = $this->resolvePropertyId((string) $request->getQuery('property_id', 'all'));
+
+        if ($this->dashboardQueryService === null) {
+            return Response::html('<div class="p-6 text-rose-600 font-semibold">Dashboard query service is unavailable.</div>', 500);
+        }
+
+        try {
+            $summary = $this->dashboardQueryService->getDaySummary($date, $propertyId);
+        } catch (\InvalidArgumentException $e) {
+            return Response::html('<div class="p-6 text-rose-600 font-semibold">' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</div>', 400);
+        }
+
+        $csrfToken = (string) ($session['csrf_token'] ?? '');
+
+        $html = $this->viewRenderer->renderPartial('dashboard/_day_drawer.php', [
+            'summary' => $summary,
+            'propertyFilter' => $propertyId,
+            'csrfToken' => $csrfToken,
+        ]);
+
+        return Response::html($html);
+    }
+
+    /**
      * @param array<string, mixed> $session
      */
     private function renderHubPartial(string $propertyId, array &$session): Response

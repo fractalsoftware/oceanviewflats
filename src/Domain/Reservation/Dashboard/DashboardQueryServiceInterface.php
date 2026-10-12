@@ -18,4 +18,17 @@ interface DashboardQueryServiceInterface
         string $propertyId = 'all',
         ?DateTimeImmutable $now = null
     ): DashboardHubViewData;
+
+    /**
+     * Aggregates detailed property statuses, reservations, movements, rates,
+     * and maintenance blocks for a specific calendar date into DayDetailViewData.
+     *
+     * @param string $date 'YYYY-MM-DD'
+     * @param string $propertyFilter 'all' | '1606' | '1707'
+     * @throws \InvalidArgumentException If date format or calendar date is invalid
+     */
+    public function getDaySummary(
+        string $date,
+        string $propertyFilter = 'all'
+    ): DayDetailViewData;
 }

@@ -112,7 +112,9 @@ final class DashboardHubE2ETest extends TestCase
         $this->assertStringContainsString('IN ⚡', $body);
 
         // Horizon Boundary check: Far future reservation (+8 days) must NOT appear in 7-day feed
-        $this->assertStringNotContainsString('Far Future Guest', $body);
+        $scheduleFeedHtml = strstr($body, '7-Day Operations Horizon') ?: '';
+        $scheduleFeedHtml = strstr($scheduleFeedHtml, 'Operational Attention', true) ?: $scheduleFeedHtml;
+        $this->assertStringNotContainsString('Far Future Guest', $scheduleFeedHtml);
 
         // 6. Prioritized Operational Alerts Card
         $this->assertStringContainsString('Operational Attention', $body);

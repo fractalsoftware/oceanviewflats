@@ -193,4 +193,29 @@ class InMemoryMaintenanceBlockRepository extends InMemoryMaintenanceBlockSource 
 
         return $results;
     }
+
+    /**
+     * @return list<MaintenanceBlock>
+     */
+    public function getBlocksForRange(
+        string $propertyId,
+        string $startDate,
+        string $endDate
+    ): array {
+        $results = [];
+
+        foreach ($this->blocksById as $block) {
+            if ($propertyId !== 'all' && $block->propertyId !== $propertyId) {
+                continue;
+            }
+
+            if ($block->startDate < $endDate && $block->endDate > $startDate) {
+                $results[] = $block;
+            }
+        }
+
+        usort($results, static fn(MaintenanceBlock $a, MaintenanceBlock $b): int => strcmp($a->startDate, $b->startDate));
+
+        return $results;
+    }
 }

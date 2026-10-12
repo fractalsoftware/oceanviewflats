@@ -305,6 +305,54 @@ class PdoMaintenanceBlockRepository implements MaintenanceBlockRepositoryInterfa
     }
 
     /**
+     * @return list<MaintenanceBlock>
+     */
+    public function getBlocksForRange(
+        string $propertyId,
+        string $startDate,
+        string $endDate
+    ): array {
+        $baseSql = '
+            FROM calendar_blocks cb
+            LEFT JOIN admin_users u ON cb.created_by = u.id
+            WHERE cb.start_date < :end_date
+              AND cb.end_date > :start_date
+        ';
+        $params = [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ];
+
+        if ($propertyId !== 'all') {
+            $baseSql .= ' AND cb.property_id = :property_id';
+            $params['property_id'] = $propertyId;
+        }
+
+        $baseSql .= ' ORDER BY cb.start_date ASC';
+
+        $sql = 'SELECT cb.id, cb.property_id, cb.start_date, cb.end_date, cb.reason, cb.created_by, cb.created_at, u.name AS created_by_name ' . $baseSql;
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+
+            /** @var list<array<string, mixed>> $rows */
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $blocks = [];
+            foreach ($rows as $row) {
+                $blocks[] = $this->hydrateRow($row);
+            }
+
+            return $blocks;
+        } catch (PDOException $e) {
+            if (str_contains($e->getMessage(), 'no such table') || str_contains($e->getMessage(), "doesn't exist")) {
+                return [];
+            }
+            throw $e;
+        }
+    }
+
+    /**
      * @param array<string, mixed> $row
      */
     protected function hydrateRow(array $row): MaintenanceBlock

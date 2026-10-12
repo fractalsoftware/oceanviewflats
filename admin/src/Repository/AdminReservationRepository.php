@@ -485,6 +485,94 @@ final class AdminReservationRepository
         return $alerts;
     }
 
+    /**
+     * Fetches active/confirmed/pending reservations overlapping the specified date window.
+     * Note: Includes both "confirmed" and "pending_payment" reservation records.
+     *
+     * @param string $propertyId 'all' | '1606' | '1707'
+     * @return list<array{
+     *     reservation_uid: string,
+     *     property_id: string,
+     *     check_in: string,
+     *     check_out: string,
+     *     guest_name: string,
+     *     status: string,
+     *     payment_status: ?string,
+     *     registry_completed: int|string,
+     *     source: string,
+     *     external_confirmation_code: ?string
+     * }>
+     */
+    public function getConfirmedReservationsForRange(
+        string $propertyId,
+        string $startDate,
+        string $endDate
+    ): array {
+        $sql = '
+            SELECT reservation_uid, property_id, check_in, check_out, guest_name, status,
+                   payment_status, registry_completed, source, external_confirmation_code
+            FROM reservations
+            WHERE status IN ("confirmed", "pending_payment")
+              AND check_in <= :end_date
+              AND check_out >= :start_date
+        ';
+        $params = [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ];
+
+        if ($propertyId !== 'all') {
+            $sql .= ' AND property_id = :property_id';
+            $params['property_id'] = $propertyId;
+        }
+
+        $sql .= ' ORDER BY check_in ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        /** @var list<array{
+         *     reservation_uid: string,
+         *     property_id: string,
+         *     check_in: string,
+         *     check_out: string,
+         *     guest_name: string,
+         *     status: string,
+         *     payment_status: ?string,
+         *     registry_completed: int|string,
+         *     source: string,
+         *     external_confirmation_code: ?string
+         * }> $rows */
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $rows;
+    }
+
+    /**
+     * Alias for getConfirmedReservationsForRange reflecting that pending_payment
+     * reservations are also included.
+     *
+     * @param string $propertyId 'all' | '1606' | '1707'
+     * @return list<array{
+     *     reservation_uid: string,
+     *     property_id: string,
+     *     check_in: string,
+     *     check_out: string,
+     *     guest_name: string,
+     *     status: string,
+     *     payment_status: ?string,
+     *     registry_completed: int|string,
+     *     source: string,
+     *     external_confirmation_code: ?string
+     * }>
+     */
+    public function getReservationsForRange(
+        string $propertyId,
+        string $startDate,
+        string $endDate
+    ): array {
+        return $this->getConfirmedReservationsForRange($propertyId, $startDate, $endDate);
+    }
+
     public function getActiveStaysCount(string $propertyId = 'all', ?DateTimeImmutable $now = null): int
     {
         $today = ($now ?? new DateTimeImmutable('today'))->format('Y-m-d');
