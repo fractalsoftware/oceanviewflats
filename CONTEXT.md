@@ -271,4 +271,21 @@ _Avoid_: Admin Home, Overview Page, Control Center, Portal, Landing Page
 A high-priority actionable indicator surfaced on the Dashboard Hub, specifically highlighting either un-onboarded Channel Blocks requiring External Reservation creation, or Confirmed Reservations with upcoming arrival dates whose Guest Registry has not yet been submitted.
 _Avoid_: Warning, System Notification, Todo, Action Item
 
+**Occupancy Heatmap**:
+The high-density, multi-month calendar matrix on the Dashboard Hub rendering daily occupancy levels, turnarounds, and reservation statuses across managed properties over a seven-month horizon.
+_Avoid_: Contribution Graph, Activity Calendar, Booking Grid, Availability Table
+
+**Occupancy Level**:
+The quantitative measurement of property capacity utilized on a given calendar date (e.g. 0/2 vacant, 1/2 partial, 2/2 full occupancy across all properties, or binary occupancy when filtered to a single Property).
+_Avoid_: Heat Level, Fill Rate, Booking Score
+
+**Turnover Indicator**:
+A visual operational marker indicating that a Check-out Date and Check-in Date coincide on the same calendar date for a given Property, requiring same-day turnaround cleaning and inspection.
+_Avoid_: Same-day Switch, Turnaround Flag, Double Day
+
+**Operational Warning Indicator**:
+A visual operational marker displayed on an Occupancy Heatmap date cell signifying an active Operational Alert (e.g., an upcoming Confirmed Reservation with an incomplete Guest Registry or failed Condominium Clearance).
+_Avoid_: Warning Dot, Error Badge, Alert Pin
+
+
 
