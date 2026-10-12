@@ -22,6 +22,7 @@ use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationsEvent;
 use OceanViewFlats\Domain\Reservation\Dashboard\PropertyRateStatus;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
+use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
 use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 
 final class DashboardQueryService implements DashboardQueryServiceInterface
@@ -175,23 +176,108 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $startStr = $startDate->format('Y-m-d');
         $endStr = $endDate->format('Y-m-d');
 
-        // Fetch confirmed reservations in the horizon
+        // Fetch confirmed and pending reservations in the horizon
         $reservations = $this->reservationRepo->getConfirmedReservationsForRange($propertyId, $startStr, $endStr);
 
-        /** @var array<string, array<string, array{reservation_uid: string, guest_name: string}>> $occupancyByDate */
-        $occupancyByDate = [];
+        // Fetch maintenance blocks for range
+        /** @var list<MaintenanceBlock> $maintenanceBlocks */
+        $maintenanceBlocks = [];
+        try {
+            $maintenanceBlocks = $this->calendarBlockRepo->getBlocksForRange($propertyId, $startStr, $endStr);
+        } catch (\Throwable) {
+            $maintenanceBlocks = [];
+        }
+
+        /** @var array<string, array<string, MaintenanceBlock>> $maintenanceByDate */
+        $maintenanceByDate = [];
+        foreach ($maintenanceBlocks as $block) {
+            $bStart = max($block->startDate, $startStr);
+            $bEnd = min($block->endDate, $endDate->modify('+1 day')->format('Y-m-d'));
+            $currB = new DateTimeImmutable($bStart);
+            $bEndDt = new DateTimeImmutable($bEnd);
+            while ($currB < $bEndDt && $currB->format('Y-m-d') <= $endStr) {
+                $d = $currB->format('Y-m-d');
+                $maintenanceByDate[$d][$block->propertyId] = $block;
+                $currB = $currB->modify('+1 day');
+            }
+        }
+
+        // Fetch failed condominium clearances
+        /** @var array<string, string> $failedClearanceMap */
+        $failedClearanceMap = [];
+        try {
+            $failedClearances = $this->clearanceRepo->findFailedClearances(200);
+            foreach ($failedClearances as $fc) {
+                $failedClearanceMap[$fc->reservationUid] = $fc->errorMessage ?: 'Condominium clearance failed';
+            }
+        } catch (\Throwable) {
+            $failedClearanceMap = [];
+        }
+
+        // Fetch seasonal rate tiers
+        /** @var list<\OceanViewFlats\Domain\Quote\RateTier> $tiers1606 */
+        $tiers1606 = [];
+        /** @var list<\OceanViewFlats\Domain\Quote\RateTier> $tiers1707 */
+        $tiers1707 = [];
+        try {
+            $tiers1606 = $this->rateRepo->getTiersForProperty('1606');
+        } catch (\Throwable) {}
+        try {
+            $tiers1707 = $this->rateRepo->getTiersForProperty('1707');
+        } catch (\Throwable) {}
+
+        /**
+         * @return array{amount: int, isSeasonal: bool, tierName: string}
+         */
+        $getNightlyRate = static function (string $pid, string $d) use ($tiers1606, $tiers1707): array {
+            $tiers = ($pid === '1606') ? $tiers1606 : $tiers1707;
+            $base = ($pid === '1606') ? 110 : 120;
+            foreach ($tiers as $tier) {
+                if ($tier->coversDate($d)) {
+                    return [
+                        'amount' => (int) $tier->nightlyRateCop,
+                        'isSeasonal' => true,
+                        'tierName' => $tier->seasonName,
+                    ];
+                }
+            }
+            return [
+                'amount' => $base,
+                'isSeasonal' => false,
+                'tierName' => 'Standard Rate',
+            ];
+        };
+
+        // Index reservations by check_in, check_out, and active stay nights
+        /** @var array<string, array<string, list<array<string, mixed>>>> $checkInsByProp */
+        $checkInsByProp = [];
+        /** @var array<string, array<string, list<array<string, mixed>>>> $checkOutsByProp */
+        $checkOutsByProp = [];
+        /** @var array<string, array<string, array<string, mixed>>> $activeConfirmedStaysByDate */
+        $activeConfirmedStaysByDate = [];
+        /** @var array<string, array<string, array<string, mixed>>> $pendingHoldsByDate */
+        $pendingHoldsByDate = [];
+
         foreach ($reservations as $res) {
-            $rStart = max((string) $res['check_in'], $startStr);
-            $rEnd = min((string) $res['check_out'], $endDate->modify('+1 day')->format('Y-m-d'));
+            $pid = (string) $res['property_id'];
+            $cin = (string) $res['check_in'];
+            $cout = (string) $res['check_out'];
+            $status = (string) $res['status'];
+
+            $checkInsByProp[$pid][$cin][] = $res;
+            $checkOutsByProp[$pid][$cout][] = $res;
+
+            $rStart = max($cin, $startStr);
+            $rEnd = min($cout, $endDate->modify('+1 day')->format('Y-m-d'));
             $curr = new DateTimeImmutable($rStart);
             $rEndDt = new DateTimeImmutable($rEnd);
             while ($curr < $rEndDt && $curr->format('Y-m-d') <= $endStr) {
                 $d = $curr->format('Y-m-d');
-                $pid = (string) $res['property_id'];
-                $occupancyByDate[$d][$pid] = [
-                    'reservation_uid' => (string) $res['reservation_uid'],
-                    'guest_name' => (string) $res['guest_name'],
-                ];
+                if ($status === 'confirmed') {
+                    $activeConfirmedStaysByDate[$d][$pid] = $res;
+                } elseif ($status === 'pending_payment') {
+                    $pendingHoldsByDate[$d][$pid] = $res;
+                }
                 $curr = $curr->modify('+1 day');
             }
         }
@@ -201,6 +287,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $totalOccupiedDaysCount = 0;
         $totalPossibleUnitNights = 0;
         $totalOccupiedUnitNights = 0;
+        $totalTurnoversCount = 0;
+        $totalAlertsCount = 0;
 
         /** @var list<HeatmapWeekColumn> $columns */
         $columns = [];
@@ -214,6 +302,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         /** @var ?array{label: string, startCol: int, span: int} $currentMonthHeader */
         $currentMonthHeader = null;
 
+        $propertiesToEval = ($propertyId === 'all') ? ['1606', '1707'] : [$propertyId];
+
         $cursor = $startDate;
         while ($cursor <= $endDate) {
             $dateStr = $cursor->format('Y-m-d');
@@ -224,22 +314,108 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $isToday = ($dateStr === $todayStr);
             $isPast = ($dateStr < $todayStr);
 
-            $dayOccupancy = $occupancyByDate[$dateStr] ?? [];
-            if ($propertyId === 'all') {
-                $occupiedUnits = min(2, count($dayOccupancy));
-            } else {
-                $occupiedUnits = isset($dayOccupancy[$propertyId]) ? 1 : 0;
-            }
-
+            $occupiedUnits = 0;
+            $dayHasTurnover = false;
+            $dayHasMaintenance = false;
+            $dayHasPendingHold = false;
+            /** @var list<string> $warningMessages */
+            $warningMessages = [];
             /** @var list<string> $reservationUids */
             $reservationUids = [];
             /** @var array<string, mixed> $flatDetails */
             $flatDetails = [];
-            foreach ($dayOccupancy as $pid => $info) {
-                $reservationUids[] = $info['reservation_uid'];
-                $flatDetails[$pid] = $info;
+            $combinedRate = 0;
+
+            foreach ($propertiesToEval as $pid) {
+                $rateInfo = $getNightlyRate($pid, $dateStr);
+                $combinedRate += $rateInfo['amount'];
+
+                // Turnover check for property $pid on $dateStr
+                $hasPropTurnover = !empty($checkInsByProp[$pid][$dateStr]) && !empty($checkOutsByProp[$pid][$dateStr]);
+                if ($hasPropTurnover) {
+                    $dayHasTurnover = true;
+                }
+
+                // Maintenance check for property $pid on $dateStr
+                $mBlock = $maintenanceByDate[$dateStr][$pid] ?? null;
+                if ($mBlock !== null) {
+                    $dayHasMaintenance = true;
+                }
+
+                // Active stay on dateStr
+                $confirmedRes = $activeConfirmedStaysByDate[$dateStr][$pid] ?? null;
+                $pendingRes = $pendingHoldsByDate[$dateStr][$pid] ?? null;
+                $resIn = $checkInsByProp[$pid][$dateStr][0] ?? null;
+                $resOut = $checkOutsByProp[$pid][$dateStr][0] ?? null;
+
+                if ($confirmedRes !== null) {
+                    $occupiedUnits++;
+                    $resUid = (string) $confirmedRes['reservation_uid'];
+                    $reservationUids[] = $resUid;
+
+                    $regCompleted = (int) ($confirmedRes['registry_completed'] ?? 0);
+                    $guestName = (string) ($confirmedRes['guest_name'] ?: 'Guest');
+                    if ($regCompleted === 0) {
+                        $warningMessages[] = "Guest registry incomplete ({$guestName})";
+                    }
+                    if (isset($failedClearanceMap[$resUid])) {
+                        $warningMessages[] = "Condominium clearance failed ({$guestName})";
+                    }
+                }
+
+                if ($pendingRes !== null) {
+                    $dayHasPendingHold = true;
+                    $reservationUids[] = (string) $pendingRes['reservation_uid'];
+                }
+
+                // Determine flat status, guest name/code, movement
+                $flatStatus = 'Vacant';
+                $primaryGuestOrCode = null;
+                $movement = null;
+
+                if ($mBlock !== null) {
+                    $flatStatus = 'Maintenance';
+                    $primaryGuestOrCode = 'Hold: ' . $mBlock->reason;
+                    $movement = 'Maintenance';
+                } elseif ($hasPropTurnover && $resOut !== null && $resIn !== null) {
+                    $flatStatus = 'Reserved (Confirmed)';
+                    $outGuest = (string) ($resOut['guest_name'] ?: ($resOut['external_confirmation_code'] ?: 'Guest'));
+                    $inGuest = (string) ($resIn['guest_name'] ?: ($resIn['external_confirmation_code'] ?: 'Guest'));
+                    $primaryGuestOrCode = "{$outGuest} (Check-out) / {$inGuest} (Check-in)";
+                    $movement = 'Turnover';
+                } elseif ($confirmedRes !== null) {
+                    $flatStatus = 'Reserved (Confirmed)';
+                    $primaryGuestOrCode = (string) ($confirmedRes['guest_name'] ?: ($confirmedRes['external_confirmation_code'] ?: 'Guest'));
+                    $movement = ((string) $confirmedRes['check_in'] === $dateStr) ? 'Check-in' : 'Stay';
+                } elseif ($pendingRes !== null) {
+                    $flatStatus = 'Reserved (Pending)';
+                    $primaryGuestOrCode = (string) ($pendingRes['guest_name'] ?: ($pendingRes['external_confirmation_code'] ?: 'Hold'));
+                    $movement = ((string) $pendingRes['check_in'] === $dateStr) ? 'Check-in' : 'Pending Hold';
+                } elseif ($resOut !== null) {
+                    $flatStatus = 'Vacant';
+                    $primaryGuestOrCode = (string) ($resOut['guest_name'] ?: ($resOut['external_confirmation_code'] ?: 'Guest'));
+                    $movement = 'Check-out';
+                }
+
+                $flatDetails[$pid] = [
+                    'property_id' => $pid,
+                    'status' => $flatStatus,
+                    'label' => "Property {$pid}: {$flatStatus}",
+                    'rate' => $rateInfo['amount'],
+                    'rate_info' => $rateInfo,
+                    'guest' => $primaryGuestOrCode,
+                    'movement' => $movement,
+                    'reservation_uid' => $confirmedRes['reservation_uid'] ?? $pendingRes['reservation_uid'] ?? null,
+                ];
             }
-            $singleReservationUid = count($reservationUids) === 1 ? $reservationUids[0] : null;
+
+            $uniqueReservationUids = array_values(array_unique($reservationUids));
+            $singleReservationUid = count($uniqueReservationUids) === 1 ? $uniqueReservationUids[0] : null;
+            $dayHasWarning = count($warningMessages) > 0;
+
+            $effectiveRate = ($propertyId === 'all')
+                ? $combinedRate
+                : ($flatDetails[$propertyId]['rate'] ?? $combinedRate);
 
             if ($dayOfMonth === 1) {
                 $monthLabel = $cursor->format('M');
@@ -264,9 +440,17 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 isPast: $isPast,
                 totalUnits: $totalUnits,
                 occupiedUnits: $occupiedUnits,
+                propertyFilter: $propertyId,
+                hasTurnover: $dayHasTurnover,
+                hasMaintenance: $dayHasMaintenance,
+                hasPendingHold: $dayHasPendingHold,
+                hasRiskAlert: $dayHasWarning,
                 singleReservationUid: $singleReservationUid,
-                reservationUids: $reservationUids,
-                flatDetails: $flatDetails
+                reservationUids: $uniqueReservationUids,
+                flatDetails: $flatDetails,
+                effectiveRate: (int) $effectiveRate,
+                warningMessages: $warningMessages,
+                hasWarning: $dayHasWarning
             );
 
             $currentWeekDays[$rowIndex] = $cell;
@@ -274,6 +458,12 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $totalDaysCount++;
             if ($occupiedUnits > 0) {
                 $totalOccupiedDaysCount++;
+            }
+            if ($dayHasTurnover) {
+                $totalTurnoversCount++;
+            }
+            if ($dayHasWarning) {
+                $totalAlertsCount++;
             }
             $totalPossibleUnitNights += $totalUnits;
             $totalOccupiedUnitNights += $occupiedUnits;
@@ -312,7 +502,9 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             monthHeaders: $monthHeaders,
             overallOccupancyPercentage: $overallOccupancyPercentage,
             totalDaysCount: $totalDaysCount,
-            totalOccupiedDaysCount: $totalOccupiedDaysCount
+            totalOccupiedDaysCount: $totalOccupiedDaysCount,
+            totalTurnoversCount: $totalTurnoversCount,
+            totalAlertsCount: $totalAlertsCount
         );
     }
 }

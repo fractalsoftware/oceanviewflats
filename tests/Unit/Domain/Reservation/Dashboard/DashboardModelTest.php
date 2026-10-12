@@ -285,7 +285,7 @@ final class DashboardModelTest extends TestCase
         $this->assertStringContainsString('bg-emerald-600', $fullSingle->getCapacityCssClass());
         $this->assertStringContainsString('ring-2 ring-indigo-600', $fullSingle->getCellCssClasses());
 
-        // 3. Maintenance Block
+        // 3. Maintenance Block (Vacant: amber background)
         $maint = new HeatmapDayCell(
             date: '2026-10-15',
             dayOfMonth: 15,
@@ -298,6 +298,91 @@ final class DashboardModelTest extends TestCase
         );
         $this->assertSame('maintenance', $maint->getCapacityLevel());
         $this->assertStringContainsString('bg-amber-100', $maint->getCapacityCssClass());
+        $this->assertStringContainsString('border border-amber-300', $maint->getCellCssClasses());
+        $this->assertTrue($maint->hasMaintenance());
+
+        // 4. Maintenance Combined with Occupied Property (all view: partial green with amber ring)
+        $maintOccupied = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1,
+            hasMaintenance: true
+        );
+        $this->assertSame('partial', $maintOccupied->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-200', $maintOccupied->getCapacityCssClass());
+        $this->assertStringContainsString('ring-2 ring-amber-400', $maintOccupied->getCellCssClasses());
+
+        // 5. Pending Hold without Green Fill (dashed border)
+        $pending = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 0,
+            hasPendingHold: true
+        );
+        $this->assertSame('vacant', $pending->getCapacityLevel());
+        $this->assertStringContainsString('bg-gray-100', $pending->getCapacityCssClass());
+        $this->assertStringContainsString('border border-dashed border-slate-400', $pending->getCellCssClasses());
+        $this->assertTrue($pending->hasPendingHold());
+    }
+
+    public function testHeatmapDayCellIndicatorsAndPopoverPayloadAccessors(): void
+    {
+        $warningMsgs = ['Guest registry incomplete (John Doe)', 'Condominium clearance failed (John Doe)'];
+        $flats = [
+            '1606' => [
+                'property_id' => '1606',
+                'status' => 'Reserved (Confirmed)',
+                'rate' => 110,
+                'guest' => 'John Doe',
+                'movement' => 'Check-in',
+            ],
+            '1707' => [
+                'property_id' => '1707',
+                'status' => 'Vacant',
+                'rate' => 120,
+                'guest' => null,
+                'movement' => null,
+            ],
+        ];
+
+        $cell = new HeatmapDayCell(
+            date: '2026-10-16',
+            dayOfMonth: 16,
+            dayOfWeek: 5,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1,
+            propertyFilter: 'all',
+            hasTurnover: true,
+            hasMaintenance: false,
+            hasPendingHold: false,
+            hasRiskAlert: true,
+            singleReservationUid: 'res-123',
+            reservationUids: ['res-123'],
+            flatDetails: $flats,
+            effectiveRate: 230,
+            warningMessages: $warningMsgs
+        );
+
+        $this->assertTrue($cell->hasTurnover());
+        $this->assertFalse($cell->hasMaintenance());
+        $this->assertFalse($cell->hasPendingHold());
+        $this->assertTrue($cell->hasRiskAlert());
+        $this->assertTrue($cell->hasWarning());
+        $this->assertSame($warningMsgs, $cell->getWarningMessages());
+        $this->assertSame(230, $cell->getEffectiveRate());
+        $this->assertSame($flats, $cell->getFlatDetails());
+        $this->assertSame('res-123', $cell->singleReservationUid);
+        $this->assertSame(['res-123'], $cell->reservationUids);
     }
 
     public function testHeatmapWeekColumnAndOccupancyHeatmapViewData(): void
@@ -329,7 +414,9 @@ final class DashboardModelTest extends TestCase
             monthHeaders: [['label' => 'Oct', 'startCol' => 0, 'span' => 5]],
             overallOccupancyPercentage: 75.5,
             totalDaysCount: 212,
-            totalOccupiedDaysCount: 160
+            totalOccupiedDaysCount: 160,
+            totalTurnoversCount: 5,
+            totalAlertsCount: 2
         );
 
         $this->assertSame('2026-10-01', $heatmap->startDate);
@@ -340,5 +427,7 @@ final class DashboardModelTest extends TestCase
         $this->assertSame(75.5, $heatmap->overallOccupancyPercentage);
         $this->assertSame(212, $heatmap->totalDaysCount);
         $this->assertSame(160, $heatmap->totalOccupiedDaysCount);
+        $this->assertSame(5, $heatmap->totalTurnoversCount);
+        $this->assertSame(2, $heatmap->totalAlertsCount);
     }
 }

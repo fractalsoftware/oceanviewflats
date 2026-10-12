@@ -478,6 +478,108 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('Full (2/2)', $body);
         $this->assertStringContainsString('Today', $body);
         $this->assertStringContainsString('Past Dates', $body);
+        $this->assertStringContainsString('Maintenance', $body);
+        $this->assertStringContainsString('Pending Hold', $body);
+        $this->assertStringContainsString('Turnover', $body);
+        $this->assertStringContainsString('Operational Warning', $body);
+    }
+
+    public function testDashboardHubRendersOccupancyHeatmapIndicatorsTooltipsAndExtendedLegend(): void
+    {
+        $cellDate = '2026-10-20';
+        $cell = new HeatmapDayCell(
+            date: $cellDate,
+            dayOfMonth: 20,
+            dayOfWeek: 2,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1,
+            propertyFilter: 'all',
+            hasTurnover: true,
+            hasMaintenance: false,
+            hasPendingHold: false,
+            hasRiskAlert: true,
+            singleReservationUid: 'res-indicator-100',
+            reservationUids: ['res-indicator-100'],
+            flatDetails: [
+                '1606' => [
+                    'property_id' => '1606',
+                    'status' => 'Reserved (Confirmed)',
+                    'label' => 'Property 1606: Reserved (Confirmed)',
+                    'rate' => 110,
+                    'guest' => 'Indicator Test Guest',
+                    'movement' => 'Turnover',
+                ],
+            ],
+            effectiveRate: 110,
+            warningMessages: ['Guest registry incomplete (Indicator Test Guest)'],
+            hasWarning: true
+        );
+
+        $weekCol = new HeatmapWeekColumn(weekNumber: 42, days: [$cell, null, null, null, null, null, null], monthLabel: 'Oct');
+        $heatmap = new OccupancyHeatmapViewData(
+            startDate: '2026-10-01',
+            endDate: '2027-04-30',
+            propertyFilter: 'all',
+            columns: [$weekCol],
+            monthHeaders: [['label' => 'Oct', 'startCol' => 0, 'span' => 1]],
+            overallOccupancyPercentage: 50.0,
+            totalDaysCount: 212,
+            totalOccupiedDaysCount: 106,
+            totalTurnoversCount: 1,
+            totalAlertsCount: 1
+        );
+
+        $hubData = new DashboardHubViewData(
+            selectedPropertyFilter: 'all',
+            alerts: [],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0,
+            heatmap: $heatmap
+        );
+
+        $queryService = $this->createMock(DashboardQueryServiceInterface::class);
+        $queryService->expects($this->once())
+            ->method('getDashboardHubData')
+            ->with('all')
+            ->willReturn($hubData);
+
+        $controller = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService
+        );
+
+        $session = ['admin_user_id' => 1];
+        $request = new Request('GET', '/');
+
+        $response = $controller->index($request, $session);
+        $this->assertSame(200, $response->getStatusCode());
+        $body = $response->getBody();
+
+        // 1. Turnover blue dot indicator
+        $this->assertStringContainsString('bg-blue-500 ring-1 ring-white pointer-events-none', $body);
+
+        // 2. Operational warning rose dot indicator
+        $this->assertStringContainsString('bg-rose-500 ring-1 ring-white pointer-events-none', $body);
+
+        // 3. Viewport-fixed non-clipping hover popover container outside scroll wrapper
+        $this->assertStringContainsString('id="heatmap-popover"', $body);
+        $this->assertStringContainsString('role="tooltip"', $body);
+
+        // 4. Popover JSON payload on the cell
+        $this->assertStringContainsString('data-heatmap-cell="true"', $body);
+        $this->assertStringContainsString('data-date="2026-10-20"', $body);
+        $this->assertStringContainsString('data-popover="', $body);
+        $this->assertStringContainsString('Indicator Test Guest', $body);
+        $this->assertStringContainsString('Guest registry incomplete', $body);
+        $this->assertStringContainsString('Property 1606: Reserved (Confirmed)', $body);
     }
 
     public function testHtmxPropertyFilterRendersScopedHeatmap(): void

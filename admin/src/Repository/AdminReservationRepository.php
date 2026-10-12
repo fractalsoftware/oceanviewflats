@@ -495,7 +495,10 @@ final class AdminReservationRepository
      *     check_in: string,
      *     check_out: string,
      *     guest_name: string,
-     *     status: string
+     *     status: string,
+     *     registry_completed: int|string,
+     *     source: string,
+     *     external_confirmation_code: ?string
      * }>
      */
     public function getConfirmedReservationsForRange(
@@ -504,11 +507,12 @@ final class AdminReservationRepository
         string $endDate
     ): array {
         $sql = '
-            SELECT reservation_uid, property_id, check_in, check_out, guest_name, status
+            SELECT reservation_uid, property_id, check_in, check_out, guest_name, status,
+                   registry_completed, source, external_confirmation_code
             FROM reservations
-            WHERE status = "confirmed"
+            WHERE status IN ("confirmed", "pending_payment")
               AND check_in <= :end_date
-              AND check_out > :start_date
+              AND check_out >= :start_date
         ';
         $params = [
             'start_date' => $startDate,
@@ -524,7 +528,17 @@ final class AdminReservationRepository
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
-        /** @var list<array{reservation_uid: string, property_id: string, check_in: string, check_out: string, guest_name: string, status: string}> $rows */
+        /** @var list<array{
+         *     reservation_uid: string,
+         *     property_id: string,
+         *     check_in: string,
+         *     check_out: string,
+         *     guest_name: string,
+         *     status: string,
+         *     registry_completed: int|string,
+         *     source: string,
+         *     external_confirmation_code: ?string
+         * }> $rows */
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $rows;

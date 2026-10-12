@@ -9,6 +9,7 @@ use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
 use OceanViewFlats\Admin\Repository\AdminRateRepository;
 use OceanViewFlats\Admin\Repository\AdminReservationRepository;
 use OceanViewFlats\Admin\Service\DashboardQueryService;
+use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
 use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
@@ -450,5 +451,164 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertSame(1, $cells1707['2026-10-16']->totalUnits);
         $this->assertSame('full', $cells1707['2026-10-16']->getCapacityLevel());
         $this->assertStringContainsString('bg-emerald-600', $cells1707['2026-10-16']->getCapacityCssClass());
+    }
+
+    public function testBuildOccupancyHeatmapTurnoverWarningMaintenanceAndPendingHoldIndicators(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+
+        // Clean tables
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        // 1. Coinciding Turnover on 1606 on 2026-10-18:
+        // Departing res: 2026-10-15 -> 2026-10-18 (registry completed)
+        // Arriving res: 2026-10-18 -> 2026-10-21 (registry completed)
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed, external_confirmation_code
+            ) VALUES
+            ('res-turnover-out', '1606', 'Turnover Departing', 'out@test.com', '+1', '2026-10-15', '2026-10-18', 300, 'confirmed', 'web', 1, 'CONF-OUT'),
+            ('res-turnover-in', '1606', 'Turnover Arriving', 'in@test.com', '+2', '2026-10-18', '2026-10-21', 300, 'confirmed', 'airbnb', 1, 'CONF-IN');
+        ");
+
+        // 2. Operational Warnings:
+        // - Missing guest registry on 1707: 2026-10-22 -> 2026-10-25 (registry_completed = 0)
+        // - Clearance failed on 1606: 2026-10-25 -> 2026-10-28 (registry_completed = 1, clearance failed)
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed, external_confirmation_code
+            ) VALUES
+            ('res-unregistered', '1707', 'Unregistered Guest', 'unreg@test.com', '+3', '2026-10-22', '2026-10-25', 300, 'confirmed', 'web', 0, NULL),
+            ('res-clearance-fail', '1606', 'Failed Clearance Guest', 'fail@test.com', '+4', '2026-10-25', '2026-10-28', 300, 'confirmed', 'direct', 1, 'CONF-FAIL');
+        ");
+
+        // 3. Maintenance Block on 1606: 2026-10-29 -> 2026-10-31
+        $this->calendarBlockRepo->createBlock('1606', '2026-10-29', '2026-10-31', 'Plumbing Renovation', 1);
+
+        // Also add confirmed reservation on 1707 on 2026-10-29 -> 2026-10-31 to test amber ring in 'all' view
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            ('res-occupied-1707', '1707', 'Occupied Parallel', 'par@test.com', '+5', '2026-10-29', '2026-10-31', 200, 'confirmed', 'web', 1);
+        ");
+
+        // 4. Pending Payment Hold on 1707: 2026-11-05 -> 2026-11-08 (status = 'pending_payment')
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            ('res-pending-hold', '1707', 'Pending Guest', 'pend@test.com', '+6', '2026-11-05', '2026-11-08', 300, 'pending_payment', 'web', 0);
+        ");
+
+        // 5. Property Rate for 1606
+        $this->rateRepo->createRate([
+            'property_id' => '1606',
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-31',
+            'season_name' => 'High Season October',
+            'price_per_night' => 175.0,
+            'min_stay' => 2,
+        ]);
+
+        // Mock failed clearance repository
+        $failedClearance = new CondominiumClearance(
+            reservationUid: 'res-clearance-fail',
+            propertyId: '1606',
+            status: CondominiumClearance::STATUS_FAILED,
+            errorMessage: 'Clearance API rejected invalid document'
+        );
+        $clearanceRepo = $this->createMock(CondominiumClearanceRepositoryInterface::class);
+        $clearanceRepo->method('findFailedClearances')->willReturn([$failedClearance]);
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            clearanceRepo: $clearanceRepo
+        );
+
+        // --- Test 'all' property heatmap ---
+        $heatmapAll = $service->buildOccupancyHeatmap('all', $now);
+
+        $cellsAll = [];
+        foreach ($heatmapAll->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cellsAll[$cell->date] = $cell;
+                }
+            }
+        }
+
+        // Test 1: Turnover cell on 2026-10-18
+        $turnoverCell = $cellsAll['2026-10-18'];
+        $this->assertTrue($turnoverCell->hasTurnover);
+        $this->assertFalse($turnoverCell->hasWarning);
+        $this->assertSame(1, $turnoverCell->occupiedUnits);
+        $this->assertArrayHasKey('1606', $turnoverCell->flatDetails);
+        $this->assertSame('Turnover', $turnoverCell->flatDetails['1606']['movement']);
+        $this->assertStringContainsString('Turnover Arriving', $turnoverCell->flatDetails['1606']['guest']);
+        $this->assertStringContainsString('Turnover Departing', $turnoverCell->flatDetails['1606']['guest']);
+
+        // Test 2: Incomplete registry warning cell on 2026-10-23
+        $warningRegistryCell = $cellsAll['2026-10-23'];
+        $this->assertTrue($warningRegistryCell->hasWarning);
+        $this->assertFalse($warningRegistryCell->hasTurnover);
+        $this->assertNotEmpty($warningRegistryCell->warningMessages);
+        $this->assertStringContainsString('Guest registry incomplete (Unregistered Guest)', $warningRegistryCell->warningMessages[0]);
+
+        // Test 3: Failed clearance warning cell on 2026-10-26
+        $warningClearanceCell = $cellsAll['2026-10-26'];
+        $this->assertTrue($warningClearanceCell->hasWarning);
+        $this->assertNotEmpty($warningClearanceCell->warningMessages);
+        $this->assertStringContainsString('Condominium clearance failed (Failed Clearance Guest)', $warningClearanceCell->warningMessages[0]);
+
+        // Test 4: Maintenance block combined with occupancy on 2026-10-29 ('all' view)
+        $maintCellAll = $cellsAll['2026-10-29'];
+        $this->assertTrue($maintCellAll->hasMaintenance);
+        $this->assertSame(1, $maintCellAll->occupiedUnits); // 1707 occupied
+        $this->assertSame('partial', $maintCellAll->getCapacityLevel());
+        $this->assertStringContainsString('ring-2 ring-amber-400', $maintCellAll->getCellCssClasses());
+        $this->assertSame('Maintenance', $maintCellAll->flatDetails['1606']['status']);
+        $this->assertSame('Property 1606: Maintenance', $maintCellAll->flatDetails['1606']['label']);
+        $this->assertSame('Hold: Plumbing Renovation', $maintCellAll->flatDetails['1606']['guest']);
+
+        // Test 5: Pending hold cell on 2026-11-06 (no confirmed occupancy)
+        $pendingCell = $cellsAll['2026-11-06'];
+        $this->assertTrue($pendingCell->hasPendingHold);
+        $this->assertSame(0, $pendingCell->occupiedUnits);
+        $this->assertSame('vacant', $pendingCell->getCapacityLevel());
+        $this->assertStringContainsString('border border-dashed border-slate-400', $pendingCell->getCellCssClasses());
+        $this->assertSame('Reserved (Pending)', $pendingCell->flatDetails['1707']['status']);
+        $this->assertSame('Property 1707: Reserved (Pending)', $pendingCell->flatDetails['1707']['label']);
+
+        // Test 6: Aggregate counters
+        $this->assertGreaterThanOrEqual(1, $heatmapAll->totalTurnoversCount);
+        $this->assertGreaterThanOrEqual(2, $heatmapAll->totalAlertsCount);
+
+        // --- Test '1606' scoped heatmap for maintenance level ---
+        $heatmap1606 = $service->buildOccupancyHeatmap('1606', $now);
+        $cells1606 = [];
+        foreach ($heatmap1606->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cells1606[$cell->date] = $cell;
+                }
+            }
+        }
+        $maintCell1606 = $cells1606['2026-10-29'];
+        $this->assertTrue($maintCell1606->hasMaintenance);
+        $this->assertSame(0, $maintCell1606->occupiedUnits);
+        $this->assertSame('maintenance', $maintCell1606->getCapacityLevel());
+        $this->assertStringContainsString('bg-amber-100 border border-amber-300', $maintCell1606->getCapacityCssClass());
+        $this->assertSame(175, $maintCell1606->effectiveRate); // Seasonal rate lookup
     }
 }

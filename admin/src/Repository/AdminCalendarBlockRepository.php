@@ -108,6 +108,17 @@ class AdminCalendarBlockRepository implements MaintenanceBlockRepositoryInterfac
     }
 
     /**
+     * @return list<MaintenanceBlock>
+     */
+    public function getBlocksForRange(
+        string $propertyId,
+        string $startDate,
+        string $endDate
+    ): array {
+        return $this->pdoRepo->getBlocksForRange($propertyId, $startDate, $endDate);
+    }
+
+    /**
      * Creates a new maintenance block record.
      */
     public function createBlock(

@@ -88,19 +88,33 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                                     <div class="w-3.5 h-3.5 sm:w-4 sm:h-4"></div>
                                 <?php else: ?>
                                     <?php
-                                    $tooltip = $cell->date;
-                                    if ($cell->isToday) {
-                                        $tooltip .= ' (Today)';
-                                    }
-                                    if ($cell->occupiedUnits > 0) {
-                                        $tooltip .= ": {$cell->occupiedUnits}/{$cell->totalUnits} occupied";
-                                    } else {
-                                        $tooltip .= ': Vacant';
-                                    }
+                                    $cellDt = DateTimeImmutable::createFromFormat('Y-m-d', $cell->date) ?: new DateTimeImmutable($cell->date);
+                                    $cellDateFormatted = $cellDt->format('l, M j, Y');
+                                    $popoverData = [
+                                        'date' => $cellDateFormatted,
+                                        'rawDate' => $cell->date,
+                                        'isToday' => $cell->isToday,
+                                        'rate' => $cell->effectiveRate,
+                                        'propertyFilter' => $cell->propertyFilter,
+                                        'hasTurnover' => $cell->hasTurnover,
+                                        'hasMaintenance' => $cell->hasMaintenance,
+                                        'hasPendingHold' => $cell->hasPendingHold,
+                                        'hasWarning' => $cell->hasWarning,
+                                        'warnings' => $cell->warningMessages,
+                                        'flats' => array_values($cell->flatDetails),
+                                    ];
+                                    $popoverJson = json_encode($popoverData, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                                     ?>
-                                    <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-xs transition-transform duration-75 hover:scale-125 cursor-pointer <?= $cell->getCellCssClasses() ?>"
-                                         title="<?= htmlspecialchars($tooltip) ?>"
-                                         data-date="<?= htmlspecialchars($cell->date) ?>">
+                                    <div class="relative w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-xs transition-transform duration-75 hover:scale-125 hover:z-20 cursor-pointer <?= $cell->getCellCssClasses() ?>"
+                                         data-heatmap-cell="true"
+                                         data-date="<?= htmlspecialchars($cell->date) ?>"
+                                         data-popover="<?= htmlspecialchars((string) $popoverJson, ENT_QUOTES, 'UTF-8') ?>">
+                                        <?php if ($cell->hasTurnover): ?>
+                                            <span class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-blue-500 ring-1 ring-white pointer-events-none" title="Turnover"></span>
+                                        <?php endif; ?>
+                                        <?php if ($cell->hasWarning): ?>
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500 ring-1 ring-white pointer-events-none" title="Operational Warning"></span>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
                             <?php endfor; ?>
@@ -111,7 +125,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
         </div>
     </div>
 
-    <!-- Capacity Legend -->
+    <!-- Capacity & Operational Legend -->
     <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100 text-xs text-gray-600">
         <div class="flex flex-wrap items-center gap-4">
             <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Capacity:</span>
@@ -138,9 +152,17 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                     <span>Occupied</span>
                 </div>
             <?php endif; ?>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-3 h-3 rounded-xs bg-amber-100 border border-amber-300 inline-block"></span>
+                <span>Maintenance</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-3 h-3 rounded-xs bg-gray-100 border border-dashed border-slate-400 inline-block"></span>
+                <span>Pending Hold</span>
+            </div>
         </div>
 
-        <div class="flex items-center gap-4 text-gray-500">
+        <div class="flex flex-wrap items-center gap-4 text-gray-500">
             <div class="flex items-center space-x-1.5">
                 <span class="w-3 h-3 rounded-xs bg-gray-100 ring-2 ring-indigo-600 ring-offset-1 inline-block"></span>
                 <span>Today</span>
@@ -149,6 +171,169 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                 <span class="w-3 h-3 rounded-xs bg-gray-100 opacity-40 inline-block"></span>
                 <span>Past Dates</span>
             </div>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-500 ring-1 ring-white inline-block"></span>
+                <span>Turnover</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 ring-1 ring-white inline-block"></span>
+                <span>Operational Warning</span>
+            </div>
         </div>
     </div>
+
+    <!-- Viewport-Fixed Non-Clipping Hover Popover Container -->
+    <div id="heatmap-popover"
+         class="fixed pointer-events-none hidden z-50 bg-slate-900 text-white rounded-lg shadow-xl p-3 text-xs w-72 max-w-sm border border-slate-700/60 leading-relaxed transition-opacity duration-150"
+         role="tooltip"
+         aria-hidden="true">
+    </div>
 </div>
+
+<script>
+(function() {
+    if (window._heatmapTooltipInitialized) return;
+    window._heatmapTooltipInitialized = true;
+
+    function getPopover() {
+        return document.getElementById('heatmap-popover');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function showPopover(cell) {
+        const popover = getPopover();
+        if (!popover) return;
+
+        const raw = cell.getAttribute('data-popover');
+        if (!raw) return;
+
+        let data;
+        try {
+            data = JSON.parse(raw);
+        } catch (e) {
+            return;
+        }
+
+        let flatsHtml = '';
+        if (Array.isArray(data.flats)) {
+            flatsHtml = data.flats.map(function(flat) {
+                const label = flat.label || ('Property ' + flat.property_id + ': ' + flat.status);
+                let guestHtml = '';
+                if (flat.guest) {
+                    const movementBadge = flat.movement
+                        ? '<span class="text-[9px] px-1 py-0.5 rounded bg-slate-700 text-slate-200 font-medium">' + escapeHtml(flat.movement) + '</span>'
+                        : '';
+                    guestHtml = '<div class="text-[11px] text-slate-300 mt-0.5 flex items-center justify-between">' +
+                        '<span class="truncate max-w-[170px]" title="' + escapeHtml(flat.guest) + '">' + escapeHtml(flat.guest) + '</span>' +
+                        movementBadge +
+                        '</div>';
+                }
+                return '<div class="p-1.5 rounded bg-slate-800/80 border border-slate-700/50">' +
+                    '<div class="flex items-center justify-between text-[11px]">' +
+                    '<span class="font-semibold text-slate-200">' + escapeHtml(label) + '</span>' +
+                    '<span class="text-slate-400 font-mono text-[10px]">$' + flat.rate + '/nt</span>' +
+                    '</div>' +
+                    guestHtml +
+                    '</div>';
+            }).join('');
+        }
+
+        let warningsHtml = '';
+        if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+            warningsHtml = '<div class="mt-2 pt-2 border-t border-slate-700/60 space-y-1">' +
+                data.warnings.map(function(w) {
+                    return '<div class="text-[10px] text-rose-300 flex items-start gap-1 font-medium leading-tight">' +
+                        '<span class="shrink-0 text-rose-400">⚠️</span>' +
+                        '<span>' + escapeHtml(w) + '</span>' +
+                        '</div>';
+                }).join('') +
+                '</div>';
+        }
+
+        let turnoverHtml = '';
+        if (data.hasTurnover) {
+            turnoverHtml = '<div class="mt-2 pt-1.5 border-t border-slate-700/60 text-[10px] text-blue-300 flex items-center gap-1.5 font-medium">' +
+                '<span class="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></span>' +
+                '<span>Same-day Check-out & Check-in</span>' +
+                '</div>';
+        }
+
+        const todayBadge = data.isToday
+            ? '<span class="text-[10px] bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 px-1.5 py-0.5 rounded font-medium">Today</span>'
+            : '';
+
+        const rateTotalSuffix = (data.propertyFilter === 'all') ? ' (Combined)' : '';
+
+        popover.innerHTML =
+            '<div class="font-bold text-slate-100 flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-1.5">' +
+            '<span>' + escapeHtml(data.date) + '</span>' +
+            todayBadge +
+            '</div>' +
+            '<div class="text-[11px] text-slate-400 mb-2">' +
+            'Nightly Rate: <span class="text-emerald-400 font-semibold">$' + data.rate + '</span> / night' + rateTotalSuffix +
+            '</div>' +
+            '<div class="space-y-1.5">' + flatsHtml + '</div>' +
+            warningsHtml +
+            turnoverHtml;
+
+        popover.classList.remove('hidden');
+
+        // Viewport-clamped fixed positioning
+        const rect = cell.getBoundingClientRect();
+        const popWidth = popover.offsetWidth || 280;
+        const popHeight = popover.offsetHeight || 120;
+
+        let left = rect.left + (rect.width / 2) - (popWidth / 2);
+        const minLeft = 12;
+        const maxLeft = window.innerWidth - popWidth - 12;
+        left = Math.max(minLeft, Math.min(left, maxLeft));
+
+        let top = rect.top - popHeight - 8;
+        if (top < 12) {
+            top = rect.bottom + 8;
+        }
+        if (top + popHeight > window.innerHeight - 12) {
+            top = window.innerHeight - popHeight - 12;
+        }
+
+        popover.style.left = left + 'px';
+        popover.style.top = top + 'px';
+    }
+
+    function hidePopover() {
+        const popover = getPopover();
+        if (popover) {
+            popover.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('mouseover', function(e) {
+        const cell = e.target.closest('[data-heatmap-cell]');
+        if (cell) {
+            showPopover(cell);
+        }
+    });
+
+    document.addEventListener('mouseout', function(e) {
+        const cell = e.target.closest('[data-heatmap-cell]');
+        if (cell) {
+            const related = e.relatedTarget ? e.relatedTarget.closest('[data-heatmap-cell]') : null;
+            if (related !== cell) {
+                hidePopover();
+            }
+        }
+    });
+
+    window.addEventListener('scroll', hidePopover, { passive: true });
+    window.addEventListener('resize', hidePopover, { passive: true });
+})();
+</script>

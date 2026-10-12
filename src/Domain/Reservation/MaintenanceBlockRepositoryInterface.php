@@ -32,4 +32,11 @@ interface MaintenanceBlockRepositoryInterface extends MaintenanceBlockSourceInte
      * @return list<MaintenanceBlock>
      */
     public function getUpcomingBlocks(string $propertyId = 'all', int $lookaheadDays = 14, ?DateTimeImmutable $now = null): array;
+
+    /**
+     * Retrieves maintenance blocks overlapping the given date range.
+     *
+     * @return list<MaintenanceBlock>
+     */
+    public function getBlocksForRange(string $propertyId, string $startDate, string $endDate): array;
 }
