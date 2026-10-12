@@ -57,6 +57,7 @@ final class DashboardQueryServiceTest extends TestCase
                 check_out TEXT NOT NULL,
                 total_price NUMERIC NOT NULL,
                 status TEXT NOT NULL DEFAULT "pending_payment",
+                payment_status TEXT DEFAULT NULL,
                 source TEXT NOT NULL DEFAULT "web",
                 external_confirmation_code TEXT DEFAULT NULL,
                 channel_block_uid TEXT DEFAULT NULL,

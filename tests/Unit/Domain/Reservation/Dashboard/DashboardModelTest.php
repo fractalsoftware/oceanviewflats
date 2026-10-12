@@ -9,6 +9,7 @@ use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DayDetailViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DayPropertyDetail;
+use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapCellPresenter;
 use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapDayCell;
 use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
@@ -552,7 +553,7 @@ final class DashboardModelTest extends TestCase
 
         $detail = new DayPropertyDetail(
             propertyId: '1606',
-            propertyName: 'Penthouse 1606',
+            propertyName: 'Property 1606',
             status: 'Maintenance',
             isOccupied: false,
             nightlyRate: 110,
@@ -566,7 +567,7 @@ final class DashboardModelTest extends TestCase
         );
 
         $this->assertSame('1606', $detail->propertyId);
-        $this->assertSame('Penthouse 1606', $detail->propertyName);
+        $this->assertSame('Property 1606', $detail->propertyName);
         $this->assertSame('Maintenance', $detail->status);
         $this->assertFalse($detail->isOccupied);
         $this->assertSame(110, $detail->nightlyRate);
@@ -576,7 +577,7 @@ final class DashboardModelTest extends TestCase
 
         $turnoverDetail = new DayPropertyDetail(
             propertyId: '1707',
-            propertyName: 'Suite 1707',
+            propertyName: 'Property 1707',
             status: 'Turnover',
             isOccupied: true,
             nightlyRate: 120,
@@ -640,6 +641,8 @@ final class DashboardModelTest extends TestCase
         $this->assertSame('all', $viewData->propertyFilter);
         $this->assertSame(2, $viewData->totalUnits);
         $this->assertSame(1, $viewData->occupiedUnits);
+        $this->assertSame(2, $viewData->totalProperties);
+        $this->assertSame(1, $viewData->occupiedProperties);
         $this->assertSame('partial', $viewData->capacityLevel);
         $this->assertTrue($viewData->isToday);
         $this->assertFalse($viewData->isPast);
@@ -651,5 +654,44 @@ final class DashboardModelTest extends TestCase
         $this->assertFalse($viewData->isVacant());
         $this->assertFalse($viewData->isFull());
         $this->assertTrue($viewData->isPartial());
+    }
+
+    public function testHeatmapCellPresenterAndPropertyAliases(): void
+    {
+        $cell = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfWeek: 3,
+            dayOfMonth: 15,
+            isToday: true,
+            isPast: false,
+            effectiveRate: 450000,
+            propertyFilter: 'all',
+            totalUnits: 2,
+            occupiedUnits: 2,
+            hasTurnover: true,
+            hasMaintenance: false,
+            hasPendingHold: false,
+            hasWarning: true,
+            warningMessages: ['Clearance pending'],
+            flatDetails: [
+                '1606' => ['status' => 'Occupied', 'label' => 'Property 1606'],
+                '1707' => ['status' => 'Occupied', 'label' => 'Property 1707'],
+            ],
+            singleReservationUid: null
+        );
+
+        // Aliases check
+        $this->assertSame(2, $cell->totalProperties);
+        $this->assertSame(2, $cell->occupiedProperties);
+        $this->assertSame($cell->flatDetails, $cell->propertyDetails);
+
+        // Presenter check
+        $this->assertSame('bg-emerald-600 text-white', HeatmapCellPresenter::capacityCssClass($cell));
+        $this->assertSame('bg-emerald-600 text-white', $cell->getCapacityCssClass());
+
+        $classes = HeatmapCellPresenter::cellCssClasses($cell);
+        $this->assertStringContainsString('bg-emerald-600', $classes);
+        $this->assertStringContainsString('ring-2 ring-indigo-600', $classes);
+        $this->assertSame($classes, $cell->getCellCssClasses());
     }
 }

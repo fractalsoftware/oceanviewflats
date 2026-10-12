@@ -51,7 +51,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
         <div class="min-w-max inline-block align-top py-1">
             <div class="flex items-start gap-1">
                 <!-- Y-Axis Weekday Labels (Mon, Wed, Fri) -->
-                <div class="flex flex-col gap-1 text-[10px] text-gray-400 font-medium select-none pr-2 shrink-0">
+                <div class="sticky left-0 bg-white dark:bg-slate-900 z-10 flex flex-col gap-1 text-[10px] text-gray-400 font-medium select-none pr-2 shrink-0">
                     <!-- Top spacer aligned with month labels -->
                     <div class="h-4"></div>
                     <!-- Row 0: Mon -->
@@ -102,6 +102,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                                         'hasWarning' => $cell->hasWarning,
                                         'warnings' => $cell->warningMessages,
                                         'flats' => array_values($cell->flatDetails),
+                                        'properties' => array_values($cell->propertyDetails),
                                     ];
                                     $popoverJson = json_encode($popoverData, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                                     ?>
@@ -244,8 +245,9 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
         }
 
         let flatsHtml = '';
-        if (Array.isArray(data.flats)) {
-            flatsHtml = data.flats.map(function(flat) {
+        const propList = Array.isArray(data.properties) ? data.properties : (Array.isArray(data.flats) ? data.flats : []);
+        if (propList.length > 0) {
+            flatsHtml = propList.map(function(flat) {
                 const label = flat.label || ('Property ' + flat.property_id + ': ' + flat.status);
                 let guestHtml = '';
                 if (flat.guest) {

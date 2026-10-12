@@ -32,6 +32,8 @@ use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 final class DashboardQueryService implements DashboardQueryServiceInterface
 {
     private readonly CondominiumClearanceRepositoryInterface $clearanceRepo;
+    /** @var array<string, list<RateTier>> */
+    private array $cachedRateTiers = [];
 
     public function __construct(
         private readonly AdminReservationRepository $reservationRepo,
@@ -42,6 +44,21 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         ?CondominiumClearanceRepositoryInterface $clearanceRepo = null
     ) {
         $this->clearanceRepo = $clearanceRepo ?? new PdoCondominiumClearanceRepository($this->reservationRepo->getPdo());
+    }
+
+    /**
+     * @return list<RateTier>
+     */
+    private function getTiersForProperty(string $propertyId): array
+    {
+        if (!isset($this->cachedRateTiers[$propertyId])) {
+            try {
+                $this->cachedRateTiers[$propertyId] = array_values($this->rateRepo->getTiersForProperty($propertyId));
+            } catch (\Throwable) {
+                $this->cachedRateTiers[$propertyId] = [];
+            }
+        }
+        return $this->cachedRateTiers[$propertyId];
     }
 
     public function getDashboardHubData(
@@ -171,6 +188,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
     ): OccupancyHeatmapViewData {
         $now = $now ?? new DateTimeImmutable('today');
         $todayStr = $now->format('Y-m-d');
+        $lookaheadMax = $now->modify('+7 days')->format('Y-m-d');
 
         // 7-month calendar horizon: 1st day of current month to last day of 6th future month
         $startDate = (new DateTimeImmutable($now->format('Y-m-01')))->setTime(0, 0, 0);
@@ -219,16 +237,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         }
 
         // Fetch seasonal rate tiers
-        /** @var list<\OceanViewFlats\Domain\Quote\RateTier> $tiers1606 */
-        $tiers1606 = [];
-        /** @var list<\OceanViewFlats\Domain\Quote\RateTier> $tiers1707 */
-        $tiers1707 = [];
-        try {
-            $tiers1606 = $this->rateRepo->getTiersForProperty('1606');
-        } catch (\Throwable) {}
-        try {
-            $tiers1707 = $this->rateRepo->getTiersForProperty('1707');
-        } catch (\Throwable) {}
+        $tiers1606 = $this->getTiersForProperty('1606');
+        $tiers1707 = $this->getTiersForProperty('1707');
 
         // Index reservations by check_in, check_out, and active stay nights
         /** @var array<string, array<string, list<array<string, mixed>>>> $checkInsByProp */
@@ -337,7 +347,10 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
 
                     $regCompleted = (int) ($confirmedRes['registry_completed'] ?? 0);
                     $guestName = (string) ($confirmedRes['guest_name'] ?: 'Guest');
-                    if ($regCompleted === 0) {
+                    $rCin = (string) ($confirmedRes['check_in'] ?? '');
+                    $rCout = (string) ($confirmedRes['check_out'] ?? '');
+                    $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
+                    if ($regCompleted === 0 && $isWithinLookahead) {
                         $warningMessages[] = "Guest registry incomplete ({$guestName})";
                     }
                     if (isset($failedClearanceMap[$resUid])) {
@@ -432,7 +445,10 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 flatDetails: $flatDetails,
                 effectiveRate: (int) $effectiveRate,
                 warningMessages: $warningMessages,
-                hasWarning: $dayHasWarning
+                hasWarning: $dayHasWarning,
+                totalProperties: $totalUnits,
+                occupiedProperties: $occupiedUnits,
+                propertyDetails: $flatDetails
             );
 
             $currentWeekDays[$rowIndex] = $cell;
@@ -537,6 +553,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
 
         $now = new DateTimeImmutable('today');
         $todayStr = $now->format('Y-m-d');
+        $lookaheadMax = $now->modify('+7 days')->format('Y-m-d');
         $isToday = ($date === $todayStr);
         $isPast = ($date < $todayStr);
         $formattedDate = $dateObj->format('l, M j, Y');
@@ -547,16 +564,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $totalUnits = count($targetProps);
 
         // 1. Fetch seasonal rate tiers
-        /** @var array<int, RateTier> $tiers1606 */
-        $tiers1606 = [];
-        /** @var array<int, RateTier> $tiers1707 */
-        $tiers1707 = [];
-        try {
-            $tiers1606 = $this->rateRepo->getTiersForProperty('1606');
-        } catch (\Throwable) {}
-        try {
-            $tiers1707 = $this->rateRepo->getTiersForProperty('1707');
-        } catch (\Throwable) {}
+        $tiers1606 = $this->getTiersForProperty('1606');
+        $tiers1707 = $this->getTiersForProperty('1707');
 
         // 2. Fetch maintenance blocks covering date
         /** @var list<MaintenanceBlock> $allBlocks */
@@ -709,7 +718,10 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
             foreach ($resToWarn as $r) {
                 $gName = (string) ($r['guest_name'] ?? 'Guest');
-                if (empty($r['registry_completed'])) {
+                $rCin = (string) ($r['check_in'] ?? '');
+                $rCout = (string) ($r['check_out'] ?? '');
+                $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
+                if (empty($r['registry_completed']) && $isWithinLookahead) {
                     $msg = "Guest registry incomplete ({$gName})";
                     if (!in_array($msg, $propWarnings, true)) {
                         $propWarnings[] = $msg;
@@ -777,7 +789,9 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             movements: $events,
             maintenanceBlocks: $dayMaintenanceBlocks,
             warnings: $allWarnings,
-            reservationUids: $allReservationUids
+            reservationUids: $allReservationUids,
+            totalProperties: $totalUnits,
+            occupiedProperties: $occupiedUnits
         );
     }
 }

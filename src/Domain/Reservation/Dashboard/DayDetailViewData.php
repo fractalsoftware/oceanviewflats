@@ -12,6 +12,11 @@ use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
  */
 final class DayDetailViewData
 {
+    public readonly int $totalUnits;
+    public readonly int $occupiedUnits;
+    public readonly int $totalProperties;
+    public readonly int $occupiedProperties;
+
     /**
      * @param array<string|int, DayPropertyDetail> $properties Keyed by propertyId ('1606', '1707')
      * @param list<OperationsEvent> $movements
@@ -24,34 +29,54 @@ final class DayDetailViewData
         public readonly string $formattedDate, // e.g. 'Thursday, Oct 15, 2026'
         public readonly string $dayOfWeekName, // e.g. 'Thursday'
         public readonly string $propertyFilter, // 'all' | '1606' | '1707'
-        public readonly int $totalUnits, // 2 if 'all', else 1
-        public readonly int $occupiedUnits, // 0, 1, 2
-        public readonly string $capacityLevel, // 'vacant' | 'partial' | 'full' | 'maintenance'
-        public readonly bool $isToday,
-        public readonly bool $isPast,
-        public readonly bool $hasTurnover,
-        public readonly bool $hasMaintenance,
-        public readonly bool $hasWarning,
-        public readonly int $combinedRate,
-        public readonly array $properties,
+        int $totalUnits = 2, // 2 if 'all', else 1
+        int $occupiedUnits = 0, // 0, 1, 2
+        public readonly string $capacityLevel = 'vacant', // 'vacant' | 'partial' | 'full' | 'maintenance'
+        public readonly bool $isToday = false,
+        public readonly bool $isPast = false,
+        public readonly bool $hasTurnover = false,
+        public readonly bool $hasMaintenance = false,
+        public readonly bool $hasWarning = false,
+        public readonly int $combinedRate = 0,
+        public readonly array $properties = [],
         public readonly array $movements = [],
         public readonly array $maintenanceBlocks = [],
         public readonly array $warnings = [],
-        public readonly array $reservationUids = []
-    ) {}
+        public readonly array $reservationUids = [],
+        ?int $totalProperties = null,
+        ?int $occupiedProperties = null
+    ) {
+        $effTotal = $totalProperties ?? $totalUnits;
+        $effOccupied = $occupiedProperties ?? $occupiedUnits;
+
+        $this->totalUnits = $effTotal;
+        $this->totalProperties = $effTotal;
+        $this->occupiedUnits = $effOccupied;
+        $this->occupiedProperties = $effOccupied;
+    }
 
     public function isVacant(): bool
     {
-        return $this->occupiedUnits === 0 && !$this->hasMaintenance;
+        return $this->occupiedProperties === 0 && !$this->hasMaintenance;
     }
 
     public function isFull(): bool
     {
-        return $this->occupiedUnits >= $this->totalUnits;
+        return $this->occupiedProperties >= $this->totalProperties;
     }
 
     public function isPartial(): bool
     {
-        return $this->occupiedUnits > 0 && $this->occupiedUnits < $this->totalUnits;
+        return $this->occupiedProperties > 0 && $this->occupiedProperties < $this->totalProperties;
+    }
+
+    public function getTotalProperties(): int
+    {
+        return $this->totalProperties;
+    }
+
+    public function getOccupiedProperties(): int
+    {
+        return $this->occupiedProperties;
     }
 }

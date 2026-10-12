@@ -85,11 +85,14 @@ final class CalendarBlockController
         $selectedPropertyId = $propertyId === 'all' ? '1606' : $propertyId;
         $filter = $this->resolveFilter((string) $request->getQuery('filter', 'upcoming'));
 
+        $startDate = trim((string) $request->getQuery('start_date', ''));
+        $endDate = trim((string) $request->getQuery('end_date', ''));
+
         $modalHtml = $this->viewRenderer->renderPartial('calendar_blocks/_modal_form.php', [
             'propertyId' => $selectedPropertyId,
             'currentPropertyId' => $propertyId,
-            'startDate' => '',
-            'endDate' => '',
+            'startDate' => $startDate,
+            'endDate' => $endDate,
             'reason' => '',
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'errors' => [],

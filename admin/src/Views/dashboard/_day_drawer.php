@@ -39,11 +39,11 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                         <!-- Property Filter Badge -->
                         <?php if ($summary->propertyFilter === '1606'): ?>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">
-                                Apto 1606
+                                Property 1606
                             </span>
                         <?php elseif ($summary->propertyFilter === '1707'): ?>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
-                                Apto 1707
+                                Property 1707
                             </span>
                         <?php else: ?>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
@@ -54,11 +54,11 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                         <!-- Capacity Badge -->
                         <?php if ($summary->capacityLevel === 'full'): ?>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                                Full (<?= $summary->occupiedUnits ?>/<?= $summary->totalUnits ?>)
+                                Full (<?= $summary->occupiedProperties ?>/<?= $summary->totalProperties ?>)
                             </span>
                         <?php elseif ($summary->capacityLevel === 'partial'): ?>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                Partial (<?= $summary->occupiedUnits ?>/<?= $summary->totalUnits ?>)
+                                Partial (<?= $summary->occupiedProperties ?>/<?= $summary->totalProperties ?>)
                             </span>
                         <?php elseif ($summary->capacityLevel === 'maintenance'): ?>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
@@ -66,7 +66,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                             </span>
                         <?php else: ?>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                Vacant (0/<?= $summary->totalUnits ?>)
+                                Vacant (0/<?= $summary->totalProperties ?>)
                             </span>
                         <?php endif; ?>
 
@@ -81,7 +81,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                     </h2>
                     <p class="text-xs text-gray-500 mt-0.5">
                         Nightly Rate: <strong class="text-emerald-700 font-bold">$<?= number_format($summary->combinedRate, 0, '.', ',') ?> COP</strong>
-                        &bull; <?= $summary->occupiedUnits ?> of <?= $summary->totalUnits ?> units active
+                        &bull; <?= $summary->occupiedProperties ?> of <?= $summary->totalProperties ?> properties active
                     </p>
                 </div>
                 <button type="button"
@@ -127,15 +127,15 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
 
                 <!-- 3. Property Breakdowns -->
                 <div class="space-y-4 pt-1">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Unit Status Breakdown</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Property Status Breakdown</h3>
 
                     <?php foreach ($summary->properties as $prop): ?>
                         <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs space-y-3.5">
-                            <!-- Unit Header -->
+                            <!-- Property Header -->
                             <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
                                 <div class="flex items-center space-x-2">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold <?= $prop->propertyId === '1606' ? 'bg-sky-100 text-sky-800' : 'bg-purple-100 text-purple-800' ?>">
-                                        Apto <?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>
+                                        Property <?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                     <span class="text-sm font-bold text-gray-900"><?= htmlspecialchars($prop->propertyName, ENT_QUOTES, 'UTF-8') ?></span>
                                 </div>
@@ -177,12 +177,26 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                             <?php elseif ($prop->hasTurnover()): ?>
                                 <div class="space-y-2">
                                     <?php if ($prop->departingReservation !== null): ?>
-                                        <?php $dep = $prop->departingReservation; ?>
+                                        <?php
+                                        $dep = $prop->departingReservation;
+                                        $depPayStatus = (string) ($dep['payment_status'] ?? '');
+                                        ?>
                                         <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1.5">
                                             <div class="flex items-center justify-between">
-                                                <span class="inline-flex items-center text-[10px] font-bold uppercase text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
-                                                    Departure (11:00 AM)
-                                                </span>
+                                                <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                                                    <span class="inline-flex items-center text-[10px] font-bold uppercase text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
+                                                        Departure (11:00 AM)
+                                                    </span>
+                                                    <?php if ($depPayStatus !== ''): ?>
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium <?= match ($depPayStatus) {
+                                                            'paid', 'approved' => 'bg-emerald-100 text-emerald-800',
+                                                            'refunded', 'partially_refunded' => 'bg-amber-100 text-amber-800',
+                                                            default => 'bg-slate-100 text-slate-700',
+                                                        } ?>">
+                                                            <?= htmlspecialchars(ucwords(str_replace('_', ' ', $depPayStatus)), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <button type="button"
                                                         hx-get="/reservations/<?= urlencode((string) $dep['reservation_uid']) ?>"
                                                         hx-target="#drawer-container"
@@ -202,12 +216,26 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                     <?php endif; ?>
 
                                     <?php if ($prop->arrivingReservation !== null): ?>
-                                        <?php $arr = $prop->arrivingReservation; ?>
+                                        <?php
+                                        $arr = $prop->arrivingReservation;
+                                        $arrPayStatus = (string) ($arr['payment_status'] ?? '');
+                                        ?>
                                         <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1.5">
                                             <div class="flex items-center justify-between">
-                                                <span class="inline-flex items-center text-[10px] font-bold uppercase text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
-                                                    Arrival (3:00 PM)
-                                                </span>
+                                                <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                                                    <span class="inline-flex items-center text-[10px] font-bold uppercase text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                                                        Arrival (3:00 PM)
+                                                    </span>
+                                                    <?php if ($arrPayStatus !== ''): ?>
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium <?= match ($arrPayStatus) {
+                                                            'paid', 'approved' => 'bg-emerald-100 text-emerald-800',
+                                                            'refunded', 'partially_refunded' => 'bg-amber-100 text-amber-800',
+                                                            default => 'bg-slate-100 text-slate-700',
+                                                        } ?>">
+                                                            <?= htmlspecialchars(ucwords(str_replace('_', ' ', $arrPayStatus)), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <button type="button"
                                                         hx-get="/reservations/<?= urlencode((string) $arr['reservation_uid']) ?>"
                                                         hx-target="#drawer-container"
@@ -241,12 +269,24 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                 $resRegistryCompleted = (int) ($res['registry_completed'] ?? 0) === 1;
                                 $resClearanceStatus = (string) ($res['clearance_status'] ?? '');
                                 $resSource = (string) ($res['source'] ?? 'web');
+                                $resPayStatus = (string) ($res['payment_status'] ?? '');
                                 ?>
                                 <div class="bg-gray-50/80 p-3.5 rounded-lg border border-gray-100 text-xs space-y-2.5">
                                     <div class="flex items-start justify-between">
                                         <div>
-                                            <div class="font-semibold text-gray-900 text-sm">
-                                                <?= htmlspecialchars($resName, ENT_QUOTES, 'UTF-8') ?>
+                                            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                                <span class="font-semibold text-gray-900 text-sm">
+                                                    <?= htmlspecialchars($resName, ENT_QUOTES, 'UTF-8') ?>
+                                                </span>
+                                                <?php if ($resPayStatus !== ''): ?>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium <?= match ($resPayStatus) {
+                                                        'paid', 'approved' => 'bg-emerald-100 text-emerald-800',
+                                                        'refunded', 'partially_refunded' => 'bg-amber-100 text-amber-800',
+                                                        default => 'bg-slate-100 text-slate-700',
+                                                    } ?>">
+                                                        <?= htmlspecialchars(ucwords(str_replace('_', ' ', $resPayStatus)), ENT_QUOTES, 'UTF-8') ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="text-[11px] text-gray-500 font-mono mt-0.5">
                                                 UID: <?= htmlspecialchars($resUid, ENT_QUOTES, 'UTF-8') ?>
@@ -282,6 +322,18 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                                 <span class="text-gray-700"><?= htmlspecialchars($resPhone) ?></span>
                                             </div>
                                         <?php endif; ?>
+                                        <?php if ($resPayStatus !== ''): ?>
+                                            <div>
+                                                <span class="text-gray-400 block">Payment</span>
+                                                <span class="font-medium <?= match ($resPayStatus) {
+                                                    'paid', 'approved' => 'text-emerald-700',
+                                                    'refunded', 'partially_refunded' => 'text-amber-700',
+                                                    default => 'text-gray-700',
+                                                } ?>">
+                                                    <?= htmlspecialchars(ucwords(str_replace('_', ' ', $resPayStatus)), ENT_QUOTES, 'UTF-8') ?>
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
 
                                     <!-- Credentials & Clearances -->
@@ -314,19 +366,32 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
 
                             <!-- Case D: Vacant -->
                             <?php else: ?>
-                                <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-center space-y-2">
-                                    <p class="text-xs text-gray-500">Unit is vacant on this calendar date.</p>
-                                    <button type="button"
-                                            hx-get="/reservations/new?check_in=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&property_id=<?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>"
-                                            hx-target="#modal-container"
-                                            hx-swap="innerHTML"
-                                            onclick="closeReservationDrawer();"
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition cursor-pointer">
-                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Create Reservation
-                                    </button>
+                                <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-center space-y-2.5">
+                                    <p class="text-xs text-gray-500">Property is vacant on this calendar date.</p>
+                                    <div class="flex items-center justify-center gap-2 flex-wrap">
+                                        <button type="button"
+                                                hx-get="/reservations/new?check_in=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&property_id=<?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                onclick="closeReservationDrawer();"
+                                                class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            Create Reservation
+                                        </button>
+                                        <button type="button"
+                                                hx-get="/calendar/blocks/new?property_id=<?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>&start_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&end_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                onclick="closeReservationDrawer();"
+                                                class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 transition cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            Maintenance Hold
+                                        </button>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -348,7 +413,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                         <span class="w-2 h-2 rounded-full <?= $isCheckIn ? 'bg-emerald-500' : 'bg-amber-500' ?>"></span>
                                         <div>
                                             <span class="font-semibold text-gray-900"><?= htmlspecialchars($timeFormatted, ENT_QUOTES, 'UTF-8') ?></span>
-                                            <span class="text-gray-500 ml-1.5"><?= htmlspecialchars($event->guestName, ENT_QUOTES, 'UTF-8') ?> (Apto <?= htmlspecialchars($event->propertyId, ENT_QUOTES, 'UTF-8') ?>)</span>
+                                            <span class="text-gray-500 ml-1.5"><?= htmlspecialchars($event->guestName, ENT_QUOTES, 'UTF-8') ?> (Property <?= htmlspecialchars($event->propertyId, ENT_QUOTES, 'UTF-8') ?>)</span>
                                         </div>
                                     </div>
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase <?= $isCheckIn ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' ?>">
@@ -364,17 +429,30 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
 
             <!-- Drawer Footer / Quick Actions -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                <button type="button"
-                        hx-get="/reservations/new?check_in=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&property_id=<?= $summary->propertyFilter === 'all' ? '1606' : htmlspecialchars($summary->propertyFilter, ENT_QUOTES, 'UTF-8') ?>"
-                        hx-target="#modal-container"
-                        hx-swap="innerHTML"
-                        onclick="closeReservationDrawer();"
-                        class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs transition cursor-pointer">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    New Reservation
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button type="button"
+                            hx-get="/reservations/new?check_in=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&property_id=<?= $summary->propertyFilter === 'all' ? '1606' : htmlspecialchars($summary->propertyFilter, ENT_QUOTES, 'UTF-8') ?>"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML"
+                            onclick="closeReservationDrawer();"
+                            class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs transition cursor-pointer">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        New Reservation
+                    </button>
+                    <button type="button"
+                            hx-get="/calendar/blocks/new?property_id=<?= $summary->propertyFilter === 'all' ? '1606' : htmlspecialchars($summary->propertyFilter, ENT_QUOTES, 'UTF-8') ?>&start_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&end_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML"
+                            onclick="closeReservationDrawer();"
+                            class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg shadow-2xs transition cursor-pointer">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Maintenance Hold
+                    </button>
+                </div>
                 <button type="button"
                         onclick="closeReservationDrawer();"
                         class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg shadow-2xs transition cursor-pointer">

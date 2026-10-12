@@ -3,5 +3,7 @@ parameters:
     paths:
         - src
         - tests
+    scanDirectories:
+        - ../src
     bootstrapFiles:
         - ../vendor/autoload.php
