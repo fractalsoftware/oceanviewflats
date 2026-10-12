@@ -53,6 +53,40 @@ final class HeatmapDayCell
         return 'full';
     }
 
+    /**
+     * Returns the click navigation action for state-adaptive HTMX routing:
+     * - 'vacant': 0 reservations, no maintenance -> opens New Reservation modal
+     * - 'single_reservation': exactly 1 reservation, no turnover, no maintenance -> opens Reservation detail drawer
+     * - 'day_drawer': multi-stay, turnover, or maintenance block -> opens Day Summary drawer
+     *
+     * @return 'vacant'|'single_reservation'|'day_drawer'
+     */
+    public function getClickAction(): string
+    {
+        if ($this->hasMaintenance || $this->hasTurnover || count($this->reservationUids) > 1) {
+            return 'day_drawer';
+        }
+        if (count($this->reservationUids) === 1 && $this->singleReservationUid !== null) {
+            return 'single_reservation';
+        }
+        return 'vacant';
+    }
+
+    public function isClickActionVacant(): bool
+    {
+        return $this->getClickAction() === 'vacant';
+    }
+
+    public function isClickActionSingleReservation(): bool
+    {
+        return $this->getClickAction() === 'single_reservation';
+    }
+
+    public function isClickActionDayDrawer(): bool
+    {
+        return $this->getClickAction() === 'day_drawer';
+    }
+
     public function getCapacityCssClass(): string
     {
         return match ($this->getCapacityLevel()) {

@@ -9,6 +9,7 @@ use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
 use OceanViewFlats\Admin\Repository\AdminRateRepository;
 use OceanViewFlats\Admin\Repository\AdminReservationRepository;
 use OceanViewFlats\Admin\Service\DashboardQueryService;
+use InvalidArgumentException;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
 use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
@@ -16,6 +17,8 @@ use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\ChannelSyncStatus;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
+use OceanViewFlats\Domain\Reservation\Dashboard\DayDetailViewData;
+use OceanViewFlats\Domain\Reservation\Dashboard\DayPropertyDetail;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
@@ -611,4 +614,253 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertStringContainsString('bg-amber-100 border border-amber-300', $maintCell1606->getCapacityCssClass());
         $this->assertSame(175, $maintCell1606->effectiveRate); // Seasonal rate lookup
     }
+
+    public function testGetDaySummaryVacantCalendarDay(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $date = '2026-11-20';
+        $summary = $service->getDaySummary($date, 'all');
+
+        $this->assertSame('2026-11-20', $summary->date);
+        $this->assertSame('Friday, Nov 20, 2026', $summary->formattedDate);
+        $this->assertSame('Friday', $summary->dayOfWeekName);
+        $this->assertSame('all', $summary->propertyFilter);
+        $this->assertSame(2, $summary->totalUnits);
+        $this->assertSame(0, $summary->occupiedUnits);
+        $this->assertSame('vacant', $summary->capacityLevel);
+        $this->assertFalse($summary->hasTurnover);
+        $this->assertFalse($summary->hasMaintenance);
+        $this->assertFalse($summary->hasWarning);
+        $this->assertSame(230, $summary->combinedRate); // Base rates: 110 (1606) + 120 (1707) = 230
+        $this->assertEmpty($summary->movements);
+        $this->assertEmpty($summary->maintenanceBlocks);
+        $this->assertEmpty($summary->warnings);
+        $this->assertEmpty($summary->reservationUids);
+
+        $this->assertArrayHasKey('1606', $summary->properties);
+        $this->assertArrayHasKey('1707', $summary->properties);
+
+        $p1606 = $summary->properties['1606'];
+        $this->assertSame('1606', $p1606->propertyId);
+        $this->assertSame('Vacant', $p1606->status);
+        $this->assertFalse($p1606->isOccupied);
+        $this->assertSame(110, $p1606->nightlyRate);
+        $this->assertNull($p1606->activeReservation);
+        $this->assertNull($p1606->departingReservation);
+        $this->assertNull($p1606->arrivingReservation);
+        $this->assertNull($p1606->maintenanceBlock);
+        $this->assertEmpty($p1606->movements);
+        $this->assertEmpty($p1606->warnings);
+
+        $p1707 = $summary->properties['1707'];
+        $this->assertSame('1707', $p1707->propertyId);
+        $this->assertSame('Vacant', $p1707->status);
+        $this->assertFalse($p1707->isOccupied);
+        $this->assertSame(120, $p1707->nightlyRate);
+    }
+
+    public function testGetDaySummaryPropertyFilter(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $summary1606 = $service->getDaySummary('2026-11-20', '1606');
+        $this->assertSame('1606', $summary1606->propertyFilter);
+        $this->assertSame(1, $summary1606->totalUnits);
+        $this->assertCount(1, $summary1606->properties);
+        $this->assertArrayHasKey('1606', $summary1606->properties);
+        $this->assertArrayNotHasKey('1707', $summary1606->properties);
+        $this->assertSame(110, $summary1606->combinedRate);
+
+        $summary1707 = $service->getDaySummary('2026-11-20', '1707');
+        $this->assertSame('1707', $summary1707->propertyFilter);
+        $this->assertSame(1, $summary1707->totalUnits);
+        $this->assertCount(1, $summary1707->properties);
+        $this->assertArrayHasKey('1707', $summary1707->properties);
+        $this->assertArrayNotHasKey('1606', $summary1707->properties);
+        $this->assertSame(120, $summary1707->combinedRate);
+    }
+
+    public function testGetDaySummaryConfirmedReservation(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed, door_code
+            ) VALUES (
+                'res-confirmed-xyz', '1606', 'Alice Wonder', 'alice@test.com', '+57300999',
+                '2026-10-10', '2026-10-15', 500, 'confirmed', 'direct', 1, '9876#'
+            );
+        ");
+
+        $clearance = new CondominiumClearance(
+            reservationUid: 'res-confirmed-xyz',
+            propertyId: '1606',
+            status: CondominiumClearance::STATUS_SYNCED,
+            clearanceNumber: 'CLEAR-777',
+            errorMessage: null
+        );
+        $clearanceRepo = $this->createMock(CondominiumClearanceRepositoryInterface::class);
+        $clearanceRepo->method('findByReservationUid')->with('res-confirmed-xyz')->willReturn($clearance);
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            clearanceRepo: $clearanceRepo
+        );
+
+        $summary = $service->getDaySummary('2026-10-12', 'all');
+
+        $this->assertSame(1, $summary->occupiedUnits);
+        $this->assertSame(2, $summary->totalUnits);
+        $this->assertSame('partial', $summary->capacityLevel);
+        $this->assertFalse($summary->hasTurnover);
+        $this->assertFalse($summary->hasWarning);
+        $this->assertEquals(['res-confirmed-xyz'], $summary->reservationUids);
+
+        $p1606 = $summary->properties['1606'];
+        $this->assertSame('Occupied', $p1606->status);
+        $this->assertTrue($p1606->isOccupied);
+        $this->assertNotNull($p1606->activeReservation);
+        $this->assertSame('res-confirmed-xyz', $p1606->activeReservation['reservation_uid']);
+        $this->assertSame('Alice Wonder', $p1606->activeReservation['guest_name']);
+        $this->assertSame('9876#', $p1606->activeReservation['door_code']);
+        $this->assertSame(CondominiumClearance::STATUS_SYNCED, $p1606->activeReservation['clearance_status']);
+        $this->assertSame('CLEAR-777', $p1606->activeReservation['clearance_number']);
+        $this->assertEmpty($p1606->warnings);
+    }
+
+    public function testGetDaySummarySameDayTurnover(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed, door_code
+            ) VALUES
+            ('res-turnover-dep', '1606', 'Departing Guest', 'dep@test.com', '+1', '2026-10-14', '2026-10-18', 400, 'confirmed', 'web', 1, '1111#'),
+            ('res-turnover-arr', '1606', 'Arriving Guest', 'arr@test.com', '+2', '2026-10-18', '2026-10-22', 400, 'confirmed', 'airbnb', 0, NULL);
+        ");
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $summary = $service->getDaySummary('2026-10-18', '1606');
+
+        $this->assertTrue($summary->hasTurnover);
+        $this->assertTrue($summary->hasWarning); // Arriving guest has incomplete registry
+        $this->assertSame(1, $summary->occupiedUnits);
+        $this->assertSame(1, $summary->totalUnits);
+        $this->assertSame('full', $summary->capacityLevel);
+        $this->assertContains('res-turnover-dep', $summary->reservationUids);
+        $this->assertContains('res-turnover-arr', $summary->reservationUids);
+
+        $p1606 = $summary->properties['1606'];
+        $this->assertSame('Turnover', $p1606->status);
+        $this->assertTrue($p1606->isOccupied);
+        $this->assertNotNull($p1606->departingReservation);
+        $this->assertNotNull($p1606->arrivingReservation);
+        $this->assertSame('res-turnover-dep', $p1606->departingReservation['reservation_uid']);
+        $this->assertSame('res-turnover-arr', $p1606->arrivingReservation['reservation_uid']);
+        $this->assertContains('Guest registry incomplete (Arriving Guest)', $p1606->warnings);
+    }
+
+    public function testGetDaySummaryMaintenanceBlock(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        $this->calendarBlockRepo->createBlock('1707', '2026-10-25', '2026-10-28', 'Balcony Painting', 1);
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $summary = $service->getDaySummary('2026-10-26', '1707');
+
+        $this->assertTrue($summary->hasMaintenance);
+        $this->assertSame(0, $summary->occupiedUnits);
+        $this->assertSame('maintenance', $summary->capacityLevel);
+        $this->assertTrue($summary->hasWarning);
+        $this->assertCount(1, $summary->maintenanceBlocks);
+        $this->assertSame('Balcony Painting', $summary->maintenanceBlocks[0]->reason);
+
+        $p1707 = $summary->properties['1707'];
+        $this->assertSame('Maintenance', $p1707->status);
+        $this->assertFalse($p1707->isOccupied);
+        $this->assertNotNull($p1707->maintenanceBlock);
+        $this->assertSame('Balcony Painting', $p1707->maintenanceBlock->reason);
+        $this->assertContains('Maintenance hold: Balcony Painting', $p1707->warnings);
+    }
+
+    public function testGetDaySummaryInvalidDateFormatThrowsException(): void
+    {
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid date format: invalid-date');
+        $service->getDaySummary('invalid-date');
+    }
+
+    public function testGetDaySummaryInvalidCalendarDateThrowsException(): void
+    {
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid calendar date: 2026-02-30');
+        $service->getDaySummary('2026-02-30');
+    }
 }
+

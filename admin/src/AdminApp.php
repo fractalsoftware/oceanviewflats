@@ -331,6 +331,7 @@ final class AdminApp
             ->get('/logout', [$authController, 'logout'])
             ->get('/', [$dashboardController, 'index'])
             ->get('/dashboard/hub', [$dashboardController, 'hub'])
+            ->get('/dashboard/day', [$dashboardController, 'dayDrawer'])
             ->get('/channel-sync/card', [$channelSyncController, 'card'])
             ->get('/channel-sync/panel', [$channelSyncController, 'panel'])
             ->post('/channel-sync', [$channelSyncController, 'sync'])

@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace OceanViewFlats\Admin\Service;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
 use OceanViewFlats\Admin\Repository\AdminRateRepository;
 use OceanViewFlats\Admin\Repository\AdminReservationRepository;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
 use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
+use OceanViewFlats\Domain\Quote\RateTier;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\DayDetailViewData;
+use OceanViewFlats\Domain\Reservation\Dashboard\DayPropertyDetail;
 use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapDayCell;
 use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
@@ -226,28 +230,6 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $tiers1707 = $this->rateRepo->getTiersForProperty('1707');
         } catch (\Throwable) {}
 
-        /**
-         * @return array{amount: int, isSeasonal: bool, tierName: string}
-         */
-        $getNightlyRate = static function (string $pid, string $d) use ($tiers1606, $tiers1707): array {
-            $tiers = ($pid === '1606') ? $tiers1606 : $tiers1707;
-            $base = ($pid === '1606') ? 110 : 120;
-            foreach ($tiers as $tier) {
-                if ($tier->coversDate($d)) {
-                    return [
-                        'amount' => (int) $tier->nightlyRateCop,
-                        'isSeasonal' => true,
-                        'tierName' => $tier->seasonName,
-                    ];
-                }
-            }
-            return [
-                'amount' => $base,
-                'isSeasonal' => false,
-                'tierName' => 'Standard Rate',
-            ];
-        };
-
         // Index reservations by check_in, check_out, and active stay nights
         /** @var array<string, array<string, list<array<string, mixed>>>> $checkInsByProp */
         $checkInsByProp = [];
@@ -327,7 +309,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $combinedRate = 0;
 
             foreach ($propertiesToEval as $pid) {
-                $rateInfo = $getNightlyRate($pid, $dateStr);
+                $rateInfo = $this->calculateNightlyRate($pid, $dateStr, $tiers1606, $tiers1707);
                 $combinedRate += $rateInfo['amount'];
 
                 // Turnover check for property $pid on $dateStr
@@ -505,6 +487,297 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             totalOccupiedDaysCount: $totalOccupiedDaysCount,
             totalTurnoversCount: $totalTurnoversCount,
             totalAlertsCount: $totalAlertsCount
+        );
+    }
+
+    /**
+     * @param array<int, RateTier> $tiers1606
+     * @param array<int, RateTier> $tiers1707
+     * @return array{amount: int, isSeasonal: bool, tierName: string}
+     */
+    private function calculateNightlyRate(string $pid, string $d, array $tiers1606, array $tiers1707): array
+    {
+        $tiers = ($pid === '1606') ? $tiers1606 : $tiers1707;
+        $base = ($pid === '1606') ? 110 : 120;
+        foreach ($tiers as $tier) {
+            if ($tier->coversDate($d)) {
+                return [
+                    'amount' => (int) $tier->nightlyRateCop,
+                    'isSeasonal' => true,
+                    'tierName' => $tier->seasonName,
+                ];
+            }
+        }
+        return [
+            'amount' => $base,
+            'isSeasonal' => false,
+            'tierName' => 'Standard Rate',
+        ];
+    }
+
+    /**
+     * Aggregates detailed property statuses, reservations, movements, rates,
+     * and maintenance blocks for a specific calendar date into DayDetailViewData.
+     *
+     * @param string $date 'YYYY-MM-DD'
+     * @param string $propertyFilter 'all' | '1606' | '1707'
+     * @throws InvalidArgumentException If date format or calendar date is invalid
+     */
+    public function getDaySummary(
+        string $date,
+        string $propertyFilter = 'all'
+    ): DayDetailViewData {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            throw new InvalidArgumentException("Invalid date format: {$date}. Expected YYYY-MM-DD.");
+        }
+        $dateObj = DateTimeImmutable::createFromFormat('Y-m-d', $date);
+        if ($dateObj === false || $dateObj->format('Y-m-d') !== $date) {
+            throw new InvalidArgumentException("Invalid calendar date: {$date}.");
+        }
+
+        $now = new DateTimeImmutable('today');
+        $todayStr = $now->format('Y-m-d');
+        $isToday = ($date === $todayStr);
+        $isPast = ($date < $todayStr);
+        $formattedDate = $dateObj->format('l, M j, Y');
+        $dayOfWeekName = $dateObj->format('l');
+
+        $filter = in_array($propertyFilter, ['1606', '1707'], true) ? $propertyFilter : 'all';
+        $targetProps = ($filter === 'all') ? ['1606', '1707'] : [$filter];
+        $totalUnits = count($targetProps);
+
+        // 1. Fetch seasonal rate tiers
+        /** @var array<int, RateTier> $tiers1606 */
+        $tiers1606 = [];
+        /** @var array<int, RateTier> $tiers1707 */
+        $tiers1707 = [];
+        try {
+            $tiers1606 = $this->rateRepo->getTiersForProperty('1606');
+        } catch (\Throwable) {}
+        try {
+            $tiers1707 = $this->rateRepo->getTiersForProperty('1707');
+        } catch (\Throwable) {}
+
+        // 2. Fetch maintenance blocks covering date
+        /** @var list<MaintenanceBlock> $allBlocks */
+        $allBlocks = [];
+        try {
+            $allBlocks = $this->calendarBlockRepo->getBlocksForRange($filter, $date, $date);
+        } catch (\Throwable) {
+            $allBlocks = [];
+        }
+
+        /** @var array<string|int, MaintenanceBlock> $maintenanceByProp */
+        $maintenanceByProp = [];
+        /** @var list<MaintenanceBlock> $dayMaintenanceBlocks */
+        $dayMaintenanceBlocks = [];
+        foreach ($allBlocks as $block) {
+            $covers = ($block->startDate === $block->endDate)
+                ? ($block->startDate === $date)
+                : ($block->startDate <= $date && $date < $block->endDate);
+            if ($covers) {
+                $maintenanceByProp[$block->propertyId] = $block;
+                $dayMaintenanceBlocks[] = $block;
+            }
+        }
+
+        // 3. Operational schedule (movements on this date)
+        /** @var list<OperationsEvent> $events */
+        $events = [];
+        try {
+            $events = $this->reservationRepo->getOperationalSchedule($filter, $date, $date);
+        } catch (\Throwable) {
+            $events = [];
+        }
+
+        // 4. Reservations touching this date
+        $rangeReservations = $this->reservationRepo->getConfirmedReservationsForRange($filter, $date, $date);
+
+        /** @var array<string|int, list<array<string, mixed>>> $checkInsByProp */
+        $checkInsByProp = [];
+        /** @var array<string|int, list<array<string, mixed>>> $checkOutsByProp */
+        $checkOutsByProp = [];
+        /** @var array<string|int, array<string, mixed>> $activeStaysByProp */
+        $activeStaysByProp = [];
+
+        foreach ($rangeReservations as $row) {
+            $uid = (string) $row['reservation_uid'];
+            $pid = (string) $row['property_id'];
+            $cin = (string) $row['check_in'];
+            $cout = (string) $row['check_out'];
+
+            $fullRes = $this->reservationRepo->findReservationByUid($uid) ?? $row;
+
+            try {
+                $clearance = $this->clearanceRepo->findByReservationUid($uid);
+                if ($clearance !== null) {
+                    $fullRes['clearance_status'] = $clearance->status;
+                    $fullRes['clearance_number'] = $clearance->clearanceNumber;
+                    $fullRes['clearance_error'] = $clearance->errorMessage;
+                } else {
+                    $fullRes['clearance_status'] = null;
+                    $fullRes['clearance_number'] = null;
+                    $fullRes['clearance_error'] = null;
+                }
+            } catch (\Throwable) {
+                $fullRes['clearance_status'] = null;
+                $fullRes['clearance_number'] = null;
+                $fullRes['clearance_error'] = null;
+            }
+
+            if ($cin === $date) {
+                $checkInsByProp[$pid][] = $fullRes;
+            }
+            if ($cout === $date) {
+                $checkOutsByProp[$pid][] = $fullRes;
+            }
+            if ($cin <= $date && $cout > $date) {
+                $activeStaysByProp[$pid] = $fullRes;
+            }
+        }
+
+        /** @var array<string|int, DayPropertyDetail> $propertyDetails */
+        $propertyDetails = [];
+        $occupiedUnits = 0;
+        $combinedRate = 0;
+        $hasTurnover = false;
+        $hasMaintenance = !empty($dayMaintenanceBlocks);
+        /** @var list<string> $allWarnings */
+        $allWarnings = [];
+        /** @var list<string> $allReservationUids */
+        $allReservationUids = [];
+
+        foreach ($targetProps as $pid) {
+            $rateInfo = $this->calculateNightlyRate($pid, $date, $tiers1606, $tiers1707);
+            $combinedRate += $rateInfo['amount'];
+
+            $mBlock = $maintenanceByProp[$pid] ?? null;
+            $arrRes = $checkInsByProp[$pid][0] ?? null;
+            $depRes = $checkOutsByProp[$pid][0] ?? null;
+            $actRes = $activeStaysByProp[$pid] ?? null;
+
+            /** @var list<OperationsEvent> $propMovements */
+            $propMovements = [];
+            foreach ($events as $event) {
+                if ($event->propertyId === $pid) {
+                    $propMovements[] = $event;
+                }
+            }
+
+            if ($actRes !== null) {
+                $allReservationUids[] = (string) $actRes['reservation_uid'];
+            }
+            if ($arrRes !== null) {
+                $allReservationUids[] = (string) $arrRes['reservation_uid'];
+            }
+            if ($depRes !== null) {
+                $allReservationUids[] = (string) $depRes['reservation_uid'];
+            }
+
+            $isPropTurnover = ($depRes !== null && $arrRes !== null);
+            if ($isPropTurnover) {
+                $hasTurnover = true;
+            }
+
+            $isOccupied = false;
+            $status = 'Vacant';
+            if ($mBlock !== null) {
+                $status = 'Maintenance';
+            } elseif ($isPropTurnover) {
+                $status = 'Turnover';
+                $isOccupied = true;
+            } elseif ($actRes !== null) {
+                $resStatus = (string) ($actRes['status'] ?? 'confirmed');
+                if ($resStatus === 'confirmed') {
+                    $status = 'Occupied';
+                    $isOccupied = true;
+                } else {
+                    $status = 'Pending';
+                }
+            }
+
+            if ($isOccupied) {
+                $occupiedUnits++;
+            }
+
+            /** @var list<string> $propWarnings */
+            $propWarnings = [];
+            if ($mBlock !== null) {
+                $propWarnings[] = "Maintenance hold: {$mBlock->reason}";
+            }
+
+            $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
+            foreach ($resToWarn as $r) {
+                $gName = (string) ($r['guest_name'] ?? 'Guest');
+                if (empty($r['registry_completed'])) {
+                    $msg = "Guest registry incomplete ({$gName})";
+                    if (!in_array($msg, $propWarnings, true)) {
+                        $propWarnings[] = $msg;
+                    }
+                }
+                if (($r['clearance_status'] ?? '') === 'failed') {
+                    $msg = "Condominium clearance failed ({$gName})";
+                    if (!in_array($msg, $propWarnings, true)) {
+                        $propWarnings[] = $msg;
+                    }
+                }
+            }
+
+            foreach ($propWarnings as $w) {
+                if (!in_array($w, $allWarnings, true)) {
+                    $allWarnings[] = $w;
+                }
+            }
+
+            $propertyName = "Property {$pid}";
+            $propertyDetails[$pid] = new DayPropertyDetail(
+                propertyId: $pid,
+                propertyName: $propertyName,
+                status: $status,
+                isOccupied: $isOccupied,
+                nightlyRate: $rateInfo['amount'],
+                rateInfo: $rateInfo,
+                activeReservation: $actRes,
+                departingReservation: $depRes,
+                arrivingReservation: $arrRes,
+                maintenanceBlock: $mBlock,
+                movements: $propMovements,
+                warnings: $propWarnings
+            );
+        }
+
+        $allReservationUids = array_values(array_unique($allReservationUids));
+
+        $capacityLevel = 'vacant';
+        if ($hasMaintenance && $occupiedUnits === 0) {
+            $capacityLevel = 'maintenance';
+        } elseif ($occupiedUnits === 0) {
+            $capacityLevel = 'vacant';
+        } elseif ($occupiedUnits < $totalUnits) {
+            $capacityLevel = 'partial';
+        } else {
+            $capacityLevel = 'full';
+        }
+
+        return new DayDetailViewData(
+            date: $date,
+            formattedDate: $formattedDate,
+            dayOfWeekName: $dayOfWeekName,
+            propertyFilter: $filter,
+            totalUnits: $totalUnits,
+            occupiedUnits: $occupiedUnits,
+            capacityLevel: $capacityLevel,
+            isToday: $isToday,
+            isPast: $isPast,
+            hasTurnover: $hasTurnover,
+            hasMaintenance: $hasMaintenance,
+            hasWarning: count($allWarnings) > 0,
+            combinedRate: $combinedRate,
+            properties: $propertyDetails,
+            movements: $events,
+            maintenanceBlocks: $dayMaintenanceBlocks,
+            warnings: $allWarnings,
+            reservationUids: $allReservationUids
         );
     }
 }

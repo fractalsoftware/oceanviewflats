@@ -7,6 +7,8 @@ namespace OceanViewFlats\Tests\Unit\Domain\Reservation\Dashboard;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
+use OceanViewFlats\Domain\Reservation\Dashboard\DayDetailViewData;
+use OceanViewFlats\Domain\Reservation\Dashboard\DayPropertyDetail;
 use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapDayCell;
 use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
@@ -429,5 +431,225 @@ final class DashboardModelTest extends TestCase
         $this->assertSame(160, $heatmap->totalOccupiedDaysCount);
         $this->assertSame(5, $heatmap->totalTurnoversCount);
         $this->assertSame(2, $heatmap->totalAlertsCount);
+    }
+
+    public function testHeatmapDayCellClickActionAdaptiveBehavior(): void
+    {
+        // 1. Vacant cell in 'all' view
+        $vacantAll = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 0,
+            propertyFilter: 'all'
+        );
+        $this->assertTrue($vacantAll->isClickActionVacant());
+        $this->assertFalse($vacantAll->isClickActionSingleReservation());
+        $this->assertFalse($vacantAll->isClickActionDayDrawer());
+        $this->assertSame('vacant', $vacantAll->getClickAction());
+
+        // 2. Single reservation cell in 'all' view
+        $singleResAll = new HeatmapDayCell(
+            date: '2026-10-16',
+            dayOfMonth: 16,
+            dayOfWeek: 5,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1,
+            propertyFilter: 'all',
+            singleReservationUid: 'res-single-101',
+            reservationUids: ['res-single-101']
+        );
+        $this->assertFalse($singleResAll->isClickActionVacant());
+        $this->assertTrue($singleResAll->isClickActionSingleReservation());
+        $this->assertFalse($singleResAll->isClickActionDayDrawer());
+        $this->assertSame('single_reservation', $singleResAll->getClickAction());
+
+        // 3. Multi-stay full cell in 'all' view (2 units occupied)
+        $multiStayAll = new HeatmapDayCell(
+            date: '2026-10-17',
+            dayOfMonth: 17,
+            dayOfWeek: 6,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 2,
+            propertyFilter: 'all',
+            reservationUids: ['res-1', 'res-2']
+        );
+        $this->assertFalse($multiStayAll->isClickActionVacant());
+        $this->assertFalse($multiStayAll->isClickActionSingleReservation());
+        $this->assertTrue($multiStayAll->isClickActionDayDrawer());
+        $this->assertSame('day_drawer', $multiStayAll->getClickAction());
+
+        // 4. Turnover cell (even with 1 unit occupied)
+        $turnoverCell = new HeatmapDayCell(
+            date: '2026-10-18',
+            dayOfMonth: 18,
+            dayOfWeek: 0,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1,
+            propertyFilter: 'all',
+            hasTurnover: true,
+            singleReservationUid: 'res-arr-101',
+            reservationUids: ['res-arr-101']
+        );
+        $this->assertFalse($turnoverCell->isClickActionVacant());
+        $this->assertFalse($turnoverCell->isClickActionSingleReservation());
+        $this->assertTrue($turnoverCell->isClickActionDayDrawer());
+        $this->assertSame('day_drawer', $turnoverCell->getClickAction());
+
+        // 5. Maintenance hold cell
+        $maintCell = new HeatmapDayCell(
+            date: '2026-10-19',
+            dayOfMonth: 19,
+            dayOfWeek: 1,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 0,
+            propertyFilter: 'all',
+            hasMaintenance: true
+        );
+        $this->assertFalse($maintCell->isClickActionVacant());
+        $this->assertFalse($maintCell->isClickActionSingleReservation());
+        $this->assertTrue($maintCell->isClickActionDayDrawer());
+        $this->assertSame('day_drawer', $maintCell->getClickAction());
+
+        // 6. Scoped property view ('1606'): single reservation
+        $scopedOccupied = new HeatmapDayCell(
+            date: '2026-10-20',
+            dayOfMonth: 20,
+            dayOfWeek: 2,
+            isToday: false,
+            isPast: false,
+            totalUnits: 1,
+            occupiedUnits: 1,
+            propertyFilter: '1606',
+            singleReservationUid: 'res-1606-abc',
+            reservationUids: ['res-1606-abc']
+        );
+        $this->assertFalse($scopedOccupied->isClickActionVacant());
+        $this->assertTrue($scopedOccupied->isClickActionSingleReservation());
+        $this->assertFalse($scopedOccupied->isClickActionDayDrawer());
+        $this->assertSame('single_reservation', $scopedOccupied->getClickAction());
+    }
+
+    public function testDayPropertyDetailDTO(): void
+    {
+        $mBlock = new MaintenanceBlock(
+            propertyId: '1606',
+            startDate: '2026-10-25',
+            endDate: '2026-10-27',
+            reason: 'Window maintenance'
+        );
+
+        $detail = new DayPropertyDetail(
+            propertyId: '1606',
+            propertyName: 'Penthouse 1606',
+            status: 'Maintenance',
+            isOccupied: false,
+            nightlyRate: 110,
+            rateInfo: ['amount' => 110, 'isSeasonal' => false],
+            activeReservation: null,
+            departingReservation: null,
+            arrivingReservation: null,
+            maintenanceBlock: $mBlock,
+            movements: [],
+            warnings: ['Maintenance active']
+        );
+
+        $this->assertSame('1606', $detail->propertyId);
+        $this->assertSame('Penthouse 1606', $detail->propertyName);
+        $this->assertSame('Maintenance', $detail->status);
+        $this->assertFalse($detail->isOccupied);
+        $this->assertSame(110, $detail->nightlyRate);
+        $this->assertTrue($detail->hasMaintenance());
+        $this->assertFalse($detail->hasTurnover());
+        $this->assertTrue($detail->hasWarnings());
+
+        $turnoverDetail = new DayPropertyDetail(
+            propertyId: '1707',
+            propertyName: 'Suite 1707',
+            status: 'Turnover',
+            isOccupied: true,
+            nightlyRate: 120,
+            rateInfo: ['amount' => 120, 'isSeasonal' => false],
+            activeReservation: null,
+            departingReservation: ['reservation_uid' => 'dep-1'],
+            arrivingReservation: ['reservation_uid' => 'arr-2'],
+            maintenanceBlock: null,
+            movements: [],
+            warnings: []
+        );
+
+        $this->assertFalse($turnoverDetail->hasMaintenance());
+        $this->assertTrue($turnoverDetail->hasTurnover());
+        $this->assertFalse($turnoverDetail->hasWarnings());
+    }
+
+    public function testDayDetailViewDataDTO(): void
+    {
+        $prop1606 = new DayPropertyDetail(
+            propertyId: '1606',
+            propertyName: 'Property 1606',
+            status: 'Vacant',
+            isOccupied: false,
+            nightlyRate: 110,
+            rateInfo: ['amount' => 110, 'isSeasonal' => false]
+        );
+        $prop1707 = new DayPropertyDetail(
+            propertyId: '1707',
+            propertyName: 'Property 1707',
+            status: 'Occupied',
+            isOccupied: true,
+            nightlyRate: 120,
+            rateInfo: ['amount' => 120, 'isSeasonal' => false]
+        );
+
+        $viewData = new DayDetailViewData(
+            date: '2026-10-15',
+            formattedDate: 'Thursday, Oct 15, 2026',
+            dayOfWeekName: 'Thursday',
+            propertyFilter: 'all',
+            totalUnits: 2,
+            occupiedUnits: 1,
+            capacityLevel: 'partial',
+            isToday: true,
+            isPast: false,
+            hasTurnover: false,
+            hasMaintenance: false,
+            hasWarning: false,
+            combinedRate: 230,
+            properties: ['1606' => $prop1606, '1707' => $prop1707],
+            movements: [],
+            maintenanceBlocks: [],
+            warnings: [],
+            reservationUids: ['res-abc']
+        );
+
+        $this->assertSame('2026-10-15', $viewData->date);
+        $this->assertSame('Thursday, Oct 15, 2026', $viewData->formattedDate);
+        $this->assertSame('Thursday', $viewData->dayOfWeekName);
+        $this->assertSame('all', $viewData->propertyFilter);
+        $this->assertSame(2, $viewData->totalUnits);
+        $this->assertSame(1, $viewData->occupiedUnits);
+        $this->assertSame('partial', $viewData->capacityLevel);
+        $this->assertTrue($viewData->isToday);
+        $this->assertFalse($viewData->isPast);
+        $this->assertFalse($viewData->hasTurnover);
+        $this->assertFalse($viewData->hasMaintenance);
+        $this->assertFalse($viewData->hasWarning);
+        $this->assertSame(230, $viewData->combinedRate);
+        $this->assertCount(2, $viewData->properties);
+        $this->assertFalse($viewData->isVacant());
+        $this->assertFalse($viewData->isFull());
+        $this->assertTrue($viewData->isPartial());
     }
 }

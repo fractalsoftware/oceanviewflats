@@ -105,17 +105,37 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                                     ];
                                     $popoverJson = json_encode($popoverData, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                                     ?>
-                                    <div class="relative w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-xs transition-transform duration-75 hover:scale-125 hover:z-20 cursor-pointer <?= $cell->getCellCssClasses() ?>"
-                                         data-heatmap-cell="true"
-                                         data-date="<?= htmlspecialchars($cell->date) ?>"
-                                         data-popover="<?= htmlspecialchars((string) $popoverJson, ENT_QUOTES, 'UTF-8') ?>">
+                                    <?php
+                                    $hxGet = '';
+                                    $hxTarget = '';
+                                    if ($cell->isClickActionVacant()) {
+                                        $targetProp = ($cell->propertyFilter === 'all') ? '1606' : $cell->propertyFilter;
+                                        $hxGet = '/reservations/new?check_in=' . htmlspecialchars($cell->date, ENT_QUOTES, 'UTF-8') . '&property_id=' . htmlspecialchars($targetProp, ENT_QUOTES, 'UTF-8');
+                                        $hxTarget = '#modal-container';
+                                    } elseif ($cell->isClickActionSingleReservation()) {
+                                        $hxGet = '/reservations/' . htmlspecialchars((string) $cell->singleReservationUid, ENT_QUOTES, 'UTF-8');
+                                        $hxTarget = '#drawer-container';
+                                    } else {
+                                        $hxGet = '/dashboard/day?date=' . htmlspecialchars($cell->date, ENT_QUOTES, 'UTF-8') . '&property_id=' . htmlspecialchars($cell->propertyFilter, ENT_QUOTES, 'UTF-8');
+                                        $hxTarget = '#drawer-container';
+                                    }
+                                    ?>
+                                    <button type="button"
+                                            class="relative w-3.5 h-3.5 sm:w-4 sm:h-4 p-0 border-0 rounded-xs transition-transform duration-75 hover:scale-125 hover:z-20 cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-indigo-500 <?= $cell->getCellCssClasses() ?>"
+                                            data-heatmap-cell="true"
+                                            data-date="<?= htmlspecialchars($cell->date) ?>"
+                                            data-popover="<?= htmlspecialchars((string) $popoverJson, ENT_QUOTES, 'UTF-8') ?>"
+                                            aria-label="<?= htmlspecialchars($cellDateFormatted, ENT_QUOTES, 'UTF-8') ?>"
+                                            hx-get="<?= $hxGet ?>"
+                                            hx-target="<?= $hxTarget ?>"
+                                            hx-swap="innerHTML">
                                         <?php if ($cell->hasTurnover): ?>
                                             <span class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-blue-500 ring-1 ring-white pointer-events-none" title="Turnover"></span>
                                         <?php endif; ?>
                                         <?php if ($cell->hasWarning): ?>
                                             <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500 ring-1 ring-white pointer-events-none" title="Operational Warning"></span>
                                         <?php endif; ?>
-                                    </div>
+                                    </button>
                                 <?php endif; ?>
                             <?php endfor; ?>
                         </div>
@@ -330,6 +350,12 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
             if (related !== cell) {
                 hidePopover();
             }
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-heatmap-cell]')) {
+            hidePopover();
         }
     });
 
