@@ -12,7 +12,10 @@ use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapDayCell;
+use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
+use OceanViewFlats\Domain\Reservation\Dashboard\OccupancyHeatmapViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationsEvent;
 use OceanViewFlats\Domain\Reservation\Dashboard\PropertyRateStatus;
@@ -396,6 +399,166 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('href="/reservations/res_fail_999"', $body);
         $this->assertStringContainsString('hx-get="/reservations/res_fail_999"', $body);
         $this->assertStringContainsString('hx-target="#drawer-container"', $body);
+    }
+
+    public function testDashboardHubRendersOccupancyHeatmapCardAndLegend(): void
+    {
+        $today = date('Y-m-d');
+        $sampleDay = new HeatmapDayCell(
+            date: $today,
+            dayOfMonth: (int) date('j'),
+            dayOfWeek: (int) date('N'),
+            isToday: true,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1
+        );
+        $weekCol = new HeatmapWeekColumn(weekNumber: 1, days: [$sampleDay, null, null, null, null, null, null], monthLabel: 'Oct');
+        $heatmap = new OccupancyHeatmapViewData(
+            startDate: '2026-10-01',
+            endDate: '2027-04-30',
+            propertyFilter: 'all',
+            columns: [$weekCol],
+            monthHeaders: [['label' => 'Oct', 'startCol' => 0, 'span' => 1]],
+            overallOccupancyPercentage: 50.0,
+            totalDaysCount: 212,
+            totalOccupiedDaysCount: 106
+        );
+
+        $hubData = new DashboardHubViewData(
+            selectedPropertyFilter: 'all',
+            alerts: [],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0,
+            heatmap: $heatmap
+        );
+
+        $queryService = $this->createMock(DashboardQueryServiceInterface::class);
+        $queryService->expects($this->once())
+            ->method('getDashboardHubData')
+            ->with('all')
+            ->willReturn($hubData);
+
+        $controller = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService
+        );
+
+        $session = ['admin_user_id' => 1];
+        $request = new Request('GET', '/');
+
+        $response = $controller->index($request, $session);
+        $this->assertSame(200, $response->getStatusCode());
+        $body = $response->getBody();
+
+        // 1. Heatmap card header
+        $this->assertStringContainsString('Occupancy Heatmap', $body);
+        $this->assertStringContainsString('(7-Month Horizon)', $body);
+        $this->assertStringContainsString('50.0% Occupied', $body);
+        $this->assertStringContainsString('106 of 212 days active', $body);
+
+        // 2. Weekday indicators (Mon, Wed, Fri)
+        $this->assertStringContainsString('Mon', $body);
+        $this->assertStringContainsString('Wed', $body);
+        $this->assertStringContainsString('Fri', $body);
+
+        // 3. Month label header
+        $this->assertStringContainsString('Oct', $body);
+
+        // 4. Capacity legend for 'all' properties view
+        $this->assertStringContainsString('Capacity:', $body);
+        $this->assertStringContainsString('Vacant (0/2)', $body);
+        $this->assertStringContainsString('Partial (1/2)', $body);
+        $this->assertStringContainsString('Full (2/2)', $body);
+        $this->assertStringContainsString('Today', $body);
+        $this->assertStringContainsString('Past Dates', $body);
+    }
+
+    public function testHtmxPropertyFilterRendersScopedHeatmap(): void
+    {
+        $today = date('Y-m-d');
+        $sampleDay = new HeatmapDayCell(
+            date: $today,
+            dayOfMonth: (int) date('j'),
+            dayOfWeek: (int) date('N'),
+            isToday: true,
+            isPast: false,
+            totalUnits: 1,
+            occupiedUnits: 1
+        );
+        $weekCol = new HeatmapWeekColumn(weekNumber: 1, days: [$sampleDay, null, null, null, null, null, null], monthLabel: 'Oct');
+        $heatmap = new OccupancyHeatmapViewData(
+            startDate: '2026-10-01',
+            endDate: '2027-04-30',
+            propertyFilter: '1606',
+            columns: [$weekCol],
+            monthHeaders: [['label' => 'Oct', 'startCol' => 0, 'span' => 1]],
+            overallOccupancyPercentage: 100.0,
+            totalDaysCount: 212,
+            totalOccupiedDaysCount: 212
+        );
+
+        $hubData = new DashboardHubViewData(
+            selectedPropertyFilter: '1606',
+            alerts: [],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0,
+            heatmap: $heatmap
+        );
+
+        $queryService = $this->createMock(DashboardQueryServiceInterface::class);
+        $queryService->expects($this->once())
+            ->method('getDashboardHubData')
+            ->with('1606')
+            ->willReturn($hubData);
+
+        $controller = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService
+        );
+
+        $session = ['admin_user_id' => 1];
+        $request = new Request(
+            method: 'GET',
+            uri: '/dashboard/hub',
+            query: ['property_id' => '1606'],
+            post: [],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_TARGET' => 'dashboard-hub-content',
+            ]
+        );
+
+        $response = $controller->hub($request, $session);
+        $this->assertSame(200, $response->getStatusCode());
+        $body = $response->getBody();
+
+        // 1. Partial returned without full layout
+        $this->assertStringNotContainsString('<!DOCTYPE html>', $body);
+        $this->assertStringContainsString('id="dashboard-hub-content"', $body);
+
+        // 2. Heatmap header & scoped metrics
+        $this->assertStringContainsString('Occupancy Heatmap', $body);
+        $this->assertStringContainsString('100.0% Occupied', $body);
+
+        // 3. Single property legend (Vacant, Occupied - without ratios 0/2, 1/2, 2/2)
+        $this->assertStringContainsString('Vacant', $body);
+        $this->assertStringContainsString('Occupied', $body);
+        $this->assertStringNotContainsString('(0/2)', $body);
+        $this->assertStringNotContainsString('(1/2)', $body);
+        $this->assertStringNotContainsString('(2/2)', $body);
     }
 
     private function createSampleHubData(string $today): DashboardHubViewData

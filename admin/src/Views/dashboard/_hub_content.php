@@ -49,6 +49,11 @@
     <!-- Summary Metrics Cards -->
     <?php include __DIR__ . '/_summary_cards.php'; ?>
 
+    <!-- 7-Month Occupancy Heatmap -->
+    <?php if ($viewData->heatmap !== null): ?>
+        <?php include __DIR__ . '/_occupancy_heatmap.php'; ?>
+    <?php endif; ?>
+
     <!-- Two-Column Operations Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Main 8-Column Left Stream: 7-Day Operations Schedule -->

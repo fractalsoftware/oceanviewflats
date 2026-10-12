@@ -262,4 +262,193 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertSame(AlertSeverity::CRITICAL, $clearanceAlerts[0]->severity);
         $this->assertSame('res_fail_critical', $clearanceAlerts[0]->actionPayload['reservationUid']);
     }
+
+    public function testBuildOccupancyHeatmapGeneratesSevenMonthHorizonAndMondayFirstColumns(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        $heatmap = $service->buildOccupancyHeatmap('all', $now);
+
+        // 1. 7-month calendar horizon: 2026-10-01 to 2027-04-30
+        $this->assertSame('2026-10-01', $heatmap->startDate);
+        $this->assertSame('2027-04-30', $heatmap->endDate);
+        $this->assertSame('all', $heatmap->propertyFilter);
+        $this->assertSame(212, $heatmap->totalDaysCount); // Oct (31) + Nov (30) + Dec (31) + Jan (31) + Feb (28) + Mar (31) + Apr (30) = 212
+
+        // 2. Monday-first columns (7 rows: 0=Mon, 6=Sun)
+        $this->assertNotEmpty($heatmap->columns);
+        $totalColSpan = 0;
+        foreach ($heatmap->columns as $col) {
+            $this->assertCount(7, $col->days);
+            $this->assertArrayHasKey(0, $col->days);
+            $this->assertArrayHasKey(6, $col->days);
+        }
+
+        // 3. First week column check (2026-10-01 is a Thursday -> row index 3)
+        // Rows 0 (Mon), 1 (Tue), 2 (Wed) must be null padding
+        $firstCol = $heatmap->columns[0];
+        $this->assertNull($firstCol->days[0]);
+        $this->assertNull($firstCol->days[1]);
+        $this->assertNull($firstCol->days[2]);
+        $this->assertNotNull($firstCol->days[3]);
+        $this->assertSame('2026-10-01', $firstCol->days[3]->date);
+        $this->assertSame(1, $firstCol->days[3]->dayOfMonth);
+        $this->assertSame(4, $firstCol->days[3]->dayOfWeek);
+        $this->assertSame('Oct', $firstCol->monthLabel);
+
+        // 4. Last week column check (2027-04-30 is a Friday -> row index 4)
+        // Rows 5 (Sat) and 6 (Sun) must be null padding
+        $lastCol = $heatmap->columns[count($heatmap->columns) - 1];
+        $this->assertNotNull($lastCol->days[4]);
+        $this->assertSame('2027-04-30', $lastCol->days[4]->date);
+        $this->assertNull($lastCol->days[5]);
+        $this->assertNull($lastCol->days[6]);
+
+        // 5. Month headers
+        $this->assertCount(7, $heatmap->monthHeaders);
+        $labels = array_column($heatmap->monthHeaders, 'label');
+        $this->assertSame(['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'], $labels);
+
+        // Sum of all month header spans must equal total number of columns
+        $totalSpan = array_sum(array_column($heatmap->monthHeaders, 'span'));
+        $this->assertSame(count($heatmap->columns), $totalSpan);
+    }
+
+    public function testBuildOccupancyHeatmapDynamicCapacityColoringAndScoping(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+
+        // Seed reservations:
+        // - Single occupancy on 2026-10-14 (1606 only)
+        // - Double occupancy on 2026-10-15 (Today: both 1606 and 1707)
+        // - Single occupancy on 2026-10-16 (1707 only)
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source
+            ) VALUES
+            ('res-1606', '1606', 'Guest 1606', 'g1@test.com', '+1', '2026-10-14', '2026-10-16', 200, 'confirmed', 'web'),
+            ('res-1707', '1707', 'Guest 1707', 'g2@test.com', '+2', '2026-10-15', '2026-10-17', 200, 'confirmed', 'web');
+        ");
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService
+        );
+
+        // 1. ALL Properties View
+        $heatmapAll = $service->buildOccupancyHeatmap('all', $now);
+
+        // Find cells for 2026-10-01 (vacant past), 2026-10-14 (partial past), 2026-10-15 (full today), 2026-10-16 (partial future)
+        $cellsByDate = [];
+        foreach ($heatmapAll->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cellsByDate[$cell->date] = $cell;
+                }
+            }
+        }
+
+        // Vacant past date (2026-10-01)
+        $cellOct1 = $cellsByDate['2026-10-01'];
+        $this->assertSame('vacant', $cellOct1->getCapacityLevel());
+        $this->assertStringContainsString('bg-gray-100', $cellOct1->getCapacityCssClass());
+        $this->assertTrue($cellOct1->isPast);
+        $this->assertFalse($cellOct1->isToday);
+        $this->assertStringContainsString('opacity-40', $cellOct1->getCellCssClasses());
+
+        // Partial past date (2026-10-14: 1 occupied out of 2)
+        $cellOct14 = $cellsByDate['2026-10-14'];
+        $this->assertSame(1, $cellOct14->occupiedUnits);
+        $this->assertSame(2, $cellOct14->totalUnits);
+        $this->assertSame('partial', $cellOct14->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-200', $cellOct14->getCapacityCssClass());
+        $this->assertTrue($cellOct14->isPast);
+        $this->assertStringContainsString('opacity-40', $cellOct14->getCellCssClasses());
+
+        // Full today date (2026-10-15: 2 occupied out of 2)
+        $cellOct15 = $cellsByDate['2026-10-15'];
+        $this->assertSame(2, $cellOct15->occupiedUnits);
+        $this->assertSame(2, $cellOct15->totalUnits);
+        $this->assertSame('full', $cellOct15->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-600', $cellOct15->getCapacityCssClass());
+        $this->assertFalse($cellOct15->isPast);
+        $this->assertTrue($cellOct15->isToday);
+        $this->assertStringContainsString('ring-2 ring-indigo-600 ring-offset-1', $cellOct15->getCellCssClasses());
+
+        // Partial future date (2026-10-16: 1 occupied out of 2)
+        $cellOct16 = $cellsByDate['2026-10-16'];
+        $this->assertSame(1, $cellOct16->occupiedUnits);
+        $this->assertSame(2, $cellOct16->totalUnits);
+        $this->assertSame('partial', $cellOct16->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-200', $cellOct16->getCapacityCssClass());
+        $this->assertFalse($cellOct16->isPast);
+        $this->assertFalse($cellOct16->isToday);
+        $this->assertStringNotContainsString('opacity-40', $cellOct16->getCellCssClasses());
+        $this->assertStringNotContainsString('ring-2', $cellOct16->getCellCssClasses());
+
+        // 2. Scoped to Property 1606
+        $heatmap1606 = $service->buildOccupancyHeatmap('1606', $now);
+        $this->assertSame('1606', $heatmap1606->propertyFilter);
+
+        $cells1606 = [];
+        foreach ($heatmap1606->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cells1606[$cell->date] = $cell;
+                }
+            }
+        }
+
+        // 2026-10-14 has 1606 occupied -> full (1/1)
+        $this->assertSame(1, $cells1606['2026-10-14']->occupiedUnits);
+        $this->assertSame(1, $cells1606['2026-10-14']->totalUnits);
+        $this->assertSame('full', $cells1606['2026-10-14']->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-600', $cells1606['2026-10-14']->getCapacityCssClass());
+
+        // 2026-10-16 has only 1707 occupied, so 1606 is vacant (0/1)
+        $this->assertSame(0, $cells1606['2026-10-16']->occupiedUnits);
+        $this->assertSame(1, $cells1606['2026-10-16']->totalUnits);
+        $this->assertSame('vacant', $cells1606['2026-10-16']->getCapacityLevel());
+        $this->assertStringContainsString('bg-gray-100', $cells1606['2026-10-16']->getCapacityCssClass());
+
+        // 3. Scoped to Property 1707
+        $heatmap1707 = $service->buildOccupancyHeatmap('1707', $now);
+        $this->assertSame('1707', $heatmap1707->propertyFilter);
+
+        $cells1707 = [];
+        foreach ($heatmap1707->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cells1707[$cell->date] = $cell;
+                }
+            }
+        }
+
+        // 2026-10-14 has only 1606 occupied, so 1707 is vacant (0/1)
+        $this->assertSame(0, $cells1707['2026-10-14']->occupiedUnits);
+        $this->assertSame(1, $cells1707['2026-10-14']->totalUnits);
+        $this->assertSame('vacant', $cells1707['2026-10-14']->getCapacityLevel());
+        $this->assertStringContainsString('bg-gray-100', $cells1707['2026-10-14']->getCapacityCssClass());
+
+        // 2026-10-16 has 1707 occupied -> full (1/1)
+        $this->assertSame(1, $cells1707['2026-10-16']->occupiedUnits);
+        $this->assertSame(1, $cells1707['2026-10-16']->totalUnits);
+        $this->assertSame('full', $cells1707['2026-10-16']->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-600', $cells1707['2026-10-16']->getCapacityCssClass());
+    }
 }

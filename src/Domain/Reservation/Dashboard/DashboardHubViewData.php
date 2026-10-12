@@ -24,6 +24,7 @@ final class DashboardHubViewData
         public readonly array $channelSyncData,
         public readonly int $todayArrivalsCount,
         public readonly int $todayDeparturesCount,
-        public readonly int $activeStaysCount
+        public readonly int $activeStaysCount,
+        public readonly ?OccupancyHeatmapViewData $heatmap = null
     ) {}
 }

@@ -7,7 +7,10 @@ namespace OceanViewFlats\Tests\Unit\Domain\Reservation\Dashboard;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
+use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapDayCell;
+use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
+use OceanViewFlats\Domain\Reservation\Dashboard\OccupancyHeatmapViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationsEvent;
 use OceanViewFlats\Domain\Reservation\Dashboard\PropertyRateStatus;
@@ -211,5 +214,131 @@ final class DashboardModelTest extends TestCase
         $this->assertSame(1, $hubData->todayArrivalsCount);
         $this->assertSame(0, $hubData->todayDeparturesCount);
         $this->assertSame(1, $hubData->activeStaysCount);
+        $this->assertNull($hubData->heatmap);
+    }
+
+    public function testHeatmapDayCellCapacityLevelsAndStyling(): void
+    {
+        // 1. All Properties View (totalUnits = 2)
+        $vacantAll = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 0
+        );
+        $this->assertSame('vacant', $vacantAll->getCapacityLevel());
+        $this->assertStringContainsString('bg-gray-100', $vacantAll->getCapacityCssClass());
+
+        $partialAll = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 1
+        );
+        $this->assertSame('partial', $partialAll->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-200', $partialAll->getCapacityCssClass());
+
+        $fullAll = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: true,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 2
+        );
+        $this->assertSame('full', $fullAll->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-600', $fullAll->getCapacityCssClass());
+        $this->assertTrue($fullAll->isToday);
+
+        // 2. Single Property View (totalUnits = 1)
+        $vacantSingle = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: true,
+            totalUnits: 1,
+            occupiedUnits: 0
+        );
+        $this->assertSame('vacant', $vacantSingle->getCapacityLevel());
+        $this->assertStringContainsString('bg-gray-100', $vacantSingle->getCapacityCssClass());
+        $this->assertTrue($vacantSingle->isPast);
+        $this->assertStringContainsString('opacity-40', $vacantSingle->getCellCssClasses());
+
+        $fullSingle = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: true,
+            isPast: false,
+            totalUnits: 1,
+            occupiedUnits: 1
+        );
+        $this->assertSame('full', $fullSingle->getCapacityLevel());
+        $this->assertStringContainsString('bg-emerald-600', $fullSingle->getCapacityCssClass());
+        $this->assertStringContainsString('ring-2 ring-indigo-600', $fullSingle->getCellCssClasses());
+
+        // 3. Maintenance Block
+        $maint = new HeatmapDayCell(
+            date: '2026-10-15',
+            dayOfMonth: 15,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: false,
+            totalUnits: 2,
+            occupiedUnits: 0,
+            hasMaintenance: true
+        );
+        $this->assertSame('maintenance', $maint->getCapacityLevel());
+        $this->assertStringContainsString('bg-amber-100', $maint->getCapacityCssClass());
+    }
+
+    public function testHeatmapWeekColumnAndOccupancyHeatmapViewData(): void
+    {
+        $day = new HeatmapDayCell(
+            date: '2026-10-01',
+            dayOfMonth: 1,
+            dayOfWeek: 4,
+            isToday: false,
+            isPast: true,
+            totalUnits: 2,
+            occupiedUnits: 1
+        );
+
+        $days = [null, null, null, $day, null, null, null];
+        $column = new HeatmapWeekColumn(weekNumber: 40, days: $days, monthLabel: 'Oct');
+
+        $this->assertSame(40, $column->weekNumber);
+        $this->assertCount(7, $column->days);
+        $this->assertNull($column->days[0]);
+        $this->assertSame($day, $column->days[3]);
+        $this->assertSame('Oct', $column->monthLabel);
+
+        $heatmap = new OccupancyHeatmapViewData(
+            startDate: '2026-10-01',
+            endDate: '2027-04-30',
+            propertyFilter: 'all',
+            columns: [$column],
+            monthHeaders: [['label' => 'Oct', 'startCol' => 0, 'span' => 5]],
+            overallOccupancyPercentage: 75.5,
+            totalDaysCount: 212,
+            totalOccupiedDaysCount: 160
+        );
+
+        $this->assertSame('2026-10-01', $heatmap->startDate);
+        $this->assertSame('2027-04-30', $heatmap->endDate);
+        $this->assertSame('all', $heatmap->propertyFilter);
+        $this->assertCount(1, $heatmap->columns);
+        $this->assertCount(1, $heatmap->monthHeaders);
+        $this->assertSame(75.5, $heatmap->overallOccupancyPercentage);
+        $this->assertSame(212, $heatmap->totalDaysCount);
+        $this->assertSame(160, $heatmap->totalOccupiedDaysCount);
     }
 }

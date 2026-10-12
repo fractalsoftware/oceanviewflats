@@ -485,6 +485,51 @@ final class AdminReservationRepository
         return $alerts;
     }
 
+    /**
+     * Fetches confirmed reservations overlapping the specified date window.
+     *
+     * @param string $propertyId 'all' | '1606' | '1707'
+     * @return list<array{
+     *     reservation_uid: string,
+     *     property_id: string,
+     *     check_in: string,
+     *     check_out: string,
+     *     guest_name: string,
+     *     status: string
+     * }>
+     */
+    public function getConfirmedReservationsForRange(
+        string $propertyId,
+        string $startDate,
+        string $endDate
+    ): array {
+        $sql = '
+            SELECT reservation_uid, property_id, check_in, check_out, guest_name, status
+            FROM reservations
+            WHERE status = "confirmed"
+              AND check_in <= :end_date
+              AND check_out > :start_date
+        ';
+        $params = [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ];
+
+        if ($propertyId !== 'all') {
+            $sql .= ' AND property_id = :property_id';
+            $params['property_id'] = $propertyId;
+        }
+
+        $sql .= ' ORDER BY check_in ASC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        /** @var list<array{reservation_uid: string, property_id: string, check_in: string, check_out: string, guest_name: string, status: string}> $rows */
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $rows;
+    }
+
     public function getActiveStaysCount(string $propertyId = 'all', ?DateTimeImmutable $now = null): int
     {
         $today = ($now ?? new DateTimeImmutable('today'))->format('Y-m-d');
