@@ -6,11 +6,8 @@ namespace OceanViewFlats\Admin\Tests\Integration;
 
 use DOMDocument;
 use DOMElement;
-use DOMXPath;
-use OceanViewFlats\Admin\AdminApp;
 use OceanViewFlats\Admin\Http\Request;
-use OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper;
-use PDO;
+use OceanViewFlats\Admin\Tests\Support\AdminHeadAssertionTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -20,33 +17,11 @@ use PHPUnit\Framework\TestCase;
  */
 final class AdminFaviconSuiteTest extends TestCase
 {
-    private string $rootPath;
-    private string $publicDir;
-    private string $adminPublicDir;
-    private PDO $pdo;
-    private AdminApp $app;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $authenticatedAdminSession;
+    use AdminHeadAssertionTrait;
 
     protected function setUp(): void
     {
-        $this->rootPath = dirname(__DIR__, 3);
-        $this->publicDir = $this->rootPath . '/public';
-        $this->adminPublicDir = $this->rootPath . '/admin/public';
-
-        $this->pdo = AdminDatabaseTestHelper::createDatabaseWithDefaultAdmin();
-        $this->app = AdminApp::createDefault($this->pdo);
-
-        $this->authenticatedAdminSession = [
-            'admin_user_id' => 1,
-            'admin_user_name' => 'Manuel Admin',
-            'admin_user_email' => 'admin@oceanviewflats.com',
-            'admin_user_role' => 'admin',
-            'csrf_token' => 'secure_csrf_token_favicon_suite_test',
-        ];
+        $this->setUpAdminHeadTestEnvironment();
     }
 
     public function testSvgFaviconMatchesPublicEmblemGeometryAndUsesLightPurplePalette(): void
@@ -289,20 +264,6 @@ final class AdminFaviconSuiteTest extends TestCase
         $this->assertGreaterThan(1000, $solidPurpleCount, "Expected solid #c084fc emblem pixels in {$filename}");
     }
 
-    /**
-     * @return array<string, array{0: string}>
-     */
-    public static function authenticatedAdminRoutesProvider(): array
-    {
-        return [
-            'Dashboard Hub' => ['/'],
-            'Reservations Ledger' => ['/reservations'],
-            'Seasonal Rate Tiers' => ['/rates'],
-            'Maintenance Blocks' => ['/calendar-blocks'],
-            'Audit Log' => ['/audit-logs'],
-        ];
-    }
-
     #[DataProvider('authenticatedAdminRoutesProvider')]
     public function testAuthenticatedRoutesIncludeFaviconAndTouchIconLinksInHead(string $route): void
     {
@@ -325,13 +286,7 @@ final class AdminFaviconSuiteTest extends TestCase
 
     public function testForbidden403ResponseIncludesFaviconAndTouchIconLinksInHead(): void
     {
-        $viewerSession = [
-            'admin_user_id' => 2,
-            'admin_user_name' => 'Viewer Operator',
-            'admin_user_email' => 'viewer@oceanviewflats.com',
-            'admin_user_role' => 'viewer',
-            'csrf_token' => 'secure_csrf_token_viewer_test',
-        ];
+        $viewerSession = $this->createViewerSession();
 
         $request = new Request('GET', '/audit-logs');
         $response = $this->app->handle($request, $viewerSession);
@@ -342,25 +297,13 @@ final class AdminFaviconSuiteTest extends TestCase
 
     public function testStandaloneWebSetupUtilityIncludesFaviconAndTouchIconLinksInHead(): void
     {
-        $setupPath = $this->adminPublicDir . '/setup.php';
-        $this->assertFileExists($setupPath);
-
-        $setupSource = (string) file_get_contents($setupPath);
-        $doctypePos = strpos($setupSource, '<!DOCTYPE html>');
-        $this->assertNotFalse($doctypePos, 'admin/public/setup.php must contain an HTML document shell');
-
-        $htmlPortion = substr($setupSource, $doctypePos);
+        $htmlPortion = $this->extractSetupHtmlShell();
         $this->assertHeadContainsFaviconSuiteLinks($htmlPortion, 'admin/public/setup.php');
     }
 
     private function assertHeadContainsFaviconSuiteLinks(string $html, string $context): void
     {
-        $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($html);
-        libxml_clear_errors();
-
-        $xpath = new DOMXPath($dom);
+        $xpath = $this->createHeadXPath($html);
 
         // 1. Vector SVG favicon
         $svgLinks = $xpath->query('//head/link[@rel="icon" and @type="image/svg+xml"]');

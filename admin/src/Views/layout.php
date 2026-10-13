@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="OVF Admin">
     <meta name="theme-color" content="#c084fc">
-    <link rel="manifest" href="/site.webmanifest?v=20261013">
+    <link rel="manifest" href="/site.webmanifest?v=20260614">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTMX Configuration: Allow 422 Unprocessable Entity responses to swap into targets -->

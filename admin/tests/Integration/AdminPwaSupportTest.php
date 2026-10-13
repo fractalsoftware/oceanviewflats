@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Admin\Tests\Integration;
 
-use DOMDocument;
 use DOMElement;
-use DOMXPath;
-use OceanViewFlats\Admin\AdminApp;
 use OceanViewFlats\Admin\Http\Request;
-use OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper;
-use PDO;
+use OceanViewFlats\Admin\Tests\Support\AdminHeadAssertionTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -20,31 +16,13 @@ use PHPUnit\Framework\TestCase;
  */
 final class AdminPwaSupportTest extends TestCase
 {
-    private string $rootPath;
-    private string $adminPublicDir;
-    private PDO $pdo;
-    private AdminApp $app;
+    use AdminHeadAssertionTrait;
 
-    /**
-     * @var array<string, mixed>
-     */
-    private array $authenticatedAdminSession;
+    private const EXPECTED_CACHE_BUST_QUERY = 'v=20260614';
 
     protected function setUp(): void
     {
-        $this->rootPath = dirname(__DIR__, 3);
-        $this->adminPublicDir = $this->rootPath . '/admin/public';
-
-        $this->pdo = AdminDatabaseTestHelper::createDatabaseWithDefaultAdmin();
-        $this->app = AdminApp::createDefault($this->pdo);
-
-        $this->authenticatedAdminSession = [
-            'admin_user_id' => 1,
-            'admin_user_name' => 'Manuel Admin',
-            'admin_user_email' => 'admin@oceanviewflats.com',
-            'admin_user_role' => 'admin',
-            'csrf_token' => 'secure_csrf_token_pwa_support_test',
-        ];
+        $this->setUpAdminHeadTestEnvironment();
     }
 
     public function testWebAppManifestContainsRequiredStandalonePwaMetadataAndIcons(): void
@@ -147,20 +125,6 @@ final class AdminPwaSupportTest extends TestCase
         $this->assertStringNotContainsString('cache.add(', $swSource);
     }
 
-    /**
-     * @return array<string, array{0: string}>
-     */
-    public static function authenticatedAdminRoutesProvider(): array
-    {
-        return [
-            'Dashboard Hub' => ['/'],
-            'Reservations Ledger' => ['/reservations'],
-            'Seasonal Rate Tiers' => ['/rates'],
-            'Maintenance Blocks' => ['/calendar-blocks'],
-            'Audit Log' => ['/audit-logs'],
-        ];
-    }
-
     #[DataProvider('authenticatedAdminRoutesProvider')]
     public function testAuthenticatedRoutesRenderPwaHeadTagsAndServiceWorkerRegistration(string $route): void
     {
@@ -183,13 +147,7 @@ final class AdminPwaSupportTest extends TestCase
 
     public function testForbidden403ResponseRendersPwaHeadTagsAndServiceWorkerRegistration(): void
     {
-        $viewerSession = [
-            'admin_user_id' => 2,
-            'admin_user_name' => 'Viewer Operator',
-            'admin_user_email' => 'viewer@oceanviewflats.com',
-            'admin_user_role' => 'viewer',
-            'csrf_token' => 'secure_csrf_token_viewer_pwa_test',
-        ];
+        $viewerSession = $this->createViewerSession();
 
         $request = new Request('GET', '/audit-logs');
         $response = $this->app->handle($request, $viewerSession);
@@ -198,14 +156,125 @@ final class AdminPwaSupportTest extends TestCase
         $this->assertHtmlContainsPwaMetadataAndRegistration($response->getBody(), 'HTTP 403 Forbidden response');
     }
 
+    public function testCacheBustingQueryStringsMatchAcrossManifestLayoutAndSetup(): void
+    {
+        $manifestPath = $this->adminPublicDir . '/site.webmanifest';
+        /** @var mixed $manifest */
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+        $this->assertIsArray($manifest);
+        $this->assertIsArray($manifest['icons'] ?? null);
+
+        foreach ($manifest['icons'] as $icon) {
+            $this->assertIsArray($icon);
+            $src = (string) ($icon['src'] ?? '');
+            $this->assertSame(
+                self::EXPECTED_CACHE_BUST_QUERY,
+                (string) parse_url($src, PHP_URL_QUERY),
+                "site.webmanifest icon '{$src}' must use ?" . self::EXPECTED_CACHE_BUST_QUERY
+            );
+        }
+
+        // Verify layout.php rendered <head> icon and manifest links
+        $emptySession = [];
+        $response = $this->app->handle(new Request('GET', '/login'), $emptySession);
+        $layoutXPath = $this->createHeadXPath($response->getBody());
+        $layoutQueries = [
+            '//head/link[@rel="icon" and @type="image/svg+xml"]' => '/favicon.svg?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="icon" and @type="image/png" and @sizes="96x96"]' => '/favicon-96x96.png?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="shortcut icon"]' => '/favicon.ico?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="apple-touch-icon" and @sizes="180x180"]' => '/apple-touch-icon.png?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="manifest"]' => '/site.webmanifest?' . self::EXPECTED_CACHE_BUST_QUERY,
+        ];
+
+        foreach ($layoutQueries as $xpathExpr => $expectedHref) {
+            $nodes = $layoutXPath->query($xpathExpr);
+            $this->assertNotFalse($nodes);
+            $this->assertSame(1, $nodes->length);
+            $node = $nodes->item(0);
+            $this->assertInstanceOf(DOMElement::class, $node);
+            $this->assertSame($expectedHref, $node->getAttribute('href'));
+            $this->assertSame(
+                self::EXPECTED_CACHE_BUST_QUERY,
+                (string) parse_url($node->getAttribute('href'), PHP_URL_QUERY)
+            );
+        }
+
+        // Verify setup.php <head> icon links
+        $setupXPath = $this->createHeadXPath($this->extractSetupHtmlShell());
+        $setupQueries = [
+            '//head/link[@rel="icon" and @type="image/svg+xml"]' => '/favicon.svg?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="icon" and @type="image/png" and @sizes="96x96"]' => '/favicon-96x96.png?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="shortcut icon"]' => '/favicon.ico?' . self::EXPECTED_CACHE_BUST_QUERY,
+            '//head/link[@rel="apple-touch-icon" and @sizes="180x180"]' => '/apple-touch-icon.png?' . self::EXPECTED_CACHE_BUST_QUERY,
+        ];
+
+        foreach ($setupQueries as $xpathExpr => $expectedHref) {
+            $nodes = $setupXPath->query($xpathExpr);
+            $this->assertNotFalse($nodes);
+            $this->assertSame(1, $nodes->length);
+            $node = $nodes->item(0);
+            $this->assertInstanceOf(DOMElement::class, $node);
+            $this->assertSame($expectedHref, $node->getAttribute('href'));
+            $this->assertSame(
+                self::EXPECTED_CACHE_BUST_QUERY,
+                (string) parse_url($node->getAttribute('href'), PHP_URL_QUERY)
+            );
+        }
+    }
+
+    public function testAdminDeployWorkflowStagesAllFaviconAndPwaAssetsInAdminPublic(): void
+    {
+        $deployYmlPath = $this->rootPath . '/.github/workflows/admin-deploy.yml';
+        $this->assertFileExists($deployYmlPath);
+        $deployYml = (string) file_get_contents($deployYmlPath);
+
+        $this->assertStringContainsString('cp -R admin staging/admin', $deployYml);
+        $this->assertStringNotContainsString('staging/admin/public', $deployYml);
+
+        $requiredAssets = [
+            'favicon.svg',
+            'favicon-96x96.png',
+            'favicon.ico',
+            'apple-touch-icon.png',
+            'web-app-manifest-192x192.png',
+            'web-app-manifest-512x512.png',
+            'site.webmanifest',
+            'sw.js',
+        ];
+
+        foreach ($requiredAssets as $asset) {
+            $this->assertFileExists($this->adminPublicDir . '/' . $asset);
+            $this->assertStringNotContainsString($asset, $deployYml);
+        }
+
+        $stagingDir = sys_get_temp_dir() . '/ovf_pwa_staging_test_' . uniqid();
+        mkdir($stagingDir, 0777, true);
+
+        try {
+            exec(sprintf(
+                'cp -R %s %s/admin && rm -rf %s/admin/tests %s/admin/phpunit.xml %s/admin/phpstan.neon %s/admin/.phpunit*',
+                escapeshellarg($this->rootPath . '/admin'),
+                escapeshellarg($stagingDir),
+                escapeshellarg($stagingDir),
+                escapeshellarg($stagingDir),
+                escapeshellarg($stagingDir),
+                escapeshellarg($stagingDir)
+            ));
+
+            foreach ($requiredAssets as $asset) {
+                $this->assertFileExists(
+                    $stagingDir . '/admin/public/' . $asset,
+                    "Staged deployment payload must retain staging/admin/public/{$asset}"
+                );
+            }
+        } finally {
+            exec(sprintf('rm -rf %s', escapeshellarg($stagingDir)));
+        }
+    }
+
     private function assertHtmlContainsPwaMetadataAndRegistration(string $html, string $context): void
     {
-        $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($html);
-        libxml_clear_errors();
-
-        $xpath = new DOMXPath($dom);
+        $xpath = $this->createHeadXPath($html);
 
         // 1. <link rel="manifest" href="/site.webmanifest...">
         $manifestLinks = $xpath->query('//head/link[@rel="manifest"]');
