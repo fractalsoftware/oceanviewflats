@@ -18,7 +18,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
 ?>
 <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs space-y-4">
     <!-- Header: Title, Horizon, and Overall Occupancy -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3">
+    <div class="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
         <div>
             <div class="flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -29,7 +29,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                 <?= htmlspecialchars($formattedHorizon) ?> &bull; <?= (int) $heatmap->totalDaysCount ?> calendar days
             </p>
         </div>
-        <div class="flex items-center space-x-3 self-start sm:self-auto">
+        <div class="flex items-center space-x-3 self-start sm:self-auto shrink-0">
             <div class="text-right">
                 <div class="text-xs font-bold text-gray-900">
                     <?= number_format($heatmap->overallOccupancyPercentage, 1) ?>% Occupied
