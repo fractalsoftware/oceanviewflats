@@ -26,7 +26,14 @@ Options -Indexes
     Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# 4. Front-Controller URL Rewriting
+# 4. Static Asset MIME Types (PWA Web App Manifest & Vector Icons)
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddType image/svg+xml .svg
+    AddType image/x-icon .ico
+</IfModule>
+
+# 5. Front-Controller URL Rewriting
 <IfModule mod_rewrite.c>
     RewriteEngine On
 

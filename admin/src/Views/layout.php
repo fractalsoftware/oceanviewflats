@@ -9,6 +9,12 @@
     <link rel="icon" type="image/png" href="/favicon-96x96.png?v=20260614" sizes="96x96">
     <link rel="shortcut icon" href="/favicon.ico?v=20260614">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260614">
+    <!-- PWA & Mobile Web App Metadata -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="OVF Admin">
+    <meta name="theme-color" content="#c084fc">
+    <link rel="manifest" href="/site.webmanifest?v=20261013">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTMX Configuration: Allow 422 Unprocessable Entity responses to swap into targets -->
@@ -611,6 +617,13 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
         }
     });
 })();
+
+// Unobtrusive PWA Pass-Through Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function() {});
+    });
+}
 </script>
 
 </body>
