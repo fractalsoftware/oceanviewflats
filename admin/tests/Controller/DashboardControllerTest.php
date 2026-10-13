@@ -468,17 +468,7 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('overflow-x-auto pb-2 -mx-2 px-2', $body);
 
         // 2. Heatmap stream placement: inside 8-column operations stream container and preceding 7-Day Operations Schedule
-        $gridPos = strpos($body, 'class="grid grid-cols-1 lg:grid-cols-12 gap-6"');
-        $this->assertNotFalse($gridPos, 'Two-column grid container must be present in dashboard hub.');
-        $streamPos = strpos($body, 'class="lg:col-span-8 space-y-6"', $gridPos);
-        $this->assertNotFalse($streamPos, '8-column operations stream container must be present.');
-        $heatmapPos = strpos($body, 'Occupancy Heatmap', $streamPos);
-        $this->assertNotFalse($heatmapPos, 'Occupancy Heatmap must be rendered inside the 8-column operations stream.');
-        $schedulePos = strpos($body, '7-Day Operations Horizon', $heatmapPos);
-        $this->assertNotFalse($schedulePos, '7-Day Operations Schedule must follow Occupancy Heatmap.');
-        $firstHeatmapPos = strpos($body, 'Occupancy Heatmap');
-        $this->assertGreaterThan($gridPos, $firstHeatmapPos, 'Occupancy Heatmap must not appear outside or before the two-column grid.');
-        $this->assertLessThan($schedulePos, $heatmapPos, 'Occupancy Heatmap must precede 7-Day Operations Schedule inside operations stream.');
+        $this->assertOperationsStreamOrdering($body, 'dashboard hub');
 
         // 3. Weekday indicators (all 7 weekdays: Mon through Sun in sequence)
         $weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -690,17 +680,23 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringNotContainsString('(2/2)', $body);
 
         // 4. Verify 8-column operations stream layout structure and ordering under HTMX property filter
+        $this->assertOperationsStreamOrdering($body, 'HTMX partial');
+    }
+
+    private function assertOperationsStreamOrdering(string $body, string $context = ''): void
+    {
+        $suffix = $context !== '' ? " in {$context}" : '';
         $gridPos = strpos($body, 'class="grid grid-cols-1 lg:grid-cols-12 gap-6"');
-        $this->assertNotFalse($gridPos, 'Two-column grid container must be present in HTMX partial.');
+        $this->assertNotFalse($gridPos, "Two-column grid container must be present{$suffix}.");
         $streamPos = strpos($body, 'class="lg:col-span-8 space-y-6"', $gridPos);
-        $this->assertNotFalse($streamPos, '8-column operations stream container must be present in HTMX partial.');
+        $this->assertNotFalse($streamPos, "8-column operations stream container must be present{$suffix}.");
         $heatmapPos = strpos($body, 'Occupancy Heatmap', $streamPos);
-        $this->assertNotFalse($heatmapPos, 'Occupancy Heatmap must be inside 8-column operations stream in HTMX partial.');
+        $this->assertNotFalse($heatmapPos, "Occupancy Heatmap must be rendered inside the 8-column operations stream{$suffix}.");
         $schedulePos = strpos($body, '7-Day Operations Horizon', $heatmapPos);
-        $this->assertNotFalse($schedulePos, '7-Day Operations Schedule must follow Occupancy Heatmap in HTMX partial.');
+        $this->assertNotFalse($schedulePos, "7-Day Operations Schedule must follow Occupancy Heatmap{$suffix}.");
         $firstHeatmapPos = strpos($body, 'Occupancy Heatmap');
-        $this->assertGreaterThan($gridPos, $firstHeatmapPos, 'Occupancy Heatmap must be inside grid container in HTMX partial.');
-        $this->assertLessThan($schedulePos, $heatmapPos, 'Occupancy Heatmap must precede 7-Day Operations Schedule in HTMX partial.');
+        $this->assertGreaterThan($gridPos, $firstHeatmapPos, "Occupancy Heatmap must not appear outside or before the two-column grid{$suffix}.");
+        $this->assertLessThan($schedulePos, $heatmapPos, "Occupancy Heatmap must precede 7-Day Operations Schedule inside operations stream{$suffix}.");
     }
 
     private function createSampleHubData(string $today): DashboardHubViewData

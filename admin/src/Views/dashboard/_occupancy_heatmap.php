@@ -54,20 +54,9 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                 <div class="sticky left-0 bg-white border-r border-gray-100 pr-1.5 z-10 flex flex-col gap-1 text-[10px] text-gray-600 font-medium select-none shrink-0">
                     <!-- Top spacer aligned with month labels -->
                     <div class="h-4"></div>
-                    <!-- Row 0: Mon -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Mon</div>
-                    <!-- Row 1: Tue -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Tue</div>
-                    <!-- Row 2: Wed -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Wed</div>
-                    <!-- Row 3: Thu -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Thu</div>
-                    <!-- Row 4: Fri -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Fri</div>
-                    <!-- Row 5: Sat -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Sat</div>
-                    <!-- Row 6: Sun -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Sun</div>
+                    <?php foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dayLabel): ?>
+                        <div class="h-3.5 sm:h-4 flex items-center"><?= $dayLabel ?></div>
+                    <?php endforeach; ?>
                 </div>
 
                 <!-- 7-Month Columns Container -->
