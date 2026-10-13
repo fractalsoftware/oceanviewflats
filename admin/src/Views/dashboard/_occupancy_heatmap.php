@@ -18,7 +18,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
 ?>
 <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs space-y-4">
     <!-- Header: Title, Horizon, and Overall Occupancy -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3">
+    <div class="flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
         <div>
             <div class="flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -29,7 +29,7 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
                 <?= htmlspecialchars($formattedHorizon) ?> &bull; <?= (int) $heatmap->totalDaysCount ?> calendar days
             </p>
         </div>
-        <div class="flex items-center space-x-3 self-start sm:self-auto">
+        <div class="flex items-center space-x-3 self-start sm:self-auto shrink-0">
             <div class="text-right">
                 <div class="text-xs font-bold text-gray-900">
                     <?= number_format($heatmap->overallOccupancyPercentage, 1) ?>% Occupied
@@ -50,24 +50,13 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
     <div class="overflow-x-auto pb-2 -mx-2 px-2">
         <div class="min-w-max inline-block align-top py-1">
             <div class="flex items-start gap-1">
-                <!-- Y-Axis Weekday Labels (Mon, Wed, Fri) -->
-                <div class="sticky left-0 bg-white dark:bg-slate-900 z-10 flex flex-col gap-1 text-[10px] text-gray-400 font-medium select-none pr-2 shrink-0">
+                <!-- Y-Axis Weekday Labels (Mon - Sun) -->
+                <div class="sticky left-0 bg-white border-r border-gray-100 pr-1.5 z-10 flex flex-col gap-1 text-[10px] text-gray-600 font-medium select-none shrink-0">
                     <!-- Top spacer aligned with month labels -->
                     <div class="h-4"></div>
-                    <!-- Row 0: Mon -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Mon</div>
-                    <!-- Row 1: Tue -->
-                    <div class="h-3.5 sm:h-4"></div>
-                    <!-- Row 2: Wed -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Wed</div>
-                    <!-- Row 3: Thu -->
-                    <div class="h-3.5 sm:h-4"></div>
-                    <!-- Row 4: Fri -->
-                    <div class="h-3.5 sm:h-4 flex items-center">Fri</div>
-                    <!-- Row 5: Sat -->
-                    <div class="h-3.5 sm:h-4"></div>
-                    <!-- Row 6: Sun -->
-                    <div class="h-3.5 sm:h-4"></div>
+                    <?php foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dayLabel): ?>
+                        <div class="h-3.5 sm:h-4 flex items-center"><?= $dayLabel ?></div>
+                    <?php endforeach; ?>
                 </div>
 
                 <!-- 7-Month Columns Container -->
