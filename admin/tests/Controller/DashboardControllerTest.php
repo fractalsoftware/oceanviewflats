@@ -465,10 +465,19 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('50.0% Occupied', $body);
         $this->assertStringContainsString('106 of 212 days active', $body);
 
-        // 2. Weekday indicators (Mon, Wed, Fri)
-        $this->assertStringContainsString('Mon', $body);
-        $this->assertStringContainsString('Wed', $body);
-        $this->assertStringContainsString('Fri', $body);
+        // 2. Weekday indicators (all 7 weekdays: Mon through Sun in sequence)
+        $weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $lastOffset = 0;
+        foreach ($weekdays as $day) {
+            $this->assertStringContainsString($day, $body);
+            $dayPos = strpos($body, $day, $lastOffset);
+            $this->assertNotFalse($dayPos, "Expected weekday '{$day}' to appear in sequence in rendered dashboard output.");
+            $lastOffset = $dayPos + strlen($day);
+        }
+
+        // Verify sticky weekday column light styling and absence of dark:bg-slate-900
+        $this->assertStringContainsString('sticky left-0 bg-white border-r border-gray-100 pr-1.5', $body);
+        $this->assertStringNotContainsString('dark:bg-slate-900', $body);
 
         // 3. Month label header
         $this->assertStringContainsString('Oct', $body);

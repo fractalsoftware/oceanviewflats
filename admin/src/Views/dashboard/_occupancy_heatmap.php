@@ -50,24 +50,24 @@ $isAllProperties = ($heatmap->propertyFilter === 'all');
     <div class="overflow-x-auto pb-2 -mx-2 px-2">
         <div class="min-w-max inline-block align-top py-1">
             <div class="flex items-start gap-1">
-                <!-- Y-Axis Weekday Labels (Mon, Wed, Fri) -->
-                <div class="sticky left-0 bg-white dark:bg-slate-900 z-10 flex flex-col gap-1 text-[10px] text-gray-400 font-medium select-none pr-2 shrink-0">
+                <!-- Y-Axis Weekday Labels (Mon - Sun) -->
+                <div class="sticky left-0 bg-white border-r border-gray-100 pr-1.5 z-10 flex flex-col gap-1 text-[10px] text-gray-600 font-medium select-none shrink-0">
                     <!-- Top spacer aligned with month labels -->
                     <div class="h-4"></div>
                     <!-- Row 0: Mon -->
                     <div class="h-3.5 sm:h-4 flex items-center">Mon</div>
                     <!-- Row 1: Tue -->
-                    <div class="h-3.5 sm:h-4"></div>
+                    <div class="h-3.5 sm:h-4 flex items-center">Tue</div>
                     <!-- Row 2: Wed -->
                     <div class="h-3.5 sm:h-4 flex items-center">Wed</div>
                     <!-- Row 3: Thu -->
-                    <div class="h-3.5 sm:h-4"></div>
+                    <div class="h-3.5 sm:h-4 flex items-center">Thu</div>
                     <!-- Row 4: Fri -->
                     <div class="h-3.5 sm:h-4 flex items-center">Fri</div>
                     <!-- Row 5: Sat -->
-                    <div class="h-3.5 sm:h-4"></div>
+                    <div class="h-3.5 sm:h-4 flex items-center">Sat</div>
                     <!-- Row 6: Sun -->
-                    <div class="h-3.5 sm:h-4"></div>
+                    <div class="h-3.5 sm:h-4 flex items-center">Sun</div>
                 </div>
 
                 <!-- 7-Month Columns Container -->
