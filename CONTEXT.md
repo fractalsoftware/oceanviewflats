@@ -247,6 +247,10 @@ _Avoid_: Registration ID, External Consecutivo, Booking Voucher Number
 
 ### Administration & Operations
 
+**Admin Console**:
+The isolated administrative web application (`admin.oceanviewflats.com`) through which Admin Users manage Reservations, Seasonal Rate Tiers, Maintenance Blocks, Channel Sync, and Audit Logs.
+_Avoid_: Admin Platform, Admin Portal, Backoffice, Control Panel
+
 **Admin User**:
 An authorized internal operator possessing authenticated credentials to manage Reservations, Access Credentials, rates, and calendar blocks.
 _Avoid_: Staff, Employee, Operator, Superuser

@@ -68,6 +68,11 @@ $createdUser = $data['user'] ?? null;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Setup & Migrations — OceanViewFlats Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260614">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png?v=20260614" sizes="96x96">
+  <link rel="shortcut icon" href="/favicon.ico?v=20260614">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260614">
+  <meta name="theme-color" content="#c084fc">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
