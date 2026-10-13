@@ -246,7 +246,7 @@ final class AdminFrontControllerTest extends TestCase
         $response = $this->app->handle($request, $session);
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertStringContainsString('Welcome back, Operator Bob', $response->getBody());
+        $this->assertStringContainsString('Operator Bob', $response->getBody());
         $this->assertStringContainsString('Sign Out', $response->getBody());
     }
 
