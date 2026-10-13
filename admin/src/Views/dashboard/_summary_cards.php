@@ -68,43 +68,4 @@ $alertCount = count($viewData->alerts);
             </div>
         </div>
     </div>
-
-    <!-- Quick Navigation Bar -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Reservations & Unified Grid -->
-        <div class="bg-white overflow-hidden shadow-2xs rounded-xl border border-gray-200 p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="flex-shrink-0 bg-indigo-50 rounded-lg p-2.5 text-indigo-600">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Reservations & Calendar</h3>
-                    <p class="text-xs text-gray-600 mt-0.5">Filter, inspect, and fulfill guest stays</p>
-                </div>
-            </div>
-            <a href="/reservations" class="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-900">
-                View Unified Grid &rarr;
-            </a>
-        </div>
-
-        <!-- Smart Lock Status -->
-        <div class="bg-white overflow-hidden shadow-2xs rounded-xl border border-gray-200 p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="flex-shrink-0 bg-amber-50 rounded-lg p-2.5 text-amber-600">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Smart Lock Status</h3>
-                    <p class="text-xs text-gray-700 font-medium mt-0.5">Keypad PIN Integrations Ready</p>
-                </div>
-            </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
-                <span class="w-1.5 h-1.5 mr-1 rounded-full bg-emerald-500"></span> Online
-            </span>
-        </div>
-    </div>
 </div>

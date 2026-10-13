@@ -78,8 +78,13 @@ final class DashboardHubE2ETest extends TestCase
 
         // 1. Master Layout & Shell
         $this->assertStringContainsString('<!DOCTYPE html>', $body);
-        $this->assertStringContainsString('Welcome back, Manuel Admin', $body);
-        $this->assertStringContainsString('Role: <span class="font-medium text-gray-700 uppercase">admin</span>', $body);
+        $this->assertStringContainsString('Manuel Admin', $body);
+        $this->assertStringContainsString('(admin)', $body);
+        $this->assertStringNotContainsString('Welcome back', $body);
+        $this->assertStringNotContainsString('Reservations & Calendar', $body);
+        $this->assertStringNotContainsString('Smart Lock Status', $body);
+        $this->assertStringContainsString('id="mobile-menu-button"', $body);
+        $this->assertStringContainsString('id="mobile-menu"', $body);
         $this->assertStringContainsString('href="/reservations"', $body);
         $this->assertStringContainsString('href="/rates"', $body);
         $this->assertStringContainsString('href="/calendar-blocks"', $body);
@@ -263,7 +268,7 @@ final class DashboardHubE2ETest extends TestCase
 
         // Fallback: full page layout with shell
         $this->assertStringContainsString('<!DOCTYPE html>', $body);
-        $this->assertStringContainsString('Welcome back, Manuel Admin', $body);
+        $this->assertStringContainsString('Manuel Admin', $body);
         $this->assertStringContainsString('id="dashboard-hub-content"', $body);
         $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>[\s\n]*Apartment 1606/s', $body);
     }

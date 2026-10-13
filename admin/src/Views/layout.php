@@ -2,7 +2,7 @@
 <html lang="en" class="h-full bg-gray-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Admin Console - Ocean View Flats', ENT_QUOTES, 'UTF-8') ?></title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -47,6 +47,12 @@
                 animation: none !important;
             }
         }
+
+        @media (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-full flex flex-col font-sans text-gray-900 antialiased" hx-headers='{"HX-CSRF-Token": "<?= htmlspecialchars($effectiveCsrfToken, ENT_QUOTES, 'UTF-8') ?>"}'>
@@ -85,7 +91,7 @@
                     <?php endif; ?>
                 </nav>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="hidden md:flex items-center space-x-4">
                 <div class="flex items-center space-x-2 text-sm text-gray-700">
                     <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
                     <span class="font-medium"><?= htmlspecialchars((string) ($currentUser['name'] ?? 'Admin'), ENT_QUOTES, 'UTF-8') ?></span>
@@ -95,6 +101,52 @@
                     Sign Out
                 </a>
             </div>
+            <div class="flex items-center md:hidden">
+                <button type="button"
+                        id="mobile-menu-button"
+                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition"
+                        aria-controls="mobile-menu"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation menu">
+                    <svg id="mobile-menu-icon-open" class="block h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg id="mobile-menu-icon-close" class="hidden h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white">
+        <nav class="px-4 pt-2 pb-3 space-y-1" aria-label="Mobile navigation">
+            <a href="/" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                Dashboard
+            </a>
+            <a href="/reservations" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/reservations' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                Reservations
+            </a>
+            <a href="/rates" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/rates' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                Rates
+            </a>
+            <a href="/calendar-blocks" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/calendar-blocks' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                Calendar Blocks
+            </a>
+            <?php if (in_array($currentUser['role'] ?? '', ['admin', 'superadmin'], true)): ?>
+            <a href="/audit-logs" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/audit-logs' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                Audit Logs
+            </a>
+            <?php endif; ?>
+        </nav>
+        <div class="pt-3 pb-3 border-t border-gray-200 px-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-sm text-gray-700">
+                <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+                <span class="font-medium"><?= htmlspecialchars((string) ($currentUser['name'] ?? 'Admin'), ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="text-xs text-gray-500">(<?= htmlspecialchars((string) ($currentUser['role'] ?? 'admin'), ENT_QUOTES, 'UTF-8') ?>)</span>
+            </div>
+            <a href="/logout" class="text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-md hover:bg-red-50 border border-transparent transition">
+                Sign Out
+            </a>
         </div>
     </div>
 </header>
@@ -513,6 +565,47 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
         window.history.pushState(null, '', '/reservations');
     }
 };
+
+// Mobile Hamburger Navigation Toggle
+(function() {
+    var menuBtn = document.getElementById('mobile-menu-button');
+    var mobileMenu = document.getElementById('mobile-menu');
+    var iconOpen = document.getElementById('mobile-menu-icon-open');
+    var iconClose = document.getElementById('mobile-menu-icon-close');
+    if (!menuBtn || !mobileMenu) return;
+
+    function setMobileMenuOpen(isOpen) {
+        menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) {
+            mobileMenu.classList.remove('hidden');
+            if (iconOpen) iconOpen.classList.add('hidden');
+            if (iconClose) iconClose.classList.remove('hidden');
+        } else {
+            mobileMenu.classList.add('hidden');
+            if (iconOpen) iconOpen.classList.remove('hidden');
+            if (iconClose) iconClose.classList.add('hidden');
+        }
+    }
+
+    menuBtn.addEventListener('click', function() {
+        var expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+        setMobileMenuOpen(!expanded);
+    });
+
+    document.addEventListener('keydown', function(evt) {
+        if (evt.key === 'Escape' && menuBtn.getAttribute('aria-expanded') === 'true') {
+            setMobileMenuOpen(false);
+        }
+    });
+
+    document.addEventListener('click', function(evt) {
+        if (menuBtn.getAttribute('aria-expanded') !== 'true') return;
+        var header = menuBtn.closest('header');
+        if (header && !header.contains(evt.target)) {
+            setMobileMenuOpen(false);
+        }
+    });
+})();
 </script>
 
 </body>

@@ -52,10 +52,11 @@ final class DashboardControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
 
-        // Check user greeting & role
-        $this->assertStringContainsString('Welcome back, Operator Alice', $body);
+        // Check user identity & role in layout header, and absence of removed welcome card
+        $this->assertStringContainsString('Operator Alice', $body);
         $this->assertStringContainsString('manager', $body);
         $this->assertStringContainsString('Sign Out', $body);
+        $this->assertStringNotContainsString('Welcome back', $body);
 
         // Check canonical resource collection links in layout navigation bar
         $this->assertStringContainsString('href="/"', $body);
@@ -66,18 +67,25 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('Rates', $body);
         $this->assertStringContainsString('href="/calendar-blocks"', $body);
         $this->assertStringContainsString('Calendar Blocks', $body);
+        $this->assertStringNotContainsString('href="/audit-logs"', $body);
 
-        // Check dashboard UI sections
-        $this->assertStringContainsString('Reservations & Calendar', $body);
-        $this->assertStringContainsString('+ New Reservation', $body);
-        $this->assertStringContainsString('href="/reservations/new"', $body);
+        // Check mobile hamburger navigation & input zoom prevention in layout
+        $this->assertStringContainsString('id="mobile-menu-button"', $body);
+        $this->assertStringContainsString('id="mobile-menu"', $body);
+        $this->assertStringContainsString('aria-controls="mobile-menu"', $body);
+        $this->assertStringContainsString('maximum-scale=1.0', $body);
+        $this->assertStringContainsString('font-size: 16px !important', $body);
+
+        // Check dashboard UI sections & verify removed clutter cards
+        $this->assertStringNotContainsString('Reservations & Calendar', $body);
+        $this->assertStringNotContainsString('Smart Lock Status', $body);
+        $this->assertStringNotContainsString('Keypad PIN Integrations Ready', $body);
         $this->assertStringNotContainsString('+ Manual Booking', $body);
         $this->assertStringNotContainsString('/bookings/manual', $body);
         $this->assertStringContainsString('Channel Feeds Active', $body);
         $this->assertStringContainsString('id="channel-card-container"', $body);
         $this->assertStringContainsString('Sync Now', $body);
         $this->assertStringContainsString('hx-post="/channel-sync"', $body);
-        $this->assertStringContainsString('Keypad PIN Integrations Ready', $body);
 
         // Check CSRF token inclusion
         $this->assertStringContainsString('session_csrf_token_xyz', $body);
@@ -93,9 +101,11 @@ final class DashboardControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
 
-        // Default fallbacks: 'Admin' and 'admin'
-        $this->assertStringContainsString('Welcome back, Admin', $body);
-        $this->assertStringContainsString('admin', $body);
+        // Default fallbacks: 'Admin' and 'admin' in header, and 'Audit Logs' visible for 'admin' role
+        $this->assertStringContainsString('Admin', $body);
+        $this->assertStringContainsString('(admin)', $body);
+        $this->assertStringContainsString('href="/audit-logs"', $body);
+        $this->assertStringNotContainsString('Welcome back', $body);
     }
 
     public function testIndexAdheresToUniformCallableSignature(): void
@@ -264,7 +274,7 @@ final class DashboardControllerTest extends TestCase
         $directRequest = new Request('GET', '/dashboard/hub');
         $response1 = $controller->hub($directRequest, $session);
         $this->assertSame(200, $response1->getStatusCode());
-        $this->assertStringContainsString('Welcome back, Direct Navigator', $response1->getBody());
+        $this->assertStringContainsString('Direct Navigator', $response1->getBody());
         $this->assertStringContainsString('<!DOCTYPE html>', $response1->getBody());
 
         // Case 2: HTMX request explicitly targeting body
@@ -280,7 +290,7 @@ final class DashboardControllerTest extends TestCase
         );
         $response2 = $controller->hub($bodyTargetRequest, $session);
         $this->assertSame(200, $response2->getStatusCode());
-        $this->assertStringContainsString('Welcome back, Direct Navigator', $response2->getBody());
+        $this->assertStringContainsString('Direct Navigator', $response2->getBody());
         $this->assertStringContainsString('<!DOCTYPE html>', $response2->getBody());
     }
 
