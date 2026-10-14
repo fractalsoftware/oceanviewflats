@@ -320,6 +320,9 @@ final class Reservation
         return $this->source === 'airbnb'
             || str_starts_with($this->reservationUid, 'res-abnb-')
             || str_contains($guestEmailLower, 'airbnb.com')
+            || str_contains($guestEmailLower, 'airbnb-guest.local')
+            || str_contains($guestEmailLower, '@guest.oceanviewflats.com')
+            || str_ends_with($guestEmailLower, '.local')
             || $guestEmailLower === ''
             || str_starts_with($guestEmailLower, 'guest@')
             || str_starts_with($guestEmailLower, 'none@');

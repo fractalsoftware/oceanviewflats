@@ -365,16 +365,16 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                     </svg>
                                     Copy Guest Guide Link
                                 </button>
-                                <?php if (!$registryCompleted): ?>
+                                <?php if (!$registryCompleted && $isEditable): ?>
                                     <button type="button"
-                                            hx-post="/reservations/<?= urlencode($uid) ?>/registry/complete"
-                                            hx-target="#drawer-container"
-                                            hx-confirm="Mark guest registry as manually verified? This generates an access credential if not already set."
-                                            class="inline-flex items-center text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 transition cursor-pointer">
+                                            hx-get="/reservations/<?= urlencode($uid) ?>/edit"
+                                            hx-target="#modal-container"
+                                            hx-swap="innerHTML"
+                                            class="inline-flex items-center text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 transition cursor-pointer text-left">
                                         <svg class="w-3 h-3 mr-1 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        Complete Manually
+                                        Edit Reservation &amp; Guests
                                     </button>
                                 <?php endif; ?>
                             </div>

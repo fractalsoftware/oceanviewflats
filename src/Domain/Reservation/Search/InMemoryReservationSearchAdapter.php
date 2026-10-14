@@ -80,6 +80,12 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
         return $this;
     }
 
+    public function removeGuestRegistry(string $uid): self
+    {
+        unset($this->guestRegistries[$uid]);
+        return $this;
+    }
+
     /**
      * @param array<string, mixed> $auditLog
      */
