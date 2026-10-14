@@ -72,6 +72,7 @@ final class GuestRegistryEndpointTest extends TestCase
                 registry_completed INTEGER DEFAULT 0,
                 registry_completed_at TEXT,
                 door_code TEXT,
+                max_guests INTEGER NOT NULL DEFAULT 6,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -960,6 +961,101 @@ PHP;
         $this->assertSame('synced', $clearanceRow['status']);
         $this->assertSame('789', $clearanceRow['clearance_number']);
         $this->assertSame(1, (int) $clearanceRow['attempts']);
+    }
+
+    public function testOccupancyOverrideAllows8And12GuestsAndRejectsExceedingOrCompleted(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, payment_status, registry_completed, max_guests
+            ) VALUES (
+                'ovf_override_8', '1707', 'Group Host 8', 'group8@example.com', '+573001234567',
+                '2026-12-01', '2026-12-05', 2500000.0, 'confirmed', 'approved', 0, 8
+            ), (
+                'ovf_override_12', '1707', 'Group Host 12', 'group12@example.com', '+573001234567',
+                '2026-12-06', '2026-12-10', 3500000.0, 'confirmed', 'approved', 0, 12
+            );
+        ");
+
+        // 1. Reject 7 guests on default max_guests = 6 reservation ('ovf_conf_100')
+        $sevenData = $this->createValidCaptcha();
+        $sevenData['reservation_code'] = 'ovf_conf_100';
+        $sevenData['property'] = '1606';
+        $sevenData['check_in'] = '2026-11-15';
+        $sevenData['check_out'] = '2026-11-20';
+        $sevenData['guest_count'] = 7;
+        $sevenData['guest_email_1'] = 'maria@example.com';
+        $sevenData['guest_phone_1'] = '+573001234567';
+        for ($i = 1; $i <= 7; $i++) {
+            $sevenData["guest_first_name_{$i}"] = "First{$i}";
+            $sevenData["guest_last_name_{$i}"] = "Last{$i}";
+            $sevenData["guest_age_{$i}"] = 25;
+            $sevenData["guest_doc_type_{$i}"] = 'Passport';
+            $sevenData["guest_doc_num_{$i}"] = "PA1000{$i}";
+            $sevenData["guest_country_{$i}"] = 'COLOMBIA';
+        }
+        $res7On6 = $this->callRegistryEndpoint($sevenData);
+        $this->assertSame(400, $res7On6['statusCode']);
+        $this->assertFalse($res7On6['json']['success']);
+        $this->assertContains('A reservation must register between 1 and 6 guests.', $res7On6['json']['errors']);
+
+        // 2. Reject 9 guests on max_guests = 8 reservation ('ovf_override_8')
+        $nineData = $this->createValidCaptcha();
+        $nineData['reservation_code'] = 'ovf_override_8';
+        $nineData['property'] = '1707';
+        $nineData['check_in'] = '2026-12-01';
+        $nineData['check_out'] = '2026-12-05';
+        $nineData['guest_count'] = 9;
+        $nineData['guest_email_1'] = 'group8@example.com';
+        $nineData['guest_phone_1'] = '+573001234567';
+        for ($i = 1; $i <= 9; $i++) {
+            $nineData["guest_first_name_{$i}"] = "First{$i}";
+            $nineData["guest_last_name_{$i}"] = "Last{$i}";
+            $nineData["guest_age_{$i}"] = 25;
+            $nineData["guest_doc_type_{$i}"] = 'Passport';
+            $nineData["guest_doc_num_{$i}"] = "PA2000{$i}";
+            $nineData["guest_country_{$i}"] = 'COLOMBIA';
+        }
+        $res9On8 = $this->callRegistryEndpoint($nineData);
+        $this->assertSame(400, $res9On8['statusCode']);
+        $this->assertFalse($res9On8['json']['success']);
+        $this->assertContains('A reservation must register between 1 and 8 guests.', $res9On8['json']['errors']);
+
+        // 3. Accept 12 guests on max_guests = 12 reservation ('ovf_override_12')
+        $twelveData = $this->createValidCaptcha();
+        $twelveData['reservation_code'] = 'ovf_override_12';
+        $twelveData['property'] = '1707';
+        $twelveData['check_in'] = '2026-12-06';
+        $twelveData['check_out'] = '2026-12-10';
+        $twelveData['guest_count'] = 12;
+        $twelveData['guest_email_1'] = 'group12@example.com';
+        $twelveData['guest_phone_1'] = '+573001234567';
+        for ($i = 1; $i <= 12; $i++) {
+            $twelveData["guest_first_name_{$i}"] = "First{$i}";
+            $twelveData["guest_last_name_{$i}"] = "Last{$i}";
+            $twelveData["guest_age_{$i}"] = 20 + $i;
+            $twelveData["guest_doc_type_{$i}"] = 'Passport';
+            $twelveData["guest_doc_num_{$i}"] = sprintf('PA3000%02d', $i);
+            $twelveData["guest_country_{$i}"] = 'COLOMBIA';
+        }
+        $res12On12 = $this->callRegistryEndpoint($twelveData);
+        $this->assertSame(200, $res12On12['statusCode']);
+        $this->assertTrue($res12On12['json']['success']);
+
+        $stmtReg12 = $this->pdo->prepare('SELECT guest_count, guests_payload FROM guest_registries WHERE reservation_uid = :uid');
+        $stmtReg12->execute([':uid' => 'ovf_override_12']);
+        $regRow12 = $stmtReg12->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($regRow12);
+        $this->assertSame(12, (int) $regRow12['guest_count']);
+        $decoded12 = json_decode((string) $regRow12['guests_payload'], true);
+        $this->assertCount(12, $decoded12);
+
+        // 4. Reject re-submission once registry_completed = 1
+        $resubmit = $this->callRegistryEndpoint($twelveData);
+        $this->assertSame(400, $resubmit['statusCode']);
+        $this->assertFalse($resubmit['json']['success']);
+        $this->assertContains('Guest registry has already been completed for this reservation.', $resubmit['json']['errors']);
     }
 
     /**

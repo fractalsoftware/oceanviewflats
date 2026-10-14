@@ -19,6 +19,7 @@ class AdminAuditLogRepository
     public const CATEGORY_MAP = [
         'cat:reservations' => [
             'reservation_manual_create',
+            'reservation_updated',
             'reservation_cancelled',
             'guest_registry_manual_complete',
             'guest_registry_submitted',

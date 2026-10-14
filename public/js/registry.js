@@ -198,10 +198,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                if (typeof r.max_guests === 'number' || (typeof r.max_guests === 'string' && r.max_guests !== '')) {
+                    const parsedMax = parseInt(r.max_guests, 10);
+                    if (!isNaN(parsedMax) && parsedMax >= 1 && parsedMax <= ABSOLUTE_MAX_GUESTS) {
+                        maxGuests = parsedMax;
+                        if (currentGuestCount > maxGuests) {
+                            currentGuestCount = maxGuests;
+                        }
+                        updateGuestCards();
+                    }
+                }
+
                 if (r.registry_completed) {
+                    isRegistryCompleted = true;
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                    }
                     if (btnUnlockedGuide) {
                         const pageName = lang === 'en' ? 'index.html' : `${lang}.html`;
-                        const guideBase = `${processorBase.replace('api/', '')}guide/${pageName}`;
+                        const assetPrefix = pageConfig.assetPrefix || (apiBase ? apiBase.replace(/api\/?$/, '') : '');
+                        const guideBase = `${assetPrefix}guide/${pageName}`;
                         const rawGuideUrl = data.guide_url || `${guideBase}?code=${encodeURIComponent(reservationCodeVal)}`;
                         btnUnlockedGuide.href = sanitizeUrl(rawGuideUrl);
                     }
@@ -234,12 +250,15 @@ document.addEventListener('DOMContentLoaded', () => {
         lookupReservation();
     }
 
-    // 2. Manage Dynamic Guest Cards (up to 6 guests)
+    // 2. Manage Dynamic Guest Cards (up to maxGuests guests; default 6, max 12)
+    const ABSOLUTE_MAX_GUESTS = 12;
+    let maxGuests = 6;
     let currentGuestCount = 1;
+    let isRegistryCompleted = false;
 
     // Helper to update dynamic guest card input states (enable/disable for submission correctness)
     function updateGuestCards() {
-        for (let num = 1; num <= 6; num++) {
+        for (let num = 1; num <= ABSOLUTE_MAX_GUESTS; num++) {
             const card = document.getElementById(`guest-card-${num}`);
             if (!card) continue;
 
@@ -273,8 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set hidden guest count input value
         guestCountInput.value = currentGuestCount;
 
-        // Hide add button if maximum (6) reached
-        if (currentGuestCount >= 6) {
+        // Hide add button if maximum (maxGuests) reached
+        if (currentGuestCount >= maxGuests) {
             addGuestBtn.classList.add('hidden');
         } else {
             addGuestBtn.classList.remove('hidden');
@@ -283,7 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add guest button handler
     addGuestBtn.addEventListener('click', () => {
-        if (currentGuestCount < 6) {
+        if (isRegistryCompleted) return;
+        if (currentGuestCount < maxGuests) {
             currentGuestCount++;
             updateGuestCards();
             // Smooth scroll to the newly added guest card
@@ -379,6 +399,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Form Submit Handler
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (isRegistryCompleted) {
+            return;
+        }
 
         // Clear messages
         msgBox.className = 'hidden';

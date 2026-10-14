@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Reservation\Search;
 
+use OceanViewFlats\Domain\Reservation\Reservation;
 use PDO;
 use PDOException;
 
@@ -111,7 +112,10 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
         $dataStmt->execute();
 
         /** @var list<array<string, mixed>> $items */
-        $items = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
+        $items = array_map(
+            fn(array $row): array => $this->normalizeReservationProjection($row),
+            $dataStmt->fetchAll(PDO::FETCH_ASSOC)
+        );
 
         return new ReservationSearchResult(
             items: $items,
@@ -132,6 +136,8 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
         if ($reservation === false) {
             return null;
         }
+
+        $reservation = $this->normalizeReservationProjection($reservation);
 
         $guestRegistry = $this->findGuestRegistry($uid);
         $refunds = $this->findRefunds($uid);
@@ -209,5 +215,16 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
         } catch (PDOException) {
             return [];
         }
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function normalizeReservationProjection(array $row): array
+    {
+        $row['max_guests'] = Reservation::normalizeMaxGuests($row['max_guests'] ?? $row['maxGuests'] ?? null);
+
+        return $row;
     }
 }

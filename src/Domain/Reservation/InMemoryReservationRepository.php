@@ -50,7 +50,8 @@ final class InMemoryReservationRepository implements ReservationRepositoryInterf
             notes: $reservation->notes,
             refundedAmount: $reservation->refundedAmount,
             externalConfirmationCode: $reservation->externalConfirmationCode,
-            channelBlockUid: $reservation->channelBlockUid
+            channelBlockUid: $reservation->channelBlockUid,
+            maxGuests: $reservation->maxGuests
         );
 
         $this->records[$saved->reservationUid] = $saved;
@@ -83,12 +84,16 @@ final class InMemoryReservationRepository implements ReservationRepositoryInterf
         string $checkOut,
         ?DateTimeImmutable $now = null,
         int $standardHoldMinutes = Reservation::DEFAULT_STANDARD_HOLD_MINUTES,
-        int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS
+        int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS,
+        ?string $excludeReservationUid = null
     ): array {
         $overlapping = [];
         $active = $this->findActiveByProperty($propertyId, $now, $standardHoldMinutes, $voucherHoldHours);
 
         foreach ($active as $reservation) {
+            if ($excludeReservationUid !== null && $excludeReservationUid !== '' && $reservation->reservationUid === $excludeReservationUid) {
+                continue;
+            }
             if ($reservation->overlaps($checkIn, $checkOut)) {
                 $overlapping[] = $reservation;
             }

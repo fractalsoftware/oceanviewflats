@@ -60,6 +60,8 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
     public function addReservation(Reservation|array $reservation): self
     {
         $data = $reservation instanceof Reservation ? $reservation->toArray() : $reservation;
+        $data['max_guests'] = Reservation::normalizeMaxGuests($data['max_guests'] ?? $data['maxGuests'] ?? null);
+
         $uid = (string) ($data['reservation_uid'] ?? '');
         if ($uid !== '') {
             $this->reservations[$uid] = $data;
@@ -73,6 +75,12 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
     public function addGuestRegistry(string $uid, array $registry): self
     {
         $this->guestRegistries[$uid] = $registry;
+        return $this;
+    }
+
+    public function removeGuestRegistry(string $uid): self
+    {
+        unset($this->guestRegistries[$uid]);
         return $this;
     }
 

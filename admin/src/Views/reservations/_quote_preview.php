@@ -5,23 +5,29 @@
  * @var \OceanViewFlats\Domain\Quote\Quote|null $quote
  * @var string $source
  * @var float $defaultPrice
+ * @var bool|null $isEditMode
  */
 
+$editModeActive = !empty($isEditMode);
 $isFullyAvailable = ($isAvailable === true && $quote !== null);
 $reasons = $conflictReasons;
 if (!$isFullyAvailable && empty($reasons)) {
     $reasons = ['Selected dates are not available.'];
 }
 
+$calculatedTotalCop = $quote !== null ? (float) $quote->totalCop : (float) $defaultPrice;
+$displayPrice = $editModeActive ? $calculatedTotalCop : (float) $defaultPrice;
+
 $eventDetail = [
     'available' => $isFullyAvailable,
     'conflictReasons' => $reasons,
     'defaultPrice' => $isFullyAvailable ? (float) $defaultPrice : null,
+    'calculatedQuote' => $isFullyAvailable ? $calculatedTotalCop : null,
 ];
 ?>
 
-<div id="quote-preview-result" data-available="<?= $isFullyAvailable ? 'true' : 'false' ?>" class="w-full">
-    <?php if (!$isFullyAvailable || $quote === null): ?>
+<div id="quote-preview-result" data-available="<?= $isFullyAvailable ? 'true' : 'false' ?>" data-calculated-quote="<?= $isFullyAvailable ? (int) $calculatedTotalCop : '' ?>" class="w-full">
+    <?php if (!$isAvailable || $quote === null): ?>
         <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1.5 shadow-2xs">
             <div class="font-bold flex items-center text-rose-900">
                 <svg class="w-4 h-4 mr-1.5 text-rose-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -50,16 +56,27 @@ $eventDetail = [
         </div>
     <?php else: ?>
         <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 space-y-2.5 shadow-2xs">
-            <div class="flex justify-between items-center font-bold text-emerald-800">
+            <div class="flex justify-between items-center font-bold text-emerald-800 flex-wrap gap-2">
                 <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1.5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
                     Available (<?= $quote->nightsCount ?> <?= $quote->nightsCount === 1 ? 'Night' : 'Nights' ?>)
                 </span>
-                <span class="text-sm font-extrabold text-emerald-900">
-                    $<?= number_format($defaultPrice, 0, '.', ',') ?> COP
-                </span>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-extrabold text-emerald-900">
+                        $<?= number_format($displayPrice, 0, '.', ',') ?> COP
+                    </span>
+                    <?php if ($editModeActive): ?>
+                        <button type="button"
+                                id="btn-apply-calculated-quote"
+                                data-quote-amount="<?= (int) $calculatedTotalCop ?>"
+                                onclick="var priceEl = document.getElementById('edit-total-price'); if (priceEl) { priceEl.value = '<?= (int) $calculatedTotalCop ?>'; priceEl.dispatchEvent(new Event('input', { bubbles: true })); }"
+                                class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-2xs transition cursor-pointer">
+                            Apply Calculated Quote
+                        </button>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-emerald-200/70 text-[11px] text-emerald-700">
@@ -77,13 +94,17 @@ $eventDetail = [
                 </div>
             </div>
 
-            <?php if ($source === 'airbnb'): ?>
+            <?php if (!$editModeActive && $source === 'airbnb'): ?>
                 <p class="text-[10px] text-emerald-800 italic font-medium">
                     * Airbnb booking absorbs overlapping Airbnb channel blocks. Pricing defaults to $0.00 COP (Host Payout).
                 </p>
-            <?php elseif ($source === 'owner_stay'): ?>
+            <?php elseif (!$editModeActive && $source === 'owner_stay'): ?>
                 <p class="text-[10px] text-emerald-800 italic font-medium">
                     * Owner Stay automatically zeroes total pricing ($0.00 COP).
+                </p>
+            <?php elseif ($editModeActive): ?>
+                <p class="text-[10px] text-emerald-800 italic font-medium">
+                    * Standard rate Quote shown above. Existing total price is preserved unless you click "Apply Calculated Quote" or edit it manually.
                 </p>
             <?php endif; ?>
         </div>
@@ -91,7 +112,7 @@ $eventDetail = [
 
     <script>
         (function() {
-            var form = document.getElementById('create-reservation-form');
+            var form = document.getElementById('create-reservation-form') || document.getElementById('edit-reservation-form');
             var target = form || document;
             var detail = <?= json_encode($eventDetail, JSON_THROW_ON_ERROR) ?>;
             target.dispatchEvent(new CustomEvent('availabilityChecked', {
@@ -99,7 +120,7 @@ $eventDetail = [
                 detail: detail
             }));
 
-            <?php if ($isFullyAvailable): ?>
+            <?php if ($isFullyAvailable && !$editModeActive): ?>
             var priceInput = document.getElementById('manual-total-price');
             if (priceInput && (!priceInput.value || priceInput.dataset.autoFilled === 'true')) {
                 priceInput.value = '<?= (int) $defaultPrice ?>';

@@ -57,9 +57,10 @@ final class ReservationLedger implements ReservationLedgerInterface
         string $checkIn,
         string $checkOut,
         ?DateTimeImmutable $now = null,
-        ?string $absorbingSource = null
+        ?string $absorbingSource = null,
+        ?string $excludeReservationUid = null
     ): bool {
-        return count($this->getConflictReasons($propertyId, $checkIn, $checkOut, $now, $absorbingSource)) === 0;
+        return count($this->getConflictReasons($propertyId, $checkIn, $checkOut, $now, $absorbingSource, $excludeReservationUid)) === 0;
     }
 
     public function getConflictReasons(
@@ -67,7 +68,8 @@ final class ReservationLedger implements ReservationLedgerInterface
         string $checkIn,
         string $checkOut,
         ?DateTimeImmutable $now = null,
-        ?string $absorbingSource = null
+        ?string $absorbingSource = null,
+        ?string $excludeReservationUid = null
     ): array {
         if ($checkIn >= $checkOut) {
             return [sprintf('Check-out date (%s) must be after check-in date (%s)', $checkOut, $checkIn)];
@@ -111,7 +113,8 @@ final class ReservationLedger implements ReservationLedgerInterface
             checkOut: $checkOut,
             now: $now,
             standardHoldMinutes: $this->standardHoldMinutes,
-            voucherHoldHours: $this->voucherHoldHours
+            voucherHoldHours: $this->voucherHoldHours,
+            excludeReservationUid: $excludeReservationUid
         );
 
         foreach ($conflictingReservations as $res) {
@@ -170,7 +173,8 @@ final class ReservationLedger implements ReservationLedgerInterface
         string $propertyId,
         string $checkIn,
         string $checkOut,
-        ?DateTimeImmutable $now = null
+        ?DateTimeImmutable $now = null,
+        ?string $excludeReservationUid = null
     ): ?Reservation {
         $conflicts = $this->repository->findOverlappingActive(
             propertyId: $propertyId,
@@ -178,7 +182,8 @@ final class ReservationLedger implements ReservationLedgerInterface
             checkOut: $checkOut,
             now: $now,
             standardHoldMinutes: $this->standardHoldMinutes,
-            voucherHoldHours: $this->voucherHoldHours
+            voucherHoldHours: $this->voucherHoldHours,
+            excludeReservationUid: $excludeReservationUid
         );
         return $conflicts[0] ?? null;
     }

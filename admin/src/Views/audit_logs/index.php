@@ -80,6 +80,7 @@ $dateTo = (string) ($filters['date_to'] ?? '');
 
                         <optgroup label="Reservations & Access">
                             <option value="reservation_manual_create" <?= $selectedAction === 'reservation_manual_create' ? 'selected' : '' ?>>Manual Reservation Created</option>
+                            <option value="reservation_updated" <?= $selectedAction === 'reservation_updated' ? 'selected' : '' ?>>Reservation Updated</option>
                             <option value="reservation_cancelled" <?= $selectedAction === 'reservation_cancelled' ? 'selected' : '' ?>>Reservation Cancelled</option>
                             <option value="guest_registry_manual_complete" <?= $selectedAction === 'guest_registry_manual_complete' ? 'selected' : '' ?>>Guest Registry Completed</option>
                             <option value="guest_registry_submitted" <?= $selectedAction === 'guest_registry_submitted' ? 'selected' : '' ?>>Guest Registry Submitted</option>

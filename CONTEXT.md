@@ -125,6 +125,14 @@ _Avoid_: Booker, Lead Guest, Main Guest, Customer, Client
 Any individual authorized to occupy the Property during a confirmed Reservation, including the Primary Guest and accompanying registered companions.
 _Avoid_: Occupant, Companion, Visitor, Tenant
 
+**Maximum Occupancy**:
+The standard baseline capacity of 6 Guests permitted for a Property on a Reservation without administrative override.
+_Avoid_: Guest Cap, Max Headcount, Platform Limit, Property Limit
+
+**Occupancy Override**:
+An administrative authorization on a Reservation expanding its permitted Guest capacity beyond the standard Maximum Occupancy, allowing either the Primary Guest via the Guest Registry or an Admin User via the Admin Console to register additional Guests.
+_Avoid_: Limit Bypass, Extra Guest Exception, Over-capacity Flag
+
 ### Payments & Settlement
 
 **Payment Method**:
@@ -262,6 +270,10 @@ _Avoid_: History, Activity Feed, Event Log, Change Trail
 **Audit Log Inspector**:
 The slide-over administrative inspection drawer that displays before-and-after state transitions, actor attribution, client IP and user agent metadata, and deep links to audited domain entities.
 _Avoid_: Detail Modal, Log Popup, Change Viewer
+
+**Reservation Editor**:
+The administrative modal interface consolidating a Confirmed Reservation's contractual details, Occupancy Override capacity, vehicle registration, and Guest Registry occupant roster for unified consultation and modification by an Admin User.
+_Avoid_: Edit Booking Popup, Guest List Editor, Reservation Form
 
 **Property Filter**:
 The administrative UI selector used across operational interfaces (rates, calendar holds, reservations) to scope records by Property. Always labeled "Property" in administrative views in strict adherence to canonical entity language.

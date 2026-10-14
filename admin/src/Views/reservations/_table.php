@@ -80,6 +80,9 @@ $buildPageUrl = static function (array $currentFilters, int $targetPage): string
                         $doorCode = (string) ($item['door_code'] ?? '');
                         $source = (string) ($item['source'] ?? 'web');
                         $totalPrice = (float) ($item['total_price'] ?? 0.0);
+
+                        $isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
+                        $isEditable = ($status === 'confirmed' && !$isConcluded);
                         ?>
                         <tr class="hover:bg-indigo-50/30 transition-colors duration-150">
                             <!-- Property -->
@@ -159,7 +162,20 @@ $buildPageUrl = static function (array $currentFilters, int $targetPage): string
                             </td>
 
                             <!-- Actions -->
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-medium space-x-1.5">
+                                <?php if ($isEditable): ?>
+                                    <button type="button"
+                                            hx-get="/reservations/<?= urlencode($uid) ?>/edit"
+                                            hx-target="#modal-container"
+                                            hx-swap="innerHTML"
+                                            title="Edit Reservation"
+                                            class="inline-flex items-center px-2.5 py-1.5 border border-gray-200 shadow-2xs text-xs font-semibold rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-indigo-700 hover:border-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 transition cursor-pointer">
+                                        <svg class="w-3.5 h-3.5 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Edit Reservation</span>
+                                    </button>
+                                <?php endif; ?>
                                 <button type="button"
                                         hx-get="/reservations/<?= urlencode($uid) ?>"
                                         hx-target="#drawer-container"

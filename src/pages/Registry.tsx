@@ -212,8 +212,8 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 									<span>{t.registryGuestInfo}</span>
 								</h3>
 
-								{/* Pre-render 6 guest segments. Javascript will toggle hidden states */}
-								{[1, 2, 3, 4, 5, 6].map((num) => (
+								{/* Pre-render 12 guest segments (up to Occupancy Override max_guests = 12). Javascript will toggle hidden states */}
+								{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
 									<div
 										key={num}
 										id={`guest-card-${num}`}

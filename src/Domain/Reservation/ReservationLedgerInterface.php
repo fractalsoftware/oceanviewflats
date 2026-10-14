@@ -16,18 +16,21 @@ interface ReservationLedgerInterface
     /**
      * Verifies whether the requested property is available for the given dates.
      * Optionally absorbs channel blocks matching $absorbingSource (e.g. 'airbnb' per ADR 0007).
+     * Optionally excludes $excludeReservationUid from self-conflict.
      */
     public function isAvailable(
         string $propertyId,
         string $checkIn,
         string $checkOut,
         ?DateTimeImmutable $now = null,
-        ?string $absorbingSource = null
+        ?string $absorbingSource = null,
+        ?string $excludeReservationUid = null
     ): bool;
 
     /**
      * Returns a list of conflict reasons if the requested dates are blocked, or empty if available.
      * Optionally absorbs channel blocks matching $absorbingSource (e.g. 'airbnb' per ADR 0007).
+     * Optionally excludes $excludeReservationUid from self-conflict.
      *
      * @return list<string>
      */
@@ -36,7 +39,8 @@ interface ReservationLedgerInterface
         string $checkIn,
         string $checkOut,
         ?DateTimeImmutable $now = null,
-        ?string $absorbingSource = null
+        ?string $absorbingSource = null,
+        ?string $excludeReservationUid = null
     ): array;
 
     /**
@@ -73,7 +77,8 @@ interface ReservationLedgerInterface
         string $propertyId,
         string $checkIn,
         string $checkOut,
-        ?DateTimeImmutable $now = null
+        ?DateTimeImmutable $now = null,
+        ?string $excludeReservationUid = null
     ): ?Reservation;
 
     /**

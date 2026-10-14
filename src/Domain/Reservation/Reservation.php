@@ -18,6 +18,9 @@ final class Reservation
 {
     public const DEFAULT_STANDARD_HOLD_MINUTES = 30;
     public const DEFAULT_VOUCHER_HOLD_HOURS = 72;
+    public const DEFAULT_MAX_GUESTS = 6;
+    public const MIN_MAX_GUESTS = 1;
+    public const MAX_MAX_GUESTS = 12;
 
     /**
      * @internal Hydrated exclusively by ReservationPersistencePort and repositories. For new reservation creation, use ReservationDraft and ReservationLifecycleEngineInterface.
@@ -48,7 +51,8 @@ final class Reservation
         public readonly ?string $notes = null,
         public readonly float $refundedAmount = 0.0,
         public readonly ?string $externalConfirmationCode = null,
-        public readonly ?string $channelBlockUid = null
+        public readonly ?string $channelBlockUid = null,
+        public readonly int $maxGuests = self::DEFAULT_MAX_GUESTS
     ) {
         if ($this->reservationUid === '') {
             throw new InvalidArgumentException('Reservation UID cannot be empty');
@@ -59,6 +63,11 @@ final class Reservation
         if ($this->checkIn >= $this->checkOut) {
             throw new InvalidArgumentException(
                 sprintf('Check-out date (%s) must be after check-in date (%s)', $this->checkOut, $this->checkIn)
+            );
+        }
+        if ($this->maxGuests < self::MIN_MAX_GUESTS || $this->maxGuests > self::MAX_MAX_GUESTS) {
+            throw new InvalidArgumentException(
+                sprintf('Reservation max_guests must be between %d and %d (got %d)', self::MIN_MAX_GUESTS, self::MAX_MAX_GUESTS, $this->maxGuests)
             );
         }
     }
@@ -92,7 +101,8 @@ final class Reservation
         ?string $notes = null,
         float $refundedAmount = 0.0,
         ?string $externalConfirmationCode = null,
-        ?string $channelBlockUid = null
+        ?string $channelBlockUid = null,
+        int $maxGuests = self::DEFAULT_MAX_GUESTS
     ): self {
         return new self(
             reservationUid: $reservationUid,
@@ -120,7 +130,8 @@ final class Reservation
             notes: $notes,
             refundedAmount: $refundedAmount,
             externalConfirmationCode: $externalConfirmationCode,
-            channelBlockUid: $channelBlockUid
+            channelBlockUid: $channelBlockUid,
+            maxGuests: $maxGuests
         );
     }
 
@@ -166,6 +177,10 @@ final class Reservation
         }
 
         $regCompleted = $data['registry_completed'] ?? $data['registryCompleted'] ?? false;
+        $maxGuestsRaw = $data['max_guests'] ?? $data['maxGuests'] ?? null;
+        $maxGuests = ($maxGuestsRaw !== null && $maxGuestsRaw !== '')
+            ? (int) $maxGuestsRaw
+            : self::DEFAULT_MAX_GUESTS;
 
         return new self(
             reservationUid: (string) ($data['reservation_uid'] ?? $data['reservationUid'] ?? ''),
@@ -209,7 +224,8 @@ final class Reservation
                 : null,
             channelBlockUid: isset($data['channel_block_uid']) || isset($data['channelBlockUid'])
                 ? (string) ($data['channel_block_uid'] ?? $data['channelBlockUid'])
-                : null
+                : null,
+            maxGuests: $maxGuests
         );
     }
 
@@ -258,6 +274,60 @@ final class Reservation
     }
 
     /**
+     * Normalizes a raw max_guests value into the valid [1..12] range (defaulting to 6).
+     */
+    public static function normalizeMaxGuests(mixed $raw): int
+    {
+        $value = ($raw !== null && $raw !== '' && is_numeric($raw))
+            ? (int) $raw
+            : self::DEFAULT_MAX_GUESTS;
+
+        return max(self::MIN_MAX_GUESTS, min(self::MAX_MAX_GUESTS, $value));
+    }
+
+    /**
+     * Evaluates whether a reservation with the given status and check-out date (YYYY-MM-DD)
+     * has concluded past 23:59:59 COT (ADR 0009).
+     */
+    public static function isStayConcluded(
+        ReservationStatus|string $status,
+        string $checkOut,
+        ?DateTimeImmutable $now = null
+    ): bool {
+        $statusValue = $status instanceof ReservationStatus ? $status->value : $status;
+        if ($statusValue !== ReservationStatus::CONFIRMED->value || $checkOut === '') {
+            return false;
+        }
+
+        try {
+            $timezone = new DateTimeZone('America/Bogota');
+            $referenceTime = $now ?? new DateTimeImmutable('now', $timezone);
+            $concludedThreshold = new DateTimeImmutable($checkOut . ' 23:59:59', $timezone);
+
+            return $referenceTime > $concludedThreshold;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Identifies whether an email address is a synthetic or placeholder address.
+     */
+    public static function isPlaceholderEmail(string $email): bool
+    {
+        $guestEmailLower = strtolower(trim($email));
+
+        return $guestEmailLower === ''
+            || str_contains($guestEmailLower, 'airbnb.com')
+            || str_contains($guestEmailLower, 'airbnb-guest.local')
+            || str_contains($guestEmailLower, '@guest.oceanviewflats.com')
+            || str_ends_with($guestEmailLower, '.local')
+            || str_starts_with($guestEmailLower, 'guest@')
+            || str_starts_with($guestEmailLower, 'none@')
+            || str_starts_with($guestEmailLower, 'placeholder@');
+    }
+
+    /**
      * Identifies if this reservation has concluded past 23:59:59 COT on its check-out date (ADR 0009).
      * Strictly verifies that the reservation is confirmed. Cancelled or pending bookings with past
      * checkout dates return false (they remain cancelled or pending).
@@ -266,15 +336,7 @@ final class Reservation
      */
     public function isConcluded(?DateTimeImmutable $now = null): bool
     {
-        if ($this->status !== ReservationStatus::CONFIRMED) {
-            return false;
-        }
-
-        $timezone = new DateTimeZone('America/Bogota');
-        $referenceTime = $now ?? new DateTimeImmutable('now', $timezone);
-        $concludedThreshold = new DateTimeImmutable($this->checkOut . ' 23:59:59', $timezone);
-
-        return $referenceTime > $concludedThreshold;
+        return self::isStayConcluded($this->status, $this->checkOut, $now);
     }
 
     /**
@@ -299,14 +361,9 @@ final class Reservation
      */
     public function hasExternalOrPlaceholderEmail(): bool
     {
-        $guestEmailLower = strtolower(trim($this->guestEmail));
-
         return $this->source === 'airbnb'
             || str_starts_with($this->reservationUid, 'res-abnb-')
-            || str_contains($guestEmailLower, 'airbnb.com')
-            || $guestEmailLower === ''
-            || str_starts_with($guestEmailLower, 'guest@')
-            || str_starts_with($guestEmailLower, 'none@');
+            || self::isPlaceholderEmail($this->guestEmail);
     }
 
     /**
@@ -372,7 +429,8 @@ final class Reservation
             notes: $this->notes,
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
-            channelBlockUid: $this->channelBlockUid
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests
         );
     }
 
@@ -409,7 +467,8 @@ final class Reservation
             notes: $this->notes,
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
-            channelBlockUid: $this->channelBlockUid
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests
         );
     }
 
@@ -444,7 +503,8 @@ final class Reservation
             notes: $this->notes,
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
-            channelBlockUid: $this->channelBlockUid
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests
         );
     }
 
@@ -479,7 +539,8 @@ final class Reservation
             notes: $this->notes,
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
-            channelBlockUid: $this->channelBlockUid
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests
         );
     }
 
@@ -520,7 +581,8 @@ final class Reservation
             notes: $notes ?? $this->notes,
             refundedAmount: $newRefundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
-            channelBlockUid: $this->channelBlockUid
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests
         );
     }
 
@@ -555,7 +617,95 @@ final class Reservation
             notes: $notes,
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
-            channelBlockUid: $this->channelBlockUid
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests
+        );
+    }
+
+    /**
+     * Creates an updated clone with a specified maximum guest occupancy override.
+     */
+    public function withMaxGuests(int $maxGuests): self
+    {
+        return new self(
+            reservationUid: $this->reservationUid,
+            propertyId: $this->propertyId,
+            guestName: $this->guestName,
+            guestEmail: $this->guestEmail,
+            guestPhone: $this->guestPhone,
+            checkIn: $this->checkIn,
+            checkOut: $this->checkOut,
+            totalPrice: $this->totalPrice,
+            status: $this->status,
+            paymentMethodId: $this->paymentMethodId,
+            id: $this->id,
+            mercadopagoPreferenceId: $this->mercadopagoPreferenceId,
+            mercadopagoPaymentId: $this->mercadopagoPaymentId,
+            paymentStatus: $this->paymentStatus,
+            paymentDetail: $this->paymentDetail,
+            lang: $this->lang,
+            createdAt: $this->createdAt,
+            updatedAt: new DateTimeImmutable(),
+            registryCompleted: $this->registryCompleted,
+            registryCompletedAt: $this->registryCompletedAt,
+            doorCode: $this->doorCode,
+            source: $this->source,
+            notes: $this->notes,
+            refundedAmount: $this->refundedAmount,
+            externalConfirmationCode: $this->externalConfirmationCode,
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $maxGuests
+        );
+    }
+
+    /**
+     * Creates an updated clone with modified contractual, stay, occupancy, and registry details.
+     */
+    public function withUpdatedDetails(
+        string $propertyId,
+        string $guestName,
+        string $guestEmail,
+        string $guestPhone,
+        string $checkIn,
+        string $checkOut,
+        float $totalPrice,
+        string $lang,
+        bool $registryCompleted,
+        ?DateTimeImmutable $registryCompletedAt,
+        ?string $doorCode,
+        ?string $notes,
+        ?string $externalConfirmationCode,
+        int $maxGuests,
+        ?DateTimeImmutable $updatedAt = null
+    ): self {
+        return new self(
+            reservationUid: $this->reservationUid,
+            propertyId: $propertyId,
+            guestName: $guestName,
+            guestEmail: $guestEmail,
+            guestPhone: $guestPhone,
+            checkIn: $checkIn,
+            checkOut: $checkOut,
+            totalPrice: $totalPrice,
+            status: $this->status,
+            paymentMethodId: $this->paymentMethodId,
+            id: $this->id,
+            mercadopagoPreferenceId: $this->mercadopagoPreferenceId,
+            mercadopagoPaymentId: $this->mercadopagoPaymentId,
+            paymentStatus: $this->paymentStatus,
+            paymentDetail: $this->paymentDetail,
+            lang: $lang,
+            createdAt: $this->createdAt,
+            updatedAt: $updatedAt ?? new DateTimeImmutable(),
+            registryCompleted: $registryCompleted,
+            registryCompletedAt: $registryCompletedAt,
+            doorCode: $doorCode,
+            source: $this->source,
+            notes: $notes,
+            refundedAmount: $this->refundedAmount,
+            externalConfirmationCode: $externalConfirmationCode,
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $maxGuests
         );
     }
 
@@ -589,6 +739,7 @@ final class Reservation
             'notes' => $this->notes,
             'external_confirmation_code' => $this->externalConfirmationCode,
             'channel_block_uid' => $this->channelBlockUid,
+            'max_guests' => $this->maxGuests,
             'created_at' => $this->createdAt?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updatedAt?->format('Y-m-d H:i:s'),
         ];

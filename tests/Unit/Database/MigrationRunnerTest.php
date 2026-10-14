@@ -58,6 +58,7 @@ final class MigrationRunnerTest extends TestCase
         $cols = $colsStmt !== false ? array_column($colsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
         $this->assertContains('external_confirmation_code', $cols);
         $this->assertContains('channel_block_uid', $cols);
+        $this->assertContains('max_guests', $cols);
     }
 
     public function testMigrationsAreIdempotent(): void
@@ -102,11 +103,13 @@ final class MigrationRunnerTest extends TestCase
 
         $this->assertContains('Upgrading SQLite reservations: Added column `external_confirmation_code`.', $logs);
         $this->assertContains('Upgrading SQLite reservations: Added column `channel_block_uid`.', $logs);
+        $this->assertContains('Upgrading SQLite reservations: Added column `max_guests`.', $logs);
 
         $colsStmt = $pdo->query("PRAGMA table_info(reservations)");
         $cols = $colsStmt !== false ? array_column($colsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
         $this->assertContains('external_confirmation_code', $cols);
         $this->assertContains('channel_block_uid', $cols);
+        $this->assertContains('max_guests', $cols);
     }
 
     public function testConnectThrowsExpectedPdoExceptionForInvalidHost(): void

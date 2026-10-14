@@ -14,11 +14,13 @@
  * @var string|null $notes
  * @var bool|null $preMarkRegistry
  * @var bool|null $sendConfirmationEmail
+ * @var int|string|null $maxGuests
  */
 $propIdVal = (!empty($propertyId) && in_array($propertyId, ['1606', '1707'], true)) ? $propertyId : '1606';
 $sourceVal = (!empty($source)) ? $source : 'manual_override';
 $isAirbnb = (strtolower($sourceVal) === 'airbnb');
 $sendEmailVal = $sendConfirmationEmail ?? (!$isAirbnb);
+$maxGuestsVal = (isset($maxGuests) && (string) $maxGuests !== '') ? (string) $maxGuests : '6';
 $minCheckOut = '';
 if (!empty($checkIn)) {
     try {
@@ -210,30 +212,50 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                     <p class="text-[11px] text-gray-400 italic">Select property and dates above to check live availability and rate quote.</p>
                 </div>
 
-                <!-- Total Price (Editable Override / Host Payout) -->
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="manual-total-price" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Total Price / Host Payout (COP)
-                        </label>
-                        <span class="text-[10px] text-gray-400">Pre-calculated via QuoteEngine, editable (defaults to $0 COP for Airbnb)</span>
+                <!-- Total Price (Editable Override / Host Payout) & Occupancy Override -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="manual-total-price" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Total Price / Host Payout (COP)
+                            </label>
+                            <span class="text-[10px] text-gray-400">Pre-calculated via QuoteEngine, editable (defaults to $0 COP for Airbnb)</span>
+                        </div>
+                        <div class="relative rounded-md shadow-2xs">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs font-bold">
+                                $
+                            </div>
+                            <input type="number"
+                                   step="1000"
+                                   min="0"
+                                   name="total_price"
+                                   id="manual-total-price"
+                                   value="<?= htmlspecialchars((string) ($totalPrice ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                   placeholder="0"
+                                   oninput="this.dataset.autoFilled = 'false';"
+                                   class="w-full pl-7 pr-16 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400 text-[11px]">
+                                COP
+                            </div>
+                        </div>
                     </div>
-                    <div class="relative rounded-md shadow-2xs">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs font-bold">
-                            $
+
+                    <div class="sm:col-span-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="create-max-guests" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Max Guests *
+                            </label>
+                            <span class="text-[10px] text-gray-400">1–12 (default 6)</span>
                         </div>
                         <input type="number"
-                               step="1000"
-                               min="0"
-                               name="total_price"
-                               id="manual-total-price"
-                               value="<?= htmlspecialchars((string) ($totalPrice ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                               placeholder="0"
-                               oninput="this.dataset.autoFilled = 'false';"
-                               class="w-full pl-7 pr-16 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400 text-[11px]">
-                            COP
-                        </div>
+                               min="1"
+                               max="12"
+                               step="1"
+                               name="max_guests"
+                               id="create-max-guests"
+                               required
+                               value="<?= htmlspecialchars($maxGuestsVal, ENT_QUOTES, 'UTF-8') ?>"
+                               class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
 
@@ -439,6 +461,16 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                             return 'Total price cannot be negative';
                         }
                         return 'Total price must be zero or greater';
+                    }
+
+                    // Max guests: 1 to 12
+                    var maxGuestsInput = document.getElementById('create-max-guests');
+                    if (maxGuestsInput) {
+                        var maxGuestsVal = maxGuestsInput.value.trim();
+                        var maxGuestsNum = Number(maxGuestsVal);
+                        if (maxGuestsVal === '' || isNaN(maxGuestsNum) || !Number.isInteger(maxGuestsNum) || maxGuestsNum < 1 || maxGuestsNum > 12) {
+                            return 'Max guests must be between 1 and 12';
+                        }
                     }
 
                     // Guest name: required for all reservations

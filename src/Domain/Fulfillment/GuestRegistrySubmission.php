@@ -184,7 +184,7 @@ final class GuestRegistrySubmission
             }
         } else {
             $guestCountRaw = $data['guest_count'] ?? 1;
-            $guestCount = min(6, max(1, (int)$guestCountRaw));
+            $guestCount = min(50, max(1, (int)$guestCountRaw));
             for ($i = 1; $i <= $guestCount; $i++) {
                 $hasName = isset($data["guest_first_name_{$i}"])
                     || isset($data["guest_name_{$i}"])

@@ -41,7 +41,8 @@ interface ReservationRepositoryInterface
         string $checkOut,
         ?DateTimeImmutable $now = null,
         int $standardHoldMinutes = Reservation::DEFAULT_STANDARD_HOLD_MINUTES,
-        int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS
+        int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS,
+        ?string $excludeReservationUid = null
     ): array;
 
     /**

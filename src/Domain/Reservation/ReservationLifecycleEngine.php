@@ -277,6 +277,10 @@ final class ReservationLifecycleEngine implements ReservationLifecycleEngineInte
         $now = new DateTimeImmutable('now', $tz);
         $payment = $draft->payment ?? DraftPaymentDetails::empty();
 
+        $maxGuests = $draft->maxGuests !== Reservation::DEFAULT_MAX_GUESTS
+            ? $draft->maxGuests
+            : ($existing->maxGuests ?? $draft->maxGuests);
+
         $reservation = Reservation::create(
             reservationUid: $uid,
             propertyId: $draft->propertyId,
@@ -303,7 +307,8 @@ final class ReservationLifecycleEngine implements ReservationLifecycleEngineInte
             notes: $draft->notes ?? $existing?->notes,
             refundedAmount: $existing->refundedAmount ?? 0.0,
             externalConfirmationCode: $draft->externalConfirmationCode ?? $existing?->externalConfirmationCode,
-            channelBlockUid: $absorbedChannelBlockUid ?? $draft->channelBlockUid ?? $existing?->channelBlockUid
+            channelBlockUid: $absorbedChannelBlockUid ?? $draft->channelBlockUid ?? $existing?->channelBlockUid,
+            maxGuests: $maxGuests
         );
 
         // 5. Transactional Persistence and Audit Logging

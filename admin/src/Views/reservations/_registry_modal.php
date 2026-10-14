@@ -16,7 +16,6 @@ $guestName = (string) ($reservation['guest_name'] ?? '');
 $guestEmail = (string) ($reservation['guest_email'] ?? '');
 $guestPhone = (string) ($reservation['guest_phone'] ?? '');
 
-$registryCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1 && $registry !== null;
 $guestsPayload = [];
 if ($registry !== null) {
     if (is_array($registry['guests_payload'] ?? null)) {
@@ -28,6 +27,7 @@ if ($registry !== null) {
         }
     }
 }
+$registryCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1 && $registry !== null && count($guestsPayload) > 0;
 $primaryGuestEmail = '';
 foreach ($guestsPayload as $i => $g) {
     if (!empty($g['is_primary']) || $i === 0) {
@@ -45,10 +45,14 @@ $ipAddress = (string) ($registry['ip_address'] ?? '');
 
 $checkIn = (string) ($reservation['check_in'] ?? '');
 $checkOut = (string) ($reservation['check_out'] ?? '');
+$status = (string) ($reservation['status'] ?? 'pending_payment');
 $lang = (string) ($reservation['lang'] ?? 'es');
 if ($lang === '') {
     $lang = 'es';
 }
+
+$isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
+$isEditable = ($status === 'confirmed' && !$isConcluded);
 
 $regParams = ['property' => $propertyId];
 if ($checkIn !== '') {
@@ -150,11 +154,18 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                         <div class="space-y-3">
                             <?php foreach ($guestsPayload as $index => $guest): ?>
                                 <?php
-                                $fullName = (string) ($guest['full_name'] ?? $guest['name'] ?? 'Occupant ' . ($index + 1));
-                                $docType = (string) ($guest['doc_type'] ?? 'ID');
-                                $docNumber = (string) ($guest['doc_number'] ?? $guest['doc_num'] ?? '');
-                                $nationality = (string) ($guest['nationality'] ?? 'Not specified');
-                                $isPrimary = !empty($guest['is_primary']) || $index === 0;
+                                $firstName = trim((string) ($guest['first_name'] ?? $guest['firstName'] ?? ''));
+                                $lastName = trim((string) ($guest['last_name'] ?? $guest['lastName'] ?? ''));
+                                $combinedName = trim($firstName . ' ' . $lastName);
+                                $fullName = trim((string) ($guest['full_name'] ?? $guest['name'] ?? ($combinedName !== '' ? $combinedName : 'Occupant ' . ($index + 1))));
+                                $docType = (string) ($guest['doc_type'] ?? $guest['docType'] ?? 'ID');
+                                $docNumber = (string) ($guest['doc_number'] ?? $guest['doc_num'] ?? $guest['docNum'] ?? '');
+                                $country = trim((string) ($guest['country'] ?? $guest['nationality'] ?? ''));
+                                $countryDisplay = $country !== '' ? $country : 'Not specified';
+                                $age = $guest['age'] ?? null;
+                                $hasAge = ($age !== null && $age !== '' && is_numeric($age));
+                                $phone = trim((string) ($guest['phone'] ?? ''));
+                                $isPrimary = !empty($guest['is_primary']) || $index === 0 || ((int) ($guest['index'] ?? 0) === 1);
                                 $occupantEmail = (string) ($guest['email'] ?? ($isPrimary ? $primaryGuestEmail : ''));
                                 ?>
                                 <div class="p-3.5 rounded-xl border border-gray-200 bg-white hover:border-indigo-200 transition">
@@ -188,7 +199,13 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                                         <?php if ($isPrimary && $occupantEmail !== ''): ?>
                                             <span>Email: <a href="mailto:<?= htmlspecialchars($occupantEmail, ENT_QUOTES, 'UTF-8') ?>" class="text-indigo-600 hover:underline font-mono"><?= htmlspecialchars($occupantEmail, ENT_QUOTES, 'UTF-8') ?></a></span>
                                         <?php endif; ?>
-                                        <span>Nationality: <strong class="text-gray-700"><?= htmlspecialchars($nationality, ENT_QUOTES, 'UTF-8') ?></strong></span>
+                                        <?php if ($phone !== ''): ?>
+                                            <span>Phone: <strong class="text-gray-700"><?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?></strong></span>
+                                        <?php endif; ?>
+                                        <span>Country: <strong class="text-gray-700"><?= htmlspecialchars($countryDisplay, ENT_QUOTES, 'UTF-8') ?></strong></span>
+                                        <?php if ($hasAge): ?>
+                                            <span>Age: <strong class="text-gray-700"><?= (int) $age ?></strong></span>
+                                        <?php endif; ?>
                                         <?php if (!empty($guest['birthdate'])): ?>
                                             <span>Birthdate: <strong class="text-gray-700"><?= htmlspecialchars((string) $guest['birthdate'], ENT_QUOTES, 'UTF-8') ?></strong></span>
                                         <?php endif; ?>
@@ -249,6 +266,12 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                             <span>Phone:</span>
                             <span class="text-gray-800"><?= htmlspecialchars($guestPhone, ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
+                        <?php if ($carPlates !== '' || $carModel !== ''): ?>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Pre-Registered Vehicle:</span>
+                                <span class="font-medium text-gray-800"><?= htmlspecialchars(trim($carPlates . ($carModel !== '' ? ' (' . $carModel . ')' : '')), ENT_QUOTES, 'UTF-8') ?></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Copyable Registration & Guide Links -->
@@ -302,7 +325,21 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
             </div>
 
             <!-- Modal Footer -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3">
+                <div>
+                    <?php if ($isEditable): ?>
+                        <button type="button"
+                                hx-get="/reservations/<?= urlencode($uid) ?>/edit"
+                                hx-target="#modal-container"
+                                hx-swap="innerHTML"
+                                class="px-4 py-2 border border-transparent rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition cursor-pointer inline-flex items-center">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit Reservation &amp; Guests
+                        </button>
+                    <?php endif; ?>
+                </div>
                 <button type="button"
                         onclick="document.getElementById('modal-container').innerHTML = '';"
                         class="px-4 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">

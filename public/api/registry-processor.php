@@ -149,7 +149,7 @@ if ($primaryPhone !== '') {
 
 // Validate companion phone numbers if provided
 $guestCountRaw = $data['guest_count'] ?? 1;
-$guestCount = min(6, max(1, (int)$guestCountRaw));
+$guestCount = min(12, max(1, (int)$guestCountRaw));
 for ($i = 2; $i <= $guestCount; $i++) {
     $compPhone = trim((string)($data["guest_phone_{$i}"] ?? ''));
     if ($compPhone !== '' && (strlen($compPhone) < 6 || strlen($compPhone) > 30)) {
