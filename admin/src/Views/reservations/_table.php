@@ -81,17 +81,7 @@ $buildPageUrl = static function (array $currentFilters, int $targetPage): string
                         $source = (string) ($item['source'] ?? 'web');
                         $totalPrice = (float) ($item['total_price'] ?? 0.0);
 
-                        $isConcluded = false;
-                        if ($status === 'confirmed' && $checkOut !== '') {
-                            try {
-                                $tzCot = new \DateTimeZone('America/Bogota');
-                                $nowCot = new \DateTimeImmutable('now', $tzCot);
-                                $concludedThreshold = new \DateTimeImmutable($checkOut . ' 23:59:59', $tzCot);
-                                $isConcluded = $nowCot > $concludedThreshold;
-                            } catch (\Throwable) {
-                                $isConcluded = false;
-                            }
-                        }
+                        $isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
                         $isEditable = ($status === 'confirmed' && !$isConcluded);
                         ?>
                         <tr class="hover:bg-indigo-50/30 transition-colors duration-150">

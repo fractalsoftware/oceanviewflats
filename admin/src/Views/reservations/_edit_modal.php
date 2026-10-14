@@ -81,6 +81,8 @@ if (isset($occupants)) {
 $resetRegistryVal = !empty($resetGuestRegistry);
 if ($resetRegistryVal) {
     $occupantsList = [];
+    $carPlatesVal = '';
+    $carModelVal = '';
 }
 
 $currentOccupantCount = min(12, count($occupantsList));
@@ -163,7 +165,7 @@ $docCodeMap = [
             <!-- Modal Header -->
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-9 h-9 rounded-xl <?= $isAirbnb ? 'bg-rose-100 text-[#FF385C]' : 'bg-indigo-100 text-indigo-700' ?> flex items-center justify-center">
+                    <div class="w-9 h-9 rounded-xl <?= $isAirbnb ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700' ?> flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
@@ -479,7 +481,7 @@ $docCodeMap = [
                         <div class="flex items-center space-x-2">
                             <button type="button"
                                     id="edit-clear-registry-btn"
-                                    class="<?= $currentOccupantCount === 0 && !$registryCompleted ? 'hidden ' : '' ?>px-3 py-1.5 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition cursor-pointer inline-flex items-center">
+                                    class="<?= $currentOccupantCount === 0 && !$registryCompleted && $carPlatesVal === '' && $carModelVal === '' ? 'hidden ' : '' ?>px-3 py-1.5 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition cursor-pointer inline-flex items-center">
                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -872,7 +874,8 @@ $docCodeMap = [
                     }
 
                     if (clearRegistryBtn) {
-                        if (currentGuestCount === 0) {
+                        var hasVehicle = (carPlatesInput && carPlatesInput.value.trim() !== '') || (carModelInput && carModelInput.value.trim() !== '');
+                        if (currentGuestCount === 0 && !hasVehicle) {
                             clearRegistryBtn.classList.add('hidden');
                         } else {
                             clearRegistryBtn.classList.remove('hidden');
@@ -929,6 +932,8 @@ $docCodeMap = [
                         if (resetRegistryInput) {
                             resetRegistryInput.value = '1';
                         }
+                        if (carPlatesInput) carPlatesInput.value = '';
+                        if (carModelInput) carModelInput.value = '';
                         for (var n = 1; n <= ABSOLUTE_MAX_GUESTS; n++) {
                             var fn = document.getElementById('edit-guest-first-name-' + n);
                             var ln = document.getElementById('edit-guest-last-name-' + n);
@@ -958,8 +963,6 @@ $docCodeMap = [
                         var numToRemove = parseInt(removeBtn.getAttribute('data-remove-guest'), 10);
                         if (!numToRemove || numToRemove < 1 || numToRemove > currentGuestCount) return;
 
-                        var previousPhone1 = document.getElementById('edit-guest-phone-1') ? document.getElementById('edit-guest-phone-1').value : '';
-
                         for (var i = numToRemove; i < currentGuestCount; i++) {
                             var curFn = document.getElementById('edit-guest-first-name-' + i);
                             var nxtFn = document.getElementById('edit-guest-first-name-' + (i + 1));
@@ -982,7 +985,13 @@ $docCodeMap = [
                             if (curLn && nxtLn) curLn.value = nxtLn.value;
                             if (curNm && nxtNm) curNm.value = nxtNm.value;
                             if (curPh && nxtPh) {
-                                curPh.value = (i === 1 && !nxtPh.value.trim()) ? previousPhone1 : nxtPh.value;
+                                var nxtPhoneVal = nxtPh.value.trim();
+                                if (i === 1 && !nxtPhoneVal) {
+                                    var primaryPhoneVal = guestPhoneInput ? guestPhoneInput.value.trim() : '';
+                                    curPh.value = primaryPhoneVal.toUpperCase() !== 'N/A' ? primaryPhoneVal : '';
+                                } else {
+                                    curPh.value = nxtPh.value;
+                                }
                             }
                             if (curCo && nxtCo) curCo.value = nxtCo.value;
                             if (curAg && nxtAg) curAg.value = nxtAg.value;
@@ -990,10 +999,14 @@ $docCodeMap = [
                             if (curDn && nxtDn) curDn.value = nxtDn.value;
                         }
 
-                        currentGuestCount--;
-                        if (currentGuestCount === 0 && resetRegistryInput) {
-                            resetRegistryInput.value = '1';
+                        if (numToRemove === 1 && currentGuestCount > 1) {
+                            var em1 = document.getElementById('edit-guest-email-1');
+                            if (em1) {
+                                em1.value = guestEmailInput ? guestEmailInput.value.trim() : '';
+                            }
                         }
+
+                        currentGuestCount--;
                         updateGuestCards();
                         markRegistryModified();
                         validateForm();

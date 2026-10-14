@@ -223,9 +223,7 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
      */
     private function normalizeReservationProjection(array $row): array
     {
-        $rawMaxGuests = $row['max_guests'] ?? $row['maxGuests'] ?? Reservation::DEFAULT_MAX_GUESTS;
-        $maxGuests = is_numeric($rawMaxGuests) ? (int) $rawMaxGuests : Reservation::DEFAULT_MAX_GUESTS;
-        $row['max_guests'] = max(Reservation::MIN_MAX_GUESTS, min(Reservation::MAX_MAX_GUESTS, $maxGuests));
+        $row['max_guests'] = Reservation::normalizeMaxGuests($row['max_guests'] ?? $row['maxGuests'] ?? null);
 
         return $row;
     }

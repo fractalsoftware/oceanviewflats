@@ -274,6 +274,60 @@ final class Reservation
     }
 
     /**
+     * Normalizes a raw max_guests value into the valid [1..12] range (defaulting to 6).
+     */
+    public static function normalizeMaxGuests(mixed $raw): int
+    {
+        $value = ($raw !== null && $raw !== '' && is_numeric($raw))
+            ? (int) $raw
+            : self::DEFAULT_MAX_GUESTS;
+
+        return max(self::MIN_MAX_GUESTS, min(self::MAX_MAX_GUESTS, $value));
+    }
+
+    /**
+     * Evaluates whether a reservation with the given status and check-out date (YYYY-MM-DD)
+     * has concluded past 23:59:59 COT (ADR 0009).
+     */
+    public static function isStayConcluded(
+        ReservationStatus|string $status,
+        string $checkOut,
+        ?DateTimeImmutable $now = null
+    ): bool {
+        $statusValue = $status instanceof ReservationStatus ? $status->value : $status;
+        if ($statusValue !== ReservationStatus::CONFIRMED->value || $checkOut === '') {
+            return false;
+        }
+
+        try {
+            $timezone = new DateTimeZone('America/Bogota');
+            $referenceTime = $now ?? new DateTimeImmutable('now', $timezone);
+            $concludedThreshold = new DateTimeImmutable($checkOut . ' 23:59:59', $timezone);
+
+            return $referenceTime > $concludedThreshold;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Identifies whether an email address is a synthetic or placeholder address.
+     */
+    public static function isPlaceholderEmail(string $email): bool
+    {
+        $guestEmailLower = strtolower(trim($email));
+
+        return $guestEmailLower === ''
+            || str_contains($guestEmailLower, 'airbnb.com')
+            || str_contains($guestEmailLower, 'airbnb-guest.local')
+            || str_contains($guestEmailLower, '@guest.oceanviewflats.com')
+            || str_ends_with($guestEmailLower, '.local')
+            || str_starts_with($guestEmailLower, 'guest@')
+            || str_starts_with($guestEmailLower, 'none@')
+            || str_starts_with($guestEmailLower, 'placeholder@');
+    }
+
+    /**
      * Identifies if this reservation has concluded past 23:59:59 COT on its check-out date (ADR 0009).
      * Strictly verifies that the reservation is confirmed. Cancelled or pending bookings with past
      * checkout dates return false (they remain cancelled or pending).
@@ -282,15 +336,7 @@ final class Reservation
      */
     public function isConcluded(?DateTimeImmutable $now = null): bool
     {
-        if ($this->status !== ReservationStatus::CONFIRMED) {
-            return false;
-        }
-
-        $timezone = new DateTimeZone('America/Bogota');
-        $referenceTime = $now ?? new DateTimeImmutable('now', $timezone);
-        $concludedThreshold = new DateTimeImmutable($this->checkOut . ' 23:59:59', $timezone);
-
-        return $referenceTime > $concludedThreshold;
+        return self::isStayConcluded($this->status, $this->checkOut, $now);
     }
 
     /**
@@ -315,17 +361,9 @@ final class Reservation
      */
     public function hasExternalOrPlaceholderEmail(): bool
     {
-        $guestEmailLower = strtolower(trim($this->guestEmail));
-
         return $this->source === 'airbnb'
             || str_starts_with($this->reservationUid, 'res-abnb-')
-            || str_contains($guestEmailLower, 'airbnb.com')
-            || str_contains($guestEmailLower, 'airbnb-guest.local')
-            || str_contains($guestEmailLower, '@guest.oceanviewflats.com')
-            || str_ends_with($guestEmailLower, '.local')
-            || $guestEmailLower === ''
-            || str_starts_with($guestEmailLower, 'guest@')
-            || str_starts_with($guestEmailLower, 'none@');
+            || self::isPlaceholderEmail($this->guestEmail);
     }
 
     /**
@@ -615,6 +653,57 @@ final class Reservation
             notes: $this->notes,
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $maxGuests
+        );
+    }
+
+    /**
+     * Creates an updated clone with modified contractual, stay, occupancy, and registry details.
+     */
+    public function withUpdatedDetails(
+        string $propertyId,
+        string $guestName,
+        string $guestEmail,
+        string $guestPhone,
+        string $checkIn,
+        string $checkOut,
+        float $totalPrice,
+        string $lang,
+        bool $registryCompleted,
+        ?DateTimeImmutable $registryCompletedAt,
+        ?string $doorCode,
+        ?string $notes,
+        ?string $externalConfirmationCode,
+        int $maxGuests,
+        ?DateTimeImmutable $updatedAt = null
+    ): self {
+        return new self(
+            reservationUid: $this->reservationUid,
+            propertyId: $propertyId,
+            guestName: $guestName,
+            guestEmail: $guestEmail,
+            guestPhone: $guestPhone,
+            checkIn: $checkIn,
+            checkOut: $checkOut,
+            totalPrice: $totalPrice,
+            status: $this->status,
+            paymentMethodId: $this->paymentMethodId,
+            id: $this->id,
+            mercadopagoPreferenceId: $this->mercadopagoPreferenceId,
+            mercadopagoPaymentId: $this->mercadopagoPaymentId,
+            paymentStatus: $this->paymentStatus,
+            paymentDetail: $this->paymentDetail,
+            lang: $lang,
+            createdAt: $this->createdAt,
+            updatedAt: $updatedAt ?? new DateTimeImmutable(),
+            registryCompleted: $registryCompleted,
+            registryCompletedAt: $registryCompletedAt,
+            doorCode: $doorCode,
+            source: $this->source,
+            notes: $notes,
+            refundedAmount: $this->refundedAmount,
+            externalConfirmationCode: $externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
             maxGuests: $maxGuests
         );

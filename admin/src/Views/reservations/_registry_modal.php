@@ -16,7 +16,6 @@ $guestName = (string) ($reservation['guest_name'] ?? '');
 $guestEmail = (string) ($reservation['guest_email'] ?? '');
 $guestPhone = (string) ($reservation['guest_phone'] ?? '');
 
-$registryCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1 && $registry !== null;
 $guestsPayload = [];
 if ($registry !== null) {
     if (is_array($registry['guests_payload'] ?? null)) {
@@ -28,6 +27,7 @@ if ($registry !== null) {
         }
     }
 }
+$registryCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1 && $registry !== null && count($guestsPayload) > 0;
 $primaryGuestEmail = '';
 foreach ($guestsPayload as $i => $g) {
     if (!empty($g['is_primary']) || $i === 0) {
@@ -51,17 +51,7 @@ if ($lang === '') {
     $lang = 'es';
 }
 
-$isConcluded = false;
-if ($status === 'confirmed' && $checkOut !== '') {
-    try {
-        $tzCot = new \DateTimeZone('America/Bogota');
-        $nowCot = new \DateTimeImmutable('now', $tzCot);
-        $concludedThreshold = new \DateTimeImmutable($checkOut . ' 23:59:59', $tzCot);
-        $isConcluded = $nowCot > $concludedThreshold;
-    } catch (\Throwable) {
-        $isConcluded = false;
-    }
-}
+$isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
 $isEditable = ($status === 'confirmed' && !$isConcluded);
 
 $regParams = ['property' => $propertyId];
@@ -276,6 +266,12 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                             <span>Phone:</span>
                             <span class="text-gray-800"><?= htmlspecialchars($guestPhone, ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
+                        <?php if ($carPlates !== '' || $carModel !== ''): ?>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Pre-Registered Vehicle:</span>
+                                <span class="font-medium text-gray-800"><?= htmlspecialchars(trim($carPlates . ($carModel !== '' ? ' (' . $carModel . ')' : '')), ENT_QUOTES, 'UTF-8') ?></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Copyable Registration & Guide Links -->

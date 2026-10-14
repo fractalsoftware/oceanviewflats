@@ -562,6 +562,50 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         ?string $carModel,
         ?string $ipAddress
     ): void {
+        $guestsPayloadJson = (string) json_encode(
+            array_map(fn (OccupantDetails $o): array => $o->toArray(), $occupants),
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+
+        $stmtCheck = $this->pdo->prepare('SELECT id, car_plates, car_model FROM `guest_registries` WHERE `reservation_uid` = :uid ORDER BY `id` DESC LIMIT 1');
+        $stmtCheck->execute([':uid' => $reservationUid]);
+        /** @var array<string, mixed>|false $existing */
+        $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing !== false) {
+            $effectivePlates = ($carPlates !== null && trim($carPlates) !== '')
+                ? $carPlates
+                : (isset($existing['car_plates']) && trim((string) $existing['car_plates']) !== '' ? (string) $existing['car_plates'] : null);
+            $effectiveModel = ($carModel !== null && trim($carModel) !== '')
+                ? $carModel
+                : (isset($existing['car_model']) && trim((string) $existing['car_model']) !== '' ? (string) $existing['car_model'] : null);
+
+            $stmtUpdate = $this->pdo->prepare("
+                UPDATE `guest_registries`
+                SET `property_id` = :property_id,
+                    `check_in` = :check_in,
+                    `check_out` = :check_out,
+                    `guest_count` = :guest_count,
+                    `guests_payload` = :guests_payload,
+                    `car_plates` = :car_plates,
+                    `car_model` = :car_model,
+                    `ip_address` = :ip_address
+                WHERE `id` = :id
+            ");
+            $stmtUpdate->execute([
+                ':property_id' => $propertyId,
+                ':check_in' => $checkIn,
+                ':check_out' => $checkOut,
+                ':guest_count' => count($occupants),
+                ':guests_payload' => $guestsPayloadJson,
+                ':car_plates' => $effectivePlates,
+                ':car_model' => $effectiveModel,
+                ':ip_address' => $ipAddress,
+                ':id' => (int) $existing['id'],
+            ]);
+            return;
+        }
+
         $stmtReg = $this->pdo->prepare("
             INSERT INTO `guest_registries` (
                 `reservation_uid`, `property_id`, `check_in`, `check_out`,
@@ -579,10 +623,7 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             ':check_in' => $checkIn,
             ':check_out' => $checkOut,
             ':guest_count' => count($occupants),
-            ':guests_payload' => json_encode(
-                array_map(fn (OccupantDetails $o): array => $o->toArray(), $occupants),
-                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-            ),
+            ':guests_payload' => $guestsPayloadJson,
             ':car_plates' => $carPlates,
             ':car_model' => $carModel,
             ':ip_address' => $ipAddress,

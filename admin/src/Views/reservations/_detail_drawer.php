@@ -36,17 +36,7 @@ $externalConfirmationCode = (string) ($reservation['external_confirmation_code']
 $channelBlockUid = (string) ($reservation['channel_block_uid'] ?? '');
 $isAirbnbReservation = (strtolower((string) $source) === 'airbnb' || str_starts_with($uid, 'res-abnb-'));
 
-$isConcluded = false;
-if ($status === 'confirmed' && $checkOut !== '') {
-    try {
-        $tzCot = new \DateTimeZone('America/Bogota');
-        $nowCot = new \DateTimeImmutable('now', $tzCot);
-        $concludedThreshold = new \DateTimeImmutable($checkOut . ' 23:59:59', $tzCot);
-        $isConcluded = $nowCot > $concludedThreshold;
-    } catch (\Throwable) {
-        $isConcluded = false;
-    }
-}
+$isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
 $isEditable = ($status === 'confirmed' && !$isConcluded);
 ?>
 
@@ -663,7 +653,7 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                             Edit Reservation
                         </button>
                     <?php endif; ?>
-                    <?php if ($status !== 'cancelled' && !$isConcluded): ?>
+                    <?php if ($status !== 'cancelled'): ?>
                         <button type="button"
                                 hx-get="/reservations/<?= urlencode($uid) ?>/cancel-modal"
                                 hx-target="#modal-container"
@@ -674,13 +664,9 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                             </svg>
                             Cancel Reservation...
                         </button>
-                    <?php elseif ($status === 'cancelled'): ?>
+                    <?php else: ?>
                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
                             Reservation Cancelled
-                        </span>
-                    <?php elseif ($isConcluded): ?>
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                            Concluded Stay
                         </span>
                     <?php endif; ?>
                 </div>

@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace OceanViewFlats\Admin\Controller;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use OceanViewFlats\Admin\Audit\AuditLogger;
 use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
+use OceanViewFlats\Admin\Service\AdminReservationUpdateService;
 use OceanViewFlats\Admin\Service\MercadoPagoRefundClientInterface;
-use OceanViewFlats\Admin\Service\MercadoPagoRefundException;
 use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
-use OceanViewFlats\Domain\Access\ConfigPropertyCredentialsProvider;
-use OceanViewFlats\Domain\Access\DoorCodeGenerator;
-use OceanViewFlats\Domain\Fulfillment\AccessDispatchEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\AdminContext;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
@@ -27,9 +25,7 @@ use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
 use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Fulfillment\GuestRegistryRequiredException;
 use OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync;
-use OceanViewFlats\Domain\Fulfillment\OccupantDetails;
 use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
-use InvalidArgumentException;
 use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\CancellationPreview;
@@ -37,19 +33,18 @@ use OceanViewFlats\Domain\Reservation\CancellationRequest;
 use OceanViewFlats\Domain\Reservation\ExcessiveRefundException;
 use OceanViewFlats\Domain\Reservation\GatewayRefundException;
 use OceanViewFlats\Domain\Reservation\InvalidReservationStateException;
+use OceanViewFlats\Domain\Reservation\Port\AuditPort;
 use OceanViewFlats\Domain\Reservation\PrimaryGuest;
 use OceanViewFlats\Domain\Reservation\RefundInstruction;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationConflictException;
 use OceanViewFlats\Domain\Reservation\ReservationDraft;
-use OceanViewFlats\Domain\Reservation\Port\AuditPort;
 use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 use OceanViewFlats\Domain\Reservation\ReservationLifecycleEngineInterface;
 use OceanViewFlats\Domain\Reservation\ReservationNotFoundException;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\ReservationStatus;
 use OceanViewFlats\Domain\Reservation\ReservationValidationException;
-use OceanViewFlats\Domain\Reservation\Search\InMemoryReservationSearchAdapter;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchCriteria;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchResult;
@@ -69,6 +64,7 @@ final class ReservationController
     private readonly ?CondominiumClearanceRepositoryInterface $clearanceRepo;
     private readonly ?CondominiumClearanceSyncInterface $clearanceSync;
     private readonly ReservationLifecycleEngineInterface $lifecycleEngine;
+    private readonly AdminReservationUpdateService $updateService;
 
     public function __construct(
         private readonly ReservationRepositoryInterface $repository,
@@ -87,7 +83,8 @@ final class ReservationController
         ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
         ?CondominiumClearanceSyncInterface $clearanceSync = null,
         ?ReservationLifecycleEngineInterface $lifecycleEngine = null,
-        private readonly ?BookingFulfillmentInterface $bookingFulfillment = null
+        private readonly ?BookingFulfillmentInterface $bookingFulfillment = null,
+        ?AdminReservationUpdateService $updateService = null
     ) {
         $this->cancellationEmailRenderer = $cancellationEmailRenderer ?? new CancellationEmailRenderer($this->publicSiteUrl);
         $this->urlBuilder = $urlBuilder ?? new PublicUrlBuilder($this->publicSiteUrl);
@@ -99,6 +96,17 @@ final class ReservationController
             auditLogger: $this->auditLogger
         ) : null);
         $this->lifecycleEngine = $lifecycleEngine ?? $this->buildFallbackLifecycleEngine();
+        $this->updateService = $updateService ?? new AdminReservationUpdateService(
+            repository: $this->repository,
+            search: $this->search,
+            ledger: $this->ledger,
+            auditLogger: $this->auditLogger,
+            emailSender: $this->emailSender,
+            urlBuilder: $this->urlBuilder,
+            publicSiteUrl: $this->publicSiteUrl,
+            pdo: $this->pdo,
+            clearanceSync: $this->clearanceSync
+        );
     }
 
     /**
@@ -513,12 +521,12 @@ final class ReservationController
         }
 
         $registry = $this->search->findGuestRegistry($uid);
-        $registeredGuestCount = $this->resolveRegisteredGuestCount($registry);
-        $occupants = $this->extractRegistryOccupants($registry);
+        $registeredGuestCount = $this->updateService->resolveRegisteredGuestCount($registry);
+        $occupants = $this->updateService->extractRegistryOccupants($registry);
         $carPlates = (string) ($registry['car_plates'] ?? '');
         $carModel = (string) ($registry['car_model'] ?? '');
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceModifiedAfterSync = $this->isRegistryModifiedSinceLastSync($reservation, $registry, $clearance);
+        $clearanceModifiedAfterSync = $this->updateService->isRegistryModifiedSinceLastSync($reservation, $registry, $clearance);
 
         $quote = null;
         try {
@@ -597,552 +605,29 @@ final class ReservationController
         }
 
         $registry = $this->search->findGuestRegistry($uid);
-        $registeredGuestCount = $this->resolveRegisteredGuestCount($registry);
-
-        $body = $request->getAllPost();
-        $propertyId = array_key_exists('property_id', $body)
-            ? trim((string) $body['property_id'])
-            : $reservation->propertyId;
-        $checkIn = array_key_exists('check_in', $body)
-            ? trim((string) $body['check_in'])
-            : $reservation->checkIn;
-        $checkOut = array_key_exists('check_out', $body)
-            ? trim((string) $body['check_out'])
-            : $reservation->checkOut;
-        $totalPriceRaw = array_key_exists('total_price', $body)
-            ? $body['total_price']
-            : (string) $reservation->totalPrice;
-        $maxGuestsRaw = array_key_exists('max_guests', $body)
-            ? $body['max_guests']
-            : (string) $reservation->maxGuests;
-        $guestName = array_key_exists('guest_name', $body)
-            ? trim((string) $body['guest_name'])
-            : $reservation->guestName;
-        $guestEmail = array_key_exists('guest_email', $body)
-            ? trim((string) $body['guest_email'])
-            : $reservation->guestEmail;
-        $guestPhone = array_key_exists('guest_phone', $body)
-            ? trim((string) $body['guest_phone'])
-            : $reservation->guestPhone;
-        $lang = array_key_exists('lang', $body)
-            ? strtolower(trim((string) $body['lang']))
-            : $reservation->lang;
-        $externalConfirmationCode = array_key_exists('external_confirmation_code', $body)
-            ? trim((string) $body['external_confirmation_code'])
-            : (string) ($reservation->externalConfirmationCode ?? '');
-        $notes = array_key_exists('notes', $body)
-            ? trim((string) $body['notes'])
-            : (string) ($reservation->notes ?? '');
-
-        $vehicleSubmitted = array_key_exists('car_plates', $body) || array_key_exists('car_model', $body);
-        $carPlatesRaw = array_key_exists('car_plates', $body)
-            ? trim((string) $body['car_plates'])
-            : trim((string) ($registry['car_plates'] ?? ''));
-        $carModelRaw = array_key_exists('car_model', $body)
-            ? trim((string) $body['car_model'])
-            : trim((string) ($registry['car_model'] ?? ''));
-        $carPlates = $carPlatesRaw !== '' ? $carPlatesRaw : null;
-        $carModel = $carModelRaw !== '' ? $carModelRaw : null;
-
-        $syncClearance = $this->parseCheckbox(
-            $body['sync_condominium_clearance']
-            ?? $body['sync_clearance']
-            ?? $body['trigger_clearance_sync']
-            ?? $body['condominium_clearance_sync']
-            ?? null
-        );
-        $sendAccessDispatch = $this->parseCheckbox(
-            $body['send_access_dispatch']
-            ?? $body['send_access_dispatch_email']
-            ?? $body['dispatch_access_email']
-            ?? $body['send_access_email']
-            ?? null
-        );
-
-        // Extract submitted Guest Registry roster (if any)
-        $rosterExtraction = $this->extractSubmittedRoster($body);
-        $rosterSubmitted = $rosterExtraction['rosterSubmitted'];
-        $rawOccupants = $rosterExtraction['rawOccupants'];
-
-        // 1. Validate Property
-        if (!in_array($propertyId, ['1606', '1707'], true)) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Please select a valid property (1606 or 1707).');
-        }
-
-        // 2. Validate Check-in and Check-out Dates
-        $checkInDate = DateTimeImmutable::createFromFormat('Y-m-d', $checkIn);
-        $checkOutDate = DateTimeImmutable::createFromFormat('Y-m-d', $checkOut);
-        $isValidCheckIn = ($checkInDate !== false) && ($checkInDate->format('Y-m-d') === $checkIn);
-        $isValidCheckOut = ($checkOutDate !== false) && ($checkOutDate->format('Y-m-d') === $checkOut);
-
-        if (!$isValidCheckIn || !$isValidCheckOut) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Check-in and check-out dates must be valid dates in Y-m-d format.');
-        }
-
-        if ($checkIn >= $checkOut) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Check-out date must be strictly after check-in date.');
-        }
-
-        // 3. Validate Language
-        if (!in_array($lang, ['en', 'es'], true)) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Language must be either "en" or "es".');
-        }
-
-        // 4. Validate Total Price (>= 0)
-        if ($totalPriceRaw === null || trim((string) $totalPriceRaw) === '' || !is_numeric($totalPriceRaw)) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Total price must be a valid non-negative number.');
-        }
-        $totalPrice = (float) $totalPriceRaw;
-        if ($totalPrice < 0.0) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Total price cannot be negative.');
-        }
-
-        // 5. Validate Guest Registry Occupants (when submitted)
-        /** @var list<OccupantDetails> $validatedOccupants */
-        $validatedOccupants = [];
-        if ($rosterSubmitted && count($rawOccupants) > 0) {
-            if (count($rawOccupants) > Reservation::MAX_MAX_GUESTS) {
-                return $this->renderEditError(
-                    $request,
-                    $session,
-                    $reservation,
-                    $registeredGuestCount,
-                    'Cannot register more than 12 guests. Maximum occupancy (max_guests) must be between 1 and 12.'
-                );
-            }
-
-            $validationOutcome = $this->validateAndNormalizeOccupants($rawOccupants, $body);
-            if (is_string($validationOutcome)) {
-                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, $validationOutcome);
-            }
-            $validatedOccupants = $validationOutcome;
-        }
-
-        // 6. Validate Occupancy Override (max_guests 1..12, lowering guard, and auto-bump when adding guests)
-        $maxGuestsValidated = filter_var($maxGuestsRaw, FILTER_VALIDATE_INT);
-        if ($maxGuestsValidated === false) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Maximum occupancy (max_guests) must be between 1 and 12.');
-        }
-        $maxGuests = (int) $maxGuestsValidated;
-        if ($maxGuests < Reservation::MIN_MAX_GUESTS || $maxGuests > Reservation::MAX_MAX_GUESTS) {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Maximum occupancy (max_guests) must be between 1 and 12.');
-        }
-
-        if (!$rosterSubmitted) {
-            if ($registeredGuestCount > 0 && $maxGuests < $registeredGuestCount) {
-                return $this->renderEditError(
-                    $request,
-                    $session,
-                    $reservation,
-                    $registeredGuestCount,
-                    sprintf(
-                        'Cannot lower maximum occupancy (%d) below the %d currently registered guests. Please remove excess guests from the Guest Registry first.',
-                        $maxGuests,
-                        $registeredGuestCount
-                    )
-                );
-            }
-        } else {
-            $submittedCount = count($validatedOccupants);
-            if (
-                $registeredGuestCount > 0
-                && $submittedCount <= $registeredGuestCount
-                && $maxGuests < $reservation->maxGuests
-                && $maxGuests < $submittedCount
-            ) {
-                return $this->renderEditError(
-                    $request,
-                    $session,
-                    $reservation,
-                    $submittedCount,
-                    sprintf(
-                        'Cannot lower maximum occupancy (%d) below the %d currently registered guests. Please remove excess guests from the Guest Registry first.',
-                        $maxGuests,
-                        $submittedCount
-                    )
-                );
-            }
-
-            if ($submittedCount > $maxGuests) {
-                $maxGuests = $submittedCount;
-            }
-        }
-
-        // 7. Enrich placeholder reservation email from Guest #1 when saving >= 1 valid Guests
-        if ($rosterSubmitted && count($validatedOccupants) >= 1) {
-            $primaryOccEmail = trim((string) ($validatedOccupants[0]->email ?? ''));
-            if (
-                $primaryOccEmail !== ''
-                && (
-                    $this->isPlaceholderEmail($guestEmail)
-                    || ($reservation->hasExternalOrPlaceholderEmail() && strcasecmp($guestEmail, $reservation->guestEmail) === 0)
-                )
-            ) {
-                $guestEmail = $primaryOccEmail;
-            }
-        }
-
-        // 8. Source-dependent contact validation
-        $isAirbnb = $reservation->isAirbnb();
-        if ($guestName === '') {
-            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Guest name is required.');
-        }
-
-        if ($isAirbnb) {
-            if ($externalConfirmationCode === '') {
-                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Airbnb confirmation code is required.');
-            }
-            if ($guestEmail === '') {
-                $cleanCode = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $externalConfirmationCode) ?? 'guest');
-                $guestEmail = 'airbnb-' . $cleanCode . '@guest.oceanviewflats.com';
-            } elseif (!filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
-                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'A valid guest email address is required.');
-            }
-            if ($guestPhone === '') {
-                $guestPhone = 'N/A';
-            } elseif ($guestPhone !== 'N/A' && (strlen($guestPhone) < 7 || strlen($guestPhone) > 25)) {
-                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Guest phone number must be between 7 and 25 characters.');
-            }
-        } else {
-            if ($guestEmail === '' || !filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
-                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'A valid guest email address is required.');
-            }
-            if (strlen($guestPhone) < 7 || strlen($guestPhone) > 25) {
-                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Guest phone number must be between 7 and 25 characters.');
-            }
-        }
-
-        // 9. Validate Reservation Ledger availability with self-conflict exclusion when stay dates or Property change
-        $stayChanged = (
-            $propertyId !== $reservation->propertyId
-            || $checkIn !== $reservation->checkIn
-            || $checkOut !== $reservation->checkOut
-        );
-
-        if ($stayChanged) {
-            $absorbingSource = $isAirbnb ? 'airbnb' : null;
-            $isAvailable = $this->ledger->isAvailable(
-                $propertyId,
-                $checkIn,
-                $checkOut,
-                null,
-                $absorbingSource,
-                $reservation->reservationUid
-            );
-            if (!$isAvailable) {
-                $conflictReasons = $this->ledger->getConflictReasons(
-                    $propertyId,
-                    $checkIn,
-                    $checkOut,
-                    null,
-                    $absorbingSource,
-                    $reservation->reservationUid
-                );
-                $reasonText = !empty($conflictReasons)
-                    ? implode('; ', $conflictReasons)
-                    : 'Selected dates conflict with an existing reservation or block.';
-                return $this->renderEditError(
-                    $request,
-                    $session,
-                    $reservation,
-                    $registeredGuestCount,
-                    'Selected dates conflict: ' . $reasonText,
-                    $conflictReasons
-                );
-            }
-        }
-
-        // 10. Resolve registry completion state & Access Credential (door_code)
-        $now = new DateTimeImmutable();
-        if ($rosterSubmitted) {
-            if (count($validatedOccupants) >= 1) {
-                $newRegistryCompleted = true;
-                $newRegistryCompletedAt = ($reservation->registryCompleted && $reservation->registryCompletedAt !== null)
-                    ? $reservation->registryCompletedAt
-                    : $now;
-                $existingDoorCode = $reservation->doorCode;
-                if ($existingDoorCode !== null && trim($existingDoorCode) !== '') {
-                    $newDoorCode = $existingDoorCode;
-                } else {
-                    $phoneForPin = strtoupper($guestPhone) !== 'N/A'
-                        ? $guestPhone
-                        : (string) ($validatedOccupants[0]->phone ?? '');
-                    $newDoorCode = DoorCodeGenerator::generate($validatedOccupants[0]->docNum, $phoneForPin);
-                }
-            } else {
-                // Removing all Guests or clicking Clear / Reset Guest Registry
-                $newRegistryCompleted = false;
-                $newRegistryCompletedAt = null;
-                $newDoorCode = $reservation->doorCode;
-            }
-        } else {
-            $newRegistryCompleted = $reservation->registryCompleted;
-            $newRegistryCompletedAt = $reservation->registryCompletedAt;
-            $newDoorCode = $reservation->doorCode;
-        }
-
-        // 11. Build before payload and updated Reservation entity
-        $beforePayload = $reservation->toArray();
-        $beforePayload['car_plates'] = $registry['car_plates'] ?? null;
-        $beforePayload['car_model'] = $registry['car_model'] ?? null;
-        $beforePayload['guest_registry'] = $this->formatRegistryForAudit(
-            $registry,
-            $reservation->propertyId,
-            $reservation->checkIn,
-            $reservation->checkOut
-        );
-
-        $updatedReservation = new Reservation(
-            reservationUid: $reservation->reservationUid,
-            propertyId: $propertyId,
-            guestName: $guestName,
-            guestEmail: $guestEmail,
-            guestPhone: $guestPhone,
-            checkIn: $checkIn,
-            checkOut: $checkOut,
-            totalPrice: $totalPrice,
-            status: $reservation->status,
-            paymentMethodId: $reservation->paymentMethodId,
-            id: $reservation->id,
-            mercadopagoPreferenceId: $reservation->mercadopagoPreferenceId,
-            mercadopagoPaymentId: $reservation->mercadopagoPaymentId,
-            paymentStatus: $reservation->paymentStatus,
-            paymentDetail: $reservation->paymentDetail,
-            lang: $lang,
-            createdAt: $reservation->createdAt,
-            updatedAt: $now,
-            registryCompleted: $newRegistryCompleted,
-            registryCompletedAt: $newRegistryCompletedAt,
-            doorCode: $newDoorCode,
-            source: $reservation->source,
-            notes: $notes !== '' ? $notes : null,
-            refundedAmount: $reservation->refundedAmount,
-            externalConfirmationCode: $externalConfirmationCode !== '' ? $externalConfirmationCode : null,
-            channelBlockUid: $reservation->channelBlockUid,
-            maxGuests: $maxGuests
-        );
-
         $currentUser = $this->buildCurrentUser($session);
-        $adminUserId = $currentUser['id'];
-        $ipAddress = $request->getClientIp();
-        $userAgent = (string) $request->getHeader('User-Agent', '');
 
-        // 12. Atomic Transaction: save Reservation, upsert/delete/cascade guest_registries, and record Audit Log
-        $inExternalTransaction = $this->pdo !== null && $this->pdo->inTransaction();
-        if ($this->pdo !== null && !$inExternalTransaction) {
-            $this->pdo->beginTransaction();
-        }
+        $outcome = $this->updateService->updateReservation(
+            reservation: $reservation,
+            registry: $registry,
+            body: $request->getAllPost(),
+            adminUserId: $currentUser['id'],
+            ipAddress: $request->getClientIp(),
+            userAgent: (string) $request->getHeader('User-Agent', '')
+        );
 
-        try {
-            $savedReservation = $this->repository->save($updatedReservation);
-
-            if ($rosterSubmitted) {
-                if (count($validatedOccupants) >= 1) {
-                    $occupantsPayloadArray = array_map(
-                        fn(OccupantDetails $o): array => $o->toArray(),
-                        $validatedOccupants
-                    );
-                    $guestsPayloadJson = (string) json_encode(
-                        $occupantsPayloadArray,
-                        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-                    );
-
-                    if ($this->pdo !== null) {
-                        $stmtExists = $this->pdo->prepare('SELECT id FROM guest_registries WHERE reservation_uid = :uid ORDER BY id DESC LIMIT 1');
-                        $stmtExists->execute([':uid' => $uid]);
-                        $existingRegId = $stmtExists->fetchColumn();
-
-                        if ($existingRegId !== false) {
-                            $stmtUpdateReg = $this->pdo->prepare('
-                                UPDATE guest_registries
-                                SET property_id = :property_id,
-                                    check_in = :check_in,
-                                    check_out = :check_out,
-                                    guest_count = :guest_count,
-                                    guests_payload = :guests_payload,
-                                    car_plates = :car_plates,
-                                    car_model = :car_model,
-                                    ip_address = :ip_address
-                                WHERE id = :id
-                            ');
-                            $stmtUpdateReg->execute([
-                                ':property_id' => $propertyId,
-                                ':check_in' => $checkIn,
-                                ':check_out' => $checkOut,
-                                ':guest_count' => count($validatedOccupants),
-                                ':guests_payload' => $guestsPayloadJson,
-                                ':car_plates' => $carPlates,
-                                ':car_model' => $carModel,
-                                ':ip_address' => $ipAddress,
-                                ':id' => (int) $existingRegId,
-                            ]);
-                        } else {
-                            $stmtInsertReg = $this->pdo->prepare('
-                                INSERT INTO guest_registries (
-                                    reservation_uid, property_id, check_in, check_out,
-                                    guest_count, guests_payload, car_plates, car_model,
-                                    ip_address, created_at
-                                ) VALUES (
-                                    :reservation_uid, :property_id, :check_in, :check_out,
-                                    :guest_count, :guests_payload, :car_plates, :car_model,
-                                    :ip_address, CURRENT_TIMESTAMP
-                                )
-                            ');
-                            $stmtInsertReg->execute([
-                                ':reservation_uid' => $uid,
-                                ':property_id' => $propertyId,
-                                ':check_in' => $checkIn,
-                                ':check_out' => $checkOut,
-                                ':guest_count' => count($validatedOccupants),
-                                ':guests_payload' => $guestsPayloadJson,
-                                ':car_plates' => $carPlates,
-                                ':car_model' => $carModel,
-                                ':ip_address' => $ipAddress,
-                            ]);
-                        }
-                    }
-
-                    if ($this->search instanceof InMemoryReservationSearchAdapter) {
-                        $this->search->addGuestRegistry($uid, [
-                            'reservation_uid' => $uid,
-                            'property_id' => $propertyId,
-                            'check_in' => $checkIn,
-                            'check_out' => $checkOut,
-                            'guest_count' => count($validatedOccupants),
-                            'guests_payload' => $occupantsPayloadArray,
-                            'car_plates' => $carPlates,
-                            'car_model' => $carModel,
-                            'ip_address' => $ipAddress,
-                            'created_at' => $now->format('Y-m-d H:i:s'),
-                        ]);
-                    }
-                } else {
-                    if ($this->pdo !== null) {
-                        $stmtDeleteReg = $this->pdo->prepare('DELETE FROM guest_registries WHERE reservation_uid = :uid');
-                        $stmtDeleteReg->execute([':uid' => $uid]);
-                    }
-                    if ($this->search instanceof InMemoryReservationSearchAdapter) {
-                        $this->search->removeGuestRegistry($uid);
-                    }
-                }
-            } elseif (($stayChanged || $vehicleSubmitted) && $this->pdo !== null) {
-                $stmtCascade = $this->pdo->prepare('
-                    UPDATE guest_registries
-                    SET property_id = :property_id,
-                        check_in = :check_in,
-                        check_out = :check_out,
-                        car_plates = :car_plates,
-                        car_model = :car_model
-                    WHERE reservation_uid = :uid
-                ');
-                $stmtCascade->execute([
-                    ':property_id' => $propertyId,
-                    ':check_in' => $checkIn,
-                    ':check_out' => $checkOut,
-                    ':car_plates' => $carPlates,
-                    ':car_model' => $carModel,
-                    ':uid' => $uid,
-                ]);
-            }
-
-            $afterRegistry = $this->search->findGuestRegistry($uid);
-            $afterPayload = $savedReservation->toArray();
-            $afterPayload['car_plates'] = $afterRegistry['car_plates'] ?? null;
-            $afterPayload['car_model'] = $afterRegistry['car_model'] ?? null;
-            $afterPayload['guest_registry'] = $this->formatRegistryForAudit(
-                $afterRegistry,
-                $propertyId,
-                $checkIn,
-                $checkOut
-            );
-
-            $this->auditLogger->record(
-                action: 'reservation_updated',
-                entityType: 'reservation',
-                entityId: $uid,
-                before: $beforePayload,
-                after: $afterPayload,
-                adminUserId: $adminUserId,
-                ipAddress: $ipAddress,
-                userAgent: $userAgent
-            );
-
-            if ($this->pdo !== null && !$inExternalTransaction && $this->pdo->inTransaction()) {
-                $this->pdo->commit();
-            }
-        } catch (Throwable $e) {
-            if ($this->pdo !== null && !$inExternalTransaction && $this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
+        if (!$outcome['success']) {
             return $this->renderEditError(
                 $request,
                 $session,
                 $reservation,
-                $registeredGuestCount,
-                'Failed to update reservation: ' . $e->getMessage()
+                $outcome['registeredGuestCount'],
+                $outcome['errorMessage'] ?? 'Failed to update reservation.',
+                $outcome['conflictReasons'] ?? null
             );
         }
 
-        // 13. Post-Commit Opt-In Downstream Side Effects
-        $afterRegistry = $this->search->findGuestRegistry($uid);
-        $afterOccupants = $this->extractRegistryOccupants($afterRegistry);
-
-        if ($syncClearance && $savedReservation->registryCompleted && count($afterOccupants) >= 1 && $this->clearanceSync !== null) {
-            $adminContext = new AdminContext(
-                adminUserId: $adminUserId,
-                ipAddress: $ipAddress,
-                userAgent: $userAgent
-            );
-            try {
-                $this->clearanceSync->syncForReservation($uid, $adminContext);
-            } catch (Throwable $e) {
-                error_log('Opt-in condominium clearance sync failed for reservation ' . $uid . ': ' . $e->getMessage());
-            }
-        }
-
-        if ($sendAccessDispatch && $savedReservation->registryCompleted) {
-            $doorCodeToSend = (string) ($savedReservation->doorCode ?? '');
-            $primaryOccData = $afterOccupants[0] ?? null;
-            $primaryOccEmail = is_array($primaryOccData) ? trim((string) ($primaryOccData['email'] ?? '')) : '';
-            $recipientEmail = $primaryOccEmail !== '' ? $primaryOccEmail : trim($savedReservation->guestEmail);
-
-            if (
-                $doorCodeToSend !== ''
-                && $recipientEmail !== ''
-                && filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)
-                && !$this->isPlaceholderEmail($recipientEmail)
-            ) {
-                try {
-                    $dispatchLang = $savedReservation->lang !== '' ? $savedReservation->lang : 'es';
-                    $primaryOccName = is_array($primaryOccData) ? trim((string) ($primaryOccData['name'] ?? '')) : '';
-                    $recipientName = $primaryOccName !== '' ? $primaryOccName : $savedReservation->guestName;
-                    $guideUrl = $this->urlBuilder->buildGuideUrl($dispatchLang, $uid);
-
-                    $parkingSpot = null;
-                    $hasVehicle = (($afterRegistry['car_plates'] ?? null) !== null && trim((string) $afterRegistry['car_plates']) !== '')
-                        || (($afterRegistry['car_model'] ?? null) !== null && trim((string) $afterRegistry['car_model']) !== '');
-                    if ($hasVehicle) {
-                        $creds = (new ConfigPropertyCredentialsProvider())->getCredentials($savedReservation->propertyId);
-                        $parkingSpot = $creds?->parkingSpot;
-                    }
-
-                    $accessRenderer = new AccessDispatchEmailRenderer($this->publicSiteUrl);
-                    $subject = $accessRenderer->renderSubject($savedReservation, $dispatchLang);
-                    $html = $accessRenderer->renderHtml(
-                        reservation: $savedReservation,
-                        doorCode: $doorCodeToSend,
-                        guideUrl: $guideUrl,
-                        lang: $dispatchLang,
-                        recipientName: $recipientName,
-                        parkingSpot: $parkingSpot
-                    );
-                    $this->emailSender->send($recipientEmail, $subject, $html);
-                } catch (Throwable $e) {
-                    error_log('Opt-in Access Dispatch email failed for reservation ' . $uid . ': ' . $e->getMessage());
-                }
-            }
-        }
-
+        $savedReservation = $outcome['reservation'] ?? $reservation;
         $dossier = $this->search->findWithAuditTrail($uid);
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
         $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
@@ -1645,481 +1130,6 @@ final class ReservationController
     }
 
     /**
-     * @param array<string, mixed>|null $registry
-     */
-    private function resolveRegisteredGuestCount(?array $registry): int
-    {
-        if ($registry === null) {
-            return 0;
-        }
-        $guestsPayload = $registry['guests_payload'] ?? null;
-        if (is_array($guestsPayload)) {
-            return count($guestsPayload);
-        }
-        if (is_string($guestsPayload) && $guestsPayload !== '') {
-            $decoded = json_decode($guestsPayload, true);
-            if (is_array($decoded)) {
-                return count($decoded);
-            }
-        }
-        return isset($registry['guest_count']) ? (int) $registry['guest_count'] : 0;
-    }
-
-    /**
-     * @param array<string, mixed>|null $registry
-     * @return list<array<string, mixed>>
-     */
-    private function extractRegistryOccupants(?array $registry): array
-    {
-        if ($registry === null) {
-            return [];
-        }
-        $rawPayload = $registry['guests_payload'] ?? [];
-        if (is_string($rawPayload) && $rawPayload !== '') {
-            $decoded = json_decode($rawPayload, true);
-            $rawPayload = is_array($decoded) ? $decoded : [];
-        }
-        if (!is_array($rawPayload)) {
-            return [];
-        }
-        $occupants = [];
-        foreach ($rawPayload as $item) {
-            if (is_array($item)) {
-                $occupants[] = $item;
-            }
-        }
-        return $occupants;
-    }
-
-    /**
-     * Extracts submitted Guest Registry roster from POST body.
-     *
-     * @param array<string, mixed> $body
-     * @return array{rosterSubmitted: bool, resetRequested: bool, rawOccupants: list<array<string, mixed>>}
-     */
-    private function extractSubmittedRoster(array $body): array
-    {
-        $resetRequested = $this->parseCheckbox($body['reset_guest_registry'] ?? $body['clear_guest_registry'] ?? null);
-        if ($resetRequested) {
-            return [
-                'rosterSubmitted' => true,
-                'resetRequested' => true,
-                'rawOccupants' => [],
-            ];
-        }
-
-        if (array_key_exists('guests', $body) && is_array($body['guests'])) {
-            $list = [];
-            foreach ($body['guests'] as $item) {
-                if (is_array($item)) {
-                    $list[] = $item;
-                }
-            }
-            return [
-                'rosterSubmitted' => true,
-                'resetRequested' => count($list) === 0,
-                'rawOccupants' => $list,
-            ];
-        }
-
-        if (array_key_exists('occupants', $body) && is_array($body['occupants'])) {
-            $list = [];
-            foreach ($body['occupants'] as $item) {
-                if (is_array($item)) {
-                    $list[] = $item;
-                }
-            }
-            return [
-                'rosterSubmitted' => true,
-                'resetRequested' => count($list) === 0,
-                'rawOccupants' => $list,
-            ];
-        }
-
-        $hasExplicitGuestCount = array_key_exists('guest_count', $body) && trim((string) $body['guest_count']) !== '';
-        $explicitGuestCount = $hasExplicitGuestCount ? (int) $body['guest_count'] : null;
-
-        $slotsWithKeys = [];
-        $slotsWithData = [];
-        $slotDataMap = [];
-
-        for ($slot = 1; $slot <= 20; $slot++) {
-            $keys = [
-                "guest_first_name_{$slot}",
-                "guest_last_name_{$slot}",
-                "guest_name_{$slot}",
-                "guest_doc_type_{$slot}",
-                "guest_doc_num_{$slot}",
-                "guest_doc_number_{$slot}",
-                "guest_age_{$slot}",
-                "guest_country_{$slot}",
-                "guest_email_{$slot}",
-                "guest_phone_{$slot}",
-            ];
-            $hasAnyKey = false;
-            foreach ($keys as $k) {
-                if (array_key_exists($k, $body)) {
-                    $hasAnyKey = true;
-                    break;
-                }
-            }
-            if (!$hasAnyKey) {
-                continue;
-            }
-
-            $slotsWithKeys[] = $slot;
-            $fn = trim((string) ($body["guest_first_name_{$slot}"] ?? ''));
-            $ln = trim((string) ($body["guest_last_name_{$slot}"] ?? ''));
-            $nm = trim((string) ($body["guest_name_{$slot}"] ?? ''));
-            $dt = trim((string) ($body["guest_doc_type_{$slot}"] ?? ''));
-            $dn = trim((string) ($body["guest_doc_num_{$slot}"] ?? $body["guest_doc_number_{$slot}"] ?? ''));
-            $ag = $body["guest_age_{$slot}"] ?? null;
-            $co = trim((string) ($body["guest_country_{$slot}"] ?? ''));
-            $em = $body["guest_email_{$slot}"] ?? ($slot === 1 ? ($body['primary_guest_email'] ?? null) : null);
-            $ph = $body["guest_phone_{$slot}"] ?? null;
-
-            $hasMeaningfulData = $fn !== ''
-                || $ln !== ''
-                || $nm !== ''
-                || $dn !== ''
-                || ($ag !== null && trim((string) $ag) !== '')
-                || ($em !== null && trim((string) $em) !== '')
-                || ($ph !== null && trim((string) $ph) !== '');
-
-            if ($hasMeaningfulData) {
-                $slotsWithData[] = $slot;
-            }
-
-            $slotDataMap[$slot] = [
-                'slot' => $slot,
-                'first_name' => $fn,
-                'last_name' => $ln,
-                'name' => $nm,
-                'doc_type' => $dt,
-                'doc_num' => $dn,
-                'age' => $ag,
-                'country' => $co,
-                'email' => $em,
-                'phone' => $ph,
-            ];
-        }
-
-        if (!$hasExplicitGuestCount && $slotsWithKeys === []) {
-            return [
-                'rosterSubmitted' => false,
-                'resetRequested' => false,
-                'rawOccupants' => [],
-            ];
-        }
-
-        if ($hasExplicitGuestCount && $explicitGuestCount <= 0 && $slotsWithData === []) {
-            return [
-                'rosterSubmitted' => true,
-                'resetRequested' => true,
-                'rawOccupants' => [],
-            ];
-        }
-
-        $maxDataSlot = $slotsWithData !== [] ? max($slotsWithData) : 0;
-        $rawOccupants = [];
-
-        if ($explicitGuestCount !== null && $explicitGuestCount > 0) {
-            if ($maxDataSlot > $explicitGuestCount || count($slotsWithData) === $explicitGuestCount) {
-                // If there are gaps (e.g. slot 2 cleared/removed while slot 3 has data), collect all slots with data
-                foreach ($slotsWithData as $slot) {
-                    $rawOccupants[] = $slotDataMap[$slot];
-                }
-            } else {
-                // Collect slots 1..explicitGuestCount so any incomplete slot within the requested count is validated
-                for ($slot = 1; $slot <= $explicitGuestCount; $slot++) {
-                    $rawOccupants[] = $slotDataMap[$slot] ?? [
-                        'slot' => $slot,
-                        'first_name' => '',
-                        'last_name' => '',
-                        'name' => '',
-                        'doc_type' => '',
-                        'doc_num' => '',
-                        'age' => null,
-                        'country' => '',
-                        'email' => null,
-                        'phone' => null,
-                    ];
-                }
-            }
-        } else {
-            foreach ($slotsWithKeys as $slot) {
-                $rawOccupants[] = $slotDataMap[$slot];
-            }
-        }
-
-        return [
-            'rosterSubmitted' => true,
-            'resetRequested' => count($rawOccupants) === 0,
-            'rawOccupants' => $rawOccupants,
-        ];
-    }
-
-    /**
-     * Validates and re-indexes submitted Guest rows (1..N) against OccupantDetails rules.
-     *
-     * @param list<array<string, mixed>> $rawOccupants
-     * @param array<string, mixed> $body
-     * @return list<OccupantDetails>|string List of validated OccupantDetails or error message string
-     */
-    private function validateAndNormalizeOccupants(array $rawOccupants, array $body): array|string
-    {
-        $docCodeMap = [
-            'CC' => 'Cédula de Ciudadanía',
-            'PA' => 'Passport',
-            'TI' => 'Tarjeta de Identidad',
-            'RC' => 'Registro Civil',
-            'CE' => 'Cédula de Extranjería',
-            'DE' => 'National ID',
-            'DL' => 'Driver License',
-        ];
-
-        $validated = [];
-        foreach ($rawOccupants as $zeroIdx => $item) {
-            $idx = $zeroIdx + 1;
-            $slot = isset($item['slot']) ? (int) $item['slot'] : $idx;
-
-            $firstName = trim((string) ($item['first_name'] ?? $item['firstName'] ?? $item['guest_first_name'] ?? ''));
-            $lastName = trim((string) ($item['last_name'] ?? $item['lastName'] ?? $item['guest_last_name'] ?? ''));
-            $fullName = trim((string) ($item['name'] ?? $item['full_name'] ?? $item['guest_name'] ?? ''));
-
-            if ($firstName === '' && $lastName === '' && $fullName !== '') {
-                $parts = preg_split('/\s+/', $fullName) ?: [];
-                if (count($parts) >= 2) {
-                    $lastName = (string) array_pop($parts);
-                    $firstName = implode(' ', $parts);
-                }
-            }
-
-            if ($firstName === '') {
-                return sprintf('Guest #%d: First name is required.', $idx);
-            }
-            if ($lastName === '') {
-                return sprintf('Guest #%d: Last name is required.', $idx);
-            }
-
-            $combinedName = trim($firstName . ' ' . $lastName);
-            if (strlen($combinedName) < 2 || strlen($combinedName) > 100) {
-                return sprintf('Guest #%d: Full name must be between 2 and 100 characters.', $idx);
-            }
-
-            $rawDocType = trim((string) ($item['doc_type'] ?? $item['docType'] ?? $item['guest_doc_type'] ?? ''));
-            $upperDoc = strtoupper($rawDocType);
-            $docType = $docCodeMap[$upperDoc] ?? $rawDocType;
-            if (!in_array($docType, OccupantDetails::VALID_DOC_TYPES, true)) {
-                return sprintf('Guest #%d: Invalid document type.', $idx);
-            }
-
-            $docNum = trim((string) ($item['doc_num'] ?? $item['docNum'] ?? $item['doc_number'] ?? $item['guest_doc_num'] ?? ''));
-            if (strlen($docNum) < 2 || strlen($docNum) > 50) {
-                return sprintf('Guest #%d: Document number must be between 2 and 50 characters.', $idx);
-            }
-
-            $rawAge = $item['age'] ?? $item['guest_age'] ?? null;
-            if ($rawAge === null || trim((string) $rawAge) === '' || filter_var($rawAge, FILTER_VALIDATE_INT) === false) {
-                return sprintf('Guest #%d: Age must be a valid integer between 0 and 120.', $idx);
-            }
-            $age = (int) $rawAge;
-            if ($age < 0 || $age > 120) {
-                return sprintf('Guest #%d: Age must be between 0 and 120.', $idx);
-            }
-
-            $rawCountry = trim((string) ($item['country'] ?? $item['nationality'] ?? $item['guest_country'] ?? ''));
-            $normalizedCountry = OccupantDetails::normalizeCountry($rawCountry);
-            if ($normalizedCountry === null || $normalizedCountry === '') {
-                return sprintf('Guest #%d: Country is required.', $idx);
-            }
-
-            if ($idx === 1) {
-                $rawEmail = $item['email'] ?? $item['guest_email'] ?? null;
-                if (($rawEmail === null || trim((string) $rawEmail) === '') && $slot > 1) {
-                    $rawEmail = $body['guest_email_1'] ?? $body['primary_guest_email'] ?? null;
-                } elseif ($rawEmail === null && !array_key_exists('email', $item) && !array_key_exists('guest_email', $item)) {
-                    $rawEmail = $body['guest_email_1'] ?? $body['primary_guest_email'] ?? null;
-                }
-                $trimmedEmail = trim((string) ($rawEmail ?? ''));
-                if ($trimmedEmail === '' || !filter_var($trimmedEmail, FILTER_VALIDATE_EMAIL) || strlen($trimmedEmail) > 100) {
-                    return 'Guest #1: A valid email address is required for the Primary Guest.';
-                }
-
-                $rawPhone = $item['phone'] ?? $item['guest_phone'] ?? null;
-                if (($rawPhone === null || trim((string) $rawPhone) === '') && $slot > 1) {
-                    $rawPhone = $body['guest_phone_1'] ?? null;
-                } elseif ($rawPhone === null && !array_key_exists('phone', $item) && !array_key_exists('guest_phone', $item)) {
-                    $rawPhone = $body['guest_phone_1'] ?? null;
-                }
-                $trimmedPhone = trim((string) ($rawPhone ?? ''));
-                if ($trimmedPhone === '' || strtoupper($trimmedPhone) === 'N/A' || strlen($trimmedPhone) < 6 || strlen($trimmedPhone) > 30) {
-                    return 'Guest #1: Phone number must be between 6 and 30 characters.';
-                }
-            } else {
-                $trimmedEmail = null;
-                $rawPhone = $item['phone'] ?? $item['guest_phone'] ?? null;
-                $trimmedPhone = ($rawPhone !== null && trim((string) $rawPhone) !== '')
-                    ? trim((string) $rawPhone)
-                    : null;
-                if ($trimmedPhone !== null && (strlen($trimmedPhone) < 6 || strlen($trimmedPhone) > 30)) {
-                    return sprintf('Guest #%d: Phone number must be between 6 and 30 characters.', $idx);
-                }
-            }
-
-            try {
-                $validated[] = new OccupantDetails(
-                    index: $idx,
-                    name: $combinedName,
-                    age: $age,
-                    docType: $docType,
-                    docNum: $docNum,
-                    email: $trimmedEmail,
-                    firstName: $firstName,
-                    lastName: $lastName,
-                    phone: $trimmedPhone,
-                    country: $normalizedCountry,
-                    middleName: isset($item['middle_name']) ? (string) $item['middle_name'] : null,
-                    secondLastName: isset($item['second_last_name']) ? (string) $item['second_last_name'] : null
-                );
-            } catch (InvalidArgumentException $e) {
-                return sprintf('Guest #%d: %s', $idx, $e->getMessage());
-            }
-        }
-
-        return $validated;
-    }
-
-    private function isPlaceholderEmail(string $email): bool
-    {
-        $lower = strtolower(trim($email));
-        return $lower === ''
-            || str_contains($lower, 'airbnb.com')
-            || str_contains($lower, 'airbnb-guest.local')
-            || str_contains($lower, '@guest.oceanviewflats.com')
-            || str_ends_with($lower, '.local')
-            || str_starts_with($lower, 'guest@')
-            || str_starts_with($lower, 'none@')
-            || str_starts_with($lower, 'placeholder@');
-    }
-
-    /**
-     * @param array<string, mixed>|null $registry
-     * @return array<string, mixed>|null
-     */
-    private function formatRegistryForAudit(?array $registry, string $fallbackPropertyId, string $fallbackCheckIn, string $fallbackCheckOut): ?array
-    {
-        if ($registry === null) {
-            return null;
-        }
-        $occupants = $this->extractRegistryOccupants($registry);
-        return [
-            'property_id' => $registry['property_id'] ?? $fallbackPropertyId,
-            'check_in' => $registry['check_in'] ?? $fallbackCheckIn,
-            'check_out' => $registry['check_out'] ?? $fallbackCheckOut,
-            'guest_count' => (int) ($registry['guest_count'] ?? count($occupants)),
-            'car_plates' => $registry['car_plates'] ?? null,
-            'car_model' => $registry['car_model'] ?? null,
-            'guests_payload' => $occupants,
-            'occupants' => $occupants,
-        ];
-    }
-
-    /**
-     * Determines whether the Guest Registry or stay parameters have been modified since the last Condominium Clearance Sync.
-     *
-     * @param array<string, mixed>|null $registry
-     */
-    private function isRegistryModifiedSinceLastSync(
-        Reservation $reservation,
-        ?array $registry,
-        ?CondominiumClearance $clearance
-    ): bool {
-        if ($clearance === null || (!$clearance->isSynced() && ($clearance->clearanceNumber ?? '') === '')) {
-            return false;
-        }
-
-        if ($registry === null) {
-            return false;
-        }
-
-        $occupants = $this->extractRegistryOccupants($registry);
-        $reqPayload = $clearance->requestPayload;
-
-        if (is_array($reqPayload)) {
-            $step1 = $reqPayload['step1'] ?? null;
-            if (is_array($step1)) {
-                if ((string) ($step1['apt'] ?? '') !== $reservation->propertyId) {
-                    return true;
-                }
-                if ((string) ($step1['indate'] ?? '') !== $reservation->checkIn) {
-                    return true;
-                }
-                if ((string) ($step1['outdate'] ?? '') !== $reservation->checkOut) {
-                    return true;
-                }
-                if (trim((string) ($step1['car'] ?? '')) !== trim((string) ($registry['car_plates'] ?? ''))) {
-                    return true;
-                }
-                if ((int) ($step1['cant_hp'] ?? 0) !== count($occupants)) {
-                    return true;
-                }
-            }
-
-            $step2 = $reqPayload['step2'] ?? null;
-            if (is_array($step2)) {
-                $syncedDocs = is_array($step2['ide'] ?? null) ? array_values($step2['ide']) : [];
-                $syncedNames = is_array($step2['name'] ?? null) ? array_values($step2['name']) : [];
-                $syncedLastNames = is_array($step2['lname'] ?? null) ? array_values($step2['lname']) : [];
-
-                foreach ($occupants as $i => $occ) {
-                    $occDoc = trim((string) ($occ['doc_num'] ?? $occ['doc_number'] ?? ''));
-                    $occFn = trim((string) ($occ['first_name'] ?? $occ['name'] ?? ''));
-                    $occLn = trim((string) ($occ['last_name'] ?? ''));
-
-                    if (($syncedDocs[$i] ?? null) !== $occDoc) {
-                        return true;
-                    }
-                    if ($occLn !== '' && ($syncedNames[$i] ?? null) !== $occFn) {
-                        return true;
-                    }
-                    if ($occLn !== '' && ($syncedLastNames[$i] ?? null) !== $occLn) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if ($this->pdo !== null) {
-            try {
-                $stmtAudit = $this->pdo->prepare('
-                    SELECT action FROM admin_audit_logs
-                    WHERE entity_type = :entity_type AND entity_id = :entity_id
-                    ORDER BY id DESC LIMIT 1
-                ');
-                $stmtAudit->execute([
-                    ':entity_type' => 'reservation',
-                    ':entity_id' => $reservation->reservationUid,
-                ]);
-                $latestAction = $stmtAudit->fetchColumn();
-                if ($latestAction === 'reservation_updated') {
-                    return true;
-                }
-            } catch (Throwable) {
-            }
-        }
-
-        if ($clearance->syncedAt !== null && $reservation->updatedAt !== null) {
-            $syncedTs = strtotime($clearance->syncedAt);
-            if ($syncedTs !== false && $reservation->updatedAt->getTimestamp() > $syncedTs) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param array<string, mixed> $session
      * @param list<string>|null $conflictReasons
      */
@@ -2135,14 +1145,14 @@ final class ReservationController
         $uid = $reservation->reservationUid;
         $registry = $this->search->findGuestRegistry($uid);
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceModifiedAfterSync = $this->isRegistryModifiedSinceLastSync($reservation, $registry, $clearance);
+        $clearanceModifiedAfterSync = $this->updateService->isRegistryModifiedSinceLastSync($reservation, $registry, $clearance);
 
-        $rosterExtraction = $this->extractSubmittedRoster($body);
+        $rosterExtraction = $this->updateService->extractSubmittedRoster($body);
         if ($rosterExtraction['rosterSubmitted']) {
             $occupantsToRender = $rosterExtraction['rawOccupants'];
             $registeredGuestCount = count($occupantsToRender);
         } else {
-            $occupantsToRender = $this->extractRegistryOccupants($registry);
+            $occupantsToRender = $this->updateService->extractRegistryOccupants($registry);
         }
 
         $propertyId = array_key_exists('property_id', $body)
@@ -2194,20 +1204,8 @@ final class ReservationController
                 : (string) ($registry['car_model'] ?? ''),
             'condominiumClearance' => $clearance,
             'clearanceModifiedAfterSync' => $clearanceModifiedAfterSync,
-            'syncCondominiumClearance' => $this->parseCheckbox(
-                $body['sync_condominium_clearance']
-                ?? $body['sync_clearance']
-                ?? $body['trigger_clearance_sync']
-                ?? $body['condominium_clearance_sync']
-                ?? null
-            ),
-            'sendAccessDispatch' => $this->parseCheckbox(
-                $body['send_access_dispatch']
-                ?? $body['send_access_dispatch_email']
-                ?? $body['dispatch_access_email']
-                ?? $body['send_access_email']
-                ?? null
-            ),
+            'syncCondominiumClearance' => $this->parseCheckbox($body['sync_condominium_clearance'] ?? null),
+            'sendAccessDispatch' => $this->parseCheckbox($body['send_access_dispatch'] ?? null),
             'resetGuestRegistry' => $rosterExtraction['resetRequested'],
             'errorMessage' => $errorMessage,
             'propertyId' => $propertyId,

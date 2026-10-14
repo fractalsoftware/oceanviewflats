@@ -1436,4 +1436,121 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertStringContainsString('Edit Reservation &amp; Guests', $drawerPending->getBody());
         $this->assertStringNotContainsString('/registry/complete', $drawerPending->getBody());
     }
+
+    public function testReservationEditorPersistsVehicleOnPendingRegistryAndRejectsExplicitMaxGuestsLoweringOnRosterSubmit(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, lang, registry_completed, max_guests
+            ) VALUES (
+                'res-pending-vehicle', '1606', 'Pending Driver', 'driver@test.com', '+573001112233',
+                '2026-12-01', '2026-12-05', 1400000.00, 'confirmed', 'web', 'es', 0, 6
+            );
+        ");
+
+        // 1. Save car_plates and car_model on a pending reservation (0 guests) -> persists in guest_registries with guest_count = 0 while keeping registry_completed = 0
+        $saveVehicleRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-pending-vehicle/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-12-01',
+                'check_out' => '2026-12-05',
+                'total_price' => '1400000',
+                'max_guests' => '6',
+                'guest_name' => 'Pending Driver',
+                'guest_email' => 'driver@test.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'car_plates' => 'VHC-789',
+                'car_model' => 'Mazda CX-30 White',
+                'guest_count' => '0',
+                'reset_guest_registry' => '0',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $saveVehicleRes->getStatusCode());
+
+        $stmtRes = $this->pdo->prepare('SELECT registry_completed, registry_completed_at FROM reservations WHERE reservation_uid = :uid');
+        $stmtRes->execute(['uid' => 'res-pending-vehicle']);
+        $resRow = $stmtRes->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($resRow);
+        $this->assertSame(0, (int) $resRow['registry_completed']);
+        $this->assertNull($resRow['registry_completed_at']);
+
+        $stmtReg = $this->pdo->prepare('SELECT guest_count, guests_payload, car_plates, car_model FROM guest_registries WHERE reservation_uid = :uid');
+        $stmtReg->execute(['uid' => 'res-pending-vehicle']);
+        $regRow = $stmtReg->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($regRow);
+        $this->assertSame(0, (int) $regRow['guest_count']);
+        $this->assertSame('[]', $regRow['guests_payload']);
+        $this->assertSame('VHC-789', $regRow['car_plates']);
+        $this->assertSame('Mazda CX-30 White', $regRow['car_model']);
+
+        // 2. _registry_modal.php and _edit_modal.php treat registry_completed = 0 as Pending while showing pre-registered vehicle info
+        $regModal = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-pending-vehicle/registry',
+            server: ['HTTP_HX_REQUEST' => 'true']
+        ));
+        $this->assertSame(200, $regModal->getStatusCode());
+        $this->assertStringContainsString('Guest Registry Pending', $regModal->getBody());
+        $this->assertStringContainsString('VHC-789 (Mazda CX-30 White)', $regModal->getBody());
+
+        $editModal = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-pending-vehicle/edit',
+            server: ['HTTP_HX_REQUEST' => 'true']
+        ));
+        $this->assertSame(200, $editModal->getStatusCode());
+        $this->assertStringContainsString('Registry Pending', $editModal->getBody());
+        $this->assertStringContainsString('value="VHC-789"', $editModal->getBody());
+        $this->assertStringContainsString('value="Mazda CX-30 White"', $editModal->getBody());
+
+        // 3. Explicitly lowering max_guests (e.g. from 6 to 1) while submitting 2 valid Guests returns 422 instead of auto-bumping
+        $lowerCapRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-pending-vehicle/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-12-01',
+                'check_out' => '2026-12-05',
+                'total_price' => '1400000',
+                'max_guests' => '1',
+                'guest_name' => 'Pending Driver',
+                'guest_email' => 'driver@test.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'car_plates' => 'VHC-789',
+                'car_model' => 'Mazda CX-30 White',
+                'guest_count' => '2',
+                'guest_first_name_1' => 'Pending',
+                'guest_last_name_1' => 'Driver',
+                'guest_doc_type_1' => 'Passport',
+                'guest_doc_num_1' => 'PA112233',
+                'guest_age_1' => '33',
+                'guest_country_1' => 'COLOMBIA',
+                'guest_email_1' => 'driver@test.com',
+                'guest_phone_1' => '+573001112233',
+                'guest_first_name_2' => 'Second',
+                'guest_last_name_2' => 'Guest',
+                'guest_doc_type_2' => 'Passport',
+                'guest_doc_num_2' => 'PA445566',
+                'guest_age_2' => '30',
+                'guest_country_2' => 'COLOMBIA',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(422, $lowerCapRes->getStatusCode());
+        $this->assertStringContainsString('Cannot lower maximum occupancy (1) below the 2 currently registered guests', $lowerCapRes->getBody());
+    }
 }
