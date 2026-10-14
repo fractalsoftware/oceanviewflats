@@ -416,4 +416,385 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertStringContainsString('value="15"', $invalidRes->getBody());
         $this->assertStringContainsString('value="Too Many Guests"', $invalidRes->getBody());
     }
+
+    public function testReservationEditorActionVisibilityAndLifecycleGuards(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, source)
+            VALUES
+                ('res-edit-active', '1606', 'Active Confirmed', 'active@test.com', '+573001112233', '2026-12-01', '2026-12-05', 1400000.00, 'confirmed', 'web'),
+                ('res-edit-pending', '1606', 'Pending Guest', 'pending@test.com', '+573001112233', '2026-12-10', '2026-12-14', 1100000.00, 'pending_payment', 'web'),
+                ('res-edit-cancelled', '1606', 'Cancelled Guest', 'cancelled@test.com', '+573001112233', '2026-12-15', '2026-12-18', 900000.00, 'cancelled', 'web'),
+                ('res-edit-concluded', '1606', 'Concluded Guest', 'concluded@test.com', '+573001112233', '2024-01-10', '2024-01-15', 1000000.00, 'confirmed', 'web');
+        ");
+
+        // 1. Reservations table shows Edit Reservation only for active confirmed reservations
+        $tableRes = $this->dispatchAdmin(new Request('GET', '/reservations', server: ['HTTP_HX_REQUEST' => 'true']));
+        $this->assertSame(200, $tableRes->getStatusCode());
+        $tableHtml = $tableRes->getBody();
+        $this->assertStringContainsString('hx-get="/reservations/res-edit-active/edit"', $tableHtml);
+        $this->assertStringNotContainsString('hx-get="/reservations/res-edit-pending/edit"', $tableHtml);
+        $this->assertStringNotContainsString('hx-get="/reservations/res-edit-cancelled/edit"', $tableHtml);
+        $this->assertStringNotContainsString('hx-get="/reservations/res-edit-concluded/edit"', $tableHtml);
+
+        // 2. Detail drawer shows Edit Reservation only for active confirmed reservations
+        $drawerActive = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-edit-active',
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_HX_TARGET' => 'drawer-container']
+        ));
+        $this->assertStringContainsString('hx-get="/reservations/res-edit-active/edit"', $drawerActive->getBody());
+        $this->assertStringContainsString('Edit Reservation', $drawerActive->getBody());
+
+        $drawerPending = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-edit-pending',
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_HX_TARGET' => 'drawer-container']
+        ));
+        $this->assertStringNotContainsString('hx-get="/reservations/res-edit-pending/edit"', $drawerPending->getBody());
+
+        $drawerCancelled = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-edit-cancelled',
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_HX_TARGET' => 'drawer-container']
+        ));
+        $this->assertStringNotContainsString('hx-get="/reservations/res-edit-cancelled/edit"', $drawerCancelled->getBody());
+
+        $drawerConcluded = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-edit-concluded',
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_HX_TARGET' => 'drawer-container']
+        ));
+        $this->assertStringNotContainsString('hx-get="/reservations/res-edit-concluded/edit"', $drawerConcluded->getBody());
+
+        // 3. GET /reservations/{uid}/edit and POST /reservations/{uid}/edit reject pending, cancelled, and concluded with 422
+        foreach (['res-edit-pending', 'res-edit-cancelled', 'res-edit-concluded'] as $nonEditableUid) {
+            $getRes = $this->dispatchAdmin(new Request(
+                'GET',
+                "/reservations/{$nonEditableUid}/edit",
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ));
+            $this->assertSame(422, $getRes->getStatusCode(), "GET edit should reject {$nonEditableUid} with 422");
+
+            $postRes = $this->dispatchAdmin(new Request(
+                'POST',
+                "/reservations/{$nonEditableUid}/edit",
+                post: [
+                    'guest_name' => 'Attempted Mutation',
+                    'csrf_token' => 'test-csrf-token',
+                ],
+                server: [
+                    'HTTP_HX_REQUEST' => 'true',
+                    'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+                ]
+            ));
+            $this->assertSame(422, $postRes->getStatusCode(), "POST edit should reject {$nonEditableUid} with 422");
+        }
+
+        // 4. GET /reservations/res-edit-active/edit succeeds with 200 and renders Reservation Editor modal + Apply Calculated Quote
+        $editModalRes = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-edit-active/edit',
+            server: ['HTTP_HX_REQUEST' => 'true']
+        ));
+        $this->assertSame(200, $editModalRes->getStatusCode());
+        $modalBody = $editModalRes->getBody();
+        $this->assertStringContainsString('Reservation Editor', $modalBody);
+        $this->assertStringContainsString('value="Active Confirmed"', $modalBody);
+        $this->assertStringContainsString('Apply Calculated Quote', $modalBody);
+    }
+
+    public function testEditReservationUpdatesContractualFieldsMaxGuestsAndRecordsAuditLog(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, lang,
+                external_confirmation_code, notes, max_guests
+            ) VALUES (
+                'res-edit-contract', '1606', 'Original Name', 'orig@test.com', '+573001112233',
+                '2026-12-01', '2026-12-05', 1400000.00, 'confirmed', 'bank_transfer', 'en',
+                'ORIG-REF-1', 'Initial note', 6
+            );
+        ");
+
+        $response = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-edit-contract/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-12-01',
+                'check_out' => '2026-12-05',
+                'total_price' => '1650000',
+                'max_guests' => '9',
+                'guest_name' => 'Updated Primary Guest',
+                'guest_email' => 'updated@test.com',
+                'guest_phone' => '+573109998877',
+                'lang' => 'es',
+                'external_confirmation_code' => 'NEW-REF-99',
+                'notes' => 'Updated operational notes',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+                'REMOTE_ADDR' => '10.20.30.40',
+            ]
+        ));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('reservationUpdated', $response->getHeader('HX-Trigger'));
+        $this->assertStringContainsString('drawer-container', $response->getBody());
+        $this->assertStringContainsString('Updated Primary Guest', $response->getBody());
+
+        $stmt = $this->pdo->prepare('SELECT * FROM reservations WHERE reservation_uid = :uid');
+        $stmt->execute(['uid' => 'res-edit-contract']);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($row);
+        $this->assertSame('Updated Primary Guest', $row['guest_name']);
+        $this->assertSame('updated@test.com', $row['guest_email']);
+        $this->assertSame('+573109998877', $row['guest_phone']);
+        $this->assertSame('es', $row['lang']);
+        $this->assertSame('NEW-REF-99', $row['external_confirmation_code']);
+        $this->assertSame('Updated operational notes', $row['notes']);
+        $this->assertEquals(1650000.0, (float) $row['total_price']);
+        $this->assertSame(9, (int) $row['max_guests']);
+
+        // Verify Audit Log entry (`reservation_updated`)
+        $auditStmt = $this->pdo->prepare('SELECT * FROM admin_audit_logs WHERE action = :action AND entity_id = :uid ORDER BY id DESC LIMIT 1');
+        $auditStmt->execute(['action' => 'reservation_updated', 'uid' => 'res-edit-contract']);
+        $auditRow = $auditStmt->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($auditRow);
+        $this->assertSame(1, (int) $auditRow['admin_user_id']);
+        $this->assertSame('10.20.30.40', $auditRow['ip_address']);
+
+        $before = json_decode((string) $auditRow['payload_before'], true);
+        $after = json_decode((string) $auditRow['payload_after'], true);
+        $this->assertSame('Original Name', $before['guest_name']);
+        $this->assertSame(6, $before['max_guests']);
+        $this->assertSame('Updated Primary Guest', $after['guest_name']);
+        $this->assertSame(9, $after['max_guests']);
+        $this->assertEquals(1650000.0, (float) $after['total_price']);
+    }
+
+    public function testEditReservationRejectsLoweringMaxGuestsBelowRegisteredGuestCountAndPreservesInput(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed, max_guests
+            ) VALUES (
+                'res-edit-cap-guard', '1707', 'Group Host', 'group@test.com', '+573001112233',
+                '2026-12-01', '2026-12-05', 2200000.00, 'confirmed', 'web', 1, 8
+            );
+
+            INSERT INTO guest_registries (
+                reservation_uid, property_id, check_in, check_out, guest_count, guests_payload
+            ) VALUES (
+                'res-edit-cap-guard', '1707', '2026-12-01', '2026-12-05', 5,
+                '[{\"name\":\"G1\"},{\"name\":\"G2\"},{\"name\":\"G3\"},{\"name\":\"G4\"},{\"name\":\"G5\"}]'
+            );
+        ");
+
+        // Attempt to lower max_guests to 4 (below 5 registered guests) while editing notes & name
+        $res = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-edit-cap-guard/edit',
+            post: [
+                'property_id' => '1707',
+                'check_in' => '2026-12-01',
+                'check_out' => '2026-12-05',
+                'total_price' => '2350000',
+                'max_guests' => '4',
+                'guest_name' => 'Preserved Operator Input Name',
+                'guest_email' => 'preserved@test.com',
+                'guest_phone' => '+573009991111',
+                'lang' => 'en',
+                'external_confirmation_code' => 'PRESERVED-CODE',
+                'notes' => 'Preserved operator notes on 422',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+
+        $this->assertSame(422, $res->getStatusCode());
+        $body = $res->getBody();
+        $this->assertStringContainsString('Cannot lower maximum occupancy (4) below the 5 currently registered guests', $body);
+        // 100% of operator input preserved in-place
+        $this->assertStringContainsString('value="Preserved Operator Input Name"', $body);
+        $this->assertStringContainsString('value="preserved@test.com"', $body);
+        $this->assertStringContainsString('value="+573009991111"', $body);
+        $this->assertStringContainsString('value="2350000"', $body);
+        $this->assertStringContainsString('value="4"', $body);
+        $this->assertStringContainsString('value="PRESERVED-CODE"', $body);
+        $this->assertStringContainsString('Preserved operator notes on 422', $body);
+
+        // Setting max_guests to 5 (equal to registered guest count) succeeds
+        $resValid = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-edit-cap-guard/edit',
+            post: [
+                'property_id' => '1707',
+                'check_in' => '2026-12-01',
+                'check_out' => '2026-12-05',
+                'total_price' => '2350000',
+                'max_guests' => '5',
+                'guest_name' => 'Preserved Operator Input Name',
+                'guest_email' => 'preserved@test.com',
+                'guest_phone' => '+573009991111',
+                'lang' => 'en',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $resValid->getStatusCode());
+    }
+
+    public function testEditReservationReschedulesWithSelfConflictExclusionRejectsOtherConflictsAndCascadesToGuestRegistry(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            (
+                'res-edit-stay', '1606', 'Stay Mover', 'mover@test.com', '+573001112233',
+                '2026-11-10', '2026-11-14', 1250000.00, 'confirmed', 'web', 1
+            ),
+            (
+                'res-other-conflict', '1606', 'Blocking Neighbor', 'neighbor@test.com', '+573004445566',
+                '2026-11-16', '2026-11-20', 1500000.00, 'confirmed', 'web', 0
+            );
+
+            INSERT INTO calendar_blocks (property_id, start_date, end_date, reason)
+            VALUES ('1707', '2026-11-22', '2026-11-25', 'Deep HVAC Maintenance');
+
+            INSERT INTO guest_registries (
+                reservation_uid, property_id, check_in, check_out, guest_count, guests_payload
+            ) VALUES (
+                'res-edit-stay', '1606', '2026-11-10', '2026-11-14', 2,
+                '[{\"name\":\"Stay Mover\"},{\"name\":\"Companion\"}]'
+            );
+        ");
+
+        // 1. Quote preview in edit mode excludes self-conflict and renders Apply Calculated Quote without overwriting total_price
+        $previewSelf = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/quote-preview',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-11-10',
+                'check_out' => '2026-11-15',
+                'source' => 'web',
+                'exclude_reservation_uid' => 'res-edit-stay',
+                'edit_mode' => '1',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $previewSelf->getStatusCode());
+        $this->assertStringContainsString('Available (5 Nights)', $previewSelf->getBody());
+        $this->assertStringContainsString('Apply Calculated Quote', $previewSelf->getBody());
+        $this->assertStringNotContainsString("document.getElementById('manual-total-price')", $previewSelf->getBody());
+
+        // 2. Extending into res-other-conflict (2026-11-10..2026-11-18) fails with 422
+        $conflictRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-edit-stay/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-11-10',
+                'check_out' => '2026-11-18',
+                'total_price' => '1250000',
+                'max_guests' => '6',
+                'guest_name' => 'Stay Mover',
+                'guest_email' => 'mover@test.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(422, $conflictRes->getStatusCode());
+        $this->assertStringContainsString('res-other-conflict', $conflictRes->getBody());
+
+        // 3. Relocating to 1707 overlapping maintenance block (2026-11-21..2026-11-24) fails with 422
+        $maintConflictRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-edit-stay/edit',
+            post: [
+                'property_id' => '1707',
+                'check_in' => '2026-11-21',
+                'check_out' => '2026-11-24',
+                'total_price' => '1250000',
+                'max_guests' => '6',
+                'guest_name' => 'Stay Mover',
+                'guest_email' => 'mover@test.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(422, $maintConflictRes->getStatusCode());
+        $this->assertStringContainsString('Deep HVAC Maintenance', $maintConflictRes->getBody());
+
+        // 4. Extending stay on 1606 by 2 nights (2026-11-10..2026-11-16, adjacent to res-other-conflict) succeeds,
+        // preserves custom total_price (1250000), and cascades dates/property to guest_registries!
+        $extendSuccess = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-edit-stay/edit',
+            post: [
+                'property_id' => '1707',
+                'check_in' => '2026-11-10',
+                'check_out' => '2026-11-16',
+                'total_price' => '1250000',
+                'max_guests' => '6',
+                'guest_name' => 'Stay Mover',
+                'guest_email' => 'mover@test.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $extendSuccess->getStatusCode());
+
+        // Verify reservations table updated
+        $stmtRes = $this->pdo->prepare('SELECT property_id, check_in, check_out, total_price FROM reservations WHERE reservation_uid = :uid');
+        $stmtRes->execute(['uid' => 'res-edit-stay']);
+        $updatedRes = $stmtRes->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($updatedRes);
+        $this->assertSame('1707', $updatedRes['property_id']);
+        $this->assertSame('2026-11-10', $updatedRes['check_in']);
+        $this->assertSame('2026-11-16', $updatedRes['check_out']);
+        $this->assertEquals(1250000.0, (float) $updatedRes['total_price']);
+
+        // Verify guest_registries cascaded atomically
+        $stmtReg = $this->pdo->prepare('SELECT property_id, check_in, check_out FROM guest_registries WHERE reservation_uid = :uid');
+        $stmtReg->execute(['uid' => 'res-edit-stay']);
+        $updatedReg = $stmtReg->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($updatedReg);
+        $this->assertSame('1707', $updatedReg['property_id']);
+        $this->assertSame('2026-11-10', $updatedReg['check_in']);
+        $this->assertSame('2026-11-16', $updatedReg['check_out']);
+    }
 }

@@ -14,16 +14,20 @@ use PHPUnit\Framework\TestCase;
 
 final class ReservationRepositoryTest extends TestCase
 {
-    private function createSampleReservation(string $uid = 'ovf_sample_123'): Reservation
-    {
+    private function createSampleReservation(
+        string $uid = 'ovf_sample_123',
+        string $propertyId = '1606',
+        string $checkIn = '2026-11-15',
+        string $checkOut = '2026-11-20'
+    ): Reservation {
         return new Reservation(
             reservationUid: $uid,
-            propertyId: '1606',
+            propertyId: $propertyId,
             guestName: 'Jane Doe',
             guestEmail: 'jane@example.com',
             guestPhone: '+57 300 123 4567',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: $checkIn,
+            checkOut: $checkOut,
             totalPrice: 1500000.0,
             status: ReservationStatus::CONFIRMED,
             paymentMethodId: 'card_visa',
@@ -292,6 +296,43 @@ final class ReservationRepositoryTest extends TestCase
         $this->expectExceptionMessage('Reservation max_guests must be between 1 and 12');
 
         $this->createSampleReservation('ovf_bad_max')->withMaxGuests(13);
+    }
+
+    public function testFindOverlappingActiveExcludesSelfAndSaveUpdatesDatesAndProperty(): void
+    {
+        $pdo = $this->createSqlitePdo();
+        $pdoRepo = new PdoReservationRepository($pdo);
+        $inMemRepo = new InMemoryReservationRepository();
+
+        $res1 = $this->createSampleReservation('ovf_res_1', '1606', '2026-11-10', '2026-11-15');
+        $res2 = $this->createSampleReservation('ovf_res_2', '1606', '2026-11-18', '2026-11-22');
+        $pdoRepo->save($res1);
+        $pdoRepo->save($res2);
+        $inMemRepo->save($res1);
+        $inMemRepo->save($res2);
+
+        // Extending ovf_res_1 to 2026-11-16 excluding itself returns empty conflicts
+        $this->assertEmpty($pdoRepo->findOverlappingActive('1606', '2026-11-10', '2026-11-16', null, 30, 72, 'ovf_res_1'));
+        $this->assertEmpty($inMemRepo->findOverlappingActive('1606', '2026-11-10', '2026-11-16', null, 30, 72, 'ovf_res_1'));
+
+        // Extending ovf_res_1 to 2026-11-20 excluding itself still detects ovf_res_2
+        $pdoConflicts = $pdoRepo->findOverlappingActive('1606', '2026-11-10', '2026-11-20', null, 30, 72, 'ovf_res_1');
+        $inMemConflicts = $inMemRepo->findOverlappingActive('1606', '2026-11-10', '2026-11-20', null, 30, 72, 'ovf_res_1');
+        $this->assertCount(1, $pdoConflicts);
+        $this->assertSame('ovf_res_2', $pdoConflicts[0]->reservationUid);
+        $this->assertCount(1, $inMemConflicts);
+        $this->assertSame('ovf_res_2', $inMemConflicts[0]->reservationUid);
+
+        // Updating property_id, check_in, and check_out via save() persists in PDO
+        $relocated = Reservation::fromArray(array_merge($res1->toArray(), [
+            'property_id' => '1707',
+            'check_in' => '2026-11-12',
+            'check_out' => '2026-11-17',
+        ]));
+        $savedPdo = $pdoRepo->save($relocated);
+        $this->assertSame('1707', $savedPdo->propertyId);
+        $this->assertSame('2026-11-12', $savedPdo->checkIn);
+        $this->assertSame('2026-11-17', $savedPdo->checkOut);
     }
 }
 

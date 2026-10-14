@@ -50,9 +50,12 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
         ];
 
         $updatableColumns = [
+            'property_id',
             'guest_name',
             'guest_email',
             'guest_phone',
+            'check_in',
+            'check_out',
             'total_price',
             'refunded_amount',
             'source',
@@ -208,11 +211,16 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
         ?DateTimeImmutable $now = null,
         int $standardHoldMinutes = Reservation::DEFAULT_STANDARD_HOLD_MINUTES,
         int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS,
+        ?string $excludeReservationUid = null,
         bool $forUpdate = false
     ): array {
         $reference = $now ?? new DateTimeImmutable();
         $standardThreshold = $reference->sub(new DateInterval("PT{$standardHoldMinutes}M"))->format('Y-m-d H:i:s');
         $voucherThreshold = $reference->sub(new DateInterval("PT{$voucherHoldHours}H"))->format('Y-m-d H:i:s');
+
+        $excludeClause = ($excludeReservationUid !== null && $excludeReservationUid !== '')
+            ? ' AND `reservation_uid` != :exclude_uid'
+            : '';
 
         $sql = "SELECT * FROM `reservations`
             WHERE `property_id` = :property_id
@@ -230,17 +238,23 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
                       AND `created_at` > :standard_threshold
                   )
               )
-              AND (`check_in` < :check_out AND `check_out` > :check_in)
-            ORDER BY `check_in` ASC" . (($forUpdate && (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'sqlite') ? ' FOR UPDATE' : '');
+              AND (`check_in` < :check_out AND `check_out` > :check_in)"
+            . $excludeClause
+            . " ORDER BY `check_in` ASC" . (($forUpdate && (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'sqlite') ? ' FOR UPDATE' : '');
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
+        $params = [
             ':property_id' => $propertyId,
             ':voucher_threshold' => $voucherThreshold,
             ':standard_threshold' => $standardThreshold,
             ':check_in' => $checkIn,
             ':check_out' => $checkOut,
-        ]);
+        ];
+        if ($excludeReservationUid !== null && $excludeReservationUid !== '') {
+            $params[':exclude_uid'] = $excludeReservationUid;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $reservations = [];

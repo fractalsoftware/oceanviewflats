@@ -521,4 +521,51 @@ final class ReservationLedgerTest extends TestCase
         $this->expectExceptionMessage('Dates overlap maintenance hold (Balcony Painting: 2026-09-22 to 2026-09-24)');
         $this->ledger->hold($airbnbRes, $now);
     }
+
+    public function testSelfConflictExclusionAllowsExtendingOwnStayWhileBlockingOtherConflicts(): void
+    {
+        $now = new DateTimeImmutable('2026-10-01 10:00:00');
+
+        $resA = new Reservation(
+            reservationUid: 'res-self-1',
+            propertyId: '1606',
+            guestName: 'Self Guest',
+            guestEmail: 'self@example.com',
+            guestPhone: '+573001112233',
+            checkIn: '2026-10-10',
+            checkOut: '2026-10-15',
+            totalPrice: 1500000.0,
+            status: ReservationStatus::CONFIRMED,
+            createdAt: $now
+        );
+        $resB = new Reservation(
+            reservationUid: 'res-other-2',
+            propertyId: '1606',
+            guestName: 'Other Guest',
+            guestEmail: 'other@example.com',
+            guestPhone: '+573004445566',
+            checkIn: '2026-10-18',
+            checkOut: '2026-10-22',
+            totalPrice: 1200000.0,
+            status: ReservationStatus::CONFIRMED,
+            createdAt: $now
+        );
+
+        $this->repository->save($resA);
+        $this->repository->save($resB);
+
+        // Extending res-self-1 to 2026-10-16 overlaps its own original stay (10-10..10-15)
+        // Without exclusion: unavailable
+        $this->assertFalse($this->ledger->isAvailable('1606', '2026-10-10', '2026-10-16', $now));
+        // With exclusion of 'res-self-1': available!
+        $this->assertTrue($this->ledger->isAvailable('1606', '2026-10-10', '2026-10-16', $now, null, 'res-self-1'));
+        $this->assertEmpty($this->ledger->getConflictReasons('1606', '2026-10-10', '2026-10-16', $now, null, 'res-self-1'));
+        $this->assertNull($this->ledger->findReservationConflict('1606', '2026-10-10', '2026-10-16', $now, 'res-self-1'));
+
+        // Extending res-self-1 into res-other-2 (2026-10-10..2026-10-20) still conflicts with res-other-2
+        $this->assertFalse($this->ledger->isAvailable('1606', '2026-10-10', '2026-10-20', $now, null, 'res-self-1'));
+        $reasons = $this->ledger->getConflictReasons('1606', '2026-10-10', '2026-10-20', $now, null, 'res-self-1');
+        $this->assertCount(1, $reasons);
+        $this->assertStringContainsString('res-other-2', $reasons[0]);
+    }
 }

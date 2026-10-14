@@ -248,7 +248,7 @@ final class ReservationController
     }
 
     /**
-     * Real-time quote and availability checker for manual booking creation form.
+     * Real-time quote and availability checker for manual booking creation and reservation editor forms.
      */
     public function quotePreview(Request $request): Response
     {
@@ -257,6 +257,9 @@ final class ReservationController
         $checkIn = (string) ($body['check_in'] ?? '');
         $checkOut = (string) ($body['check_out'] ?? '');
         $source = (string) ($body['source'] ?? 'manual_override');
+        $excludeUidRaw = trim((string) ($body['exclude_reservation_uid'] ?? ''));
+        $excludeReservationUid = $excludeUidRaw !== '' ? $excludeUidRaw : null;
+        $isEditMode = $excludeReservationUid !== null || !empty($body['edit_mode']);
 
         if ($propertyId === '' || $checkIn === '' || $checkOut === '' || $checkIn >= $checkOut) {
             $html = $this->viewRenderer->renderPartial('reservations/_quote_preview.php', [
@@ -265,13 +268,14 @@ final class ReservationController
                 'quote' => null,
                 'source' => $source,
                 'defaultPrice' => 0.0,
+                'isEditMode' => $isEditMode,
             ]);
             return Response::html($html);
         }
 
         $absorbingSource = (strtolower($source) === 'airbnb') ? 'airbnb' : null;
-        $isAvailable = $this->ledger->isAvailable($propertyId, $checkIn, $checkOut, null, $absorbingSource);
-        $conflictReasons = $isAvailable ? [] : $this->ledger->getConflictReasons($propertyId, $checkIn, $checkOut, null, $absorbingSource);
+        $isAvailable = $this->ledger->isAvailable($propertyId, $checkIn, $checkOut, null, $absorbingSource, $excludeReservationUid);
+        $conflictReasons = $isAvailable ? [] : $this->ledger->getConflictReasons($propertyId, $checkIn, $checkOut, null, $absorbingSource, $excludeReservationUid);
         $quote = null;
         $defaultPrice = 0.0;
 
@@ -291,6 +295,7 @@ final class ReservationController
             'quote' => $quote,
             'source' => $source,
             'defaultPrice' => $defaultPrice,
+            'isEditMode' => $isEditMode,
         ]);
 
         return Response::html($html);
@@ -469,6 +474,403 @@ final class ReservationController
                     'Content-Type' => 'text/html; charset=UTF-8',
                     'HX-Trigger' => 'reservationUpdated',
                     'HX-Push-Url' => '/reservations/' . urlencode($uid),
+                ],
+                body: $responseBody
+            );
+        }
+
+        return Response::redirect('/reservations/' . urlencode($uid));
+    }
+
+    /**
+     * Renders the Reservation Editor modal for an active Confirmed Reservation.
+     *
+     * @param array<string, mixed> $session
+     */
+    public function editReservation(Request $request, array &$session): Response
+    {
+        $uid = (string) ($request->getAttribute('uid') ?? '');
+        $reservation = $this->repository->findByUid($uid);
+
+        if ($reservation === null) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Reservation not found</div>', 404);
+        }
+
+        if ($reservation->status === ReservationStatus::CANCELLED) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Cannot edit a cancelled reservation.</div>', 422);
+        }
+
+        if ($reservation->status !== ReservationStatus::CONFIRMED) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Only confirmed reservations can be edited.</div>', 422);
+        }
+
+        if ($reservation->isConcluded()) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Cannot edit a concluded reservation.</div>', 422);
+        }
+
+        $registry = $this->search->findGuestRegistry($uid);
+        $registeredGuestCount = $this->resolveRegisteredGuestCount($registry);
+
+        $quote = null;
+        try {
+            $quote = $this->quoteEngine->quote($reservation->propertyId, $reservation->checkIn, $reservation->checkOut);
+        } catch (Throwable) {
+            $quote = null;
+        }
+
+        $quotePreviewHtml = null;
+        if ($quote !== null) {
+            $quotePreviewHtml = $this->viewRenderer->renderPartial('reservations/_quote_preview.php', [
+                'isAvailable' => true,
+                'conflictReasons' => [],
+                'quote' => $quote,
+                'source' => $reservation->source,
+                'defaultPrice' => $quote->totalCop,
+                'isEditMode' => true,
+            ]);
+        }
+
+        $modalHtml = $this->viewRenderer->renderPartial('reservations/_edit_modal.php', [
+            'reservation' => $reservation->toArray(),
+            'errorMessage' => null,
+            'registeredGuestCount' => $registeredGuestCount,
+            'quotePreviewHtml' => $quotePreviewHtml,
+            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
+        ]);
+
+        if ($request->isHtmx()) {
+            return Response::html($modalHtml);
+        }
+
+        return Response::html($this->renderFullDashboard(
+            session: $session,
+            filters: $request->getAllQuery(),
+            modalHtml: $modalHtml,
+            title: 'Edit Reservation ' . htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') . ' - Ocean View Flats Admin'
+        ));
+    }
+
+    /**
+     * Updates contractual and stay details for an active Confirmed Reservation,
+     * cascading stay date and Property changes to guest_registries and recording an immutable audit log.
+     *
+     * @param array<string, mixed> $session
+     */
+    public function updateReservation(Request $request, array &$session): Response
+    {
+        $uid = (string) ($request->getAttribute('uid') ?? '');
+        $reservation = $this->repository->findByUid($uid);
+
+        if ($reservation === null) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Reservation not found</div>', 404);
+        }
+
+        if ($reservation->status === ReservationStatus::CANCELLED) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Cannot edit a cancelled reservation.</div>', 422);
+        }
+
+        if ($reservation->status !== ReservationStatus::CONFIRMED) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Only confirmed reservations can be edited.</div>', 422);
+        }
+
+        if ($reservation->isConcluded()) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Cannot edit a concluded reservation.</div>', 422);
+        }
+
+        $registry = $this->search->findGuestRegistry($uid);
+        $registeredGuestCount = $this->resolveRegisteredGuestCount($registry);
+
+        $body = $request->getAllPost();
+        $propertyId = array_key_exists('property_id', $body)
+            ? trim((string) $body['property_id'])
+            : $reservation->propertyId;
+        $checkIn = array_key_exists('check_in', $body)
+            ? trim((string) $body['check_in'])
+            : $reservation->checkIn;
+        $checkOut = array_key_exists('check_out', $body)
+            ? trim((string) $body['check_out'])
+            : $reservation->checkOut;
+        $totalPriceRaw = array_key_exists('total_price', $body)
+            ? $body['total_price']
+            : (string) $reservation->totalPrice;
+        $maxGuestsRaw = array_key_exists('max_guests', $body)
+            ? $body['max_guests']
+            : (string) $reservation->maxGuests;
+        $guestName = array_key_exists('guest_name', $body)
+            ? trim((string) $body['guest_name'])
+            : $reservation->guestName;
+        $guestEmail = array_key_exists('guest_email', $body)
+            ? trim((string) $body['guest_email'])
+            : $reservation->guestEmail;
+        $guestPhone = array_key_exists('guest_phone', $body)
+            ? trim((string) $body['guest_phone'])
+            : $reservation->guestPhone;
+        $lang = array_key_exists('lang', $body)
+            ? strtolower(trim((string) $body['lang']))
+            : $reservation->lang;
+        $externalConfirmationCode = array_key_exists('external_confirmation_code', $body)
+            ? trim((string) $body['external_confirmation_code'])
+            : (string) ($reservation->externalConfirmationCode ?? '');
+        $notes = array_key_exists('notes', $body)
+            ? trim((string) $body['notes'])
+            : (string) ($reservation->notes ?? '');
+
+        // 1. Validate Property
+        if (!in_array($propertyId, ['1606', '1707'], true)) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Please select a valid property (1606 or 1707).');
+        }
+
+        // 2. Validate Check-in and Check-out Dates
+        $checkInDate = DateTimeImmutable::createFromFormat('Y-m-d', $checkIn);
+        $checkOutDate = DateTimeImmutable::createFromFormat('Y-m-d', $checkOut);
+        $isValidCheckIn = ($checkInDate !== false) && ($checkInDate->format('Y-m-d') === $checkIn);
+        $isValidCheckOut = ($checkOutDate !== false) && ($checkOutDate->format('Y-m-d') === $checkOut);
+
+        if (!$isValidCheckIn || !$isValidCheckOut) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Check-in and check-out dates must be valid dates in Y-m-d format.');
+        }
+
+        if ($checkIn >= $checkOut) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Check-out date must be strictly after check-in date.');
+        }
+
+        // 3. Validate Language
+        if (!in_array($lang, ['en', 'es'], true)) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Language must be either "en" or "es".');
+        }
+
+        // 4. Validate Total Price (>= 0)
+        if ($totalPriceRaw === null || trim((string) $totalPriceRaw) === '' || !is_numeric($totalPriceRaw)) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Total price must be a valid non-negative number.');
+        }
+        $totalPrice = (float) $totalPriceRaw;
+        if ($totalPrice < 0.0) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Total price cannot be negative.');
+        }
+
+        // 5. Validate Occupancy Override (max_guests 1..12 and >= registeredGuestCount)
+        $maxGuestsValidated = filter_var($maxGuestsRaw, FILTER_VALIDATE_INT);
+        if ($maxGuestsValidated === false) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Maximum occupancy (max_guests) must be between 1 and 12.');
+        }
+        $maxGuests = (int) $maxGuestsValidated;
+        if ($maxGuests < Reservation::MIN_MAX_GUESTS || $maxGuests > Reservation::MAX_MAX_GUESTS) {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Maximum occupancy (max_guests) must be between 1 and 12.');
+        }
+        if ($registeredGuestCount > 0 && $maxGuests < $registeredGuestCount) {
+            return $this->renderEditError(
+                $request,
+                $session,
+                $reservation,
+                $registeredGuestCount,
+                sprintf(
+                    'Cannot lower maximum occupancy (%d) below the %d currently registered guests. Please remove excess guests from the Guest Registry first.',
+                    $maxGuests,
+                    $registeredGuestCount
+                )
+            );
+        }
+
+        // 6. Source-dependent contact validation
+        $isAirbnb = $reservation->isAirbnb();
+        if ($guestName === '') {
+            return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Guest name is required.');
+        }
+
+        if ($isAirbnb) {
+            if ($externalConfirmationCode === '') {
+                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Airbnb confirmation code is required.');
+            }
+            if ($guestEmail === '') {
+                $cleanCode = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $externalConfirmationCode) ?? 'guest');
+                $guestEmail = 'airbnb-' . $cleanCode . '@guest.oceanviewflats.com';
+            } elseif (!filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
+                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'A valid guest email address is required.');
+            }
+            if ($guestPhone === '') {
+                $guestPhone = 'N/A';
+            } elseif ($guestPhone !== 'N/A' && (strlen($guestPhone) < 7 || strlen($guestPhone) > 25)) {
+                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Guest phone number must be between 7 and 25 characters.');
+            }
+        } else {
+            if ($guestEmail === '' || !filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
+                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'A valid guest email address is required.');
+            }
+            if (strlen($guestPhone) < 7 || strlen($guestPhone) > 25) {
+                return $this->renderEditError($request, $session, $reservation, $registeredGuestCount, 'Guest phone number must be between 7 and 25 characters.');
+            }
+        }
+
+        // 7. Validate Reservation Ledger availability with self-conflict exclusion when stay dates or Property change
+        $stayChanged = (
+            $propertyId !== $reservation->propertyId
+            || $checkIn !== $reservation->checkIn
+            || $checkOut !== $reservation->checkOut
+        );
+
+        if ($stayChanged) {
+            $absorbingSource = $isAirbnb ? 'airbnb' : null;
+            $isAvailable = $this->ledger->isAvailable(
+                $propertyId,
+                $checkIn,
+                $checkOut,
+                null,
+                $absorbingSource,
+                $reservation->reservationUid
+            );
+            if (!$isAvailable) {
+                $conflictReasons = $this->ledger->getConflictReasons(
+                    $propertyId,
+                    $checkIn,
+                    $checkOut,
+                    null,
+                    $absorbingSource,
+                    $reservation->reservationUid
+                );
+                $reasonText = !empty($conflictReasons)
+                    ? implode('; ', $conflictReasons)
+                    : 'Selected dates conflict with an existing reservation or block.';
+                return $this->renderEditError(
+                    $request,
+                    $session,
+                    $reservation,
+                    $registeredGuestCount,
+                    'Selected dates conflict: ' . $reasonText,
+                    $conflictReasons
+                );
+            }
+        }
+
+        // 8. Build updated Reservation entity
+        $beforePayload = $reservation->toArray();
+        if ($registry !== null) {
+            $beforePayload['guest_registry'] = [
+                'property_id' => $registry['property_id'] ?? $reservation->propertyId,
+                'check_in' => $registry['check_in'] ?? $reservation->checkIn,
+                'check_out' => $registry['check_out'] ?? $reservation->checkOut,
+                'guest_count' => (int) ($registry['guest_count'] ?? $registeredGuestCount),
+            ];
+        }
+
+        $now = new DateTimeImmutable();
+        $updatedReservation = new Reservation(
+            reservationUid: $reservation->reservationUid,
+            propertyId: $propertyId,
+            guestName: $guestName,
+            guestEmail: $guestEmail,
+            guestPhone: $guestPhone,
+            checkIn: $checkIn,
+            checkOut: $checkOut,
+            totalPrice: $totalPrice,
+            status: $reservation->status,
+            paymentMethodId: $reservation->paymentMethodId,
+            id: $reservation->id,
+            mercadopagoPreferenceId: $reservation->mercadopagoPreferenceId,
+            mercadopagoPaymentId: $reservation->mercadopagoPaymentId,
+            paymentStatus: $reservation->paymentStatus,
+            paymentDetail: $reservation->paymentDetail,
+            lang: $lang,
+            createdAt: $reservation->createdAt,
+            updatedAt: $now,
+            registryCompleted: $reservation->registryCompleted,
+            registryCompletedAt: $reservation->registryCompletedAt,
+            doorCode: $reservation->doorCode,
+            source: $reservation->source,
+            notes: $notes !== '' ? $notes : null,
+            refundedAmount: $reservation->refundedAmount,
+            externalConfirmationCode: $externalConfirmationCode !== '' ? $externalConfirmationCode : null,
+            channelBlockUid: $reservation->channelBlockUid,
+            maxGuests: $maxGuests
+        );
+
+        $currentUser = $this->buildCurrentUser($session);
+        $adminUserId = $currentUser['id'];
+        $ipAddress = $request->getClientIp();
+        $userAgent = (string) $request->getHeader('User-Agent', '');
+
+        // 9. Atomic Transaction: save Reservation, cascade stay parameters to guest_registries, and record Audit Log
+        $inExternalTransaction = $this->pdo !== null && $this->pdo->inTransaction();
+        if ($this->pdo !== null && !$inExternalTransaction) {
+            $this->pdo->beginTransaction();
+        }
+
+        try {
+            $savedReservation = $this->repository->save($updatedReservation);
+
+            if ($stayChanged && $this->pdo !== null) {
+                $stmtCascade = $this->pdo->prepare('
+                    UPDATE guest_registries
+                    SET property_id = :property_id,
+                        check_in = :check_in,
+                        check_out = :check_out
+                    WHERE reservation_uid = :uid
+                ');
+                $stmtCascade->execute([
+                    ':property_id' => $propertyId,
+                    ':check_in' => $checkIn,
+                    ':check_out' => $checkOut,
+                    ':uid' => $uid,
+                ]);
+            }
+
+            $afterPayload = $savedReservation->toArray();
+            if ($registry !== null) {
+                $afterPayload['guest_registry'] = [
+                    'property_id' => $propertyId,
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
+                    'guest_count' => (int) ($registry['guest_count'] ?? $registeredGuestCount),
+                ];
+            }
+
+            $this->auditLogger->record(
+                action: 'reservation_updated',
+                entityType: 'reservation',
+                entityId: $uid,
+                before: $beforePayload,
+                after: $afterPayload,
+                adminUserId: $adminUserId,
+                ipAddress: $ipAddress,
+                userAgent: $userAgent
+            );
+
+            if ($this->pdo !== null && !$inExternalTransaction && $this->pdo->inTransaction()) {
+                $this->pdo->commit();
+            }
+        } catch (Throwable $e) {
+            if ($this->pdo !== null && !$inExternalTransaction && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            return $this->renderEditError(
+                $request,
+                $session,
+                $reservation,
+                $registeredGuestCount,
+                'Failed to update reservation: ' . $e->getMessage()
+            );
+        }
+
+        $dossier = $this->search->findWithAuditTrail($uid);
+        $clearance = $this->clearanceRepo?->findByReservationUid($uid);
+        $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
+            'reservation' => $dossier !== null ? $dossier->reservation : $savedReservation->toArray(),
+            'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
+            'refunds' => $dossier !== null ? $dossier->refunds : [],
+            'condominiumClearance' => $clearance,
+            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
+            'publicSiteUrl' => $this->publicSiteUrl,
+            'urlBuilder' => $this->urlBuilder,
+        ]);
+
+        if ($request->isHtmx()) {
+            $responseBody = '<script>document.getElementById("modal-container").innerHTML = "";</script>';
+            $responseBody .= '<div id="drawer-container" hx-swap-oob="innerHTML">' . $drawerHtml . '</div>';
+
+            return new Response(
+                statusCode: 200,
+                headers: [
+                    'Content-Type' => 'text/html; charset=UTF-8',
+                    'HX-Trigger' => 'reservationUpdated',
                 ],
                 body: $responseBody
             );
@@ -944,6 +1346,119 @@ final class ReservationController
             'maxGuests' => isset($body['max_guests']) && trim((string) $body['max_guests']) !== ''
                 ? (string) $body['max_guests']
                 : (string) Reservation::DEFAULT_MAX_GUESTS,
+        ]);
+
+        return Response::html($modalHtml, 422);
+    }
+
+    /**
+     * @param array<string, mixed>|null $registry
+     */
+    private function resolveRegisteredGuestCount(?array $registry): int
+    {
+        if ($registry === null) {
+            return 0;
+        }
+        $guestsPayload = $registry['guests_payload'] ?? null;
+        if (is_array($guestsPayload)) {
+            return count($guestsPayload);
+        }
+        if (is_string($guestsPayload) && $guestsPayload !== '') {
+            $decoded = json_decode($guestsPayload, true);
+            if (is_array($decoded)) {
+                return count($decoded);
+            }
+        }
+        return isset($registry['guest_count']) ? (int) $registry['guest_count'] : 0;
+    }
+
+    /**
+     * @param array<string, mixed> $session
+     * @param list<string>|null $conflictReasons
+     */
+    private function renderEditError(
+        Request $request,
+        array &$session,
+        Reservation $reservation,
+        int $registeredGuestCount,
+        string $errorMessage,
+        ?array $conflictReasons = null
+    ): Response {
+        $body = $request->getAllPost();
+        $propertyId = array_key_exists('property_id', $body)
+            ? (string) $body['property_id']
+            : $reservation->propertyId;
+        $checkIn = array_key_exists('check_in', $body)
+            ? (string) $body['check_in']
+            : $reservation->checkIn;
+        $checkOut = array_key_exists('check_out', $body)
+            ? (string) $body['check_out']
+            : $reservation->checkOut;
+
+        $quote = null;
+        $quotePreviewHtml = null;
+        if ($conflictReasons !== null) {
+            $quotePreviewHtml = $this->viewRenderer->renderPartial('reservations/_quote_preview.php', [
+                'isAvailable' => false,
+                'conflictReasons' => $conflictReasons,
+                'quote' => null,
+                'source' => $reservation->source,
+                'defaultPrice' => 0.0,
+                'isEditMode' => true,
+            ]);
+        } elseif (in_array($propertyId, ['1606', '1707'], true) && $checkIn !== '' && $checkOut !== '' && $checkIn < $checkOut) {
+            try {
+                $quote = $this->quoteEngine->quote($propertyId, $checkIn, $checkOut);
+                $quotePreviewHtml = $this->viewRenderer->renderPartial('reservations/_quote_preview.php', [
+                    'isAvailable' => true,
+                    'conflictReasons' => [],
+                    'quote' => $quote,
+                    'source' => $reservation->source,
+                    'defaultPrice' => $quote->totalCop,
+                    'isEditMode' => true,
+                ]);
+            } catch (Throwable) {
+                $quote = null;
+            }
+        }
+
+        $modalHtml = $this->viewRenderer->renderPartial('reservations/_edit_modal.php', [
+            'reservation' => $reservation->toArray(),
+            'errorMessage' => $errorMessage,
+            'propertyId' => $propertyId,
+            'source' => $reservation->source,
+            'checkIn' => $checkIn,
+            'checkOut' => $checkOut,
+            'totalPrice' => array_key_exists('total_price', $body)
+                ? (string) $body['total_price']
+                : (string) $reservation->totalPrice,
+            'maxGuests' => array_key_exists('max_guests', $body)
+                ? (string) $body['max_guests']
+                : (string) $reservation->maxGuests,
+            'guestName' => array_key_exists('guest_name', $body)
+                ? (string) $body['guest_name']
+                : $reservation->guestName,
+            'guestEmail' => array_key_exists('guest_email', $body)
+                ? (string) $body['guest_email']
+                : $reservation->guestEmail,
+            'guestPhone' => array_key_exists('guest_phone', $body)
+                ? (string) $body['guest_phone']
+                : $reservation->guestPhone,
+            'lang' => array_key_exists('lang', $body)
+                ? (string) $body['lang']
+                : $reservation->lang,
+            'externalConfirmationCode' => array_key_exists('external_confirmation_code', $body)
+                ? (string) $body['external_confirmation_code']
+                : (string) ($reservation->externalConfirmationCode ?? ''),
+            'channelBlockUid' => array_key_exists('channel_block_uid', $body)
+                ? (string) $body['channel_block_uid']
+                : (string) ($reservation->channelBlockUid ?? ''),
+            'notes' => array_key_exists('notes', $body)
+                ? (string) $body['notes']
+                : (string) ($reservation->notes ?? ''),
+            'registeredGuestCount' => $registeredGuestCount,
+            'quotePreviewHtml' => $quotePreviewHtml,
+            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
         ]);
 
         return Response::html($modalHtml, 422);

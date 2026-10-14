@@ -35,6 +35,19 @@ $createdAt = (string) ($reservation['created_at'] ?? '');
 $externalConfirmationCode = (string) ($reservation['external_confirmation_code'] ?? '');
 $channelBlockUid = (string) ($reservation['channel_block_uid'] ?? '');
 $isAirbnbReservation = (strtolower((string) $source) === 'airbnb' || str_starts_with($uid, 'res-abnb-'));
+
+$isConcluded = false;
+if ($status === 'confirmed' && $checkOut !== '') {
+    try {
+        $tzCot = new \DateTimeZone('America/Bogota');
+        $nowCot = new \DateTimeImmutable('now', $tzCot);
+        $concludedThreshold = new \DateTimeImmutable($checkOut . ' 23:59:59', $tzCot);
+        $isConcluded = $nowCot > $concludedThreshold;
+    } catch (\Throwable) {
+        $isConcluded = false;
+    }
+}
+$isEditable = ($status === 'confirmed' && !$isConcluded);
 ?>
 
 <script>
@@ -636,9 +649,21 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
             </div>
 
             <!-- Drawer Footer -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-                <div>
-                    <?php if ($status !== 'cancelled'): ?>
+            <div class="px-6 py-4 bg-gray-50 border-b sm:border-b-0 border-t border-gray-200 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex items-center space-x-2">
+                    <?php if ($isEditable): ?>
+                        <button type="button"
+                                hx-get="/reservations/<?= urlencode($uid) ?>/edit"
+                                hx-target="#modal-container"
+                                hx-swap="innerHTML"
+                                class="px-3.5 py-2 border border-indigo-200 rounded-lg shadow-2xs text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-300 transition cursor-pointer flex items-center">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit Reservation
+                        </button>
+                    <?php endif; ?>
+                    <?php if ($status !== 'cancelled' && !$isConcluded): ?>
                         <button type="button"
                                 hx-get="/reservations/<?= urlencode($uid) ?>/cancel-modal"
                                 hx-target="#modal-container"
@@ -649,9 +674,13 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                             </svg>
                             Cancel Reservation...
                         </button>
-                    <?php else: ?>
+                    <?php elseif ($status === 'cancelled'): ?>
                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
                             Reservation Cancelled
+                        </span>
+                    <?php elseif ($isConcluded): ?>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                            Concluded Stay
                         </span>
                     <?php endif; ?>
                 </div>

@@ -340,6 +340,8 @@ final class AdminApp
             ->post('/reservations/quote-preview', [$reservationController, 'quotePreview'])
             ->post('/reservations/create-manual', [$reservationController, 'createManual'])
             ->get('/reservations/{uid}', [$reservationController, 'show'])
+            ->get('/reservations/{uid}/edit', [$reservationController, 'editReservation'])
+            ->post('/reservations/{uid}/edit', [$reservationController, 'updateReservation'])
             ->get('/reservations/{uid}/registry', [$reservationController, 'showRegistry'])
             ->post('/reservations/{uid}/registry/complete', [$reservationController, 'completeRegistry'])
             ->post('/reservations/{uid}/clearance-retry', [$reservationController, 'retryClearance'])

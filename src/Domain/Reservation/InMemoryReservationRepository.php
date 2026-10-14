@@ -84,12 +84,16 @@ final class InMemoryReservationRepository implements ReservationRepositoryInterf
         string $checkOut,
         ?DateTimeImmutable $now = null,
         int $standardHoldMinutes = Reservation::DEFAULT_STANDARD_HOLD_MINUTES,
-        int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS
+        int $voucherHoldHours = Reservation::DEFAULT_VOUCHER_HOLD_HOURS,
+        ?string $excludeReservationUid = null
     ): array {
         $overlapping = [];
         $active = $this->findActiveByProperty($propertyId, $now, $standardHoldMinutes, $voucherHoldHours);
 
         foreach ($active as $reservation) {
+            if ($excludeReservationUid !== null && $excludeReservationUid !== '' && $reservation->reservationUid === $excludeReservationUid) {
+                continue;
+            }
             if ($reservation->overlaps($checkIn, $checkOut)) {
                 $overlapping[] = $reservation;
             }
