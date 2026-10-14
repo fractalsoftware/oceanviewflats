@@ -110,6 +110,7 @@ send_json_response(true, 'Reservation details retrieved successfully.', [
         'guest_name' => $reservation->guestName,
         'status' => $reservation->status->value,
         'registry_completed' => $reservation->registryCompleted,
+        'max_guests' => $reservation->maxGuests,
     ],
     'guide_url' => $guideUrl,
 ]);

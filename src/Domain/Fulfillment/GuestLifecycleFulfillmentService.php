@@ -119,15 +119,32 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             }
         }
 
-        // 2. Validate guest count: at least 1, max 6
+        // 2. Resolve reservation (if available) to determine effective max_guests capacity
+        $reservation = null;
+        if ($submission->reservationCode !== '') {
+            $reservation = $this->reservationRepository->findByUid($submission->reservationCode);
+        }
+        if ($reservation === null && $submission->propertyId !== '' && $submission->checkIn !== '' && $submission->checkOut !== '') {
+            $reservation = $this->reservationRepository->findByPropertyAndDates(
+                $submission->propertyId,
+                $submission->checkIn,
+                $submission->checkOut
+            );
+        }
+
+        $maxGuests = $reservation !== null
+            ? $reservation->maxGuests
+            : Reservation::DEFAULT_MAX_GUESTS;
+
+        // 3. Validate guest count: at least 1, up to reservation's max_guests (default 6)
         $guestCount = $submission->getGuestCount();
-        if ($guestCount < 1 || $guestCount > 6) {
+        if ($guestCount < 1 || $guestCount > $maxGuests) {
             return RegistryFulfillmentResult::validationFailure([
-                'A reservation must register between 1 and 6 guests.',
+                sprintf('A reservation must register between 1 and %d guests.', $maxGuests),
             ]);
         }
 
-        // 3. Validate occupant details defensively
+        // 4. Validate occupant details defensively
         $validationErrors = [];
         foreach ($submission->occupants as $occupant) {
             $trimmedName = trim($occupant->name);
@@ -146,18 +163,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             return RegistryFulfillmentResult::validationFailure($validationErrors);
         }
 
-        // 3. Resolve reservation
-        $reservation = null;
-        if ($submission->reservationCode !== '') {
-            $reservation = $this->reservationRepository->findByUid($submission->reservationCode);
-        }
-        if ($reservation === null && $submission->propertyId !== '' && $submission->checkIn !== '' && $submission->checkOut !== '') {
-            $reservation = $this->reservationRepository->findByPropertyAndDates(
-                $submission->propertyId,
-                $submission->checkIn,
-                $submission->checkOut
-            );
-        }
         if ($reservation === null) {
             return RegistryFulfillmentResult::notFound(
                 $submission->reservationCode,
@@ -165,7 +170,7 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             );
         }
 
-        // 4. Check reservation status
+        // 5. Check reservation status & completion lock
         if ($reservation->status->isCancelled()) {
             return RegistryFulfillmentResult::validationFailure([
                 'Cannot register guests for a cancelled reservation.',
@@ -175,6 +180,12 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         if ($reservation->isConcluded()) {
             return RegistryFulfillmentResult::validationFailure([
                 'Cannot submit guest registry for a concluded reservation.',
+            ]);
+        }
+
+        if ($reservation->registryCompleted) {
+            return RegistryFulfillmentResult::validationFailure([
+                'Guest registry has already been completed for this reservation.',
             ]);
         }
 

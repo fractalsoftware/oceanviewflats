@@ -68,6 +68,7 @@ final class ReservationRepositoryTest extends TestCase
             channel_block_uid TEXT DEFAULT NULL,
             notes TEXT,
             refunded_amount REAL DEFAULT 0.0,
+            max_guests INTEGER NOT NULL DEFAULT 6,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )");
@@ -247,6 +248,50 @@ final class ReservationRepositoryTest extends TestCase
         $this->assertSame('120000', (string) (int) $rows[0]['amount']);
         $this->assertSame('mp_ref_123', $rows[0]['mercadopago_refund_id']);
         $this->assertSame('Duplicate booking', $rows[0]['reason']);
+    }
+
+    public function testReservationPersistsAndValidatesMaxGuestsInRepositories(): void
+    {
+        $pdo = $this->createSqlitePdo();
+        $pdoRepo = new PdoReservationRepository($pdo);
+        $inMemRepo = new InMemoryReservationRepository();
+
+        $defaultRes = $this->createSampleReservation('ovf_default_max');
+        $this->assertSame(6, $defaultRes->maxGuests);
+        $pdoRepo->save($defaultRes);
+        $inMemRepo->save($defaultRes);
+
+        $pdoDefault = $pdoRepo->findByUid('ovf_default_max');
+        $inMemDefault = $inMemRepo->findByUid('ovf_default_max');
+        $this->assertNotNull($pdoDefault);
+        $this->assertNotNull($inMemDefault);
+        $this->assertSame(6, $pdoDefault->maxGuests);
+        $this->assertSame(6, $inMemDefault->maxGuests);
+
+        $overrideRes = $defaultRes->withMaxGuests(10);
+        $this->assertSame(10, $overrideRes->maxGuests);
+        $this->assertSame(10, $overrideRes->toArray()['max_guests']);
+
+        $pdoRepo->save($overrideRes);
+        $inMemRepo->save($overrideRes);
+
+        $pdoUpdated = $pdoRepo->findByUid('ovf_default_max');
+        $inMemUpdated = $inMemRepo->findByUid('ovf_default_max');
+        $this->assertNotNull($pdoUpdated);
+        $this->assertNotNull($inMemUpdated);
+        $this->assertSame(10, $pdoUpdated->maxGuests);
+        $this->assertSame(10, $inMemUpdated->maxGuests);
+
+        $fromArray = Reservation::fromArray($overrideRes->toArray());
+        $this->assertSame(10, $fromArray->maxGuests);
+    }
+
+    public function testReservationRejectsMaxGuestsOutsideRange(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Reservation max_guests must be between 1 and 12');
+
+        $this->createSampleReservation('ovf_bad_max')->withMaxGuests(13);
     }
 }
 

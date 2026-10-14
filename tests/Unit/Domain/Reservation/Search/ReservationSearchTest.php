@@ -580,5 +580,7 @@ final class ReservationSearchTest extends TestCase
         $inMemRes = $inMemoryAdapter->search(ReservationSearchCriteria::fromArray(['query' => 'hm3xyz1234']));
         $this->assertSame(1, $inMemRes->totalCount);
         $this->assertSame('res-abnb-test-1', $inMemRes->items[0]['reservation_uid']);
+        $this->assertSame(6, $inMemRes->items[0]['max_guests']);
+        $this->assertSame(6, $result->items[0]['max_guests']);
     }
 }

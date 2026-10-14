@@ -190,6 +190,7 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                     </div>
                     <div class="flex items-center justify-between text-xs text-gray-500 px-1">
                         <span>Source: <strong class="text-gray-700 uppercase"><?= htmlspecialchars($source, ENT_QUOTES, 'UTF-8') ?></strong></span>
+                        <span>Max Guests: <strong class="text-gray-700"><?= (int) ($reservation['max_guests'] ?? 6) ?></strong></span>
                         <span>Booked: <?= htmlspecialchars($createdAt, ENT_QUOTES, 'UTF-8') ?></span>
                     </div>
                     <?php if ($externalConfirmationCode !== ''): ?>

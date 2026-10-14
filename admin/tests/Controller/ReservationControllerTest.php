@@ -712,6 +712,7 @@ final class ReservationControllerTest extends TestCase
             'send_confirmation_email' => '1',
             'external_confirmation_code' => 'CONF-777',
             'channel_block_uid' => 'BLOCK-888',
+            'max_guests' => '11',
         ]);
 
         $response = $this->controller->createManual($request, $this->session);
@@ -740,6 +741,8 @@ final class ReservationControllerTest extends TestCase
         // External platform codes preserved
         $this->assertStringContainsString('value="CONF-777"', $body);
         $this->assertStringContainsString('value="BLOCK-888"', $body);
+        // Max guests preserved
+        $this->assertStringContainsString('value="11"', $body);
     }
 
     public function testCreateManualReservation422PreservesUncheckedCheckboxesAndPropertyDefault(): void

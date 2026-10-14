@@ -46,6 +46,7 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             'registry_completed_at',
             'door_code',
             'notes',
+            'max_guests',
         ];
 
         $updatableColumns = [
@@ -68,6 +69,7 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             'registry_completed_at',
             'door_code',
             'notes',
+            'max_guests',
         ];
 
         if ($driver === 'sqlite') {
@@ -112,6 +114,7 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             ':registry_completed_at' => $reservation->registryCompletedAt?->format('Y-m-d H:i:s'),
             ':door_code' => $reservation->doorCode,
             ':notes' => $reservation->notes,
+            ':max_guests' => $reservation->maxGuests,
         ];
 
         $params = [];
@@ -467,7 +470,8 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             notes: isset($row['notes']) ? (string) $row['notes'] : null,
             refundedAmount: isset($row['refunded_amount']) ? (float) $row['refunded_amount'] : 0.0,
             externalConfirmationCode: isset($row['external_confirmation_code']) && $row['external_confirmation_code'] !== '' ? (string) $row['external_confirmation_code'] : null,
-            channelBlockUid: isset($row['channel_block_uid']) && $row['channel_block_uid'] !== '' ? (string) $row['channel_block_uid'] : null
+            channelBlockUid: isset($row['channel_block_uid']) && $row['channel_block_uid'] !== '' ? (string) $row['channel_block_uid'] : null,
+            maxGuests: isset($row['max_guests']) && $row['max_guests'] !== '' ? (int) $row['max_guests'] : Reservation::DEFAULT_MAX_GUESTS
         );
     }
 }

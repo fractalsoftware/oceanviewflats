@@ -61,6 +61,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 channel_block_uid TEXT DEFAULT NULL,
                 notes TEXT,
                 refunded_amount REAL DEFAULT 0.0,
+                max_guests INTEGER NOT NULL DEFAULT 6,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -338,6 +339,60 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $resultSeven = $this->service->submitRegistry($submissionSeven);
         $this->assertFalse($resultSeven->success);
         $this->assertContains('A reservation must register between 1 and 6 guests.', $resultSeven->errors);
+
+        // Reservation with Occupancy Override max_guests = 8 accepts 8 guests and rejects 9
+        $overrideRes = $this->createSampleReservation('ovf_sample_max8')->withMaxGuests(8);
+        $this->reservationRepository->save($overrideRes);
+
+        $eightOccupants = $sevenOccupants;
+        $eightOccupants[] = new OccupantDetails(
+            index: 8,
+            name: 'Guest 8',
+            age: 30,
+            docType: 'Passport',
+            docNum: 'DOC888888'
+        );
+        $nineOccupants = $eightOccupants;
+        $nineOccupants[] = new OccupantDetails(
+            index: 9,
+            name: 'Guest 9',
+            age: 30,
+            docType: 'Passport',
+            docNum: 'DOC999999'
+        );
+
+        $resultNine = $this->service->submitRegistry(new GuestRegistrySubmission(
+            reservationCode: 'ovf_sample_max8',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: $nineOccupants,
+            primaryGuestEmail: 'jane.smith@example.com'
+        ));
+        $this->assertFalse($resultNine->success);
+        $this->assertContains('A reservation must register between 1 and 8 guests.', $resultNine->errors);
+
+        $resultEight = $this->service->submitRegistry(new GuestRegistrySubmission(
+            reservationCode: 'ovf_sample_max8',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: $eightOccupants,
+            primaryGuestEmail: 'jane.smith@example.com'
+        ));
+        $this->assertTrue($resultEight->success);
+
+        // Once registry_completed = 1, re-submission is blocked
+        $resubmitResult = $this->service->submitRegistry(new GuestRegistrySubmission(
+            reservationCode: 'ovf_sample_max8',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [$eightOccupants[0]],
+            primaryGuestEmail: 'jane.smith@example.com'
+        ));
+        $this->assertFalse($resubmitResult->success);
+        $this->assertContains('Guest registry has already been completed for this reservation.', $resubmitResult->errors);
     }
 
     public function testSubmitRegistryRejectsInvalidOccupantDetails(): void

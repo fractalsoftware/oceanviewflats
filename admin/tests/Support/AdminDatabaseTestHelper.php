@@ -91,6 +91,7 @@ final class AdminDatabaseTestHelper
                 registry_completed_at TEXT DEFAULT NULL,
                 door_code TEXT DEFAULT NULL,
                 notes TEXT DEFAULT NULL,
+                max_guests INTEGER NOT NULL DEFAULT 6,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );

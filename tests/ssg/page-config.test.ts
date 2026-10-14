@@ -303,3 +303,29 @@ test("obsolete data-msg-* attributes are completely excised across src and publi
 	checkDir(path.join(process.cwd(), "src", "pages"));
 	checkDir(path.join(process.cwd(), "public", "js"));
 });
+
+test("Registry page pre-renders 12 guest cards and registry.js honors max_guests override", () => {
+	const registryHtml = fs.readFileSync(
+		path.join(process.cwd(), "dist", "registry", "index.html"),
+		"utf-8",
+	);
+	for (let num = 1; num <= 12; num++) {
+		assert.ok(
+			registryHtml.includes(`id="guest-card-${num}"`),
+			`Registry HTML must pre-render #guest-card-${num}`,
+		);
+	}
+
+	const registryJs = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "registry.js"),
+		"utf-8",
+	);
+	assert.ok(
+		registryJs.includes("r.max_guests"),
+		"registry.js must read r.max_guests from lookup payload",
+	);
+	assert.ok(
+		registryJs.includes("ABSOLUTE_MAX_GUESTS = 12"),
+		"registry.js must support up to 12 guest cards",
+	);
+});

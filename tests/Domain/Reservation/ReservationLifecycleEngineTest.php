@@ -892,4 +892,59 @@ final class ReservationLifecycleEngineTest extends TestCase
 
         $this->engine->cancel('ovf_blank_reason', $request);
     }
+
+    public function testConfirmOrRecordPersistsDefaultAndOverriddenMaxGuests(): void
+    {
+        $guest = PrimaryGuest::create('Large Family Guest', 'family@example.com', '+573101112233');
+
+        $manualDefault = ReservationDraft::manual(
+            propertyId: '1606',
+            checkIn: '2026-10-10',
+            checkOut: '2026-10-14',
+            primaryGuest: $guest,
+            totalPrice: 1200000.0
+        );
+        $resDefault = $this->engine->confirmOrRecord($manualDefault);
+        $this->assertSame(6, $resDefault->reservation->maxGuests);
+
+        $manualOverride = ReservationDraft::manual(
+            propertyId: '1707',
+            checkIn: '2026-10-15',
+            checkOut: '2026-10-20',
+            primaryGuest: $guest,
+            totalPrice: 2000000.0,
+            maxGuests: 10
+        );
+        $resOverride = $this->engine->confirmOrRecord($manualOverride);
+        $this->assertSame(10, $resOverride->reservation->maxGuests);
+        $this->assertSame(10, $this->persistenceAdapter->getReservation($resOverride->reservation->reservationUid)?->maxGuests);
+
+        $externalOverride = ReservationDraft::external(
+            propertyId: '1606',
+            checkIn: '2026-10-22',
+            checkOut: '2026-10-26',
+            primaryGuest: $guest,
+            externalConfirmationCode: 'HM12GUESTS',
+            maxGuests: 12
+        );
+        $resExt = $this->engine->confirmOrRecord($externalOverride);
+        $this->assertSame(12, $resExt->reservation->maxGuests);
+    }
+
+    public function testReservationDraftRejectsOutOfRangeMaxGuests(): void
+    {
+        $guest = PrimaryGuest::create('Invalid Capacity Guest', 'cap@example.com', '+573101112233');
+
+        $this->expectException(ReservationValidationException::class);
+        $this->expectExceptionMessage('Maximum occupancy (max_guests) must be between 1 and 12');
+
+        ReservationDraft::manual(
+            propertyId: '1606',
+            checkIn: '2026-10-10',
+            checkOut: '2026-10-14',
+            primaryGuest: $guest,
+            totalPrice: 1200000.0,
+            maxGuests: 15
+        );
+    }
 }

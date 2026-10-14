@@ -328,4 +328,92 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertSame('cancelled', $row['status']);
         $this->assertStringContainsString('Guest family emergency', (string) $row['notes']);
     }
+
+    public function testCreateManualAndExternalReservationsPersistMaxGuestsAndValidateBounds(): void
+    {
+        // 1. Modal renders max_guests input with default 6, min 1, max 12
+        $modalRes = $this->dispatchAdmin(new Request('GET', '/reservations/new', server: ['HTTP_HX_REQUEST' => 'true']));
+        $this->assertSame(200, $modalRes->getStatusCode());
+        $this->assertStringContainsString('name="max_guests"', $modalRes->getBody());
+        $this->assertStringContainsString('min="1"', $modalRes->getBody());
+        $this->assertStringContainsString('max="12"', $modalRes->getBody());
+        $this->assertStringContainsString('value="6"', $modalRes->getBody());
+
+        // 2. Create manual reservation with max_guests = 10
+        $createManual = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/create-manual',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-12-16',
+                'check_out' => '2026-12-20',
+                'source' => 'bank_transfer',
+                'total_price' => '1800000',
+                'max_guests' => '10',
+                'guest_name' => 'Large Group Host',
+                'guest_email' => 'largegroup@test.com',
+                'guest_phone' => '+573001112233',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $createManual->getStatusCode());
+        $stmtManual = $this->pdo->prepare('SELECT max_guests FROM reservations WHERE guest_email = :email');
+        $stmtManual->execute(['email' => 'largegroup@test.com']);
+        $this->assertSame(10, (int) $stmtManual->fetchColumn());
+
+        // 3. Create Airbnb external reservation with max_guests = 8
+        $createAirbnb = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/create-manual',
+            post: [
+                'property_id' => '1707',
+                'check_in' => '2026-12-16',
+                'check_out' => '2026-12-20',
+                'source' => 'airbnb',
+                'external_confirmation_code' => 'HM8GUESTS',
+                'total_price' => '0',
+                'max_guests' => '8',
+                'guest_name' => 'Airbnb Group Host',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $createAirbnb->getStatusCode());
+        $stmtAirbnb = $this->pdo->prepare('SELECT max_guests FROM reservations WHERE external_confirmation_code = :code');
+        $stmtAirbnb->execute(['code' => 'HM8GUESTS']);
+        $this->assertSame(8, (int) $stmtAirbnb->fetchColumn());
+
+        // 4. Reject invalid max_guests (> 12) with 422 and preserve form state
+        $invalidRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/create-manual',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-12-21',
+                'check_out' => '2026-12-25',
+                'source' => 'cash',
+                'total_price' => '1500000',
+                'max_guests' => '15',
+                'guest_name' => 'Too Many Guests',
+                'guest_email' => 'toomany@test.com',
+                'guest_phone' => '+573001112233',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(422, $invalidRes->getStatusCode());
+        $this->assertStringContainsString('Maximum occupancy (max_guests) must be between 1 and 12.', $invalidRes->getBody());
+        $this->assertStringContainsString('value="15"', $invalidRes->getBody());
+        $this->assertStringContainsString('value="Too Many Guests"', $invalidRes->getBody());
+    }
 }

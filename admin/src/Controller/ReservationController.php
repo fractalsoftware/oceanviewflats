@@ -222,6 +222,7 @@ final class ReservationController
         $source = (string) $request->getQuery('source', 'manual_override');
         $channelBlockUid = (string) $request->getQuery('channel_block_uid', '');
         $externalConfirmationCode = (string) $request->getQuery('external_confirmation_code', '');
+        $maxGuests = (string) $request->getQuery('max_guests', (string) Reservation::DEFAULT_MAX_GUESTS);
 
         $modalHtml = $this->viewRenderer->renderPartial('reservations/_create_modal.php', [
             'errorMessage' => null,
@@ -231,6 +232,7 @@ final class ReservationController
             'source' => $source,
             'channelBlockUid' => $channelBlockUid,
             'externalConfirmationCode' => $externalConfirmationCode,
+            'maxGuests' => $maxGuests,
         ]);
 
         if ($request->isHtmx()) {
@@ -315,6 +317,7 @@ final class ReservationController
         $sendConfirmationEmail = $this->parseCheckbox($body['send_confirmation_email'] ?? null);
         $externalConfirmationCode = trim((string) ($body['external_confirmation_code'] ?? ''));
         $channelBlockUid = trim((string) ($body['channel_block_uid'] ?? '')) ?: null;
+        $maxGuestsRaw = $body['max_guests'] ?? null;
 
         // Validation: Property
         if (!in_array($propertyId, ['1606', '1707'], true)) {
@@ -339,6 +342,20 @@ final class ReservationController
         $allowedSources = ['airbnb', 'bank_transfer', 'cash', 'owner_stay', 'manual_override'];
         if (!in_array($source, $allowedSources, true)) {
             return $this->renderCreateError($request, 'Invalid reservation source.');
+        }
+
+        // Validation: Maximum occupancy override (max_guests 1..12, default 6)
+        if ($maxGuestsRaw === null || trim((string) $maxGuestsRaw) === '') {
+            $maxGuests = Reservation::DEFAULT_MAX_GUESTS;
+        } else {
+            $maxGuestsValidated = filter_var($maxGuestsRaw, FILTER_VALIDATE_INT);
+            if ($maxGuestsValidated === false) {
+                return $this->renderCreateError($request, 'Maximum occupancy (max_guests) must be between 1 and 12.');
+            }
+            $maxGuests = (int) $maxGuestsValidated;
+            if ($maxGuests < Reservation::MIN_MAX_GUESTS || $maxGuests > Reservation::MAX_MAX_GUESTS) {
+                return $this->renderCreateError($request, 'Maximum occupancy (max_guests) must be between 1 and 12.');
+            }
         }
 
         $isAirbnb = ($source === 'airbnb');
@@ -395,7 +412,8 @@ final class ReservationController
                 preMarkRegistry: $preMarkRegistry,
                 source: 'airbnb',
                 actor: $actor,
-                sendConfirmationEmail: $sendConfirmationEmail
+                sendConfirmationEmail: $sendConfirmationEmail,
+                maxGuests: $maxGuests
             );
         } else {
             $draft = ReservationDraft::manual(
@@ -408,7 +426,8 @@ final class ReservationController
                 preMarkRegistry: $preMarkRegistry,
                 source: $source,
                 actor: $actor,
-                sendConfirmationEmail: $sendConfirmationEmail
+                sendConfirmationEmail: $sendConfirmationEmail,
+                maxGuests: $maxGuests
             );
         }
 
@@ -922,6 +941,9 @@ final class ReservationController
             'sendConfirmationEmail' => $this->parseCheckbox($body['send_confirmation_email'] ?? null),
             'externalConfirmationCode' => (string) ($body['external_confirmation_code'] ?? ''),
             'channelBlockUid' => (string) ($body['channel_block_uid'] ?? ''),
+            'maxGuests' => isset($body['max_guests']) && trim((string) $body['max_guests']) !== ''
+                ? (string) $body['max_guests']
+                : (string) Reservation::DEFAULT_MAX_GUESTS,
         ]);
 
         return Response::html($modalHtml, 422);

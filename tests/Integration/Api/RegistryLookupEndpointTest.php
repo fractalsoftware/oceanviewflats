@@ -38,13 +38,16 @@ $pdo->exec("CREATE TABLE reservations (
     channel_block_uid TEXT DEFAULT NULL,
     refunded_amount REAL DEFAULT 0.0,
     notes TEXT,
+    max_guests INTEGER NOT NULL DEFAULT 6,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 )");
 $pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, registry_completed, door_code, created_at)
     VALUES ('res-man-pending1', '1606', 'Pending User', 'pending@example.com', '+573001112233', '2026-11-20', '2026-11-23', 1500000, 'pending_payment', 0, '123456#', datetime('now'))");
-$pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, registry_completed, door_code, created_at)
-    VALUES ('res-man-123456789abc', '1707', 'Manual Guest', 'manual@example.com', '+573009998877', '2026-11-24', '2026-11-28', 1800000, 'confirmed', 0, '998877#', datetime('now'))");
+$pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, registry_completed, door_code, max_guests, created_at)
+    VALUES ('res-man-123456789abc', '1707', 'Manual Guest', 'manual@example.com', '+573009998877', '2026-11-24', '2026-11-28', 1800000, 'confirmed', 0, '998877#', 6, datetime('now'))");
+$pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, registry_completed, door_code, max_guests, created_at)
+    VALUES ('res-man-override10', '1707', 'Large Group Guest', 'group@example.com', '+573009998877', '2026-11-24', '2026-11-28', 2500000, 'confirmed', 0, '887766#', 10, datetime('now'))");
 $pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, registry_completed, registry_completed_at, door_code, created_at)
     VALUES ('res-man-completed1', '1606', 'Registered Guest', 'completed@example.com', '+573004445566', '2026-12-01', '2026-12-05', 2200000, 'confirmed', 1, datetime('now'), '0160600#', datetime('now'))");
 $pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, registry_completed, door_code, created_at)
@@ -111,6 +114,7 @@ PHP;
         $this->assertSame('Manual Guest', $reservation['guest_name']);
         $this->assertSame('confirmed', $reservation['status']);
         $this->assertFalse($reservation['registry_completed']);
+        $this->assertSame(6, $reservation['max_guests']);
 
         // Assert strictly zero leakage of credentials, price, phone, email, notes
         $this->assertArrayNotHasKey('door_code', $res['json']);
@@ -121,6 +125,22 @@ PHP;
         $this->assertArrayNotHasKey('total_price', $reservation);
         $this->assertArrayNotHasKey('guest_phone', $reservation);
         $this->assertArrayNotHasKey('guest_email', $reservation);
+        $this->assertArrayNotHasKey('notes', $reservation);
+    }
+
+    public function testRegistryLookupReturnsMaxGuestsOverrideWithoutLeakingPii(): void
+    {
+        $res = $this->callEndpoint(['code' => 'res-man-override10', 'lang' => 'en'], $this->getSqliteSetupCode());
+
+        $this->assertSame(0, $res['exitCode'], $res['stderr']);
+        $this->assertIsArray($res['json']);
+        $this->assertTrue($res['json']['success']);
+        $reservation = $res['json']['reservation'];
+        $this->assertSame(10, $reservation['max_guests']);
+        $this->assertArrayNotHasKey('door_code', $reservation);
+        $this->assertArrayNotHasKey('guest_email', $reservation);
+        $this->assertArrayNotHasKey('guest_phone', $reservation);
+        $this->assertArrayNotHasKey('total_price', $reservation);
         $this->assertArrayNotHasKey('notes', $reservation);
     }
 

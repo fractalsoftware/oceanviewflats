@@ -24,8 +24,14 @@ final class ReservationDraft
         public readonly bool $preMarkRegistry = false,
         public readonly ?string $reservationUid = null,
         public readonly ?ActorContext $actor = null,
-        public readonly bool $sendConfirmationEmail = true
+        public readonly bool $sendConfirmationEmail = true,
+        public readonly int $maxGuests = Reservation::DEFAULT_MAX_GUESTS
     ) {
+        if ($this->maxGuests < Reservation::MIN_MAX_GUESTS || $this->maxGuests > Reservation::MAX_MAX_GUESTS) {
+            throw ReservationValidationException::withViolations([
+                sprintf('Maximum occupancy (max_guests) must be between %d and %d.', Reservation::MIN_MAX_GUESTS, Reservation::MAX_MAX_GUESTS),
+            ], 'INVALID_MAX_GUESTS');
+        }
     }
 
     /**
@@ -42,7 +48,8 @@ final class ReservationDraft
         ?string $notes = null,
         ?ActorContext $actor = null,
         bool $preMarkRegistry = false,
-        bool $sendConfirmationEmail = true
+        bool $sendConfirmationEmail = true,
+        int $maxGuests = Reservation::DEFAULT_MAX_GUESTS
     ): self {
         return new self(
             propertyId: $propertyId,
@@ -58,7 +65,8 @@ final class ReservationDraft
             preMarkRegistry: $preMarkRegistry,
             reservationUid: $reservationUid,
             actor: $actor ?? ActorContext::guest(),
-            sendConfirmationEmail: $sendConfirmationEmail
+            sendConfirmationEmail: $sendConfirmationEmail,
+            maxGuests: $maxGuests
         );
     }
 
@@ -77,7 +85,8 @@ final class ReservationDraft
         ?DraftPaymentDetails $payment = null,
         ?string $reservationUid = null,
         ?ActorContext $actor = null,
-        bool $sendConfirmationEmail = false
+        bool $sendConfirmationEmail = false,
+        int $maxGuests = Reservation::DEFAULT_MAX_GUESTS
     ): self {
         return new self(
             propertyId: $propertyId,
@@ -93,7 +102,8 @@ final class ReservationDraft
             preMarkRegistry: $preMarkRegistry,
             reservationUid: $reservationUid,
             actor: $actor ?? ActorContext::system(),
-            sendConfirmationEmail: $sendConfirmationEmail
+            sendConfirmationEmail: $sendConfirmationEmail,
+            maxGuests: $maxGuests
         );
     }
 
@@ -115,7 +125,8 @@ final class ReservationDraft
         ?string $reservationUid = null,
         ?ActorContext $actor = null,
         bool $sendConfirmationEmail = false,
-        ?float $totalPrice = null
+        ?float $totalPrice = null,
+        int $maxGuests = Reservation::DEFAULT_MAX_GUESTS
     ): self {
         $effectivePrice = $totalPrice ?? $hostPayoutCop;
         return new self(
@@ -132,7 +143,8 @@ final class ReservationDraft
             preMarkRegistry: $preMarkRegistry,
             reservationUid: $reservationUid,
             actor: $actor ?? ActorContext::system(),
-            sendConfirmationEmail: $sendConfirmationEmail
+            sendConfirmationEmail: $sendConfirmationEmail,
+            maxGuests: $maxGuests
         );
     }
 

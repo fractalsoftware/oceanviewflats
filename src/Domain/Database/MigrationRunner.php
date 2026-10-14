@@ -112,6 +112,7 @@ final class MigrationRunner
               `registry_completed_at` DATETIME DEFAULT NULL,
               `door_code` VARCHAR(20) DEFAULT NULL,
               `notes` TEXT DEFAULT NULL,
+              `max_guests` TINYINT UNSIGNED NOT NULL DEFAULT 6,
               `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
               INDEX `idx_property_dates` (`property_id`, `check_in`, `check_out`),
@@ -138,7 +139,8 @@ final class MigrationRunner
             'source' => "VARCHAR(30) NOT NULL DEFAULT 'web'",
             'external_confirmation_code' => "VARCHAR(64) DEFAULT NULL",
             'channel_block_uid' => "VARCHAR(128) DEFAULT NULL",
-            'notes' => "TEXT DEFAULT NULL"
+            'notes' => "TEXT DEFAULT NULL",
+            'max_guests' => "TINYINT UNSIGNED NOT NULL DEFAULT 6"
         ];
 
         foreach ($reservationColumns as $col => $type) {
@@ -368,6 +370,7 @@ final class MigrationRunner
                 registry_completed_at TEXT DEFAULT NULL,
                 door_code TEXT DEFAULT NULL,
                 notes TEXT DEFAULT NULL,
+                max_guests INTEGER NOT NULL DEFAULT 6,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -375,7 +378,11 @@ final class MigrationRunner
         $logs[] = "Table `reservations` verified/created.";
 
         // Self-healing columns for SQLite
-        $sqliteColumns = ['external_confirmation_code', 'channel_block_uid'];
+        $sqliteColumns = [
+            'external_confirmation_code' => 'TEXT DEFAULT NULL',
+            'channel_block_uid' => 'TEXT DEFAULT NULL',
+            'max_guests' => 'INTEGER NOT NULL DEFAULT 6',
+        ];
         $existingCols = [];
         $colsStmt = $pdo->query("PRAGMA table_info(reservations)");
         if ($colsStmt !== false) {
@@ -383,9 +390,9 @@ final class MigrationRunner
                 $existingCols[] = (string) ($colRow['name'] ?? '');
             }
         }
-        foreach ($sqliteColumns as $col) {
+        foreach ($sqliteColumns as $col => $colDef) {
             if (!in_array($col, $existingCols, true)) {
-                $pdo->exec("ALTER TABLE reservations ADD COLUMN `{$col}` TEXT DEFAULT NULL");
+                $pdo->exec("ALTER TABLE reservations ADD COLUMN `{$col}` {$colDef}");
                 $logs[] = "Upgrading SQLite reservations: Added column `{$col}`.";
             }
         }

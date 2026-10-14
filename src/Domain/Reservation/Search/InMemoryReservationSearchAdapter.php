@@ -60,6 +60,10 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
     public function addReservation(Reservation|array $reservation): self
     {
         $data = $reservation instanceof Reservation ? $reservation->toArray() : $reservation;
+        $rawMaxGuests = $data['max_guests'] ?? $data['maxGuests'] ?? Reservation::DEFAULT_MAX_GUESTS;
+        $maxGuests = is_numeric($rawMaxGuests) ? (int) $rawMaxGuests : Reservation::DEFAULT_MAX_GUESTS;
+        $data['max_guests'] = max(Reservation::MIN_MAX_GUESTS, min(Reservation::MAX_MAX_GUESTS, $maxGuests));
+
         $uid = (string) ($data['reservation_uid'] ?? '');
         if ($uid !== '') {
             $this->reservations[$uid] = $data;
