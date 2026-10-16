@@ -4,12 +4,14 @@
  *
  * @var \OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData $viewData
  * @var string $propertyId
+ * @var string|null $csrfToken
  */
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 
 $alerts = $viewData->alerts;
 $alertCount = count($alerts);
+$csrfTokenValue = $csrfToken ?? '';
 ?>
 <div class="bg-white rounded-xl border <?= $alertCount > 0 ? 'border-rose-200' : 'border-gray-200' ?> shadow-2xs overflow-hidden">
     <!-- Card Header -->
@@ -115,10 +117,34 @@ $alertCount = count($alerts);
                                hx-target="#modal-container"
                                hx-swap="innerHTML"
                                role="button"
-                               class="w-full text-center px-3 py-1 bg-rose-600 text-white font-semibold rounded-md shadow-2xs hover:bg-rose-700 text-[11px] transition">
+                               class="flex-1 text-center px-3 py-1 bg-rose-600 text-white font-semibold rounded-md shadow-2xs hover:bg-rose-700 text-[11px] transition">
                                 Onboard Airbnb Guest &rarr;
                             </a>
                         <?php endif; ?>
+                        <form method="POST"
+                              action="/dashboard/alerts/dismiss"
+                              hx-post="/dashboard/alerts/dismiss"
+                              hx-target="#dashboard-hub-content"
+                              hx-swap="outerHTML"
+                              hx-headers='{"X-CSRF-Token": "<?= htmlspecialchars($csrfTokenValue, ENT_QUOTES, 'UTF-8') ?>"}'
+                              class="inline ml-auto">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfTokenValue, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="alert_id" value="<?= htmlspecialchars($alert->id, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="alert_type" value="<?= htmlspecialchars($alert->type->value, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="property_id" value="<?= htmlspecialchars($alert->propertyId, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="filter_property_id" value="<?= htmlspecialchars($propertyId, ENT_QUOTES, 'UTF-8') ?>">
+                            <?php if (!empty($alert->reservationUid)): ?>
+                                <input type="hidden" name="reservation_uid" value="<?= htmlspecialchars($alert->reservationUid, ENT_QUOTES, 'UTF-8') ?>">
+                            <?php endif; ?>
+                            <button type="submit"
+                                    hx-post="/dashboard/alerts/dismiss"
+                                    hx-target="#dashboard-hub-content"
+                                    hx-swap="outerHTML"
+                                    hx-headers='{"X-CSRF-Token": "<?= htmlspecialchars($csrfTokenValue, ENT_QUOTES, 'UTF-8') ?>"}'
+                                    class="px-2.5 py-1 bg-white border border-gray-300 text-gray-600 font-semibold rounded-md shadow-2xs hover:bg-gray-100 hover:text-gray-900 text-[11px] transition cursor-pointer">
+                                Dismiss
+                            </button>
+                        </form>
                     </div>
                 </div>
             <?php endforeach; ?>

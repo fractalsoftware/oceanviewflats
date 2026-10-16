@@ -109,6 +109,16 @@ final class DashboardQueryServiceTest extends TestCase
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE operational_alert_dismissals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                alert_id TEXT NOT NULL UNIQUE,
+                alert_type TEXT NOT NULL,
+                property_id TEXT NOT NULL,
+                reservation_uid TEXT DEFAULT NULL,
+                dismissed_by INTEGER DEFAULT NULL,
+                dismissed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
             INSERT INTO admin_users (id, name, email) VALUES (1, "Manuel Admin", "admin@oceanviewflats.com");
         ');
 
@@ -1041,6 +1051,87 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertContains('Guest registry incomplete (Spanning Active Guest)', $todaySummary->warnings);
         $this->assertContains('Condominium clearance failed (Spanning Active Guest)', $todaySummary->warnings);
         $this->assertNotContains('Condominium clearance failed (Departing Today Guest)', $todaySummary->warnings);
+    }
+
+    public function testDismissedAlertsAreExcludedFromHubDataOccupancyHeatmapAndDaySummary(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM condominium_clearances; DELETE FROM operational_alert_dismissals;');
+
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            ('res-dismiss-test', '1606', 'Dismissed Stay Guest', 'dismiss@test.com', '+1', '2026-10-15', '2026-10-18', 400, 'confirmed', 'web', 0);
+        ");
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($this->pdo);
+        $clearanceRepo->save(CondominiumClearance::createPending('res-dismiss-test', '1606')->markFailed('Portal timeout'));
+
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($this->pdo);
+
+        $channelBlock = new ChannelBlock('1707', '2026-10-16', '2026-10-19', 'airbnb', 'Reserved');
+        $blockHash = md5('1707_2026-10-16_2026-10-19_airbnb');
+        $ledger = $this->createMock(ReservationLedgerInterface::class);
+        $ledger->method('getChannelBlocks')->willReturnCallback(
+            static fn(string $pid): array => $pid === '1707' ? [$channelBlock] : []
+        );
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            ledger: $ledger,
+            clearanceRepo: $clearanceRepo,
+            dismissalRepo: $dismissalRepo
+        );
+
+        // Before dismissal: all 3 alerts appear on hub, and both reservation warnings appear on heatmap & day summary
+        $initialHub = $service->getDashboardHubData('all', $now);
+        $this->assertCount(3, $initialHub->alerts);
+
+        // 1. Dismiss failed clearance alert only
+        $dismissalRepo->dismiss('clearance_res-dismiss-test', 'failed_condominium_clearance', '1606', 'res-dismiss-test', 1);
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res-dismiss-test'));
+        $this->assertFalse($dismissalRepo->isDismissed('registry_res-dismiss-test'));
+
+        $hubAfterClearanceDismiss = $service->getDashboardHubData('all', $now);
+        $this->assertCount(2, $hubAfterClearanceDismiss->alerts);
+        $alertIds = array_map(static fn($a): string => $a->id, $hubAfterClearanceDismiss->alerts);
+        $this->assertNotContains('clearance_res-dismiss-test', $alertIds);
+        $this->assertContains('registry_res-dismiss-test', $alertIds);
+        $this->assertContains('channel_block_' . $blockHash, $alertIds);
+
+        // Heatmap and Day Summary still have incomplete registry warning, but NOT failed clearance warning
+        $daySummaryAfterClearance = $service->getDaySummary('2026-10-15', 'all', $now);
+        $this->assertTrue($daySummaryAfterClearance->hasWarning);
+        $this->assertContains('Guest registry incomplete (Dismissed Stay Guest)', $daySummaryAfterClearance->warnings);
+        $this->assertNotContains('Condominium clearance failed (Dismissed Stay Guest)', $daySummaryAfterClearance->warnings);
+
+        // 2. Dismiss incomplete registry alert and channel block alert
+        $dismissalRepo->dismiss('registry_res-dismiss-test', 'incomplete_guest_registry', '1606', 'res-dismiss-test', 1);
+        $dismissalRepo->dismiss('channel_block_' . $blockHash, 'unonboarded_channel_block', '1707', null, 1);
+
+        $hubAfterAllDismissed = $service->getDashboardHubData('all', $now);
+        $this->assertEmpty($hubAfterAllDismissed->alerts);
+        $this->assertNotNull($hubAfterAllDismissed->heatmap);
+        $this->assertSame(0, $hubAfterAllDismissed->heatmap->totalAlertsCount);
+
+        $daySummaryAfterAll = $service->getDaySummary('2026-10-15', 'all', $now);
+        $this->assertFalse($daySummaryAfterAll->hasWarning);
+        $this->assertEmpty($daySummaryAfterAll->warnings);
+
+        // 3. Clearing a dismissal re-arms the alert
+        $dismissalRepo->clearDismissal('clearance_res-dismiss-test');
+        $this->assertFalse($dismissalRepo->isDismissed('clearance_res-dismiss-test'));
+        $hubRearmed = $service->getDashboardHubData('all', $now);
+        $this->assertCount(1, $hubRearmed->alerts);
+        $this->assertSame('clearance_res-dismiss-test', $hubRearmed->alerts[0]->id);
     }
 }
 

@@ -1054,4 +1054,175 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('<button type="button"', $body);
         $this->assertStringContainsString('data-heatmap-cell="true"', $body);
     }
+
+    public function testAllOperationalAlertTypesRenderDismissButtonTargetingHubContent(): void
+    {
+        $today = date('Y-m-d');
+        $hubData = new DashboardHubViewData(
+            selectedPropertyFilter: '1606',
+            alerts: [
+                new OperationalAlert(
+                    id: 'clearance_res_fail_1',
+                    type: AlertType::FAILED_CONDOMINIUM_CLEARANCE,
+                    severity: AlertSeverity::CRITICAL,
+                    propertyId: '1606',
+                    title: 'Condominium Clearance Failed',
+                    description: 'Portal error',
+                    dueDate: $today,
+                    reservationUid: 'res_fail_1',
+                    guestName: 'Clearance Guest'
+                ),
+                new OperationalAlert(
+                    id: 'registry_res_reg_1',
+                    type: AlertType::INCOMPLETE_GUEST_REGISTRY,
+                    severity: AlertSeverity::WARNING,
+                    propertyId: '1606',
+                    title: 'Guest Registry Required',
+                    description: 'Missing registry',
+                    dueDate: $today,
+                    reservationUid: 'res_reg_1',
+                    guestName: 'Registry Guest'
+                ),
+                new OperationalAlert(
+                    id: 'channel_block_abc123def456',
+                    type: AlertType::UNONBOARDED_CHANNEL_BLOCK,
+                    severity: AlertSeverity::INFO,
+                    propertyId: '1606',
+                    title: 'Un-onboarded Airbnb Booking',
+                    description: 'External hold',
+                    dueDate: $today,
+                    channelBlockUid: 'abc123def456',
+                    source: 'airbnb'
+                ),
+            ],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0
+        );
+
+        $queryService = $this->createMock(DashboardQueryServiceInterface::class);
+        $queryService->expects($this->once())
+            ->method('getDashboardHubData')
+            ->with('1606')
+            ->willReturn($hubData);
+
+        $controller = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService
+        );
+
+        $session = ['admin_user_id' => 1, 'csrf_token' => 'csrf_tok_dismiss'];
+        $request = new Request('GET', '/', query: ['property_id' => '1606']);
+
+        $response = $controller->index($request, $session);
+        $this->assertSame(200, $response->getStatusCode());
+        $body = $response->getBody();
+
+        $this->assertStringContainsString('hx-post="/dashboard/alerts/dismiss"', $body);
+        $this->assertStringContainsString('hx-target="#dashboard-hub-content"', $body);
+        $this->assertStringContainsString('name="alert_id" value="clearance_res_fail_1"', $body);
+        $this->assertStringContainsString('name="alert_id" value="registry_res_reg_1"', $body);
+        $this->assertStringContainsString('name="alert_id" value="channel_block_abc123def456"', $body);
+        $this->assertStringContainsString('name="filter_property_id" value="1606"', $body);
+        $this->assertSame(3, substr_count($body, "Dismiss\n"));
+    }
+
+    public function testDismissAlertValidatesParametersPersistsLogsAuditAndRendersHub(): void
+    {
+        $pdo = \OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper::createDatabaseWithDefaultAdmin();
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($pdo);
+        $auditLogger = new \OceanViewFlats\Admin\Audit\AuditLogger($pdo);
+
+        $emptyHubData = new DashboardHubViewData(
+            selectedPropertyFilter: '1606',
+            alerts: [],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0
+        );
+
+        $queryService = $this->createMock(DashboardQueryServiceInterface::class);
+        $queryService->expects($this->once())
+            ->method('getDashboardHubData')
+            ->with('1606')
+            ->willReturn($emptyHubData);
+
+        $controller = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService,
+            dismissalRepo: $dismissalRepo,
+            auditLogger: $auditLogger
+        );
+
+        $session = ['admin_user_id' => 1, 'csrf_token' => 'csrf_tok'];
+
+        // 1. Invalid parameters return 400
+        $badReq = new Request('POST', '/dashboard/alerts/dismiss', [], [
+            'alert_id' => 'invalid_prefix_123',
+            'alert_type' => 'failed_condominium_clearance',
+            'property_id' => '1606',
+        ]);
+        $badResp = $controller->dismissAlert($badReq, $session);
+        $this->assertSame(400, $badResp->getStatusCode());
+
+        // 2. Valid HTMX request persists dismissal, logs audit, and returns partial scoped to filter_property_id
+        $htmxReq = new Request(
+            method: 'POST',
+            uri: '/dashboard/alerts/dismiss',
+            query: [],
+            post: [
+                'alert_id' => 'clearance_res_999',
+                'alert_type' => 'failed_condominium_clearance',
+                'property_id' => '1606',
+                'reservation_uid' => 'res_999',
+                'filter_property_id' => '1606',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'REMOTE_ADDR' => '10.0.0.42',
+                'HTTP_USER_AGENT' => 'PHPUnit-Agent/1.0',
+            ]
+        );
+        $htmxResp = $controller->dismissAlert($htmxReq, $session);
+        $this->assertSame(200, $htmxResp->getStatusCode());
+        $this->assertStringContainsString('id="dashboard-hub-content"', $htmxResp->getBody());
+        $this->assertStringContainsString('All Operations Clear', $htmxResp->getBody());
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res_999'));
+
+        $auditLogs = \OceanViewFlats\Admin\Audit\AuditLogger::getLogsForEntity($pdo, 'reservation', 'res_999');
+        $this->assertCount(1, $auditLogs);
+        $this->assertSame('alert_dismissed', $auditLogs[0]['action']);
+        $this->assertSame(1, (int) $auditLogs[0]['admin_user_id']);
+        $afterPayload = json_decode((string) $auditLogs[0]['payload_after'], true);
+        $this->assertSame('clearance_res_999', $afterPayload['alert_id']);
+        $this->assertSame('failed_condominium_clearance', $afterPayload['alert_type']);
+        $this->assertSame('1606', $afterPayload['property_id']);
+        $this->assertSame('res_999', $afterPayload['reservation_uid']);
+
+        // 3. Non-HTMX request redirects while preserving filter_property_id
+        $nonHtmxReq = new Request(
+            method: 'POST',
+            uri: '/dashboard/alerts/dismiss',
+            query: [],
+            post: [
+                'alert_id' => 'channel_block_hash123',
+                'alert_type' => 'unonboarded_channel_block',
+                'property_id' => '1707',
+                'filter_property_id' => '1707',
+            ]
+        );
+        $redirectResp = $controller->dismissAlert($nonHtmxReq, $session);
+        $this->assertSame(302, $redirectResp->getStatusCode());
+        $this->assertSame('/?property_id=1707', $redirectResp->getHeader('Location'));
+    }
 }

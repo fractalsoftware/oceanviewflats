@@ -24,7 +24,9 @@ use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
 use OceanViewFlats\Domain\Reservation\Dashboard\OccupancyHeatmapViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationsEvent;
+use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\Dashboard\PropertyRateStatus;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
@@ -33,6 +35,7 @@ use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 final class DashboardQueryService implements DashboardQueryServiceInterface
 {
     private readonly CondominiumClearanceRepositoryInterface $clearanceRepo;
+    private readonly OperationalAlertDismissalRepositoryInterface $dismissalRepo;
     /** @var array<string, list<RateTier>> */
     private array $cachedRateTiers = [];
 
@@ -42,9 +45,11 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         private readonly AdminRateRepository $rateRepo,
         private readonly InboundChannelSyncServiceInterface $channelSyncService,
         private readonly ?ReservationLedgerInterface $ledger = null,
-        ?CondominiumClearanceRepositoryInterface $clearanceRepo = null
+        ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
+        ?OperationalAlertDismissalRepositoryInterface $dismissalRepo = null
     ) {
         $this->clearanceRepo = $clearanceRepo ?? new PdoCondominiumClearanceRepository($this->reservationRepo->getPdo());
+        $this->dismissalRepo = $dismissalRepo ?? new PdoOperationalAlertDismissalRepository($this->reservationRepo->getPdo());
     }
 
     /**
@@ -121,6 +126,14 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $channelAlerts = $this->reservationRepo->getUnonboardedChannelBlockAlerts($channelBlocks, $propertyId, $now);
 
         $alerts = array_merge($registryAlerts, $clearanceAlerts, $channelAlerts);
+        $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($propertyId), true);
+        if ($dismissedMap !== []) {
+            $alerts = array_values(array_filter(
+                $alerts,
+                static fn(OperationalAlert $alert): bool => !isset($dismissedMap[$alert->id])
+            ));
+        }
+
         // Sort alerts by severity: CRITICAL, then WARNING, then INFO; then dueDate ASC
         usort($alerts, static function (OperationalAlert $a, OperationalAlert $b): int {
             $severityRank = [
@@ -237,6 +250,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $failedClearanceMap = [];
         }
 
+        $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($propertyId), true);
+
         // Fetch seasonal rate tiers
         $tiers1606 = $this->getTiersForProperty('1606');
         $tiers1707 = $this->getTiersForProperty('1707');
@@ -352,10 +367,10 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                         $rCin = (string) ($confirmedRes['check_in'] ?? '');
                         $rCout = (string) ($confirmedRes['check_out'] ?? '');
                         $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                        if ($regCompleted === 0 && $isWithinLookahead) {
+                        if ($regCompleted === 0 && $isWithinLookahead && !isset($dismissedMap['registry_' . $resUid])) {
                             $warningMessages[] = "Guest registry incomplete ({$guestName})";
                         }
-                        if ($rCout > $todayStr && isset($failedClearanceMap[$resUid])) {
+                        if ($rCout > $todayStr && isset($failedClearanceMap[$resUid]) && !isset($dismissedMap['clearance_' . $resUid])) {
                             $warningMessages[] = "Condominium clearance failed ({$guestName})";
                         }
                     }
@@ -659,6 +674,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $allWarnings = [];
         /** @var list<string> $allReservationUids */
         $allReservationUids = [];
+        $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($filter), true);
 
         foreach ($targetProps as $pid) {
             $rateInfo = $this->calculateNightlyRate($pid, $date, $tiers1606, $tiers1707);
@@ -722,17 +738,18 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             if (!$isPast) {
                 $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
                 foreach ($resToWarn as $r) {
+                    $rUid = (string) ($r['reservation_uid'] ?? '');
                     $gName = (string) ($r['guest_name'] ?? 'Guest');
                     $rCin = (string) ($r['check_in'] ?? '');
                     $rCout = (string) ($r['check_out'] ?? '');
                     $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                    if (empty($r['registry_completed']) && $isWithinLookahead) {
+                    if (empty($r['registry_completed']) && $isWithinLookahead && !isset($dismissedMap['registry_' . $rUid])) {
                         $msg = "Guest registry incomplete ({$gName})";
                         if (!in_array($msg, $propWarnings, true)) {
                             $propWarnings[] = $msg;
                         }
                     }
-                    if ($rCout > $todayStr && ($r['clearance_status'] ?? '') === 'failed') {
+                    if ($rCout > $todayStr && ($r['clearance_status'] ?? '') === 'failed' && !isset($dismissedMap['clearance_' . $rUid])) {
                         $msg = "Condominium clearance failed ({$gName})";
                         if (!in_array($msg, $propWarnings, true)) {
                             $propWarnings[] = $msg;

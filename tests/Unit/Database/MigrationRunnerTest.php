@@ -25,6 +25,7 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('Table `admin_users` verified/created.', $logs);
         $this->assertContains('Table `calendar_blocks` verified/created.', $logs);
         $this->assertContains('Table `condominium_clearances` verified/created.', $logs);
+        $this->assertContains('Table `operational_alert_dismissals` verified/created.', $logs);
 
         // Verify tables exist in SQLite master
         $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'");
@@ -39,6 +40,17 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('property_rates', $tables);
         $this->assertContains('reservation_refunds', $tables);
         $this->assertContains('condominium_clearances', $tables);
+        $this->assertContains('operational_alert_dismissals', $tables);
+
+        // Verify columns in operational_alert_dismissals table
+        $oadColsStmt = $pdo->query("PRAGMA table_info(operational_alert_dismissals)");
+        $oadCols = $oadColsStmt !== false ? array_column($oadColsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('alert_id', $oadCols);
+        $this->assertContains('alert_type', $oadCols);
+        $this->assertContains('property_id', $oadCols);
+        $this->assertContains('reservation_uid', $oadCols);
+        $this->assertContains('dismissed_by', $oadCols);
+        $this->assertContains('dismissed_at', $oadCols);
 
         // Verify columns in condominium_clearances table
         $ccColsStmt = $pdo->query("PRAGMA table_info(condominium_clearances)");

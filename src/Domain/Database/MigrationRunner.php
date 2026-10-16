@@ -336,6 +336,23 @@ final class MigrationRunner
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
         $logs[] = "Table `condominium_clearances` verified/created.";
+
+        // 10. operational_alert_dismissals table
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS `operational_alert_dismissals` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `alert_id` VARCHAR(160) NOT NULL UNIQUE,
+              `alert_type` VARCHAR(64) NOT NULL,
+              `property_id` VARCHAR(16) NOT NULL,
+              `reservation_uid` VARCHAR(36) DEFAULT NULL,
+              `dismissed_by` INT UNSIGNED DEFAULT NULL,
+              `dismissed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              INDEX `idx_alert_type` (`alert_type`),
+              INDEX `idx_reservation_uid` (`reservation_uid`),
+              INDEX `idx_property_id` (`property_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ");
+        $logs[] = "Table `operational_alert_dismissals` verified/created.";
     }
 
     /**
@@ -527,5 +544,21 @@ final class MigrationRunner
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_cc_status ON condominium_clearances (status);');
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_cc_property_id ON condominium_clearances (property_id);');
         $logs[] = "Table `condominium_clearances` verified/created.";
+
+        $pdo->exec('
+            CREATE TABLE IF NOT EXISTS operational_alert_dismissals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                alert_id TEXT NOT NULL UNIQUE,
+                alert_type TEXT NOT NULL,
+                property_id TEXT NOT NULL,
+                reservation_uid TEXT DEFAULT NULL,
+                dismissed_by INTEGER DEFAULT NULL,
+                dismissed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        ');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_alert_type ON operational_alert_dismissals (alert_type);');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_reservation_uid ON operational_alert_dismissals (reservation_uid);');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_property_id ON operational_alert_dismissals (property_id);');
+        $logs[] = "Table `operational_alert_dismissals` verified/created.";
     }
 }

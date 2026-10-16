@@ -434,6 +434,163 @@ final class DashboardHubE2ETest extends TestCase
         $this->assertStringNotContainsString('Guest registry incomplete (Departing Clearance Guest)', $todayDayBody);
     }
 
+    public function testAlertDismissalEndpointEnforcesAuthAndCsrfAndDismissesAllAlertTypesEndToEnd(): void
+    {
+        $this->seedOperationalDatabase();
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($this->pdo);
+        $clearanceRepo->save(
+            CondominiumClearance::createPending('res_inhouse_1606', '1606')
+                ->markFailed('Portal HTTP 502 error')
+        );
+
+        $app = $this->createConfiguredApp();
+
+        // 1. Unauthenticated POST to /dashboard/alerts/dismiss is rejected by AuthMiddleware (302 to /login)
+        $unauthSession = ['csrf_token' => 'unauth_csrf_tok'];
+        $unauthResp = $app->handle(
+            new Request('POST', '/dashboard/alerts/dismiss', [], [
+                'alert_id' => 'clearance_res_inhouse_1606',
+                'alert_type' => 'failed_condominium_clearance',
+                'property_id' => '1606',
+                'csrf_token' => 'unauth_csrf_tok',
+            ]),
+            $unauthSession
+        );
+        $this->assertSame(302, $unauthResp->getStatusCode());
+        $this->assertSame('/login', $unauthResp->getHeader('Location'));
+
+        // 2. Authenticated POST with missing/invalid CSRF token is rejected with 403
+        $session = [
+            'admin_user_id' => 1,
+            'admin_user_name' => 'Manuel Admin',
+            'admin_user_email' => 'admin@oceanviewflats.com',
+            'admin_user_role' => 'admin',
+            'csrf_token' => 'valid_csrf_token_203',
+        ];
+        $badCsrfResp = $app->handle(
+            new Request('POST', '/dashboard/alerts/dismiss', [], [
+                'alert_id' => 'clearance_res_inhouse_1606',
+                'alert_type' => 'failed_condominium_clearance',
+                'property_id' => '1606',
+                'csrf_token' => 'wrong_token',
+            ]),
+            $session
+        );
+        $this->assertSame(403, $badCsrfResp->getStatusCode());
+
+        // Verify initial Hub state has 4 alerts:
+        // - clearance_res_inhouse_1606 (1606)
+        // - registry_res_arr_bob (1606)
+        // - registry_res_tomo_charlie (1707)
+        // - channel_block_{hash} (1707)
+        $initialHub = $app->handle(new Request('GET', '/'), $session);
+        $this->assertStringContainsString('4 items', $initialHub->getBody());
+        $this->assertStringContainsString('Portal HTTP 502 error', $initialHub->getBody());
+        $this->assertStringContainsString('Check-in Today: Missing Guest Registry (Bob Arriving)', $initialHub->getBody());
+
+        // 3. Dismiss failed Condominium Clearance alert (clearance_res_inhouse_1606) with filter_property_id=1606
+        $dismissClearanceResp = $app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/dashboard/alerts/dismiss',
+                query: [],
+                post: [
+                    'alert_id' => 'clearance_res_inhouse_1606',
+                    'alert_type' => 'failed_condominium_clearance',
+                    'property_id' => '1606',
+                    'reservation_uid' => 'res_inhouse_1606',
+                    'filter_property_id' => '1606',
+                    'csrf_token' => 'valid_csrf_token_203',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $session
+        );
+        $this->assertSame(200, $dismissClearanceResp->getStatusCode());
+        $body1606 = $dismissClearanceResp->getBody();
+        // Preserves 1606 filter and decrements 1606 alert count from 2 to 1
+        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>[\s\n]*Apartment 1606/s', $body1606);
+        $this->assertStringNotContainsString('Portal HTTP 502 error', $body1606);
+        $this->assertStringContainsString('1 item', $body1606);
+        $this->assertStringContainsString('Check-in Today: Missing Guest Registry (Bob Arriving)', $body1606);
+        // Heatmap tooltip no longer contains the dismissed clearance failure
+        $this->assertStringNotContainsString('Condominium clearance failed (In-House Resident)', $body1606);
+
+        // 4. Dismiss incomplete Guest Registry alert (registry_res_arr_bob)
+        $dismissRegistryResp = $app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/dashboard/alerts/dismiss',
+                query: [],
+                post: [
+                    'alert_id' => 'registry_res_arr_bob',
+                    'alert_type' => 'incomplete_guest_registry',
+                    'property_id' => '1606',
+                    'reservation_uid' => 'res_arr_bob',
+                    'filter_property_id' => '1606',
+                    'csrf_token' => 'valid_csrf_token_203',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $session
+        );
+        $this->assertSame(200, $dismissRegistryResp->getStatusCode());
+        $body1606Clear = $dismissRegistryResp->getBody();
+        $this->assertStringContainsString('0 items', $body1606Clear);
+        $this->assertStringContainsString('All Operations Clear', $body1606Clear);
+        $this->assertStringNotContainsString('Guest registry incomplete (Bob Arriving)', $body1606Clear);
+
+        // Day Summary Drawer for today on 1606 now has zero operational warnings
+        $today = date('Y-m-d');
+        $dayResp = $app->handle(new Request('GET', '/dashboard/day', ['date' => $today, 'property_id' => '1606']), $session);
+        $this->assertSame(200, $dayResp->getStatusCode());
+        $this->assertStringNotContainsString('<span>Operational Warnings</span>', $dayResp->getBody());
+
+        // 5. Dismiss un-onboarded Channel Block alert on 1707 and verify it stays suppressed across subsequent hub refreshes
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+        $inThreeDays = date('Y-m-d', strtotime('+3 days'));
+        $blockHash = md5("1707_{$tomorrow}_{$inThreeDays}_airbnb");
+        $channelAlertId = 'channel_block_' . $blockHash;
+
+        $dismissChannelResp = $app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/dashboard/alerts/dismiss',
+                query: [],
+                post: [
+                    'alert_id' => $channelAlertId,
+                    'alert_type' => 'unonboarded_channel_block',
+                    'property_id' => '1707',
+                    'filter_property_id' => 'all',
+                    'csrf_token' => 'valid_csrf_token_203',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $session
+        );
+        $this->assertSame(200, $dismissChannelResp->getStatusCode());
+        $bodyAll = $dismissChannelResp->getBody();
+        $this->assertStringNotContainsString('Un-onboarded Airbnb Booking', $bodyAll);
+        // Only Charlie Pending's registry alert remains across all properties
+        $this->assertStringContainsString('1 item', $bodyAll);
+
+        // Subsequent hub refresh still suppresses the channel block alert
+        $subsequentHub = $app->handle(new Request('GET', '/dashboard/hub', ['property_id' => '1707'], [], ['HTTP_HX_REQUEST' => 'true']), $session);
+        $this->assertStringNotContainsString('Un-onboarded Airbnb Booking', $subsequentHub->getBody());
+
+        // 6. Verify Audit Log entries were written for all 3 dismissals
+        $stmt = $this->pdo->query("SELECT * FROM admin_audit_logs WHERE action = 'alert_dismissed' ORDER BY id ASC");
+        $auditRows = $stmt !== false ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        $this->assertCount(3, $auditRows);
+        $this->assertSame('reservation', $auditRows[0]['entity_type']);
+        $this->assertSame('res_inhouse_1606', $auditRows[0]['entity_id']);
+        $this->assertSame('reservation', $auditRows[1]['entity_type']);
+        $this->assertSame('res_arr_bob', $auditRows[1]['entity_id']);
+        $this->assertSame('channel_block', $auditRows[2]['entity_type']);
+        $this->assertSame($channelAlertId, $auditRows[2]['entity_id']);
+    }
+
     private function seedOperationalDatabase(): void
     {
         $today = date('Y-m-d');
