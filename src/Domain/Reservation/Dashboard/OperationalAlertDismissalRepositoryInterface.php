@@ -12,12 +12,11 @@ interface OperationalAlertDismissalRepositoryInterface
     public function isDismissed(string $alertId): bool;
 
     /**
-     * Returns the list of dismissed alert_ids, optionally scoped by property_id or an explicit alert_id list.
+     * Returns the list of dismissed alert_ids, optionally scoped by property_id.
      *
-     * @param list<string>|null $alertIds
      * @return list<string>
      */
-    public function getDismissedAlertIds(string $propertyId = 'all', ?array $alertIds = null): array;
+    public function getDismissedAlertIds(string $propertyId = 'all'): array;
 
     /**
      * Persists a manual dismissal for the given alert_id idempotently.

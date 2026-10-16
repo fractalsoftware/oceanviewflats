@@ -15,6 +15,7 @@ use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceSyncInterface;
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
 use OceanViewFlats\Domain\Fulfillment\OccupantDetails;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\Reservation;
@@ -368,7 +369,7 @@ final class AdminReservationUpdateService
 
             if ($resetRequested) {
                 $this->deleteGuestRegistryRecord($uid);
-                $this->alertDismissalRepo?->clearDismissal('registry_' . $uid);
+                $this->alertDismissalRepo?->clearDismissal(AlertType::registryAlertId($uid));
             } elseif ($rosterSubmitted) {
                 if (count($validatedOccupants) >= 1) {
                     $occupantsPayloadArray = array_map(
@@ -475,9 +476,9 @@ final class AdminReservationUpdateService
         $afterRegistry = $this->search->findGuestRegistry($uid);
         $afterOccupants = $this->extractRegistryOccupants($afterRegistry);
 
-        if ($syncClearance) {
-            $this->alertDismissalRepo?->clearDismissal('clearance_' . $uid);
-            if ($savedReservation->registryCompleted && count($afterOccupants) >= 1 && $this->clearanceSync !== null) {
+        if ($syncClearance && $savedReservation->registryCompleted && count($afterOccupants) >= 1) {
+            $this->alertDismissalRepo?->clearDismissal(AlertType::clearanceAlertId($uid));
+            if ($this->clearanceSync !== null) {
                 $adminContext = new AdminContext(
                     adminUserId: $adminUserId,
                     ipAddress: $ipAddress,

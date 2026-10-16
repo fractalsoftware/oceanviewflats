@@ -381,7 +381,7 @@ final class AdminReservationRepository
             }
 
             $alerts[] = new OperationalAlert(
-                id: 'registry_' . $uid,
+                id: AlertType::registryAlertId($uid),
                 type: AlertType::INCOMPLETE_GUEST_REGISTRY,
                 severity: $severity,
                 propertyId: $prop,
@@ -461,7 +461,7 @@ final class AdminReservationRepository
             $sourceLabel = ucfirst($block->source);
 
             $alerts[] = new OperationalAlert(
-                id: 'channel_block_' . $blockIdentifier,
+                id: AlertType::channelBlockAlertId($blockIdentifier),
                 type: AlertType::UNONBOARDED_CHANNEL_BLOCK,
                 severity: $severity,
                 propertyId: $block->propertyId,

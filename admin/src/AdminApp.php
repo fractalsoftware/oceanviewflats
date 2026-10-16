@@ -233,7 +233,6 @@ final class AdminApp
 
         /** @var OperationalAlertDismissalRepositoryInterface $dismissalRepo */
         $dismissalRepo = $options['alert_dismissal_repository']
-            ?? $options['operational_alert_dismissal_repository']
             ?? new PdoOperationalAlertDismissalRepository($pdo);
 
         $reservationController = new ReservationController(

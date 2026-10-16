@@ -1628,6 +1628,30 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringContainsString('Retry Condominium Clearance', $concludedBody);
         $this->assertStringNotContainsString('Dismiss Alert', $concludedBody);
         $this->assertStringNotContainsString('Dismissed', $concludedBody);
+
+        // Incomplete registry (registry_completed = 0) with failed clearance renders Dismiss Alert but NOT Retry Condominium Clearance
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES (
+                'res-unregistered-fail', '1606', 'Unregistered Guest', 'unreg@example.com', '+573001112233',
+                '2026-11-10', '2026-11-15', 1000000.00, 'confirmed', 'web', 0
+            );
+            INSERT INTO condominium_clearances (
+                reservation_uid, property_id, status, error_message, attempts
+            ) VALUES (
+                'res-unregistered-fail', '1606', 'failed', 'Registry was reset after failure', 1
+            );
+        ");
+
+        $unregisteredResponse = $this->executeShow('res-unregistered-fail', isHtmx: true, hxTarget: 'drawer-container');
+        $this->assertSame(200, $unregisteredResponse->getStatusCode());
+        $unregisteredBody = $unregisteredResponse->getBody();
+        $this->assertStringContainsString('Failed', $unregisteredBody);
+        $this->assertStringContainsString('Dismiss Alert', $unregisteredBody);
+        $this->assertStringNotContainsString('Retry Condominium Clearance', $unregisteredBody);
+        $this->assertStringNotContainsString('Sync Condominium Clearance', $unregisteredBody);
     }
 
     public function testRetryClearanceAndEditorActionsClearPriorAlertDismissals(): void
@@ -1752,6 +1776,36 @@ final class ReservationControllerTest extends TestCase
         $updateResetResp = $controller->updateReservation($updateResetReq, $this->session);
         $this->assertSame(200, $updateResetResp->getStatusCode());
         $this->assertFalse($dismissalRepo->isDismissed('registry_res-1'));
+
+        // 4. When registry is incomplete (0 occupants), sync_condominium_clearance=1 does not execute sync and does NOT clear clearance dismissal
+        $dismissalRepo->dismiss('clearance_res-1', 'failed_condominium_clearance', '1606', 'res-1', 1);
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res-1'));
+
+        $updateNoOccupantsSyncReq = (new Request(
+            method: 'POST',
+            uri: '/reservations/res-1/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-11-01',
+                'check_out' => '2026-11-05',
+                'total_price' => '1200000',
+                'max_guests' => '6',
+                'guest_name' => 'Alice Smith',
+                'guest_email' => 'alice@example.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'sync_condominium_clearance' => '1',
+                'csrf_token' => 'test-csrf-token-xyz',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token-xyz',
+            ]
+        ))->withAttribute('uid', 'res-1');
+
+        $updateNoOccupantsSyncResp = $controller->updateReservation($updateNoOccupantsSyncReq, $this->session);
+        $this->assertSame(200, $updateNoOccupantsSyncResp->getStatusCode());
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res-1'));
     }
 
     public function testShowRendersCondominiumClearancePendingBadge(): void

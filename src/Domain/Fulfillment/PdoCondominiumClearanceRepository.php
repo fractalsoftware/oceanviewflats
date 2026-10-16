@@ -218,7 +218,7 @@ final class PdoCondominiumClearanceRepository implements CondominiumClearanceRep
             );
 
             $alerts[] = new OperationalAlert(
-                id: 'clearance_' . $reservationUid,
+                id: AlertType::clearanceAlertId($reservationUid),
                 type: AlertType::FAILED_CONDOMINIUM_CLEARANCE,
                 severity: $severity,
                 propertyId: $propId,

@@ -30,6 +30,7 @@ use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\CancellationPreview;
 use OceanViewFlats\Domain\Reservation\CancellationRequest;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\ExcessiveRefundException;
@@ -47,6 +48,7 @@ use OceanViewFlats\Domain\Reservation\ReservationNotFoundException;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\ReservationStatus;
 use OceanViewFlats\Domain\Reservation\ReservationValidationException;
+use OceanViewFlats\Domain\Reservation\Search\ReservationDossier;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchCriteria;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchResult;
@@ -168,19 +170,7 @@ final class ReservationController
             return Response::redirect('/reservations');
         }
 
-        $clearance = $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
-
-        $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
-            'reservation' => $dossier->reservation,
-            'auditLogs' => $dossier->auditLogs,
-            'refunds' => $dossier->refunds,
-            'condominiumClearance' => $clearance,
-            'clearanceAlertDismissed' => $clearanceAlertDismissed,
-            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-            'publicSiteUrl' => $this->publicSiteUrl,
-            'urlBuilder' => $this->urlBuilder,
-        ]);
+        $drawerHtml = $this->renderDetailDrawerHtml($dossier->toArray(), $session);
 
         if ($request->isHtmx() && $request->getHeader('HX-Target') === 'drawer-container') {
             return Response::html($drawerHtml);
@@ -473,18 +463,10 @@ final class ReservationController
         $uid = $savedReservation->reservationUid;
 
         $dossier = $this->search->findWithAuditTrail($uid);
-        $clearance = $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
-        $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
-            'reservation' => $dossier !== null ? $dossier->reservation : $savedReservation->toArray(),
-            'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
-            'refunds' => $dossier !== null ? $dossier->refunds : [],
-            'condominiumClearance' => $clearance,
-            'clearanceAlertDismissed' => $clearanceAlertDismissed,
-            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-            'publicSiteUrl' => $this->publicSiteUrl,
-            'urlBuilder' => $this->urlBuilder,
-        ]);
+        $drawerHtml = $this->renderDetailDrawerHtml(
+            $dossier !== null ? $dossier->toArray() : ['reservation' => $savedReservation->toArray()],
+            $session
+        );
 
         if ($request->isHtmx()) {
             $responseBody = '<script>document.getElementById("modal-container").innerHTML = "";</script>';
@@ -639,18 +621,10 @@ final class ReservationController
 
         $savedReservation = $outcome['reservation'] ?? $reservation;
         $dossier = $this->search->findWithAuditTrail($uid);
-        $clearance = $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
-        $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
-            'reservation' => $dossier !== null ? $dossier->reservation : $savedReservation->toArray(),
-            'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
-            'refunds' => $dossier !== null ? $dossier->refunds : [],
-            'condominiumClearance' => $clearance,
-            'clearanceAlertDismissed' => $clearanceAlertDismissed,
-            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-            'publicSiteUrl' => $this->publicSiteUrl,
-            'urlBuilder' => $this->urlBuilder,
-        ]);
+        $drawerHtml = $this->renderDetailDrawerHtml(
+            $dossier !== null ? $dossier->toArray() : ['reservation' => $savedReservation->toArray()],
+            $session
+        );
 
         if ($request->isHtmx()) {
             $responseBody = '<script>document.getElementById("modal-container").innerHTML = "";</script>';
@@ -760,7 +734,7 @@ final class ReservationController
             return Response::json(['success' => false, 'error' => 'Guest registry must be submitted before condominium clearance can be synced.'], 400);
         }
 
-        $this->alertDismissalRepo?->clearDismissal('clearance_' . $uid);
+        $this->alertDismissalRepo?->clearDismissal(AlertType::clearanceAlertId($uid));
 
         if ($request->isHtmx()) {
             $reservation = $this->repository->findByUid($uid);
@@ -832,6 +806,74 @@ final class ReservationController
     }
 
     /**
+     * Helper to render detail drawer HTML from a reservation dossier array.
+     *
+     * @param array<string, mixed> $dossier
+     * @param array<string, mixed> $session
+     */
+    private function renderDetailDrawerHtml(
+        array $dossier,
+        array &$session,
+        ?CondominiumClearance $clearance = null
+    ): string {
+        return self::renderDetailDrawerPartial(
+            viewRenderer: $this->viewRenderer,
+            dossier: $dossier,
+            session: $session,
+            clearanceRepo: $this->clearanceRepo,
+            alertDismissalRepo: $this->alertDismissalRepo,
+            publicSiteUrl: $this->publicSiteUrl,
+            urlBuilder: $this->urlBuilder,
+            clearance: $clearance
+        );
+    }
+
+    /**
+     * Shared partial renderer for the reservation detail drawer across administrative controllers.
+     *
+     * @param array<string, mixed> $dossier
+     * @param array<string, mixed> $session
+     */
+    public static function renderDetailDrawerPartial(
+        ViewRenderer $viewRenderer,
+        array $dossier,
+        array $session,
+        ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
+        ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo = null,
+        string $publicSiteUrl = 'https://oceanviewflats.com',
+        ?PublicUrlBuilder $urlBuilder = null,
+        ?CondominiumClearance $clearance = null
+    ): string {
+        /** @var array<string, mixed> $reservationData */
+        $reservationData = isset($dossier['reservation']) && is_array($dossier['reservation'])
+            ? $dossier['reservation']
+            : $dossier;
+        $uid = (string) ($reservationData['reservation_uid'] ?? '');
+        /** @var list<array<string, mixed>> $auditLogs */
+        $auditLogs = isset($dossier['auditLogs']) && is_array($dossier['auditLogs'])
+            ? $dossier['auditLogs']
+            : (isset($dossier['audit_logs']) && is_array($dossier['audit_logs']) ? $dossier['audit_logs'] : []);
+        /** @var list<array<string, mixed>> $refunds */
+        $refunds = isset($dossier['refunds']) && is_array($dossier['refunds']) ? $dossier['refunds'] : [];
+
+        $resolvedClearance = $clearance ?? ($uid !== '' ? $clearanceRepo?->findByReservationUid($uid) : null);
+        $clearanceAlertDismissed = $uid !== '' && $alertDismissalRepo !== null
+            ? $alertDismissalRepo->isDismissed(AlertType::clearanceAlertId($uid))
+            : false;
+
+        return $viewRenderer->renderPartial('reservations/_detail_drawer.php', [
+            'reservation' => $reservationData,
+            'auditLogs' => $auditLogs,
+            'refunds' => $refunds,
+            'condominiumClearance' => $resolvedClearance,
+            'clearanceAlertDismissed' => $clearanceAlertDismissed,
+            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
+            'publicSiteUrl' => $publicSiteUrl,
+            'urlBuilder' => $urlBuilder ?? new PublicUrlBuilder($publicSiteUrl),
+        ]);
+    }
+
+    /**
      * Helper to render detail drawer HTMX response.
      *
      * @param array<string, mixed> $session
@@ -844,18 +886,11 @@ final class ReservationController
         ?CondominiumClearance $clearance = null
     ): Response {
         $dossier = $this->search->findWithAuditTrail($uid);
-        $clearance ??= $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
-        $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
-            'reservation' => $dossier !== null ? $dossier->reservation : $fallbackReservation,
-            'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
-            'refunds' => $dossier !== null ? $dossier->refunds : [],
-            'condominiumClearance' => $clearance,
-            'clearanceAlertDismissed' => $clearanceAlertDismissed,
-            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-            'publicSiteUrl' => $this->publicSiteUrl,
-            'urlBuilder' => $this->urlBuilder,
-        ]);
+        $drawerHtml = $this->renderDetailDrawerHtml(
+            $dossier !== null ? $dossier->toArray() : ['reservation' => $fallbackReservation],
+            $session,
+            $clearance
+        );
 
         return new Response(
             statusCode: 200,
@@ -1033,18 +1068,10 @@ final class ReservationController
 
         $savedReservation = $result->reservation;
         $updatedDossier = $this->search->findWithAuditTrail($uid);
-        $clearance = $this->clearanceRepo?->findByReservationUid($uid);
-        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
-        $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
-            'reservation' => $updatedDossier !== null ? $updatedDossier->reservation : $savedReservation->toArray(),
-            'auditLogs' => $updatedDossier !== null ? $updatedDossier->auditLogs : [],
-            'refunds' => $updatedDossier !== null ? $updatedDossier->refunds : [],
-            'condominiumClearance' => $clearance,
-            'clearanceAlertDismissed' => $clearanceAlertDismissed,
-            'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-            'publicSiteUrl' => $this->publicSiteUrl,
-            'urlBuilder' => $this->urlBuilder,
-        ]);
+        $drawerHtml = $this->renderDetailDrawerHtml(
+            $updatedDossier !== null ? $updatedDossier->toArray() : ['reservation' => $savedReservation->toArray()],
+            $session
+        );
 
         if ($request->isHtmx()) {
             $responseBody = '<script>document.getElementById("modal-container").innerHTML = "";</script>';

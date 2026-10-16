@@ -15,6 +15,7 @@ use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
 use OceanViewFlats\Domain\Quote\RateTier;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\DayDetailViewData;
@@ -362,16 +363,16 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                     $reservationUids[] = $resUid;
 
                     if (!$isPast) {
-                        $regCompleted = (int) ($confirmedRes['registry_completed'] ?? 0);
-                        $guestName = (string) ($confirmedRes['guest_name'] ?: 'Guest');
-                        $rCin = (string) ($confirmedRes['check_in'] ?? '');
-                        $rCout = (string) ($confirmedRes['check_out'] ?? '');
-                        $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                        if ($regCompleted === 0 && $isWithinLookahead && !isset($dismissedMap['registry_' . $resUid])) {
-                            $warningMessages[] = "Guest registry incomplete ({$guestName})";
-                        }
-                        if ($rCout > $todayStr && isset($failedClearanceMap[$resUid]) && !isset($dismissedMap['clearance_' . $resUid])) {
-                            $warningMessages[] = "Condominium clearance failed ({$guestName})";
+                        foreach (
+                            $this->evaluateReservationOperationalWarnings(
+                                reservation: $confirmedRes,
+                                todayStr: $todayStr,
+                                lookaheadMax: $lookaheadMax,
+                                hasFailedClearance: isset($failedClearanceMap[$resUid]),
+                                dismissedMap: $dismissedMap
+                            ) as $warning
+                        ) {
+                            $warningMessages[] = $warning;
                         }
                     }
                 }
@@ -547,6 +548,50 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             'isSeasonal' => false,
             'tierName' => 'Standard Rate',
         ];
+    }
+
+    /**
+     * Evaluates active-stay operational warnings (incomplete Guest Registry and failed Condominium Clearance Sync)
+     * while respecting the 7-day check-in lookahead horizon, concluded stay cutoff, and manual alert dismissals.
+     *
+     * @param array<string, mixed> $reservation
+     * @param array<string, bool> $dismissedMap
+     * @return list<string>
+     */
+    private function evaluateReservationOperationalWarnings(
+        array $reservation,
+        string $todayStr,
+        string $lookaheadMax,
+        bool $hasFailedClearance,
+        array $dismissedMap
+    ): array {
+        $resUid = (string) ($reservation['reservation_uid'] ?? '');
+        $guestName = (string) (($reservation['guest_name'] ?? '') ?: 'Guest');
+        $checkIn = (string) ($reservation['check_in'] ?? '');
+        $checkOut = (string) ($reservation['check_out'] ?? '');
+        $regCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1;
+
+        $warnings = [];
+        $isActiveOrFuture = $checkOut > $todayStr;
+
+        if (
+            !$regCompleted
+            && $isActiveOrFuture
+            && $checkIn <= $lookaheadMax
+            && !isset($dismissedMap[AlertType::registryAlertId($resUid)])
+        ) {
+            $warnings[] = "Guest registry incomplete ({$guestName})";
+        }
+
+        if (
+            $isActiveOrFuture
+            && $hasFailedClearance
+            && !isset($dismissedMap[AlertType::clearanceAlertId($resUid)])
+        ) {
+            $warnings[] = "Condominium clearance failed ({$guestName})";
+        }
+
+        return $warnings;
     }
 
     /**
@@ -738,19 +783,14 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             if (!$isPast) {
                 $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
                 foreach ($resToWarn as $r) {
-                    $rUid = (string) ($r['reservation_uid'] ?? '');
-                    $gName = (string) ($r['guest_name'] ?? 'Guest');
-                    $rCin = (string) ($r['check_in'] ?? '');
-                    $rCout = (string) ($r['check_out'] ?? '');
-                    $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                    if (empty($r['registry_completed']) && $isWithinLookahead && !isset($dismissedMap['registry_' . $rUid])) {
-                        $msg = "Guest registry incomplete ({$gName})";
-                        if (!in_array($msg, $propWarnings, true)) {
-                            $propWarnings[] = $msg;
-                        }
-                    }
-                    if ($rCout > $todayStr && ($r['clearance_status'] ?? '') === 'failed' && !isset($dismissedMap['clearance_' . $rUid])) {
-                        $msg = "Condominium clearance failed ({$gName})";
+                    $rWarnings = $this->evaluateReservationOperationalWarnings(
+                        reservation: $r,
+                        todayStr: $todayStr,
+                        lookaheadMax: $lookaheadMax,
+                        hasFailedClearance: ($r['clearance_status'] ?? '') === 'failed',
+                        dismissedMap: $dismissedMap
+                    );
+                    foreach ($rWarnings as $msg) {
                         if (!in_array($msg, $propWarnings, true)) {
                             $propWarnings[] = $msg;
                         }

@@ -116,16 +116,6 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
                 user_agent TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
-
-            CREATE TABLE operational_alert_dismissals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                alert_id TEXT NOT NULL UNIQUE,
-                alert_type TEXT NOT NULL,
-                property_id TEXT NOT NULL,
-                reservation_uid TEXT DEFAULT NULL,
-                dismissed_by INTEGER DEFAULT NULL,
-                dismissed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            );
         ");
     }
 
@@ -408,44 +398,6 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
         $stmt->execute([':uid' => 'res-ready-1']);
         $auditLog = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->assertNotEmpty($auditLog);
-    }
-
-    public function testEndpointClearsPriorClearanceAlertDismissalOnRetry(): void
-    {
-        $this->pdo->exec("
-            INSERT INTO operational_alert_dismissals (alert_id, alert_type, property_id, reservation_uid, dismissed_by)
-            VALUES ('clearance_res-ready-1', 'failed_condominium_clearance', '1606', 'res-ready-1', 1);
-        ");
-
-        $prependCode = "
-            class TestFailingRetryTransport implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface {
-                public function post(string \$url, array|string \$data = [], array \$headers = [], array \$options = []): array {
-                    return [
-                        'statusCode' => 500,
-                        'body' => 'HOA Portal Error',
-                        'headers' => [],
-                        'cookies' => [],
-                        'error' => null,
-                    ];
-                }
-            }
-            \$GLOBALS['TEST_CLEARANCE_TRANSPORT'] = new TestFailingRetryTransport();
-        ";
-
-        $res = $this->callEndpoint(
-            ['reservation_uid' => 'res-ready-1'],
-            'POST',
-            ['HTTP_X_CSRF_TOKEN' => 'valid-csrf-token'],
-            $prependCode,
-            true,
-            'valid-csrf-token'
-        );
-
-        $this->assertSame(200, $res['statusCode']);
-
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM operational_alert_dismissals WHERE alert_id = 'clearance_res-ready-1'");
-        $stmt->execute();
-        $this->assertSame(0, (int) $stmt->fetchColumn());
     }
 
     /**

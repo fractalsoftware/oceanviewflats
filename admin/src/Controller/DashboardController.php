@@ -122,7 +122,7 @@ final class DashboardController
             || !preg_match('/^(clearance|registry|channel_block)_[A-Za-z0-9_-]+$/', $alertId)
             || $resolvedType === null
             || !in_array($alertPropertyId, ['1606', '1707'], true)
-            || !$this->matchesAlertPrefix($alertId, $resolvedType)
+            || !$resolvedType->matchesAlertId($alertId)
         ) {
             return Response::html(
                 '<div class="p-4 text-rose-600 font-semibold">Invalid operational alert dismissal parameters.</div>',
@@ -131,14 +131,7 @@ final class DashboardController
         }
 
         $rawResUid = trim((string) $request->getPost('reservation_uid', ''));
-        $reservationUid = $rawResUid !== '' ? $rawResUid : null;
-        if ($reservationUid === null) {
-            if ($resolvedType === AlertType::FAILED_CONDOMINIUM_CLEARANCE) {
-                $reservationUid = substr($alertId, strlen('clearance_'));
-            } elseif ($resolvedType === AlertType::INCOMPLETE_GUEST_REGISTRY) {
-                $reservationUid = substr($alertId, strlen('registry_'));
-            }
-        }
+        $reservationUid = $rawResUid !== '' ? $rawResUid : $resolvedType->extractReservationUid($alertId);
 
         $adminUserId = isset($session['admin_user_id']) ? (int) $session['admin_user_id'] : null;
 
@@ -173,24 +166,20 @@ final class DashboardController
             }
 
             $dossier = $this->reservationSearch?->findWithAuditTrail($reservationUid);
-            $clearance = $this->clearanceRepo?->findByReservationUid($reservationUid);
-            $clearanceAlertDismissed = $this->dismissalRepo !== null
-                ? $this->dismissalRepo->isDismissed('clearance_' . $reservationUid)
-                : true;
-
-            $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
-                'reservation' => $dossier !== null ? $dossier->reservation : [
-                    'reservation_uid' => $reservationUid,
-                    'property_id' => $alertPropertyId,
+            $drawerHtml = ReservationController::renderDetailDrawerPartial(
+                viewRenderer: $this->viewRenderer,
+                dossier: $dossier !== null ? $dossier->toArray() : [
+                    'reservation' => [
+                        'reservation_uid' => $reservationUid,
+                        'property_id' => $alertPropertyId,
+                    ],
                 ],
-                'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
-                'refunds' => $dossier !== null ? $dossier->refunds : [],
-                'condominiumClearance' => $clearance,
-                'clearanceAlertDismissed' => $clearanceAlertDismissed,
-                'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-                'publicSiteUrl' => $this->publicSiteUrl,
-                'urlBuilder' => $this->urlBuilder ?? new PublicUrlBuilder($this->publicSiteUrl),
-            ]);
+                session: $session,
+                clearanceRepo: $this->clearanceRepo,
+                alertDismissalRepo: $this->dismissalRepo,
+                publicSiteUrl: $this->publicSiteUrl,
+                urlBuilder: $this->urlBuilder
+            );
 
             return new Response(
                 statusCode: 200,
@@ -213,15 +202,6 @@ final class DashboardController
         }
 
         return Response::redirect('/?property_id=' . urlencode($filterPropertyId));
-    }
-
-    private function matchesAlertPrefix(string $alertId, AlertType $alertType): bool
-    {
-        return match ($alertType) {
-            AlertType::FAILED_CONDOMINIUM_CLEARANCE => str_starts_with($alertId, 'clearance_'),
-            AlertType::INCOMPLETE_GUEST_REGISTRY => str_starts_with($alertId, 'registry_'),
-            AlertType::UNONBOARDED_CHANNEL_BLOCK => str_starts_with($alertId, 'channel_block_'),
-        };
     }
 
     /**

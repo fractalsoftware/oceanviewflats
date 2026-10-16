@@ -41,12 +41,13 @@ $isAirbnbReservation = (strtolower((string) $source) === 'airbnb' || str_starts_
 $isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
 $isEditable = ($status === 'confirmed' && !$isConcluded);
 $todayCot = (new \DateTimeImmutable('today', new \DateTimeZone('America/Bogota')))->format('Y-m-d');
+$isFutureOrActiveClearance = $status !== 'cancelled' && $checkOut !== '' && $checkOut > $todayCot;
+$canSyncClearance = $registryCompleted
+    && ($condominiumClearance === null || $condominiumClearance->isFailed() || $condominiumClearance->isPending());
 $canDismissClearanceAlert = $condominiumClearance !== null
     && $condominiumClearance->isFailed()
     && !$clearanceAlertDismissed
-    && $status !== 'cancelled'
-    && $checkOut !== ''
-    && $checkOut > $todayCot;
+    && $isFutureOrActiveClearance;
 ?>
 
 <script>
@@ -481,21 +482,23 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                             </div>
                         <?php endif; ?>
 
-                        <?php if (($registryCompleted && ($condominiumClearance === null || $condominiumClearance->isFailed() || $condominiumClearance->isPending())) || ($condominiumClearance !== null && $condominiumClearance->isFailed())): ?>
+                        <?php if ($canSyncClearance || $canDismissClearanceAlert): ?>
                             <div class="pt-2 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <button type="button"
-                                            hx-post="/reservations/<?= urlencode($uid) ?>/clearance-retry"
-                                            hx-target="#drawer-container"
-                                            hx-swap="innerHTML"
-                                            hx-disabled-elt="this"
-                                            hx-headers='{"X-CSRF-Token": "<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>"}'
-                                            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition cursor-pointer disabled:opacity-50">
-                                        <svg class="w-3.5 h-3.5 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        <span><?= ($condominiumClearance !== null && $condominiumClearance->isFailed()) ? 'Retry Condominium Clearance' : 'Sync Condominium Clearance' ?></span>
-                                    </button>
+                                    <?php if ($canSyncClearance): ?>
+                                        <button type="button"
+                                                hx-post="/reservations/<?= urlencode($uid) ?>/clearance-retry"
+                                                hx-target="#drawer-container"
+                                                hx-swap="innerHTML"
+                                                hx-disabled-elt="this"
+                                                hx-headers='{"X-CSRF-Token": "<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>"}'
+                                                class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition cursor-pointer disabled:opacity-50">
+                                            <svg class="w-3.5 h-3.5 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            <span><?= ($condominiumClearance !== null && $condominiumClearance->isFailed()) ? 'Retry Condominium Clearance' : 'Sync Condominium Clearance' ?></span>
+                                        </button>
+                                    <?php endif; ?>
                                     <?php if ($canDismissClearanceAlert): ?>
                                         <form method="POST"
                                               action="/dashboard/alerts/dismiss"
@@ -506,8 +509,8 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                               class="inline">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="return_context" value="drawer">
-                                            <input type="hidden" name="alert_id" value="clearance_<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>">
-                                            <input type="hidden" name="alert_type" value="failed_condominium_clearance">
+                                            <input type="hidden" name="alert_id" value="<?= htmlspecialchars(\OceanViewFlats\Domain\Reservation\Dashboard\AlertType::clearanceAlertId($uid), ENT_QUOTES, 'UTF-8') ?>">
+                                            <input type="hidden" name="alert_type" value="<?= htmlspecialchars(\OceanViewFlats\Domain\Reservation\Dashboard\AlertType::FAILED_CONDOMINIUM_CLEARANCE->value, ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="property_id" value="<?= htmlspecialchars($propertyId, ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="reservation_uid" value="<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>">
                                             <button type="submit"
@@ -521,7 +524,9 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                         </form>
                                     <?php endif; ?>
                                 </div>
-                                <span class="text-[11px] text-gray-400">1-click clearance sync</span>
+                                <?php if ($canSyncClearance): ?>
+                                    <span class="text-[11px] text-gray-400">1-click clearance sync</span>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

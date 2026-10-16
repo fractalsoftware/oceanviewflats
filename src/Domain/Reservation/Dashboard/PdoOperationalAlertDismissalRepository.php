@@ -35,15 +35,10 @@ final class PdoOperationalAlertDismissalRepository implements OperationalAlertDi
     }
 
     /**
-     * @param list<string>|null $alertIds
      * @return list<string>
      */
-    public function getDismissedAlertIds(string $propertyId = 'all', ?array $alertIds = null): array
+    public function getDismissedAlertIds(string $propertyId = 'all'): array
     {
-        if ($alertIds !== null && $alertIds === []) {
-            return [];
-        }
-
         $sql = 'SELECT alert_id FROM operational_alert_dismissals WHERE 1=1';
         /** @var list<string> $params */
         $params = [];
@@ -51,14 +46,6 @@ final class PdoOperationalAlertDismissalRepository implements OperationalAlertDi
         if ($propertyId !== 'all' && $propertyId !== '') {
             $sql .= ' AND (property_id = ? OR property_id = \'all\')';
             $params[] = $propertyId;
-        }
-
-        if ($alertIds !== null) {
-            $placeholders = implode(', ', array_fill(0, count($alertIds), '?'));
-            $sql .= " AND alert_id IN ({$placeholders})";
-            foreach ($alertIds as $id) {
-                $params[] = $id;
-            }
         }
 
         try {
