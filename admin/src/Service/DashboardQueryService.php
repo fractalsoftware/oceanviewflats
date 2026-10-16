@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Admin\Service;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use InvalidArgumentException;
 use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
 use OceanViewFlats\Admin\Repository\AdminRateRepository;
@@ -14,6 +15,7 @@ use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
 use OceanViewFlats\Domain\Quote\RateTier;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\DayDetailViewData;
@@ -23,7 +25,9 @@ use OceanViewFlats\Domain\Reservation\Dashboard\HeatmapWeekColumn;
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
 use OceanViewFlats\Domain\Reservation\Dashboard\OccupancyHeatmapViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationsEvent;
+use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\Dashboard\PropertyRateStatus;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
@@ -32,6 +36,7 @@ use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 final class DashboardQueryService implements DashboardQueryServiceInterface
 {
     private readonly CondominiumClearanceRepositoryInterface $clearanceRepo;
+    private readonly OperationalAlertDismissalRepositoryInterface $dismissalRepo;
     /** @var array<string, list<RateTier>> */
     private array $cachedRateTiers = [];
 
@@ -41,9 +46,11 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         private readonly AdminRateRepository $rateRepo,
         private readonly InboundChannelSyncServiceInterface $channelSyncService,
         private readonly ?ReservationLedgerInterface $ledger = null,
-        ?CondominiumClearanceRepositoryInterface $clearanceRepo = null
+        ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
+        ?OperationalAlertDismissalRepositoryInterface $dismissalRepo = null
     ) {
         $this->clearanceRepo = $clearanceRepo ?? new PdoCondominiumClearanceRepository($this->reservationRepo->getPdo());
+        $this->dismissalRepo = $dismissalRepo ?? new PdoOperationalAlertDismissalRepository($this->reservationRepo->getPdo());
     }
 
     /**
@@ -65,7 +72,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         string $propertyId = 'all',
         ?DateTimeImmutable $now = null
     ): DashboardHubViewData {
-        $now = $now ?? new DateTimeImmutable('today');
+        $now = $now ?? new DateTimeImmutable('today', new DateTimeZone('America/Bogota'));
         $today = $now->format('Y-m-d');
         $horizonEnd = $now->modify('+6 days')->format('Y-m-d');
 
@@ -120,6 +127,14 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $channelAlerts = $this->reservationRepo->getUnonboardedChannelBlockAlerts($channelBlocks, $propertyId, $now);
 
         $alerts = array_merge($registryAlerts, $clearanceAlerts, $channelAlerts);
+        $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($propertyId), true);
+        if ($dismissedMap !== []) {
+            $alerts = array_values(array_filter(
+                $alerts,
+                static fn(OperationalAlert $alert): bool => !isset($dismissedMap[$alert->id])
+            ));
+        }
+
         // Sort alerts by severity: CRITICAL, then WARNING, then INFO; then dueDate ASC
         usort($alerts, static function (OperationalAlert $a, OperationalAlert $b): int {
             $severityRank = [
@@ -186,7 +201,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         string $propertyId = 'all',
         ?DateTimeImmutable $now = null
     ): OccupancyHeatmapViewData {
-        $now = $now ?? new DateTimeImmutable('today');
+        $now = $now ?? new DateTimeImmutable('today', new DateTimeZone('America/Bogota'));
         $todayStr = $now->format('Y-m-d');
         $lookaheadMax = $now->modify('+7 days')->format('Y-m-d');
 
@@ -235,6 +250,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         } catch (\Throwable) {
             $failedClearanceMap = [];
         }
+
+        $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($propertyId), true);
 
         // Fetch seasonal rate tiers
         $tiers1606 = $this->getTiersForProperty('1606');
@@ -345,16 +362,18 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                     $resUid = (string) $confirmedRes['reservation_uid'];
                     $reservationUids[] = $resUid;
 
-                    $regCompleted = (int) ($confirmedRes['registry_completed'] ?? 0);
-                    $guestName = (string) ($confirmedRes['guest_name'] ?: 'Guest');
-                    $rCin = (string) ($confirmedRes['check_in'] ?? '');
-                    $rCout = (string) ($confirmedRes['check_out'] ?? '');
-                    $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                    if ($regCompleted === 0 && $isWithinLookahead) {
-                        $warningMessages[] = "Guest registry incomplete ({$guestName})";
-                    }
-                    if (isset($failedClearanceMap[$resUid])) {
-                        $warningMessages[] = "Condominium clearance failed ({$guestName})";
+                    if (!$isPast) {
+                        foreach (
+                            $this->evaluateReservationOperationalWarnings(
+                                reservation: $confirmedRes,
+                                todayStr: $todayStr,
+                                lookaheadMax: $lookaheadMax,
+                                hasFailedClearance: isset($failedClearanceMap[$resUid]),
+                                dismissedMap: $dismissedMap
+                            ) as $warning
+                        ) {
+                            $warningMessages[] = $warning;
+                        }
                     }
                 }
 
@@ -532,6 +551,50 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
     }
 
     /**
+     * Evaluates active-stay operational warnings (incomplete Guest Registry and failed Condominium Clearance Sync)
+     * while respecting the 7-day check-in lookahead horizon, concluded stay cutoff, and manual alert dismissals.
+     *
+     * @param array<string, mixed> $reservation
+     * @param array<string, bool> $dismissedMap
+     * @return list<string>
+     */
+    private function evaluateReservationOperationalWarnings(
+        array $reservation,
+        string $todayStr,
+        string $lookaheadMax,
+        bool $hasFailedClearance,
+        array $dismissedMap
+    ): array {
+        $resUid = (string) ($reservation['reservation_uid'] ?? '');
+        $guestName = (string) (($reservation['guest_name'] ?? '') ?: 'Guest');
+        $checkIn = (string) ($reservation['check_in'] ?? '');
+        $checkOut = (string) ($reservation['check_out'] ?? '');
+        $regCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1;
+
+        $warnings = [];
+        $isActiveOrFuture = $checkOut > $todayStr;
+
+        if (
+            !$regCompleted
+            && $isActiveOrFuture
+            && $checkIn <= $lookaheadMax
+            && !isset($dismissedMap[AlertType::registryAlertId($resUid)])
+        ) {
+            $warnings[] = "Guest registry incomplete ({$guestName})";
+        }
+
+        if (
+            $isActiveOrFuture
+            && $hasFailedClearance
+            && !isset($dismissedMap[AlertType::clearanceAlertId($resUid)])
+        ) {
+            $warnings[] = "Condominium clearance failed ({$guestName})";
+        }
+
+        return $warnings;
+    }
+
+    /**
      * Aggregates detailed property statuses, reservations, movements, rates,
      * and maintenance blocks for a specific calendar date into DayDetailViewData.
      *
@@ -541,7 +604,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
      */
     public function getDaySummary(
         string $date,
-        string $propertyFilter = 'all'
+        string $propertyFilter = 'all',
+        ?DateTimeImmutable $now = null
     ): DayDetailViewData {
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             throw new InvalidArgumentException("Invalid date format: {$date}. Expected YYYY-MM-DD.");
@@ -551,7 +615,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             throw new InvalidArgumentException("Invalid calendar date: {$date}.");
         }
 
-        $now = new DateTimeImmutable('today');
+        $now = $now ?? new DateTimeImmutable('today', new DateTimeZone('America/Bogota'));
         $todayStr = $now->format('Y-m-d');
         $lookaheadMax = $now->modify('+7 days')->format('Y-m-d');
         $isToday = ($date === $todayStr);
@@ -655,6 +719,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $allWarnings = [];
         /** @var list<string> $allReservationUids */
         $allReservationUids = [];
+        $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($filter), true);
 
         foreach ($targetProps as $pid) {
             $rateInfo = $this->calculateNightlyRate($pid, $date, $tiers1606, $tiers1707);
@@ -715,22 +780,20 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 $propWarnings[] = "Maintenance hold: {$mBlock->reason}";
             }
 
-            $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
-            foreach ($resToWarn as $r) {
-                $gName = (string) ($r['guest_name'] ?? 'Guest');
-                $rCin = (string) ($r['check_in'] ?? '');
-                $rCout = (string) ($r['check_out'] ?? '');
-                $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                if (empty($r['registry_completed']) && $isWithinLookahead) {
-                    $msg = "Guest registry incomplete ({$gName})";
-                    if (!in_array($msg, $propWarnings, true)) {
-                        $propWarnings[] = $msg;
-                    }
-                }
-                if (($r['clearance_status'] ?? '') === 'failed') {
-                    $msg = "Condominium clearance failed ({$gName})";
-                    if (!in_array($msg, $propWarnings, true)) {
-                        $propWarnings[] = $msg;
+            if (!$isPast) {
+                $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
+                foreach ($resToWarn as $r) {
+                    $rWarnings = $this->evaluateReservationOperationalWarnings(
+                        reservation: $r,
+                        todayStr: $todayStr,
+                        lookaheadMax: $lookaheadMax,
+                        hasFailedClearance: ($r['clearance_status'] ?? '') === 'failed',
+                        dismissedMap: $dismissedMap
+                    );
+                    foreach ($rWarnings as $msg) {
+                        if (!in_array($msg, $propWarnings, true)) {
+                            $propWarnings[] = $msg;
+                        }
                     }
                 }
             }

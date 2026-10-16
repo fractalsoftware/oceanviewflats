@@ -15,6 +15,9 @@ use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceSyncInterface;
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
 use OceanViewFlats\Domain\Fulfillment\OccupantDetails;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
@@ -30,6 +33,8 @@ use Throwable;
  */
 final class AdminReservationUpdateService
 {
+    private readonly ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo;
+
     public function __construct(
         private readonly ReservationRepositoryInterface $repository,
         private readonly ReservationSearchInterface $search,
@@ -39,8 +44,11 @@ final class AdminReservationUpdateService
         private readonly PublicUrlBuilder $urlBuilder,
         private readonly string $publicSiteUrl = 'https://oceanviewflats.com',
         private readonly ?PDO $pdo = null,
-        private readonly ?CondominiumClearanceSyncInterface $clearanceSync = null
+        private readonly ?CondominiumClearanceSyncInterface $clearanceSync = null,
+        ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo = null
     ) {
+        $this->alertDismissalRepo = $alertDismissalRepo
+            ?? ($this->pdo !== null ? new PdoOperationalAlertDismissalRepository($this->pdo) : null);
     }
 
     /**
@@ -361,6 +369,7 @@ final class AdminReservationUpdateService
 
             if ($resetRequested) {
                 $this->deleteGuestRegistryRecord($uid);
+                $this->alertDismissalRepo?->clearDismissal(AlertType::registryAlertId($uid));
             } elseif ($rosterSubmitted) {
                 if (count($validatedOccupants) >= 1) {
                     $occupantsPayloadArray = array_map(
@@ -467,16 +476,19 @@ final class AdminReservationUpdateService
         $afterRegistry = $this->search->findGuestRegistry($uid);
         $afterOccupants = $this->extractRegistryOccupants($afterRegistry);
 
-        if ($syncClearance && $savedReservation->registryCompleted && count($afterOccupants) >= 1 && $this->clearanceSync !== null) {
-            $adminContext = new AdminContext(
-                adminUserId: $adminUserId,
-                ipAddress: $ipAddress,
-                userAgent: $userAgent
-            );
-            try {
-                $this->clearanceSync->syncForReservation($uid, $adminContext);
-            } catch (Throwable $e) {
-                error_log('Opt-in condominium clearance sync failed for reservation ' . $uid . ': ' . $e->getMessage());
+        if ($syncClearance && $savedReservation->registryCompleted && count($afterOccupants) >= 1) {
+            $this->alertDismissalRepo?->clearDismissal(AlertType::clearanceAlertId($uid));
+            if ($this->clearanceSync !== null) {
+                $adminContext = new AdminContext(
+                    adminUserId: $adminUserId,
+                    ipAddress: $ipAddress,
+                    userAgent: $userAgent
+                );
+                try {
+                    $this->clearanceSync->syncForReservation($uid, $adminContext);
+                } catch (Throwable $e) {
+                    error_log('Opt-in condominium clearance sync failed for reservation ' . $uid . ': ' . $e->getMessage());
+                }
             }
         }
 

@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Admin\Controller;
 
+use OceanViewFlats\Admin\Audit\AuditLogger;
 use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
+use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
+use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
 
 /**
  * Controller handling the administrative dashboard overview and home interface.
@@ -19,7 +25,13 @@ final class DashboardController
     public function __construct(
         private readonly ViewRenderer $viewRenderer,
         private readonly ?InboundChannelSyncServiceInterface $syncService = null,
-        private readonly ?DashboardQueryServiceInterface $dashboardQueryService = null
+        private readonly ?DashboardQueryServiceInterface $dashboardQueryService = null,
+        private readonly ?OperationalAlertDismissalRepositoryInterface $dismissalRepo = null,
+        private readonly ?AuditLogger $auditLogger = null,
+        private readonly ?ReservationSearchInterface $reservationSearch = null,
+        private readonly ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
+        private readonly string $publicSiteUrl = 'https://oceanviewflats.com',
+        private readonly ?PublicUrlBuilder $urlBuilder = null
     ) {
     }
 
@@ -90,6 +102,106 @@ final class DashboardController
         ]);
 
         return Response::html($html);
+    }
+
+    /**
+     * POST /dashboard/alerts/dismiss: Manually dismisses an operational alert and logs an audit entry.
+     *
+     * @param array<string, mixed> $session
+     */
+    public function dismissAlert(Request $request, array &$session): Response
+    {
+        $alertId = trim((string) $request->getPost('alert_id', ''));
+        $rawAlertType = trim((string) $request->getPost('alert_type', ''));
+        $alertPropertyId = trim((string) $request->getPost('property_id', ''));
+
+        $resolvedType = AlertType::tryFrom(strtolower($rawAlertType));
+        if (
+            $alertId === ''
+            || strlen($alertId) > 160
+            || !preg_match('/^(clearance|registry|channel_block)_[A-Za-z0-9_-]+$/', $alertId)
+            || $resolvedType === null
+            || !in_array($alertPropertyId, ['1606', '1707'], true)
+            || !$resolvedType->matchesAlertId($alertId)
+        ) {
+            return Response::html(
+                '<div class="p-4 text-rose-600 font-semibold">Invalid operational alert dismissal parameters.</div>',
+                400
+            );
+        }
+
+        $rawResUid = trim((string) $request->getPost('reservation_uid', ''));
+        $reservationUid = $rawResUid !== '' ? $rawResUid : $resolvedType->extractReservationUid($alertId);
+
+        $adminUserId = isset($session['admin_user_id']) ? (int) $session['admin_user_id'] : null;
+
+        $this->dismissalRepo?->dismiss(
+            alertId: $alertId,
+            alertType: $resolvedType->value,
+            propertyId: $alertPropertyId,
+            reservationUid: $reservationUid,
+            dismissedBy: $adminUserId
+        );
+
+        $this->auditLogger?->record(
+            action: 'alert_dismissed',
+            entityType: $reservationUid !== null ? 'reservation' : 'channel_block',
+            entityId: $reservationUid ?? $alertId,
+            before: null,
+            after: [
+                'alert_id' => $alertId,
+                'alert_type' => $resolvedType->value,
+                'property_id' => $alertPropertyId,
+                'reservation_uid' => $reservationUid,
+            ],
+            adminUserId: $adminUserId,
+            ipAddress: $request->getClientIp(),
+            userAgent: $request->getHeader('User-Agent') !== null ? (string) $request->getHeader('User-Agent') : null
+        );
+
+        $returnContext = strtolower(trim((string) $request->getPost('return_context', 'hub')));
+        if ($returnContext === 'drawer' && $reservationUid !== null) {
+            if (!$request->isHtmx()) {
+                return Response::redirect('/reservations/' . urlencode($reservationUid));
+            }
+
+            $dossier = $this->reservationSearch?->findWithAuditTrail($reservationUid);
+            $drawerHtml = ReservationController::renderDetailDrawerPartial(
+                viewRenderer: $this->viewRenderer,
+                dossier: $dossier !== null ? $dossier->toArray() : [
+                    'reservation' => [
+                        'reservation_uid' => $reservationUid,
+                        'property_id' => $alertPropertyId,
+                    ],
+                ],
+                session: $session,
+                clearanceRepo: $this->clearanceRepo,
+                alertDismissalRepo: $this->dismissalRepo,
+                publicSiteUrl: $this->publicSiteUrl,
+                urlBuilder: $this->urlBuilder
+            );
+
+            return new Response(
+                statusCode: 200,
+                headers: [
+                    'Content-Type' => 'text/html; charset=UTF-8',
+                    'HX-Trigger' => 'reservationUpdated',
+                ],
+                body: $drawerHtml
+            );
+        }
+
+        $rawFilter = $request->getPost(
+            'filter_property_id',
+            $request->getPost('property_filter', $request->getQuery('property_id', 'all'))
+        );
+        $filterPropertyId = $this->resolvePropertyId((string) $rawFilter);
+
+        if ($request->isHtmx()) {
+            return $this->renderHubPartial($filterPropertyId, $session);
+        }
+
+        return Response::redirect('/?property_id=' . urlencode($filterPropertyId));
     }
 
     /**

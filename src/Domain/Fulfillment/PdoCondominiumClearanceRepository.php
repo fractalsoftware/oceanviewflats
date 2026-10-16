@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Fulfillment;
 
+use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
@@ -163,7 +165,11 @@ final class PdoCondominiumClearanceRepository implements CondominiumClearanceRep
      */
     public function getFailedClearanceAlerts(string $propertyId = 'all', string|DateTimeInterface|null $now = null): array
     {
-        $today = is_string($now) ? substr($now, 0, 10) : ($now instanceof DateTimeInterface ? $now->format('Y-m-d') : date('Y-m-d'));
+        $today = is_string($now)
+            ? substr($now, 0, 10)
+            : ($now instanceof DateTimeInterface
+                ? $now->format('Y-m-d')
+                : (new DateTimeImmutable('today', new DateTimeZone('America/Bogota')))->format('Y-m-d'));
 
         $sql = "
             SELECT c.reservation_uid, c.property_id, c.error_message, c.status, c.attempts, c.last_attempt_at,
@@ -172,8 +178,11 @@ final class PdoCondominiumClearanceRepository implements CondominiumClearanceRep
             INNER JOIN reservations r ON c.reservation_uid = r.reservation_uid
             WHERE c.status = 'failed'
               AND r.status != 'cancelled'
+              AND r.check_out > :today
         ";
-        $params = [];
+        $params = [
+            ':today' => $today,
+        ];
 
         if ($propertyId !== 'all') {
             $sql .= ' AND c.property_id = :property_id';
@@ -209,7 +218,7 @@ final class PdoCondominiumClearanceRepository implements CondominiumClearanceRep
             );
 
             $alerts[] = new OperationalAlert(
-                id: 'clearance_' . $reservationUid,
+                id: AlertType::clearanceAlertId($reservationUid),
                 type: AlertType::FAILED_CONDOMINIUM_CLEARANCE,
                 severity: $severity,
                 propertyId: $propId,

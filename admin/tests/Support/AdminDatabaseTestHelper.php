@@ -169,6 +169,16 @@ final class AdminDatabaseTestHelper
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS operational_alert_dismissals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                alert_id TEXT NOT NULL UNIQUE,
+                alert_type TEXT NOT NULL,
+                property_id TEXT NOT NULL,
+                reservation_uid TEXT DEFAULT NULL,
+                dismissed_by INTEGER DEFAULT NULL,
+                dismissed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
         ');
     }
 

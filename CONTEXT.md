@@ -284,7 +284,7 @@ The central administrative landing view (`/`) aggregating critical real-time ope
 _Avoid_: Admin Home, Overview Page, Control Center, Portal, Landing Page
 
 **Operational Alert**:
-A high-priority actionable indicator surfaced on the Dashboard Hub, specifically highlighting either un-onboarded Channel Blocks requiring External Reservation creation, or Confirmed Reservations with upcoming arrival dates whose Guest Registry has not yet been submitted.
+A high-priority actionable indicator surfaced on the Dashboard Hub for active or upcoming stays (prior to the Check-out Date and not administratively dismissed), specifically highlighting un-onboarded Channel Blocks requiring External Reservation creation, Confirmed Reservations with upcoming arrival dates whose Guest Registry has not yet been submitted, or Confirmed Reservations whose Condominium Clearance Sync has failed.
 _Avoid_: Warning, System Notification, Todo, Action Item
 
 **Occupancy Heatmap**:
@@ -300,7 +300,7 @@ A visual operational marker indicating that a Check-out Date and Check-in Date c
 _Avoid_: Same-day Switch, Turnaround Flag, Double Day
 
 **Operational Warning Indicator**:
-A visual operational marker displayed on an Occupancy Heatmap date cell signifying an active Operational Alert (e.g., an upcoming Confirmed Reservation with an incomplete Guest Registry or failed Condominium Clearance).
+A visual operational marker displayed on a current or future Occupancy Heatmap date cell signifying an active, non-dismissed Operational Alert (such as an upcoming Confirmed Reservation with an incomplete Guest Registry or failed Condominium Clearance Sync).
 _Avoid_: Warning Dot, Error Badge, Alert Pin
 
 

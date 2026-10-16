@@ -52,6 +52,8 @@ use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Quote\RateRepositoryInterface;
 use OceanViewFlats\Domain\Quote\RateSourceInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncService;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlockRepositoryInterface;
@@ -229,6 +231,10 @@ final class AdminApp
             quoteEngine: $quoteEngine
         );
 
+        /** @var OperationalAlertDismissalRepositoryInterface $dismissalRepo */
+        $dismissalRepo = $options['alert_dismissal_repository']
+            ?? new PdoOperationalAlertDismissalRepository($pdo);
+
         $reservationController = new ReservationController(
             repository: $reservationRepository,
             search: $reservationSearch,
@@ -246,7 +252,8 @@ final class AdminApp
             clearanceRepo: $clearanceRepo,
             clearanceSync: $clearanceSync,
             lifecycleEngine: $lifecycleEngine,
-            bookingFulfillment: $bookingFulfillment
+            bookingFulfillment: $bookingFulfillment,
+            alertDismissalRepo: $dismissalRepo
         );
 
         // 6. Rates Repository & Controller
@@ -297,13 +304,20 @@ final class AdminApp
             rateRepo: $adminRateRepo,
             channelSyncService: $channelSyncService,
             ledger: $ledger,
-            clearanceRepo: $clearanceRepo
+            clearanceRepo: $clearanceRepo,
+            dismissalRepo: $dismissalRepo
         );
 
         $dashboardController = new DashboardController(
             viewRenderer: $viewRenderer,
             syncService: $channelSyncService,
-            dashboardQueryService: $dashboardQueryService
+            dashboardQueryService: $dashboardQueryService,
+            dismissalRepo: $dismissalRepo,
+            auditLogger: $auditLogger,
+            reservationSearch: $reservationSearch,
+            clearanceRepo: $clearanceRepo,
+            publicSiteUrl: $publicSiteUrl,
+            urlBuilder: $urlBuilder
         );
 
         // 9. Audit Log Repository & Controller
@@ -332,6 +346,7 @@ final class AdminApp
             ->get('/', [$dashboardController, 'index'])
             ->get('/dashboard/hub', [$dashboardController, 'hub'])
             ->get('/dashboard/day', [$dashboardController, 'dayDrawer'])
+            ->post('/dashboard/alerts/dismiss', [$dashboardController, 'dismissAlert'])
             ->get('/channel-sync/card', [$channelSyncController, 'card'])
             ->get('/channel-sync/panel', [$channelSyncController, 'panel'])
             ->post('/channel-sync', [$channelSyncController, 'sync'])
