@@ -101,6 +101,11 @@ final class ReservationCancellationEmailTest extends TestCase
 
     private function seedDatabase(): void
     {
+        $esCheckIn = (new \DateTimeImmutable('+30 days'))->format('Y-m-d');
+        $esCheckOut = (new \DateTimeImmutable('+35 days'))->format('Y-m-d');
+        $enCheckIn = (new \DateTimeImmutable('+60 days'))->format('Y-m-d');
+        $enCheckOut = (new \DateTimeImmutable('+65 days'))->format('Y-m-d');
+
         $this->pdo->exec("
             INSERT INTO admin_users (id, email, password_hash, name, role)
             VALUES (1, 'operator@oceanviewflats.com', 'hash', 'Operator Manuel', 'admin');
@@ -111,7 +116,7 @@ final class ReservationCancellationEmailTest extends TestCase
                 mercadopago_payment_id, lang
             ) VALUES (
                 1, 'res-online-es', 'ocean-view-penthouse', 'Sofia Vergara', 'sofia@example.com', '+573001234567',
-                '2026-10-10', '2026-10-15', 1500000.00, 0.00, 'confirmed', 'approved',
+                '{$esCheckIn}', '{$esCheckOut}', 1500000.00, 0.00, 'confirmed', 'approved',
                 'pay-mp-123456', 'es'
             );
 
@@ -121,7 +126,7 @@ final class ReservationCancellationEmailTest extends TestCase
                 mercadopago_payment_id, lang
             ) VALUES (
                 2, 'res-online-en', 'ocean-breeze-suite', 'John Doe', 'john@example.com', '+15551234567',
-                '2026-11-01', '2026-11-05', 1000000.00, 0.00, 'confirmed', 'approved',
+                '{$enCheckIn}', '{$enCheckOut}', 1000000.00, 0.00, 'confirmed', 'approved',
                 'pay-mp-789012', 'en'
             );
         ");
