@@ -29,6 +29,7 @@ interface DashboardQueryServiceInterface
      */
     public function getDaySummary(
         string $date,
-        string $propertyFilter = 'all'
+        string $propertyFilter = 'all',
+        ?DateTimeImmutable $now = null
     ): DayDetailViewData;
 }

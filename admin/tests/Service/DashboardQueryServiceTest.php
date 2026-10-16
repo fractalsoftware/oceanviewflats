@@ -12,6 +12,7 @@ use OceanViewFlats\Admin\Service\DashboardQueryService;
 use InvalidArgumentException;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
+use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
 use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\ChannelSyncStatus;
@@ -89,6 +90,21 @@ final class DashboardQueryServiceTest extends TestCase
                 cleaning_fee REAL NOT NULL DEFAULT 0.0,
                 resort_fee REAL NOT NULL DEFAULT 0.0,
                 created_by INTEGER DEFAULT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE condominium_clearances (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                reservation_uid TEXT NOT NULL UNIQUE,
+                property_id TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT "pending",
+                clearance_number TEXT DEFAULT NULL,
+                error_message TEXT DEFAULT NULL,
+                request_payload TEXT DEFAULT NULL,
+                attempts INTEGER NOT NULL DEFAULT 1,
+                last_attempt_at TEXT DEFAULT NULL,
+                synced_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -862,6 +878,169 @@ final class DashboardQueryServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid calendar date: 2026-02-30');
         $service->getDaySummary('2026-02-30');
+    }
+
+    public function testDashboardHubExcludesFailedClearanceAlertsOnOrBeforeCheckOutDate(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM condominium_clearances;');
+
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            ('res-past-fail', '1606', 'Past Stay Guest', 'past@test.com', '+1', '2026-10-08', '2026-10-12', 400, 'confirmed', 'web', 1),
+            ('res-dep-today-fail', '1707', 'Departing Today Guest', 'dep@test.com', '+2', '2026-10-12', '2026-10-15', 300, 'confirmed', 'web', 1),
+            ('res-active-fail', '1606', 'Active InHouse Guest', 'active@test.com', '+3', '2026-10-14', '2026-10-18', 400, 'confirmed', 'web', 1),
+            ('res-future-fail', '1707', 'Future Stay Guest', 'future@test.com', '+4', '2026-10-20', '2026-10-25', 500, 'confirmed', 'web', 1);
+        ");
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($this->pdo);
+        $clearanceRepo->save(CondominiumClearance::createPending('res-past-fail', '1606')->markFailed('Past portal error'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res-dep-today-fail', '1707')->markFailed('Departing portal error'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res-active-fail', '1606')->markFailed('Active portal error'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res-future-fail', '1707')->markFailed('Future portal error'));
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            clearanceRepo: $clearanceRepo
+        );
+
+        $viewData = $service->getDashboardHubData('all', $now);
+
+        $this->assertCount(2, $viewData->alerts);
+        $this->assertSame('clearance_res-active-fail', $viewData->alerts[0]->id);
+        $this->assertSame(AlertSeverity::CRITICAL, $viewData->alerts[0]->severity);
+        $this->assertSame('clearance_res-future-fail', $viewData->alerts[1]->id);
+        $this->assertSame(AlertSeverity::WARNING, $viewData->alerts[1]->severity);
+    }
+
+    public function testBuildOccupancyHeatmapSuppressesWarningsOnPastDatesAndConcludedClearances(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM condominium_clearances;');
+
+        // 1. Concluded stay (2026-10-08 -> 2026-10-12) with failed clearance and incomplete registry
+        // 2. Departing today stay (2026-10-12 -> 2026-10-15) with failed clearance and incomplete registry
+        // 3. Active stay spanning past into future (2026-10-13 -> 2026-10-17) with failed clearance and incomplete registry
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            ('res-past-stay', '1606', 'Past Stay Guest', 'past@test.com', '+1', '2026-10-08', '2026-10-12', 400, 'confirmed', 'web', 0),
+            ('res-departing-today', '1707', 'Departing Today Guest', 'dep@test.com', '+2', '2026-10-12', '2026-10-15', 300, 'confirmed', 'web', 0),
+            ('res-spanning-active', '1606', 'Spanning Active Guest', 'span@test.com', '+3', '2026-10-13', '2026-10-17', 400, 'confirmed', 'web', 0);
+        ");
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($this->pdo);
+        $clearanceRepo->save(CondominiumClearance::createPending('res-past-stay', '1606')->markFailed('Stale error'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res-departing-today', '1707')->markFailed('Departing error'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res-spanning-active', '1606')->markFailed('Active error'));
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            clearanceRepo: $clearanceRepo
+        );
+
+        $heatmap = $service->buildOccupancyHeatmap('all', $now);
+
+        $cellsByDate = [];
+        foreach ($heatmap->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cellsByDate[$cell->date] = $cell;
+                }
+            }
+        }
+
+        // Past cells (< 2026-10-15) must NEVER have warnings or risk alerts, even for spanning active reservation
+        foreach (['2026-10-09', '2026-10-12', '2026-10-13', '2026-10-14'] as $pastDate) {
+            $cell = $cellsByDate[$pastDate];
+            $this->assertTrue($cell->isPast);
+            $this->assertFalse($cell->hasWarning, "Past cell {$pastDate} must not have warning");
+            $this->assertFalse($cell->hasRiskAlert, "Past cell {$pastDate} must not have risk alert");
+            $this->assertEmpty($cell->warningMessages, "Past cell {$pastDate} must have empty warningMessages");
+        }
+
+        // Today (2026-10-15) and tomorrow (2026-10-16) must have warnings ONLY for Spanning Active Guest (check_out > today), NOT Departing Today Guest
+        foreach (['2026-10-15', '2026-10-16'] as $activeDate) {
+            $cell = $cellsByDate[$activeDate];
+            $this->assertFalse($cell->isPast);
+            $this->assertTrue($cell->hasWarning);
+            $this->assertTrue($cell->hasRiskAlert);
+            $this->assertContains('Guest registry incomplete (Spanning Active Guest)', $cell->warningMessages);
+            $this->assertContains('Condominium clearance failed (Spanning Active Guest)', $cell->warningMessages);
+            $this->assertNotContains('Condominium clearance failed (Departing Today Guest)', $cell->warningMessages);
+            $this->assertNotContains('Guest registry incomplete (Departing Today Guest)', $cell->warningMessages);
+        }
+
+        // Total alerts count in heatmap only counts current/future cells with warnings (2026-10-15 and 2026-10-16)
+        $this->assertSame(2, $heatmap->totalAlertsCount);
+    }
+
+    public function testGetDaySummarySuppressesStaleWarningsOnPastDatesAndDepartingReservations(): void
+    {
+        $now = new DateTimeImmutable('2026-10-15');
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM condominium_clearances; DELETE FROM calendar_blocks;');
+
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES
+            ('res-dep-today', '1707', 'Departing Today Guest', 'dep@test.com', '+1', '2026-10-12', '2026-10-15', 300, 'confirmed', 'web', 0),
+            ('res-spanning-active', '1606', 'Spanning Active Guest', 'span@test.com', '+2', '2026-10-13', '2026-10-17', 400, 'confirmed', 'web', 0);
+        ");
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($this->pdo);
+        $clearanceRepo->save(CondominiumClearance::createPending('res-dep-today', '1707')->markFailed('Departing error'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res-spanning-active', '1606')->markFailed('Active error'));
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            clearanceRepo: $clearanceRepo
+        );
+
+        // 1. Inspecting past date (2026-10-14 < 2026-10-15): both reservations were in-house on 2026-10-14,
+        //    but because inspected date is in the past, Operational Warnings must be suppressed.
+        $pastSummary = $service->getDaySummary('2026-10-14', 'all', $now);
+        $this->assertTrue($pastSummary->isPast);
+        $this->assertFalse($pastSummary->hasWarning);
+        $this->assertEmpty($pastSummary->warnings);
+        $this->assertEmpty($pastSummary->properties['1606']->warnings);
+        $this->assertEmpty($pastSummary->properties['1707']->warnings);
+
+        // 2. Inspecting today (2026-10-15 == today):
+        //    - Property 1707 has Departing Today Guest (check_out == today) -> no warnings
+        //    - Property 1606 has Spanning Active Guest (check_out > today) -> warnings shown
+        $todaySummary = $service->getDaySummary('2026-10-15', 'all', $now);
+        $this->assertTrue($todaySummary->isToday);
+        $this->assertFalse($todaySummary->isPast);
+        $this->assertTrue($todaySummary->hasWarning);
+        $this->assertEmpty($todaySummary->properties['1707']->warnings);
+        $this->assertContains('Guest registry incomplete (Spanning Active Guest)', $todaySummary->warnings);
+        $this->assertContains('Condominium clearance failed (Spanning Active Guest)', $todaySummary->warnings);
+        $this->assertNotContains('Condominium clearance failed (Departing Today Guest)', $todaySummary->warnings);
     }
 }
 

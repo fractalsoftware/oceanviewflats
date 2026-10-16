@@ -124,6 +124,8 @@ final class PdoCondominiumClearanceRepositoryTest extends TestCase
         $this->pdo->exec("
             INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, status, total_price)
             VALUES 
+                ('res_alert_past', '1606', 'Past Guest', 'past@example.com', '+573001234565', '2026-10-01', '2026-10-06', 'confirmed', 400.0),
+                ('res_alert_departing_today', '1707', 'Departing Today Guest', 'dep@example.com', '+573001234566', '2026-10-04', '2026-10-07', 'confirmed', 450.0),
                 ('res_alert_today', '1606', 'Today Guest', 'today@example.com', '+573001234567', '2026-10-07', '2026-10-10', 'confirmed', 500.0),
                 ('res_alert_future', '1707', 'Future Guest', 'future@example.com', '+573001234568', '2026-10-15', '2026-10-20', 'confirmed', 800.0),
                 ('res_alert_canc', '1606', 'Cancelled Guest', 'canc@example.com', '+573001234569', '2026-10-07', '2026-10-10', 'cancelled', 500.0),
@@ -131,6 +133,14 @@ final class PdoCondominiumClearanceRepositoryTest extends TestCase
         ");
 
         // 2. Seed clearances
+        $cPast = CondominiumClearance::createPending('res_alert_past', '1606')
+            ->markFailed('Past portal failure');
+        $this->repository->save($cPast);
+
+        $cDepToday = CondominiumClearance::createPending('res_alert_departing_today', '1707')
+            ->markFailed('Departing today portal failure');
+        $this->repository->save($cDepToday);
+
         $cToday = CondominiumClearance::createPending('res_alert_today', '1606')
             ->markFailed('Portal connection timed out');
         $this->repository->save($cToday);
@@ -149,7 +159,7 @@ final class PdoCondominiumClearanceRepositoryTest extends TestCase
 
         // 3. Test retrieving all alerts on 2026-10-07
         $alerts = $this->repository->getFailedClearanceAlerts('all', '2026-10-07');
-        $this->assertCount(2, $alerts, 'Cancelled and synced reservations should not produce alerts');
+        $this->assertCount(2, $alerts, 'Past (check_out < today), departing (check_out == today), cancelled, and synced reservations should not produce alerts');
 
         // Verify res_alert_today has CRITICAL severity (check_in <= today)
         $todayAlert = null;

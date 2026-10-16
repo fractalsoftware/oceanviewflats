@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Admin\Tests\Integration;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use OceanViewFlats\Admin\AdminApp;
 use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper;
+use OceanViewFlats\Domain\Fulfillment\CondominiumClearance;
+use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\ChannelSyncStatus;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
@@ -358,6 +362,76 @@ final class DashboardHubE2ETest extends TestCase
         $this->assertStringContainsString('In Guest 1606', $body);
         $this->assertStringContainsString('Out Guest 1707', $body);
         $this->assertStringContainsString('In Guest 1707', $body);
+    }
+
+    public function testCheckOutExpirationForClearanceAlertsHeatmapAndDaySummaryDrawer(): void
+    {
+        $cot = new DateTimeZone('America/Bogota');
+        $todayObj = new DateTimeImmutable('today', $cot);
+        $today = $todayObj->format('Y-m-d');
+        $yesterday = $todayObj->modify('-1 day')->format('Y-m-d');
+        $threeDaysAgo = $todayObj->modify('-3 days')->format('Y-m-d');
+        $twoDaysForward = $todayObj->modify('+2 days')->format('Y-m-d');
+
+        $stmt = $this->pdo->prepare('
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed, door_code
+            ) VALUES
+            ("res_past_clearance", "1606", "Concluded Clearance Guest", "past@test.com", "+571", :threeDaysAgo, :yesterday, 400000, "confirmed", "web", 1, "1111#"),
+            ("res_dep_clearance", "1707", "Departing Clearance Guest", "dep@test.com", "+572", :yesterday, :today, 400000, "confirmed", "web", 0, NULL),
+            ("res_active_clearance", "1606", "Active Clearance Guest", "active@test.com", "+573", :yesterday, :twoDaysForward, 700000, "confirmed", "web", 1, "3333#");
+        ');
+        $stmt->execute([
+            ':threeDaysAgo' => $threeDaysAgo,
+            ':yesterday' => $yesterday,
+            ':today' => $today,
+            ':twoDaysForward' => $twoDaysForward,
+        ]);
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($this->pdo);
+        $clearanceRepo->save(CondominiumClearance::createPending('res_past_clearance', '1606')->markFailed('Stale past clearance failure'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res_dep_clearance', '1707')->markFailed('Departing today clearance failure'));
+        $clearanceRepo->save(CondominiumClearance::createPending('res_active_clearance', '1606')->markFailed('Active stay clearance failure'));
+
+        $app = AdminApp::createDefault($this->pdo);
+        $session = [
+            'admin_user_id' => 1,
+            'admin_user_name' => 'Manuel Admin',
+            'csrf_token' => 'csrf_token_test',
+        ];
+
+        // 1. GET / Dashboard Hub: only Active Clearance Guest (check_out > today) appears in Operational Attention
+        $hubResponse = $app->handle(new Request('GET', '/'), $session);
+        $this->assertSame(200, $hubResponse->getStatusCode());
+        $hubBody = $hubResponse->getBody();
+
+        $this->assertStringContainsString('Active Clearance Guest', $hubBody);
+        $this->assertStringContainsString('Active stay clearance failure', $hubBody);
+        $this->assertStringNotContainsString('Stale past clearance failure', $hubBody);
+        $this->assertStringNotContainsString('Departing today clearance failure', $hubBody);
+        $this->assertStringNotContainsString('Condominium clearance failed (Concluded Clearance Guest)', $hubBody);
+        $this->assertStringNotContainsString('Condominium clearance failed (Departing Clearance Guest)', $hubBody);
+
+        // 2. GET /dashboard/day for yesterday (date < today): Operational Warnings banner must be suppressed
+        $pastDayResponse = $app->handle(new Request('GET', '/dashboard/day', ['date' => $yesterday]), $session);
+        $this->assertSame(200, $pastDayResponse->getStatusCode());
+        $pastDayBody = $pastDayResponse->getBody();
+
+        $this->assertStringNotContainsString('<span>Operational Warnings</span>', $pastDayBody);
+        $this->assertStringNotContainsString('Condominium clearance failed', $pastDayBody);
+        $this->assertStringNotContainsString('Guest registry incomplete', $pastDayBody);
+
+        // 3. GET /dashboard/day for today: Departing Clearance Guest (check_out == today) does NOT emit warnings,
+        //    while Active Clearance Guest (check_out > today) DOES emit warning
+        $todayDayResponse = $app->handle(new Request('GET', '/dashboard/day', ['date' => $today]), $session);
+        $this->assertSame(200, $todayDayResponse->getStatusCode());
+        $todayDayBody = $todayDayResponse->getBody();
+
+        $this->assertStringContainsString('<span>Operational Warnings</span>', $todayDayBody);
+        $this->assertStringContainsString('Condominium clearance failed (Active Clearance Guest)', $todayDayBody);
+        $this->assertStringNotContainsString('Condominium clearance failed (Departing Clearance Guest)', $todayDayBody);
+        $this->assertStringNotContainsString('Guest registry incomplete (Departing Clearance Guest)', $todayDayBody);
     }
 
     private function seedOperationalDatabase(): void

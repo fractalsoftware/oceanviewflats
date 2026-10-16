@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Admin\Service;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use InvalidArgumentException;
 use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
 use OceanViewFlats\Admin\Repository\AdminRateRepository;
@@ -65,7 +66,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         string $propertyId = 'all',
         ?DateTimeImmutable $now = null
     ): DashboardHubViewData {
-        $now = $now ?? new DateTimeImmutable('today');
+        $now = $now ?? new DateTimeImmutable('today', new DateTimeZone('America/Bogota'));
         $today = $now->format('Y-m-d');
         $horizonEnd = $now->modify('+6 days')->format('Y-m-d');
 
@@ -186,7 +187,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         string $propertyId = 'all',
         ?DateTimeImmutable $now = null
     ): OccupancyHeatmapViewData {
-        $now = $now ?? new DateTimeImmutable('today');
+        $now = $now ?? new DateTimeImmutable('today', new DateTimeZone('America/Bogota'));
         $todayStr = $now->format('Y-m-d');
         $lookaheadMax = $now->modify('+7 days')->format('Y-m-d');
 
@@ -345,16 +346,18 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                     $resUid = (string) $confirmedRes['reservation_uid'];
                     $reservationUids[] = $resUid;
 
-                    $regCompleted = (int) ($confirmedRes['registry_completed'] ?? 0);
-                    $guestName = (string) ($confirmedRes['guest_name'] ?: 'Guest');
-                    $rCin = (string) ($confirmedRes['check_in'] ?? '');
-                    $rCout = (string) ($confirmedRes['check_out'] ?? '');
-                    $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                    if ($regCompleted === 0 && $isWithinLookahead) {
-                        $warningMessages[] = "Guest registry incomplete ({$guestName})";
-                    }
-                    if (isset($failedClearanceMap[$resUid])) {
-                        $warningMessages[] = "Condominium clearance failed ({$guestName})";
+                    if (!$isPast) {
+                        $regCompleted = (int) ($confirmedRes['registry_completed'] ?? 0);
+                        $guestName = (string) ($confirmedRes['guest_name'] ?: 'Guest');
+                        $rCin = (string) ($confirmedRes['check_in'] ?? '');
+                        $rCout = (string) ($confirmedRes['check_out'] ?? '');
+                        $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
+                        if ($regCompleted === 0 && $isWithinLookahead) {
+                            $warningMessages[] = "Guest registry incomplete ({$guestName})";
+                        }
+                        if ($rCout > $todayStr && isset($failedClearanceMap[$resUid])) {
+                            $warningMessages[] = "Condominium clearance failed ({$guestName})";
+                        }
                     }
                 }
 
@@ -541,7 +544,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
      */
     public function getDaySummary(
         string $date,
-        string $propertyFilter = 'all'
+        string $propertyFilter = 'all',
+        ?DateTimeImmutable $now = null
     ): DayDetailViewData {
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             throw new InvalidArgumentException("Invalid date format: {$date}. Expected YYYY-MM-DD.");
@@ -551,7 +555,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             throw new InvalidArgumentException("Invalid calendar date: {$date}.");
         }
 
-        $now = new DateTimeImmutable('today');
+        $now = $now ?? new DateTimeImmutable('today', new DateTimeZone('America/Bogota'));
         $todayStr = $now->format('Y-m-d');
         $lookaheadMax = $now->modify('+7 days')->format('Y-m-d');
         $isToday = ($date === $todayStr);
@@ -715,22 +719,24 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 $propWarnings[] = "Maintenance hold: {$mBlock->reason}";
             }
 
-            $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
-            foreach ($resToWarn as $r) {
-                $gName = (string) ($r['guest_name'] ?? 'Guest');
-                $rCin = (string) ($r['check_in'] ?? '');
-                $rCout = (string) ($r['check_out'] ?? '');
-                $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
-                if (empty($r['registry_completed']) && $isWithinLookahead) {
-                    $msg = "Guest registry incomplete ({$gName})";
-                    if (!in_array($msg, $propWarnings, true)) {
-                        $propWarnings[] = $msg;
+            if (!$isPast) {
+                $resToWarn = array_filter([$actRes, $arrRes], static fn(?array $r): bool => $r !== null);
+                foreach ($resToWarn as $r) {
+                    $gName = (string) ($r['guest_name'] ?? 'Guest');
+                    $rCin = (string) ($r['check_in'] ?? '');
+                    $rCout = (string) ($r['check_out'] ?? '');
+                    $isWithinLookahead = ($rCout > $todayStr && $rCin <= $lookaheadMax);
+                    if (empty($r['registry_completed']) && $isWithinLookahead) {
+                        $msg = "Guest registry incomplete ({$gName})";
+                        if (!in_array($msg, $propWarnings, true)) {
+                            $propWarnings[] = $msg;
+                        }
                     }
-                }
-                if (($r['clearance_status'] ?? '') === 'failed') {
-                    $msg = "Condominium clearance failed ({$gName})";
-                    if (!in_array($msg, $propWarnings, true)) {
-                        $propWarnings[] = $msg;
+                    if ($rCout > $todayStr && ($r['clearance_status'] ?? '') === 'failed') {
+                        $msg = "Condominium clearance failed ({$gName})";
+                        if (!in_array($msg, $propWarnings, true)) {
+                            $propWarnings[] = $msg;
+                        }
                     }
                 }
             }
