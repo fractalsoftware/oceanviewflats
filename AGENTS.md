@@ -77,7 +77,7 @@
 
 ### Issue tracker
 
-Issues and specs live in GitHub Issues for `manuelhe/oceanviewflats` using the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues and specs live in GitHub Issues for `fractalsoftware/oceanviewflats` using the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

@@ -1,7 +1,7 @@
 # Independent Admin CI Pipeline & Verification Toolchain Specification
 
-**Issue**: [#31](https://github.com/manuelhe/oceanviewflats/issues/31)  
-**Parent Map**: [#24](https://github.com/manuelhe/oceanviewflats/issues/24)  
+**Issue**: [#31](https://github.com/fractalsoftware/oceanviewflats/issues/31)  
+**Parent Map**: [#24](https://github.com/fractalsoftware/oceanviewflats/issues/24)  
 **Dependencies**: [ADR 0005](../adr/0005-admin-interface-architecture-and-subdomain-isolation.md)
 
 ---

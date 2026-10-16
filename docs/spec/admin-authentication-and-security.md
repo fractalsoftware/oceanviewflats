@@ -1,7 +1,7 @@
 # Admin Session Authentication, CSRF Protection, and Middleware Security Specification
 
-**Issue**: [#28](https://github.com/manuelhe/oceanviewflats/issues/28)  
-**Parent Map**: [#24](https://github.com/manuelhe/oceanviewflats/issues/24)  
+**Issue**: [#28](https://github.com/fractalsoftware/oceanviewflats/issues/28)  
+**Parent Map**: [#24](https://github.com/fractalsoftware/oceanviewflats/issues/24)  
 **ADR**: [ADR 0005: Admin Interface Architecture, Subdomain Isolation, and Monorepo Integration](../adr/0005-admin-interface-architecture-and-subdomain-isolation.md)
 
 ---
@@ -33,7 +33,7 @@ session_set_cookie_params([
 
 ## 2. Password Hashing & Verification (Argon2id)
 
-Authentication validates against the `admin_users` table created in [Issue #27](https://github.com/manuelhe/oceanviewflats/issues/27).
+Authentication validates against the `admin_users` table created in [Issue #27](https://github.com/fractalsoftware/oceanviewflats/issues/27).
 
 ### Hashing Standard
 All passwords must use native PHP `PASSWORD_ARGON2ID` with tuned cost factors:
