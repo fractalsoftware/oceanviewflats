@@ -1,8 +1,8 @@
 # Admin Operational Workflows: Reservations, Access Credentials, and Manual Bookings
 
-**Issue**: [#29](https://github.com/manuelhe/oceanviewflats/issues/29)  
-**Parent Map**: [#24](https://github.com/manuelhe/oceanviewflats/issues/24)  
-**Dependencies**: [Issue #26 (Refund Protocol)](../research/mercadopago-refund-protocol.md), [Issue #27 (Schema)](https://github.com/manuelhe/oceanviewflats/issues/27), [Issue #28 (Auth & Security)](admin-authentication-and-security.md)
+**Issue**: [#29](https://github.com/fractalsoftware/oceanviewflats/issues/29)  
+**Parent Map**: [#24](https://github.com/fractalsoftware/oceanviewflats/issues/24)  
+**Dependencies**: [Issue #26 (Refund Protocol)](../research/mercadopago-refund-protocol.md), [Issue #27 (Schema)](https://github.com/fractalsoftware/oceanviewflats/issues/27), [Issue #28 (Auth & Security)](admin-authentication-and-security.md)
 
 ---
 

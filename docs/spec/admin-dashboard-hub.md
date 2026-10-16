@@ -1,7 +1,7 @@
 # Admin Dashboard Hub Specification: Operational Command Center
 
-**Issue**: [#117](https://github.com/manuelhe/oceanviewflats/issues/117)  
-**Parent Map**: [#116](https://github.com/manuelhe/oceanviewflats/issues/116)  
+**Issue**: [#117](https://github.com/fractalsoftware/oceanviewflats/issues/117)  
+**Parent Map**: [#116](https://github.com/fractalsoftware/oceanviewflats/issues/116)  
 **Related ADRs**: [ADR 0001 (Mandatory Registry)](../adr/0001-mandatory-registry-before-access.md), [ADR 0006 (Maintenance Blocks)](../adr/0006-authoritative-maintenance-blocks-and-distinct-ledger-port.md), [ADR 0007 (External Reservations & Onboarding)](../adr/0007-external-platform-reservations-and-guest-onboarding.md)  
 **Domain Dictionary**: [`CONTEXT.md`](../../CONTEXT.md)
 

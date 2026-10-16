@@ -1,8 +1,8 @@
 # Database Rate Source (PdoRateSource) & Seasonal Pricing Editor Specification
 
-**Issue**: [#30](https://github.com/manuelhe/oceanviewflats/issues/30)  
-**Parent Map**: [#24](https://github.com/manuelhe/oceanviewflats/issues/24)  
-**Dependencies**: [Issue #27 (Database Schema)](https://github.com/manuelhe/oceanviewflats/issues/27), [Issue #28 (Auth & Security)](admin-authentication-and-security.md)
+**Issue**: [#30](https://github.com/fractalsoftware/oceanviewflats/issues/30)  
+**Parent Map**: [#24](https://github.com/fractalsoftware/oceanviewflats/issues/24)  
+**Dependencies**: [Issue #27 (Database Schema)](https://github.com/fractalsoftware/oceanviewflats/issues/27), [Issue #28 (Auth & Security)](admin-authentication-and-security.md)
 
 ---
 
