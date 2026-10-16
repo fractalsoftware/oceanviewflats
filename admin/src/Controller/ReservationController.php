@@ -30,6 +30,8 @@ use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\CancellationPreview;
 use OceanViewFlats\Domain\Reservation\CancellationRequest;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\ExcessiveRefundException;
 use OceanViewFlats\Domain\Reservation\GatewayRefundException;
 use OceanViewFlats\Domain\Reservation\InvalidReservationStateException;
@@ -63,6 +65,7 @@ final class ReservationController
     private readonly PublicUrlBuilder $urlBuilder;
     private readonly ?CondominiumClearanceRepositoryInterface $clearanceRepo;
     private readonly ?CondominiumClearanceSyncInterface $clearanceSync;
+    private readonly ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo;
     private readonly ReservationLifecycleEngineInterface $lifecycleEngine;
     private readonly AdminReservationUpdateService $updateService;
 
@@ -84,7 +87,8 @@ final class ReservationController
         ?CondominiumClearanceSyncInterface $clearanceSync = null,
         ?ReservationLifecycleEngineInterface $lifecycleEngine = null,
         private readonly ?BookingFulfillmentInterface $bookingFulfillment = null,
-        ?AdminReservationUpdateService $updateService = null
+        ?AdminReservationUpdateService $updateService = null,
+        ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo = null
     ) {
         $this->cancellationEmailRenderer = $cancellationEmailRenderer ?? new CancellationEmailRenderer($this->publicSiteUrl);
         $this->urlBuilder = $urlBuilder ?? new PublicUrlBuilder($this->publicSiteUrl);
@@ -95,6 +99,7 @@ final class ReservationController
             searchAdapter: $this->search,
             auditLogger: $this->auditLogger
         ) : null);
+        $this->alertDismissalRepo = $alertDismissalRepo ?? ($this->pdo !== null ? new PdoOperationalAlertDismissalRepository($this->pdo) : null);
         $this->lifecycleEngine = $lifecycleEngine ?? $this->buildFallbackLifecycleEngine();
         $this->updateService = $updateService ?? new AdminReservationUpdateService(
             repository: $this->repository,
@@ -105,7 +110,8 @@ final class ReservationController
             urlBuilder: $this->urlBuilder,
             publicSiteUrl: $this->publicSiteUrl,
             pdo: $this->pdo,
-            clearanceSync: $this->clearanceSync
+            clearanceSync: $this->clearanceSync,
+            alertDismissalRepo: $this->alertDismissalRepo
         );
     }
 
@@ -163,12 +169,14 @@ final class ReservationController
         }
 
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
+        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
 
         $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
             'reservation' => $dossier->reservation,
             'auditLogs' => $dossier->auditLogs,
             'refunds' => $dossier->refunds,
             'condominiumClearance' => $clearance,
+            'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'publicSiteUrl' => $this->publicSiteUrl,
             'urlBuilder' => $this->urlBuilder,
@@ -466,11 +474,13 @@ final class ReservationController
 
         $dossier = $this->search->findWithAuditTrail($uid);
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
+        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
         $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
             'reservation' => $dossier !== null ? $dossier->reservation : $savedReservation->toArray(),
             'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
             'refunds' => $dossier !== null ? $dossier->refunds : [],
             'condominiumClearance' => $clearance,
+            'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'publicSiteUrl' => $this->publicSiteUrl,
             'urlBuilder' => $this->urlBuilder,
@@ -630,11 +640,13 @@ final class ReservationController
         $savedReservation = $outcome['reservation'] ?? $reservation;
         $dossier = $this->search->findWithAuditTrail($uid);
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
+        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
         $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
             'reservation' => $dossier !== null ? $dossier->reservation : $savedReservation->toArray(),
             'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
             'refunds' => $dossier !== null ? $dossier->refunds : [],
             'condominiumClearance' => $clearance,
+            'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'publicSiteUrl' => $this->publicSiteUrl,
             'urlBuilder' => $this->urlBuilder,
@@ -748,6 +760,8 @@ final class ReservationController
             return Response::json(['success' => false, 'error' => 'Guest registry must be submitted before condominium clearance can be synced.'], 400);
         }
 
+        $this->alertDismissalRepo?->clearDismissal('clearance_' . $uid);
+
         if ($request->isHtmx()) {
             $reservation = $this->repository->findByUid($uid);
             return $this->renderDetailDrawerResponse($uid, $session, $reservation?->toArray() ?? [], $clearance);
@@ -831,11 +845,13 @@ final class ReservationController
     ): Response {
         $dossier = $this->search->findWithAuditTrail($uid);
         $clearance ??= $this->clearanceRepo?->findByReservationUid($uid);
+        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
         $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
             'reservation' => $dossier !== null ? $dossier->reservation : $fallbackReservation,
             'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
             'refunds' => $dossier !== null ? $dossier->refunds : [],
             'condominiumClearance' => $clearance,
+            'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'publicSiteUrl' => $this->publicSiteUrl,
             'urlBuilder' => $this->urlBuilder,
@@ -1018,11 +1034,13 @@ final class ReservationController
         $savedReservation = $result->reservation;
         $updatedDossier = $this->search->findWithAuditTrail($uid);
         $clearance = $this->clearanceRepo?->findByReservationUid($uid);
+        $clearanceAlertDismissed = $this->alertDismissalRepo?->isDismissed('clearance_' . $uid) ?? false;
         $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
             'reservation' => $updatedDossier !== null ? $updatedDossier->reservation : $savedReservation->toArray(),
             'auditLogs' => $updatedDossier !== null ? $updatedDossier->auditLogs : [],
             'refunds' => $updatedDossier !== null ? $updatedDossier->refunds : [],
             'condominiumClearance' => $clearance,
+            'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'publicSiteUrl' => $this->publicSiteUrl,
             'urlBuilder' => $this->urlBuilder,

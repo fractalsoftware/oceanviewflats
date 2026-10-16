@@ -231,6 +231,11 @@ final class AdminApp
             quoteEngine: $quoteEngine
         );
 
+        /** @var OperationalAlertDismissalRepositoryInterface $dismissalRepo */
+        $dismissalRepo = $options['alert_dismissal_repository']
+            ?? $options['operational_alert_dismissal_repository']
+            ?? new PdoOperationalAlertDismissalRepository($pdo);
+
         $reservationController = new ReservationController(
             repository: $reservationRepository,
             search: $reservationSearch,
@@ -248,7 +253,8 @@ final class AdminApp
             clearanceRepo: $clearanceRepo,
             clearanceSync: $clearanceSync,
             lifecycleEngine: $lifecycleEngine,
-            bookingFulfillment: $bookingFulfillment
+            bookingFulfillment: $bookingFulfillment,
+            alertDismissalRepo: $dismissalRepo
         );
 
         // 6. Rates Repository & Controller
@@ -291,10 +297,6 @@ final class AdminApp
             ?? new AdminCalendarBlockRepository($calendarBlockRepo instanceof PdoMaintenanceBlockRepository ? $calendarBlockRepo : $pdo);
         $adminRateRepo = $options['admin_rate_repository']
             ?? new AdminRateRepository($pdo, $ratesConfig, $rateRepo);
-        /** @var OperationalAlertDismissalRepositoryInterface $dismissalRepo */
-        $dismissalRepo = $options['alert_dismissal_repository']
-            ?? $options['operational_alert_dismissal_repository']
-            ?? new PdoOperationalAlertDismissalRepository($pdo);
 
         /** @var DashboardQueryServiceInterface $dashboardQueryService */
         $dashboardQueryService = $options['dashboard_query_service'] ?? new DashboardQueryService(
@@ -312,7 +314,11 @@ final class AdminApp
             syncService: $channelSyncService,
             dashboardQueryService: $dashboardQueryService,
             dismissalRepo: $dismissalRepo,
-            auditLogger: $auditLogger
+            auditLogger: $auditLogger,
+            reservationSearch: $reservationSearch,
+            clearanceRepo: $clearanceRepo,
+            publicSiteUrl: $publicSiteUrl,
+            urlBuilder: $urlBuilder
         );
 
         // 9. Audit Log Repository & Controller

@@ -1553,4 +1553,117 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertSame(422, $lowerCapRes->getStatusCode());
         $this->assertStringContainsString('Cannot lower maximum occupancy (1) below the 2 currently registered guests', $lowerCapRes->getBody());
     }
+
+    public function testReservationDetailDrawerClearanceDismissalAndReArmingRoutes(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, lang, registry_completed, max_guests
+            ) VALUES (
+                'res-drawer-dismiss', '1606', 'Drawer Dismiss Guest', 'dismiss@test.com', '+573001112233',
+                '2026-12-01', '2026-12-05', 1400000.00, 'confirmed', 'web', 'es', 1, 6
+            );
+
+            INSERT INTO guest_registries (
+                reservation_uid, property_id, check_in, check_out, guest_count, guests_payload
+            ) VALUES (
+                'res-drawer-dismiss', '1606', '2026-12-01', '2026-12-05', 1,
+                '[{\"index\":1,\"name\":\"Drawer Dismiss Guest\",\"first_name\":\"Drawer\",\"last_name\":\"Guest\",\"doc_type\":\"Passport\",\"doc_num\":\"PA9999\",\"age\":30,\"country\":\"COLOMBIA\",\"email\":\"dismiss@test.com\",\"phone\":\"+573001112233\"}]'
+            );
+
+            INSERT INTO condominium_clearances (
+                reservation_uid, property_id, status, error_message, attempts, last_attempt_at
+            ) VALUES (
+                'res-drawer-dismiss', '1606', 'failed', 'Portal HTTP 503 Unavailable', 2, '2026-10-16 10:00:00'
+            );
+        ");
+
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($this->pdo);
+
+        // 1. GET /reservations/res-drawer-dismiss renders Failed badge, error diagnostics, Retry button, and Dismiss Alert button
+        $showRes = $this->dispatchAdmin(new Request(
+            'GET',
+            '/reservations/res-drawer-dismiss',
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_HX_TARGET' => 'drawer-container']
+        ));
+        $this->assertSame(200, $showRes->getStatusCode());
+        $showBody = $showRes->getBody();
+        $this->assertStringContainsString('Failed', $showBody);
+        $this->assertStringContainsString('Portal HTTP 503 Unavailable', $showBody);
+        $this->assertStringContainsString('Retry Condominium Clearance', $showBody);
+        $this->assertStringContainsString('Dismiss Alert', $showBody);
+        $this->assertStringNotContainsString('Dismissed', $showBody);
+
+        // 2. POST /dashboard/alerts/dismiss with return_context=drawer dismisses alert, writes audit log, and re-renders drawer with Dismissed badge
+        $dismissRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/dashboard/alerts/dismiss',
+            post: [
+                'csrf_token' => 'test-csrf-token',
+                'return_context' => 'drawer',
+                'alert_id' => 'clearance_res-drawer-dismiss',
+                'alert_type' => 'failed_condominium_clearance',
+                'property_id' => '1606',
+                'reservation_uid' => 'res-drawer-dismiss',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $dismissRes->getStatusCode());
+        $this->assertSame('reservationUpdated', $dismissRes->getHeader('HX-Trigger'));
+        $dismissBody = $dismissRes->getBody();
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res-drawer-dismiss'));
+        $this->assertStringContainsString('Dismissed', $dismissBody);
+        $this->assertStringContainsString('Portal HTTP 503 Unavailable', $dismissBody);
+        $this->assertStringContainsString('Retry Condominium Clearance', $dismissBody);
+        $this->assertStringNotContainsString('Dismiss Alert', $dismissBody);
+
+        // 3. POST /reservations/res-drawer-dismiss/clearance-retry clears dismissal and transitions to Synced
+        $retryRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-drawer-dismiss/clearance-retry',
+            post: ['csrf_token' => 'test-csrf-token'],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $retryRes->getStatusCode());
+        $this->assertFalse($dismissalRepo->isDismissed('clearance_res-drawer-dismiss'));
+        $this->assertStringContainsString('Synced', $retryRes->getBody());
+        $this->assertStringContainsString('#777', $retryRes->getBody());
+        $this->assertStringNotContainsString('Dismissed', $retryRes->getBody());
+
+        // 4. POST /reservations/res-drawer-dismiss/edit with reset_guest_registry=1 clears registry dismissal
+        $dismissalRepo->dismiss('registry_res-drawer-dismiss', 'incomplete_guest_registry', '1606', 'res-drawer-dismiss', 1);
+        $this->assertTrue($dismissalRepo->isDismissed('registry_res-drawer-dismiss'));
+
+        $resetRes = $this->dispatchAdmin(new Request(
+            'POST',
+            '/reservations/res-drawer-dismiss/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-12-01',
+                'check_out' => '2026-12-05',
+                'total_price' => '1400000',
+                'max_guests' => '6',
+                'guest_name' => 'Drawer Dismiss Guest',
+                'guest_email' => 'dismiss@test.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'reset_guest_registry' => '1',
+                'guest_count' => '0',
+                'csrf_token' => 'test-csrf-token',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token',
+            ]
+        ));
+        $this->assertSame(200, $resetRes->getStatusCode());
+        $this->assertFalse($dismissalRepo->isDismissed('registry_res-drawer-dismiss'));
+    }
 }

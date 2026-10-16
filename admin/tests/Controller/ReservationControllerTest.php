@@ -1569,6 +1569,189 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringContainsString('Missing primary guest document number', $body);
         $this->assertStringContainsString('Retry Condominium Clearance', $body);
         $this->assertStringContainsString('/reservations/res-1/clearance-retry', $body);
+        $this->assertStringContainsString('Dismiss Alert', $body);
+        $this->assertStringContainsString('name="return_context" value="drawer"', $body);
+        $this->assertStringContainsString('name="alert_id" value="clearance_res-1"', $body);
+        $this->assertStringNotContainsString('Dismissed', $body);
+    }
+
+    public function testShowRendersDismissedBadgeWhenFailedClearanceAlertIsDismissedAndHidesDismissButtonOnConcludedStays(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO condominium_clearances (
+                reservation_uid, property_id, status, error_message, attempts, last_attempt_at
+            ) VALUES (
+                'res-1', '1606', 'failed', 'Portal timeout while syncing', 3, '2026-10-01 12:35:00'
+            )
+        ");
+
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($this->pdo);
+        $dismissalRepo->dismiss(
+            alertId: 'clearance_res-1',
+            alertType: 'failed_condominium_clearance',
+            propertyId: '1606',
+            reservationUid: 'res-1',
+            dismissedBy: 1
+        );
+
+        $response = $this->executeShow('res-1', isHtmx: true, hxTarget: 'drawer-container');
+        $this->assertSame(200, $response->getStatusCode());
+        $body = $response->getBody();
+
+        // Displays Dismissed status badge alongside Failed badge, error details, and Retry button
+        $this->assertStringContainsString('Dismissed', $body);
+        $this->assertStringContainsString('Failed', $body);
+        $this->assertStringContainsString('Portal timeout while syncing', $body);
+        $this->assertStringContainsString('Retry Condominium Clearance', $body);
+        $this->assertStringNotContainsString('Dismiss Alert', $body);
+
+        // Concluded stay (check_out <= today) with undismissed failed clearance does NOT render Dismiss Alert button
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES (
+                'res-concluded-fail', '1606', 'Past Stay Guest', 'past@example.com', '+573001112233',
+                '2025-01-01', '2025-01-05', 1000000.00, 'confirmed', 'web', 1
+            );
+            INSERT INTO condominium_clearances (
+                reservation_uid, property_id, status, error_message, attempts
+            ) VALUES (
+                'res-concluded-fail', '1606', 'failed', 'Old error', 1
+            );
+        ");
+
+        $concludedResponse = $this->executeShow('res-concluded-fail', isHtmx: true, hxTarget: 'drawer-container');
+        $this->assertSame(200, $concludedResponse->getStatusCode());
+        $concludedBody = $concludedResponse->getBody();
+        $this->assertStringContainsString('Failed', $concludedBody);
+        $this->assertStringContainsString('Retry Condominium Clearance', $concludedBody);
+        $this->assertStringNotContainsString('Dismiss Alert', $concludedBody);
+        $this->assertStringNotContainsString('Dismissed', $concludedBody);
+    }
+
+    public function testRetryClearanceAndEditorActionsClearPriorAlertDismissals(): void
+    {
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($this->pdo);
+        $dismissalRepo->dismiss('clearance_res-1', 'failed_condominium_clearance', '1606', 'res-1', 1);
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res-1'));
+
+        $mockSync = $this->createMock(\OceanViewFlats\Domain\Fulfillment\CondominiumClearanceSyncInterface::class);
+        $mockSync->expects($this->exactly(2))
+            ->method('syncForReservation')
+            ->willReturnOnConsecutiveCalls(
+                new \OceanViewFlats\Domain\Fulfillment\CondominiumClearance(
+                    reservationUid: 'res-1',
+                    propertyId: '1606',
+                    status: 'failed',
+                    errorMessage: 'Still failing on portal',
+                    attempts: 2
+                ),
+                new \OceanViewFlats\Domain\Fulfillment\CondominiumClearance(
+                    reservationUid: 'res-1',
+                    propertyId: '1606',
+                    status: 'synced',
+                    clearanceNumber: 'CLR-REARM-1',
+                    attempts: 3,
+                    syncedAt: '2026-10-16 14:00:00'
+                )
+            );
+
+        $clearanceRepo = new \OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository($this->pdo);
+        $controller = new ReservationController(
+            repository: $this->repository,
+            search: $this->search,
+            viewRenderer: $this->viewRenderer,
+            auditLogger: $this->auditLogger,
+            ledger: $this->ledger,
+            quoteEngine: $this->quoteEngine,
+            emailSender: $this->emailSender,
+            lifecycleService: $this->lifecycleService,
+            publicSiteUrl: 'https://oceanviewflats.com',
+            refundClient: $this->refundClient,
+            pdo: $this->pdo,
+            clearanceRepo: $clearanceRepo,
+            clearanceSync: $mockSync,
+            alertDismissalRepo: $dismissalRepo
+        );
+
+        // 1. Retry clearance via HTMX when sync fails -> clears dismissal and re-renders drawer with Dismiss Alert button
+        $retryFailReq = (new Request(
+            method: 'POST',
+            uri: '/reservations/res-1/clearance-retry',
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token-xyz',
+            ]
+        ))->withAttribute('uid', 'res-1');
+
+        $retryFailResp = $controller->retryClearance($retryFailReq, $this->session);
+        $this->assertSame(200, $retryFailResp->getStatusCode());
+        $this->assertFalse($dismissalRepo->isDismissed('clearance_res-1'));
+        $this->assertStringNotContainsString('Dismissed', $retryFailResp->getBody());
+        $this->assertStringContainsString('Dismiss Alert', $retryFailResp->getBody());
+
+        // 2. Dismiss again and updateReservation with sync_condominium_clearance=1 -> clears clearance_res-1 dismissal
+        $dismissalRepo->dismiss('clearance_res-1', 'failed_condominium_clearance', '1606', 'res-1', 1);
+        $this->assertTrue($dismissalRepo->isDismissed('clearance_res-1'));
+
+        $this->ledger->method('isAvailable')->willReturn(true);
+        $updateSyncReq = (new Request(
+            method: 'POST',
+            uri: '/reservations/res-1/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-11-01',
+                'check_out' => '2026-11-05',
+                'total_price' => '1200000',
+                'max_guests' => '6',
+                'guest_name' => 'Alice Smith',
+                'guest_email' => 'alice@example.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'sync_condominium_clearance' => '1',
+                'csrf_token' => 'test-csrf-token-xyz',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token-xyz',
+            ]
+        ))->withAttribute('uid', 'res-1');
+
+        $updateSyncResp = $controller->updateReservation($updateSyncReq, $this->session);
+        $this->assertSame(200, $updateSyncResp->getStatusCode());
+        $this->assertFalse($dismissalRepo->isDismissed('clearance_res-1'));
+
+        // 3. Dismiss registry_res-1 and updateReservation with reset_guest_registry=1 -> clears registry_res-1 dismissal
+        $dismissalRepo->dismiss('registry_res-1', 'incomplete_guest_registry', '1606', 'res-1', 1);
+        $this->assertTrue($dismissalRepo->isDismissed('registry_res-1'));
+
+        $updateResetReq = (new Request(
+            method: 'POST',
+            uri: '/reservations/res-1/edit',
+            post: [
+                'property_id' => '1606',
+                'check_in' => '2026-11-01',
+                'check_out' => '2026-11-05',
+                'total_price' => '1200000',
+                'max_guests' => '6',
+                'guest_name' => 'Alice Smith',
+                'guest_email' => 'alice@example.com',
+                'guest_phone' => '+573001112233',
+                'lang' => 'es',
+                'reset_guest_registry' => '1',
+                'guest_count' => '0',
+                'csrf_token' => 'test-csrf-token-xyz',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'HTTP_HX_CSRF_TOKEN' => 'test-csrf-token-xyz',
+            ]
+        ))->withAttribute('uid', 'res-1');
+
+        $updateResetResp = $controller->updateReservation($updateResetReq, $this->session);
+        $this->assertSame(200, $updateResetResp->getStatusCode());
+        $this->assertFalse($dismissalRepo->isDismissed('registry_res-1'));
     }
 
     public function testShowRendersCondominiumClearancePendingBadge(): void

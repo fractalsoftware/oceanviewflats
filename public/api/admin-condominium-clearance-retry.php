@@ -18,6 +18,8 @@ use OceanViewFlats\Domain\Fulfillment\GuestRegistryRequiredException;
 use OceanViewFlats\Domain\Fulfillment\HttpTransportInterface;
 use OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync;
 use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
+use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
 use OceanViewFlats\Domain\Reservation\ReservationNotFoundException;
 use OceanViewFlats\Domain\Reservation\Search\PdoReservationSearchAdapter;
@@ -127,6 +129,11 @@ try {
     http_response_code(400);
     send_json_response(false, 'Guest registry must be submitted before condominium clearance can be synced.');
 }
+
+$dismissalRepo = (isset($GLOBALS['TEST_DISMISSAL_REPO']) && $GLOBALS['TEST_DISMISSAL_REPO'] instanceof OperationalAlertDismissalRepositoryInterface)
+    ? $GLOBALS['TEST_DISMISSAL_REPO']
+    : new PdoOperationalAlertDismissalRepository($pdo);
+$dismissalRepo->clearDismissal('clearance_' . $reservationUid);
 
 // 8. Return JSON Response
 send_json_response(

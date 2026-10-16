@@ -7,12 +7,15 @@ namespace OceanViewFlats\Admin\Controller;
 use OceanViewFlats\Admin\Audit\AuditLogger;
 use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
+use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardHubViewData;
 use OceanViewFlats\Domain\Reservation\Dashboard\DashboardQueryServiceInterface;
 use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlertDismissalRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
+use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
 
 /**
  * Controller handling the administrative dashboard overview and home interface.
@@ -24,7 +27,11 @@ final class DashboardController
         private readonly ?InboundChannelSyncServiceInterface $syncService = null,
         private readonly ?DashboardQueryServiceInterface $dashboardQueryService = null,
         private readonly ?OperationalAlertDismissalRepositoryInterface $dismissalRepo = null,
-        private readonly ?AuditLogger $auditLogger = null
+        private readonly ?AuditLogger $auditLogger = null,
+        private readonly ?ReservationSearchInterface $reservationSearch = null,
+        private readonly ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
+        private readonly string $publicSiteUrl = 'https://oceanviewflats.com',
+        private readonly ?PublicUrlBuilder $urlBuilder = null
     ) {
     }
 
@@ -158,6 +165,42 @@ final class DashboardController
             ipAddress: $request->getClientIp(),
             userAgent: $request->getHeader('User-Agent') !== null ? (string) $request->getHeader('User-Agent') : null
         );
+
+        $returnContext = strtolower(trim((string) $request->getPost('return_context', 'hub')));
+        if ($returnContext === 'drawer' && $reservationUid !== null) {
+            if (!$request->isHtmx()) {
+                return Response::redirect('/reservations/' . urlencode($reservationUid));
+            }
+
+            $dossier = $this->reservationSearch?->findWithAuditTrail($reservationUid);
+            $clearance = $this->clearanceRepo?->findByReservationUid($reservationUid);
+            $clearanceAlertDismissed = $this->dismissalRepo !== null
+                ? $this->dismissalRepo->isDismissed('clearance_' . $reservationUid)
+                : true;
+
+            $drawerHtml = $this->viewRenderer->renderPartial('reservations/_detail_drawer.php', [
+                'reservation' => $dossier !== null ? $dossier->reservation : [
+                    'reservation_uid' => $reservationUid,
+                    'property_id' => $alertPropertyId,
+                ],
+                'auditLogs' => $dossier !== null ? $dossier->auditLogs : [],
+                'refunds' => $dossier !== null ? $dossier->refunds : [],
+                'condominiumClearance' => $clearance,
+                'clearanceAlertDismissed' => $clearanceAlertDismissed,
+                'csrfToken' => (string) ($session['csrf_token'] ?? ''),
+                'publicSiteUrl' => $this->publicSiteUrl,
+                'urlBuilder' => $this->urlBuilder ?? new PublicUrlBuilder($this->publicSiteUrl),
+            ]);
+
+            return new Response(
+                statusCode: 200,
+                headers: [
+                    'Content-Type' => 'text/html; charset=UTF-8',
+                    'HX-Trigger' => 'reservationUpdated',
+                ],
+                body: $drawerHtml
+            );
+        }
 
         $rawFilter = $request->getPost(
             'filter_property_id',

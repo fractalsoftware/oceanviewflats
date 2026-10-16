@@ -1224,5 +1224,71 @@ final class DashboardControllerTest extends TestCase
         $redirectResp = $controller->dismissAlert($nonHtmxReq, $session);
         $this->assertSame(302, $redirectResp->getStatusCode());
         $this->assertSame('/?property_id=1707', $redirectResp->getHeader('Location'));
+
+        // 4. return_context=drawer renders _detail_drawer.php with Dismissed badge & HX-Trigger on HTMX, or redirects to /reservations/{uid} on non-HTMX
+        $pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES (
+                'res_drawer_999', '1606', 'Drawer Guest', 'drawer@test.com', '+573001112233',
+                '2026-11-01', '2026-11-05', 900000.00, 'confirmed', 'web', 1
+            );
+            INSERT INTO condominium_clearances (
+                reservation_uid, property_id, status, error_message, attempts
+            ) VALUES (
+                'res_drawer_999', '1606', 'failed', 'Portal connection reset', 2
+            );
+        ");
+        $searchAdapter = new \OceanViewFlats\Domain\Reservation\Search\PdoReservationSearchAdapter($pdo);
+        $clearanceRepo = new \OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository($pdo);
+        $drawerController = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService,
+            dismissalRepo: $dismissalRepo,
+            auditLogger: $auditLogger,
+            reservationSearch: $searchAdapter,
+            clearanceRepo: $clearanceRepo
+        );
+
+        $drawerHtmxReq = new Request(
+            method: 'POST',
+            uri: '/dashboard/alerts/dismiss',
+            query: [],
+            post: [
+                'return_context' => 'drawer',
+                'alert_id' => 'clearance_res_drawer_999',
+                'alert_type' => 'failed_condominium_clearance',
+                'property_id' => '1606',
+                'reservation_uid' => 'res_drawer_999',
+            ],
+            server: ['HTTP_HX_REQUEST' => 'true']
+        );
+        $drawerHtmxResp = $drawerController->dismissAlert($drawerHtmxReq, $session);
+        $this->assertSame(200, $drawerHtmxResp->getStatusCode());
+        $this->assertSame('reservationUpdated', $drawerHtmxResp->getHeader('HX-Trigger'));
+        $drawerBody = $drawerHtmxResp->getBody();
+        $this->assertStringContainsString('Drawer Guest', $drawerBody);
+        $this->assertStringContainsString('Dismissed', $drawerBody);
+        $this->assertStringContainsString('Portal connection reset', $drawerBody);
+        $this->assertStringContainsString('Retry Condominium Clearance', $drawerBody);
+        $this->assertStringNotContainsString('Dismiss Alert', $drawerBody);
+
+        $drawerNonHtmxReq = new Request(
+            method: 'POST',
+            uri: '/dashboard/alerts/dismiss',
+            query: [],
+            post: [
+                'return_context' => 'drawer',
+                'alert_id' => 'clearance_res_drawer_999',
+                'alert_type' => 'failed_condominium_clearance',
+                'property_id' => '1606',
+                'reservation_uid' => 'res_drawer_999',
+            ]
+        );
+        $drawerRedirectResp = $drawerController->dismissAlert($drawerNonHtmxReq, $session);
+        $this->assertSame(302, $drawerRedirectResp->getStatusCode());
+        $this->assertSame('/reservations/res_drawer_999', $drawerRedirectResp->getHeader('Location'));
     }
 }
