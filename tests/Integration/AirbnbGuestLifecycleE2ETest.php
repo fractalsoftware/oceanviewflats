@@ -504,8 +504,11 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
 
     private function getDbInitPhp(): string
     {
+        $autoloadPath = var_export(dirname(__DIR__, 2) . '/vendor/autoload.php', true);
+
         return sprintf(
-            '$pdo = new PDO("sqlite:%s"); $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); $GLOBALS["TEST_PDO"] = $pdo;',
+            'require_once %s; $pdo = new PDO("sqlite:%s"); $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); $GLOBALS["TEST_PDO"] = $pdo; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_e2e_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            $autoloadPath,
             addslashes($this->dbPath)
         );
     }

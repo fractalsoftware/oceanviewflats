@@ -726,7 +726,10 @@ final class GuestRegistryEndpointTest extends TestCase
             };
             \$GLOBALS['TEST_LIFECYCLE_SERVICE'] = \OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentService::createDefault(
                 \$GLOBALS['TEST_PDO'],
-                ['email_sender' => \$emailSender]
+                [
+                    'email_sender' => \$emailSender,
+                    'clearance_sync' => null,
+                ]
             );
 PHP;
 
@@ -772,7 +775,10 @@ PHP;
             };
             \$GLOBALS['TEST_LIFECYCLE_SERVICE'] = \OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentService::createDefault(
                 \$GLOBALS['TEST_PDO'],
-                ['email_sender' => \$emailSender]
+                [
+                    'email_sender' => \$emailSender,
+                    'clearance_sync' => null,
+                ]
             );
 PHP;
 
@@ -1093,9 +1099,16 @@ PHP;
             $this->dbPath
         );
 
+        $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
+        $defaultClearanceTransport = sprintf(
+            'require_once %s; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_default_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            $autoloadPath
+        );
+
         $fullPrepend = sprintf(
-            'register_shutdown_function(function() { fwrite(STDERR, "[STATUS:" . http_response_code() . "]"); }); %s; %s',
+            'register_shutdown_function(function() { fwrite(STDERR, "[STATUS:" . http_response_code() . "]"); }); %s; %s; %s',
             $dbInit,
+            $defaultClearanceTransport,
             $prependCode
         );
 

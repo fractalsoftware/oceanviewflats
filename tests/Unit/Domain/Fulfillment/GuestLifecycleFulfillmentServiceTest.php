@@ -556,6 +556,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $service = GuestLifecycleFulfillmentService::createDefault($this->pdo, [
             'email_sender' => $failingSender,
             'spreadsheet_sync' => $this->spreadsheetSync,
+            'clearance_sync' => null,
         ]);
 
         $result = $service->submitRegistry($submission);
