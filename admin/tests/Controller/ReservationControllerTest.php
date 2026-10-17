@@ -75,7 +75,30 @@ final class ReservationControllerTest extends TestCase
             'public_site_url' => 'https://oceanviewflats.com',
             'confirmation_email_renderer' => $this->emailRenderer,
             'reservation_repository' => $this->repository,
+            'clearance_sync' => null,
         ]);
+
+        $mockClearanceTransport = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface {
+            public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
+            {
+                return [
+                    'statusCode' => 503,
+                    'body' => 'Mock transport disabled in unit test',
+                    'headers' => [],
+                    'cookies' => [],
+                    'error' => null,
+                ];
+            }
+        };
+
+        $clearanceRepo = new \OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository($this->pdo);
+        $defaultClearanceSync = new \OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync(
+            repository: $clearanceRepo,
+            reservationRepository: $this->repository,
+            searchAdapter: $this->search,
+            transport: $mockClearanceTransport,
+            auditLogger: $this->auditLogger
+        );
 
         $this->controller = new ReservationController(
             repository: $this->repository,
@@ -88,7 +111,9 @@ final class ReservationControllerTest extends TestCase
             lifecycleService: $this->lifecycleService,
             publicSiteUrl: 'https://oceanviewflats.com',
             refundClient: $this->refundClient,
-            pdo: $this->pdo
+            pdo: $this->pdo,
+            clearanceRepo: $clearanceRepo,
+            clearanceSync: $defaultClearanceSync
         );
 
         $this->session = [

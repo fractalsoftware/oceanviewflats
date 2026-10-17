@@ -869,7 +869,13 @@ final class HuespedManagerClearanceSyncTest extends TestCase
 
     public function testSyncForReservationThrowsReservationNotFoundExceptionWhenReservationMissing(): void
     {
-        $adapter = HuespedManagerClearanceSync::createDefault($this->pdo);
+        $mockTransport = new class implements HttpTransportInterface {
+            public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
+            {
+                return ['statusCode' => 200, 'body' => '', 'headers' => [], 'cookies' => [], 'error' => null];
+            }
+        };
+        $adapter = HuespedManagerClearanceSync::createDefault($this->pdo, $mockTransport);
 
         $this->expectException(ReservationNotFoundException::class);
         $this->expectExceptionMessage('Reservation not found: ovf_nonexistent_123');
@@ -892,7 +898,13 @@ final class HuespedManagerClearanceSyncTest extends TestCase
             status: ReservationStatus::CONFIRMED
         ));
 
-        $adapter = HuespedManagerClearanceSync::createDefault($this->pdo);
+        $mockTransport = new class implements HttpTransportInterface {
+            public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
+            {
+                return ['statusCode' => 200, 'body' => '', 'headers' => [], 'cookies' => [], 'error' => null];
+            }
+        };
+        $adapter = HuespedManagerClearanceSync::createDefault($this->pdo, $mockTransport);
 
         $this->expectException(GuestRegistryRequiredException::class);
         $this->expectExceptionMessage('Guest registry must be submitted before condominium clearance can be synced for reservation: ovf_res_no_reg');
