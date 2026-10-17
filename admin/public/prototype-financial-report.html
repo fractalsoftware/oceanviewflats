@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>[PROTOTYPE] Financial Report - Ocean View Flats Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media (max-width: 767px) {
+            input, select, textarea { font-size: 16px !important; }
+        }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body class="min-h-full flex flex-col font-sans text-gray-900 antialiased pb-24">
+
+<!-- PROTOTYPE BANNER: Explicitly marks this file as throwaway per prototype skill -->
+<div class="bg-indigo-950 text-indigo-100 text-xs py-2 px-4 border-b border-indigo-800">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded bg-amber-400 text-gray-950 font-bold uppercase tracking-wider text-[10px]">Throwaway UI Prototype</span>
+            <span class="font-medium">Question (#210): Three variants of the <code>/financial-report</code> page, switchable via <code>?variant=A|B|C</code> or arrow keys <code>←</code> / <code>→</code>.</span>
+        </div>
+        <div class="text-indigo-300 text-[11px]">
+            All filters, Property allocation (50/50 shared), Duplicate/Add Expense modal, and $0 Airbnb payout warnings are live in-memory.
+        </div>
+    </div>
+</div>
+
+<!-- REAL ADMIN CONSOLE HEADER (matching admin/src/Views/layout.php) -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center space-x-8">
+                <a href="#top" class="flex items-center space-x-3 text-indigo-700 font-bold text-lg tracking-tight">
+                    <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <span>Ocean View Flats <span class="text-xs bg-indigo-100 text-indigo-800 uppercase px-2 py-0.5 rounded font-semibold ml-1">Admin</span></span>
+                </a>
+                <nav class="hidden md:flex space-x-2">
+                    <a href="#dashboard" onclick="return false" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100">Dashboard</a>
+                    <a href="#reservations" onclick="return false" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100">Reservations</a>
+                    <a href="#rates" onclick="return false" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100">Rates</a>
+                    <a href="#blocks" onclick="return false" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100">Calendar Blocks</a>
+                    <a href="#financial-report" onclick="return false" class="px-3 py-2 rounded-md text-sm font-semibold bg-indigo-50 text-indigo-700">Financial Report</a>
+                    <a href="#audit-logs" onclick="return false" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100">Audit Logs</a>
+                </nav>
+            </div>
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                    <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+                    <span class="font-medium">Manuel Herrera</span>
+                    <span class="text-xs text-gray-500">(superadmin)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- SHARED PAGE HEADER & PRIMARY ACTIONS -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2.5">
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Financial Report</h1>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Settlement Currency: COP
+                </span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+                Accrual-prorated Gross Revenue, Operational Expenses (with 50/50 shared portfolio allocation), Net Operating Income, and hospitality KPIs.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="exportCsv('reservations')" class="inline-flex items-center px-3 py-2 border border-gray-200 shadow-2xs text-xs font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
+                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export Reservations CSV
+            </button>
+            <button type="button" onclick="exportCsv('expenses')" class="inline-flex items-center px-3 py-2 border border-gray-200 shadow-2xs text-xs font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
+                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export Expenses CSV
+            </button>
+            <button type="button" onclick="openExpenseModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-xs font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                + Record Operational Expense
+            </button>
+        </div>
+    </div>
+
+    <!-- SHARED FILTER BAR (HTMX-style instant state updates) -->
+    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            <!-- Property Filter -->
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Property</label>
+                <div class="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-lg" id="property-filter-pills">
+                    <button type="button" onclick="setFilter('propertyId', 'all')" data-prop="all" class="prop-pill py-1.5 px-2 rounded-md text-xs font-semibold transition cursor-pointer">All</button>
+                    <button type="button" onclick="setFilter('propertyId', '1606')" data-prop="1606" class="prop-pill py-1.5 px-2 rounded-md text-xs font-semibold transition cursor-pointer">1606</button>
+                    <button type="button" onclick="setFilter('propertyId', '1707')" data-prop="1707" class="prop-pill py-1.5 px-2 rounded-md text-xs font-semibold transition cursor-pointer">1707</button>
+                </div>
+            </div>
+
+            <!-- Time Period Preset -->
+            <div>
+                <label for="period-select" class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Time Period</label>
+                <select id="period-select" onchange="setFilter('period', this.value)" class="block w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="2026-10">This Month (Oct 2026 — 31d)</option>
+                    <option value="2026-09">Last Month (Sep 2026 — 30d)</option>
+                    <option value="2026-Q4">This Quarter (Q4 2026 — 92d)</option>
+                    <option value="2026-YTD">Year to Date (Jan–Oct 2026 — 304d)</option>
+                </select>
+            </div>
+
+            <!-- Comparison Mode -->
+            <div>
+                <label for="compare-select" class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Compare Against</label>
+                <select id="compare-select" onchange="setFilter('compare', this.value)" class="block w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="prev_period">Previous Period</option>
+                    <option value="yoy">Previous Year (YoY)</option>
+                </select>
+            </div>
+
+            <!-- Booking Source -->
+            <div>
+                <label for="source-select" class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Booking Source</label>
+                <select id="source-select" onchange="setFilter('source', this.value)" class="block w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all">All Booking Sources</option>
+                    <option value="direct_online">Direct Online (web)</option>
+                    <option value="direct_manual">Direct Manual (bank / cash / manual)</option>
+                    <option value="airbnb">External OTA — Airbnb</option>
+                </select>
+            </div>
+
+            <!-- Expense Category -->
+            <div>
+                <label for="category-select" class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Expense Category</label>
+                <div class="flex items-center space-x-1.5">
+                    <select id="category-select" onchange="setFilter('category', this.value)" class="block w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">All 8 Categories</option>
+                        <option value="cleaning">Cleaning & Turnover</option>
+                        <option value="hoa_admin">Condominium Admin (HOA)</option>
+                        <option value="utilities">Utilities & Telecom</option>
+                        <option value="maintenance">Maintenance & Repairs</option>
+                        <option value="supplies">Guest Supplies & Consumables</option>
+                        <option value="platform_fees">Payment Gateway & Platform Fees</option>
+                        <option value="taxes_insurance">Taxes, Insurance & Statutory</option>
+                        <option value="other">Other Operational Expense</option>
+                    </select>
+                    <button type="button" onclick="resetFilters()" title="Reset filters" class="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DYNAMIC VARIANT MOUNT CONTAINER -->
+    <div id="variant-mount"></div>
+
+</main>
+
+<!-- EXPENSE MODAL (CREATE / EDIT / DUPLICATE) -->
+<div id="expense-modal" class="hidden fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-lg w-full overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <div>
+                <h3 id="modal-title" class="text-base font-bold text-gray-900">Record Operational Expense</h3>
+                <p class="text-xs text-gray-500">All amounts recorded in Settlement Currency (COP). Logged to Audit Trail.</p>
+            </div>
+            <button type="button" onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-md cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="expense-form" onsubmit="saveExpense(event)" class="p-6 space-y-4">
+            <input type="hidden" id="exp-id" value="">
+            <div id="modal-error" class="hidden p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Property Assignment *</label>
+                    <select id="exp-property" required class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-900">
+                        <option value="1606">Property 1606 (100% Direct)</option>
+                        <option value="1707">Property 1707 (100% Direct)</option>
+                        <option value="shared">Shared Portfolio (50/50 Split)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Expense Category *</label>
+                    <select id="exp-category" required class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-900">
+                        <option value="cleaning">Cleaning & Turnover</option>
+                        <option value="hoa_admin">Condominium Admin (HOA)</option>
+                        <option value="utilities">Utilities & Telecom</option>
+                        <option value="maintenance">Maintenance & Repairs</option>
+                        <option value="supplies">Guest Supplies & Consumables</option>
+                        <option value="platform_fees">Payment Gateway & Platform Fees</option>
+                        <option value="taxes_insurance">Taxes, Insurance & Statutory</option>
+                        <option value="other">Other Operational Expense</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Title / Description *</label>
+                <input type="text" id="exp-title" required placeholder="e.g. Monthly HOA Administration — Oct 2026" class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-900" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Amount (COP) *</label>
+                    <input type="number" id="exp-amount" required min="1" step="1" placeholder="e.g. 680000" class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 tabular-nums" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Expense Date *</label>
+                    <input type="date" id="exp-date" required value="2026-10-16" class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-900" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Vendor / Payee (Optional)</label>
+                    <input type="text" id="exp-vendor" placeholder="e.g. Edificio Salguero Sunset" class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-900" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Invoice / Reference Code (Optional)</label>
+                    <input type="text" id="exp-ref" placeholder="e.g. FAC-2026-1094" class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-900" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Linked Reservation UID (Optional — must match Property)</label>
+                <input type="text" id="exp-res-uid" placeholder="e.g. ovf_91a4b2c8d1e0 or res-abnb-7c4e19a2" class="block w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-xs font-mono text-gray-900" />
+            </div>
+
+            <div class="pt-3 border-t border-gray-200 flex items-center justify-end space-x-2">
+                <button type="button" onclick="closeExpenseModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white shadow-xs cursor-pointer">Save Operational Expense</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- FLOATING PROTOTYPE VARIANT SWITCHER (per prototype/UI.md) -->
+<div class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-gray-950/95 text-white px-4 py-2.5 rounded-full shadow-2xl border border-gray-700 flex items-center space-x-4 backdrop-blur-md">
+    <button type="button" onclick="cycleVariant(-1)" class="p-1.5 rounded-full hover:bg-gray-800 text-gray-300 hover:text-white transition cursor-pointer" title="Previous Variant (←)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="text-center min-w-[270px]">
+        <div class="text-[10px] uppercase tracking-widest text-indigo-400 font-bold">UI Prototype Variant Switcher</div>
+        <div id="switcher-label" class="text-xs font-semibold text-white mt-0.5">A (Executive P&L Workbench)</div>
+    </div>
+    <button type="button" onclick="cycleVariant(1)" class="p-1.5 rounded-full hover:bg-gray-800 text-gray-300 hover:text-white transition cursor-pointer" title="Next Variant (→)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <div class="hidden sm:flex items-center space-x-1 border-l border-gray-700 pl-3">
+        <button type="button" onclick="setVariant('A')" id="pill-var-A" class="px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer">A</button>
+        <button type="button" onclick="setVariant('B')" id="pill-var-B" class="px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer">B</button>
+        <button type="button" onclick="setVariant('C')" id="pill-var-C" class="px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer">C</button>
+    </div>
+</div>
+
+<script>
+// ============================================================================
+// PORTABLE DOMAIN ENGINE & SEEDED DATASET (Accrual Proration + 50/50 Allocation)
+// ============================================================================
+const CATEGORY_META = {
+    cleaning:        { label: 'Cleaning & Turnover', badge: 'bg-sky-50 text-sky-700 border-sky-200', bar: 'bg-sky-500' },
+    hoa_admin:       { label: 'Condominium Admin (HOA)', badge: 'bg-purple-50 text-purple-700 border-purple-200', bar: 'bg-purple-500' },
+    utilities:       { label: 'Utilities & Telecom', badge: 'bg-amber-50 text-amber-700 border-amber-200', bar: 'bg-amber-500' },
+    maintenance:     { label: 'Maintenance & Repairs', badge: 'bg-orange-50 text-orange-700 border-orange-200', bar: 'bg-orange-500' },
+    supplies:        { label: 'Guest Supplies & Consumables', badge: 'bg-teal-50 text-teal-700 border-teal-200', bar: 'bg-teal-500' },
+    platform_fees:   { label: 'Payment Gateway & Platform Fees', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200', bar: 'bg-indigo-500' },
+    taxes_insurance: { label: 'Taxes, Insurance & Statutory', badge: 'bg-rose-50 text-rose-700 border-rose-200', bar: 'bg-rose-500' },
+    other:           { label: 'Other Operational Expense', badge: 'bg-gray-100 text-gray-700 border-gray-200', bar: 'bg-gray-500' }
+};
+
+const SOURCE_META = {
+    direct_online: { label: 'Direct Online', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200', bar: 'bg-indigo-600' },
+    direct_manual: { label: 'Direct Manual', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', bar: 'bg-emerald-600' },
+    airbnb:        { label: 'External OTA — Airbnb', badge: 'bg-rose-50 text-rose-700 border-rose-200', bar: 'bg-rose-500' },
+    owner_stay:    { label: 'Owner Stay (Non-Commercial)', badge: 'bg-gray-100 text-gray-700 border-gray-300', bar: 'bg-gray-400' }
+};
+
+const VARIANTS = {
+    A: 'Executive P&L Workbench (Stacked Cards + Breakdown Grid + Tabbed Ledgers)',
+    B: 'Split-Pane Income Statement & Live Ledger (Formal Waterfall + Side-by-Side Workspace)',
+    C: 'Property Comparison Matrix & Action Cockpit (1606 vs 1707 Benchmark Table First)'
+};
+
+const PERIOD_WINDOWS = {
+    '2026-10': { label: 'Oct 2026', start: '2026-10-01', end: '2026-11-01', days: 31, prevRev: 14200000, prevExp: 4850000, prevOcc: 61.3, prevAdr: 410000 },
+    '2026-09': { label: 'Sep 2026', start: '2026-09-01', end: '2026-10-01', days: 30, prevRev: 12900000, prevExp: 4620000, prevOcc: 56.0, prevAdr: 395000 },
+    '2026-Q4': { label: 'Q4 2026', start: '2026-10-01', end: '2027-01-01', days: 92, prevRev: 38500000, prevExp: 14100000, prevOcc: 58.5, prevAdr: 415000 },
+    '2026-YTD': { label: 'Jan–Oct 2026 (YTD)', start: '2026-01-01', end: '2026-11-01', days: 304, prevRev: 124000000, prevExp: 43200000, prevOcc: 64.2, prevAdr: 420000 }
+};
+
+let state = {
+    variant: new URLSearchParams(window.location.search).get('variant') || 'A',
+    propertyId: 'all',
+    period: '2026-10',
+    compare: 'prev_period',
+    source: 'all',
+    category: 'all',
+    activeLedgerTab: 'expenses',
+    reservations: [
+        // Cross-month boundary stay (Sep 28 to Oct 03: 5 nights total, 2 nights in Oct!)
+        { uid: 'ovf_88a1c3f09d12', propertyId: '1606', guestName: 'Camila Restrepo', source: 'web', channelGroup: 'direct_online', checkIn: '2026-09-28', checkOut: '2026-10-03', totalPrice: 2250000, refundedAmount: 0, status: 'concluded', paymentStatus: 'approved' },
+        // Direct Online stays in Oct
+        { uid: 'ovf_91a4b2c8d1e0', propertyId: '1606', guestName: 'Markus Vance', source: 'web', channelGroup: 'direct_online', checkIn: '2026-10-05', checkOut: '2026-10-11', totalPrice: 2880000, refundedAmount: 0, status: 'concluded', paymentStatus: 'approved' },
+        { uid: 'ovf_34f9e1a0b7c2', propertyId: '1707', guestName: 'Elena Rostova', source: 'web', channelGroup: 'direct_online', checkIn: '2026-10-02', checkOut: '2026-10-08', totalPrice: 3120000, refundedAmount: 0, status: 'concluded', paymentStatus: 'approved' },
+        // Direct Manual (bank_transfer)
+        { uid: 'res-man-55b8d21e9a04', propertyId: '1606', guestName: 'Andrés Mejía', source: 'bank_transfer', channelGroup: 'direct_manual', checkIn: '2026-10-14', checkOut: '2026-10-19', totalPrice: 2350000, refundedAmount: 0, status: 'confirmed', paymentStatus: 'approved' },
+        { uid: 'res-man-61c0f84a2b11', propertyId: '1707', guestName: 'Lucía Fernández', source: 'cash', channelGroup: 'direct_manual', checkIn: '2026-10-10', checkOut: '2026-10-15', totalPrice: 2450000, refundedAmount: 200000, status: 'concluded', paymentStatus: 'partially_refunded' },
+        // External OTA - Airbnb (Priced)
+        { uid: 'res-abnb-7c4e19a2', propertyId: '1606', guestName: 'David Miller (HM9K2L881)', source: 'airbnb', channelGroup: 'airbnb', checkIn: '2026-10-21', checkOut: '2026-10-27', totalPrice: 2640000, refundedAmount: 0, status: 'confirmed', paymentStatus: 'approved' },
+        // External OTA - Airbnb ($0 Unpriced host payout -> triggers warning badge & excluded from ADR denominator!)
+        { uid: 'res-abnb-2f9a04b1', propertyId: '1707', guestName: 'Sophie Laurent (HM4X9P102)', source: 'airbnb', channelGroup: 'airbnb', checkIn: '2026-10-22', checkOut: '2026-10-26', totalPrice: 0, refundedAmount: 0, status: 'confirmed', paymentStatus: 'approved' },
+        // Settled Cancelled Reservation with 50% Policy Retention (0 Occupied Nights, included in Gross Revenue & RevPAR, excluded from ADR)
+        { uid: 'ovf_72d0a1e8c4f5', propertyId: '1707', guestName: 'Carlos Mendoza', source: 'web', channelGroup: 'direct_online', checkIn: '2026-10-17', checkOut: '2026-10-20', totalPrice: 1500000, refundedAmount: 750000, status: 'cancelled', paymentStatus: 'partially_refunded' },
+        // Owner Stay (deducted from Available Nights)
+        { uid: 'res-man-00owner10', propertyId: '1707', guestName: 'Owner Personal Stay', source: 'owner_stay', channelGroup: 'owner_stay', checkIn: '2026-10-28', checkOut: '2026-10-31', totalPrice: 0, refundedAmount: 0, status: 'confirmed', paymentStatus: 'approved' }
+    ],
+    maintenanceBlocks: [
+        { id: 1, propertyId: '1606', startDate: '2026-10-29', endDate: '2026-10-31', reason: 'Deep AC preventative servicing' }
+    ],
+    expenses: [
+        { id: 101, uid: 'exp_01', propertyId: '1606', category: 'hoa_admin', title: 'Administración Edificio Salguero Sunset — Oct 2026', amount: 720000, expenseDate: '2026-10-02', vendorName: 'Edificio Salguero Sunset', referenceCode: 'ADM-1606-1026', reservationUid: '' },
+        { id: 102, uid: 'exp_02', propertyId: '1707', category: 'hoa_admin', title: 'Administración Edificio Salguero Sunset — Oct 2026', amount: 720000, expenseDate: '2026-10-02', vendorName: 'Edificio Salguero Sunset', referenceCode: 'ADM-1707-1026', reservationUid: '' },
+        { id: 103, uid: 'exp_03', propertyId: '1606', category: 'utilities', title: 'Energía Air-e + Fibra Óptica Movistar', amount: 540000, expenseDate: '2026-10-06', vendorName: 'Air-e / Movistar', referenceCode: 'UTIL-1606-10', reservationUid: '' },
+        { id: 104, uid: 'exp_04', propertyId: '1707', category: 'utilities', title: 'Energía Air-e + Fibra Óptica Movistar', amount: 490000, expenseDate: '2026-10-06', vendorName: 'Air-e / Movistar', referenceCode: 'UTIL-1707-10', reservationUid: '' },
+        { id: 105, uid: 'exp_05', propertyId: '1606', category: 'cleaning', title: 'Turnover Deep Cleaning & Laundry (Markus Vance stay)', amount: 160000, expenseDate: '2026-10-11', vendorName: 'Marta Ospina', referenceCode: 'CLN-204', reservationUid: 'ovf_91a4b2c8d1e0' },
+        { id: 106, uid: 'exp_06', propertyId: '1707', category: 'cleaning', title: 'Turnover Deep Cleaning & Laundry (Elena Rostova stay)', amount: 160000, expenseDate: '2026-10-08', vendorName: 'Marta Ospina', referenceCode: 'CLN-202', reservationUid: 'ovf_34f9e1a0b7c2' },
+        { id: 107, uid: 'exp_07', propertyId: 'shared', category: 'supplies', title: 'Bulk Hotel Linens, Coffee & Bath Amenities Restock (Both Units)', amount: 640000, expenseDate: '2026-10-09', vendorName: 'Makro / Homecenter Santa Marta', referenceCode: 'FAC-99201', reservationUid: '' },
+        { id: 108, uid: 'exp_08', propertyId: '1606', category: 'platform_fees', title: 'Mercado Pago Processing Fee (3.29% + IVA)', amount: 112000, expenseDate: '2026-10-05', vendorName: 'Mercado Pago Colombia', referenceCode: 'MP-FEE-91A4', reservationUid: 'ovf_91a4b2c8d1e0' },
+        { id: 109, uid: 'exp_09', propertyId: '1606', category: 'maintenance', title: 'Balcony Sliding Door Roller Replacement & AC Filter Wash', amount: 280000, expenseDate: '2026-10-13', vendorName: 'Técnicos Costa Caribe', referenceCode: 'MNT-441', reservationUid: '' },
+        { id: 110, uid: 'exp_10', propertyId: 'shared', category: 'taxes_insurance', title: 'Monthly Hospitality Accounting & SIRE/TRA Compliance Retainer', amount: 400000, expenseDate: '2026-10-15', vendorName: 'Contadores Caribe SAS', referenceCode: 'HON-2026-10', reservationUid: '' }
+    ]
+};
+
+function datesBetween(startStr, endStr) {
+    const out = [];
+    let cur = new Date(startStr + 'T00:00:00Z');
+    const end = new Date(endStr + 'T00:00:00Z');
+    while (cur < end) {
+        out.push(cur.toISOString().slice(0, 10));
+        cur.setUTCDate(cur.getUTCDate() + 1);
+    }
+    return out;
+}
+
+function formatCop(val) {
+    const rounded = Math.round(val);
+    return '$ ' + rounded.toLocaleString('es-CO') + ' COP';
+}
+
+function formatCopCompact(val) {
+    const rounded = Math.round(val);
+    return '$ ' + rounded.toLocaleString('es-CO');
+}
+
+function computeSlice(filterProp, periodKey, filterSource, filterCategory) {
+    const win = PERIOD_WINDOWS[periodKey] || PERIOD_WINDOWS['2026-10'];
+    const periodDates = new Set(datesBetween(win.start, win.end));
+    const props = filterProp === 'all' ? ['1606', '1707'] : [filterProp];
+
+    // 1. Per-night capacity & occupancy classification with commercial stay precedence
+    const commercialNights = { '1606': new Set(), '1707': new Set() };
+    const unavailableNights = { '1606': new Set(), '1707': new Set() };
+
+    for (const r of state.reservations) {
+        if (!props.includes(r.propertyId)) continue;
+        if (r.status === 'cancelled') continue;
+        const rNights = datesBetween(r.checkIn, r.checkOut).filter(d => periodDates.has(d));
+        if (r.channelGroup === 'owner_stay') {
+            rNights.forEach(d => unavailableNights[r.propertyId].add(d));
+        } else {
+            if (filterSource === 'all' || r.channelGroup === filterSource) {
+                rNights.forEach(d => commercialNights[r.propertyId].add(d));
+            }
+        }
+    }
+
+    for (const b of state.maintenanceBlocks) {
+        if (!props.includes(b.propertyId)) continue;
+        datesBetween(b.startDate, b.endDate).filter(d => periodDates.has(d)).forEach(d => {
+            if (!commercialNights[b.propertyId].has(d)) {
+                unavailableNights[b.propertyId].add(d);
+            }
+        });
+    }
+
+    // Remove any night with commercial occupancy from unavailableNights (commercial stay precedence)
+    props.forEach(p => {
+        commercialNights[p].forEach(d => unavailableNights[p].delete(d));
+    });
+
+    const totalCalendarNights = props.length * win.days;
+    const deductedNights = props.reduce((acc, p) => acc + unavailableNights[p].size, 0);
+    const availableNights = Math.max(0, totalCalendarNights - deductedNights);
+
+    // 2. Reservation revenue proration
+    let activeStayRevenue = 0;
+    let policyRetention = 0;
+    let refundedAmount = 0;
+    let grossCharged = 0;
+    let occupiedNights = 0;
+    let pricedOccupiedNights = 0;
+    let unpricedAirbnbCount = 0;
+    let activeStaysCount = 0;
+    let cancelledWithRetentionCount = 0;
+    const attributedReservations = [];
+    const bySource = {
+        direct_online: { revenue: 0, nights: 0, count: 0 },
+        direct_manual: { revenue: 0, nights: 0, count: 0 },
+        airbnb:        { revenue: 0, nights: 0, count: 0 }
+    };
+
+    for (const r of state.reservations) {
+        if (!props.includes(r.propertyId)) continue;
+        if (r.channelGroup === 'owner_stay') continue;
+        if (filterSource !== 'all' && r.channelGroup !== filterSource) continue;
+
+        const allNights = datesBetween(r.checkIn, r.checkOut);
+        const inPeriodNights = allNights.filter(d => periodDates.has(d));
+        if (inPeriodNights.length === 0) continue;
+
+        const factor = inPeriodNights.length / allNights.length;
+        const netContract = Math.max(0, r.totalPrice - r.refundedAmount);
+        const proratedCharged = r.totalPrice * factor;
+        const proratedRefunded = r.refundedAmount * factor;
+        const proratedNet = netContract * factor;
+
+        if (r.status === 'cancelled') {
+            if (['approved', 'partially_refunded', 'refunded'].includes(r.paymentStatus) && proratedNet > 0) {
+                policyRetention += proratedNet;
+                grossCharged += proratedCharged;
+                refundedAmount += proratedRefunded;
+                cancelledWithRetentionCount++;
+                bySource[r.channelGroup].revenue += proratedNet;
+                attributedReservations.push({
+                    ...r,
+                    totalNights: allNights.length,
+                    inPeriodNights: inPeriodNights.length,
+                    factor,
+                    attributedRevenue: proratedNet,
+                    attributedRefund: proratedRefunded,
+                    isRetention: true
+                });
+            }
+        } else {
+            activeStayRevenue += proratedNet;
+            grossCharged += proratedCharged;
+            refundedAmount += proratedRefunded;
+            occupiedNights += inPeriodNights.length;
+            activeStaysCount++;
+            if (netContract > 0) {
+                pricedOccupiedNights += inPeriodNights.length;
+            } else if (r.channelGroup === 'airbnb') {
+                unpricedAirbnbCount++;
+            }
+            bySource[r.channelGroup].revenue += proratedNet;
+            bySource[r.channelGroup].nights += inPeriodNights.length;
+            bySource[r.channelGroup].count++;
+            attributedReservations.push({
+                ...r,
+                totalNights: allNights.length,
+                inPeriodNights: inPeriodNights.length,
+                factor,
+                attributedRevenue: proratedNet,
+                attributedRefund: proratedRefunded,
+                isRetention: false
+            });
+        }
+    }
+
+    const grossRevenue = activeStayRevenue + policyRetention;
+    const occupancyPct = availableNights > 0 ? (occupiedNights / availableNights) * 100 : 0;
+    const adr = pricedOccupiedNights > 0 ? activeStayRevenue / pricedOccupiedNights : 0;
+    const revpar = availableNights > 0 ? grossRevenue / availableNights : 0;
+
+    // 3. Operational Expenses & 50/50 Shared Allocation
+    let directExpenses = 0;
+    let allocatedSharedExpenses = 0;
+    const byCategory = {};
+    Object.keys(CATEGORY_META).forEach(k => byCategory[k] = 0);
+    const filteredExpenses = [];
+
+    for (const e of state.expenses) {
+        if (e.expenseDate < win.start || e.expenseDate >= win.end) continue;
+        if (filterCategory !== 'all' && e.category !== filterCategory) continue;
+
+        let allocationFactor = 0;
+        if (filterProp === 'all') {
+            allocationFactor = 1.0;
+            if (e.propertyId === 'shared') {
+                allocatedSharedExpenses += e.amount;
+            } else {
+                directExpenses += e.amount;
+            }
+        } else {
+            if (e.propertyId === filterProp) {
+                allocationFactor = 1.0;
+                directExpenses += e.amount;
+            } else if (e.propertyId === 'shared') {
+                allocationFactor = 0.5;
+                allocatedSharedExpenses += e.amount * 0.5;
+            } else {
+                continue;
+            }
+        }
+
+        const allocatedAmount = e.amount * allocationFactor;
+        byCategory[e.category] = (byCategory[e.category] || 0) + allocatedAmount;
+        filteredExpenses.push({
+            ...e,
+            allocationFactor,
+            allocatedAmount
+        });
+    }
+
+    const totalExpenses = directExpenses + allocatedSharedExpenses;
+    const noi = grossRevenue - totalExpenses;
+    const noiMarginPct = grossRevenue > 0 ? (noi / grossRevenue) * 100 : 0;
+    const expenseRatioPct = grossRevenue > 0 ? (totalExpenses / grossRevenue) * 100 : 0;
+
+    return {
+        win,
+        totalCalendarNights,
+        deductedNights,
+        availableNights,
+        occupiedNights,
+        pricedOccupiedNights,
+        unpricedAirbnbCount,
+        activeStaysCount,
+        cancelledWithRetentionCount,
+        grossCharged,
+        refundedAmount,
+        activeStayRevenue,
+        policyRetention,
+        grossRevenue,
+        occupancyPct,
+        adr,
+        revpar,
+        directExpenses,
+        allocatedSharedExpenses,
+        totalExpenses,
+        noi,
+        noiMarginPct,
+        expenseRatioPct,
+        bySource,
+        byCategory,
+        attributedReservations,
+        filteredExpenses
+    };
+}
+
+// ============================================================================
+// SHARED SUB-COMPONENTS (Unpriced Airbnb Alert, Tabbed Ledgers)
+// ============================================================================
+function renderUnpricedAirbnbAlert(slice) {
+    if (slice.unpricedAirbnbCount === 0) return '';
+    return `
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start space-x-3">
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs shrink-0 mt-0.5">!</span>
+                <div>
+                    <p class="text-xs font-bold text-amber-900">
+                        ${slice.unpricedAirbnbCount} External Reservation (Airbnb) in this period has a $0 COP host payout
+                    </p>
+                    <p class="text-[11px] text-amber-800 mt-0.5">
+                        Included in Occupied Nights (${slice.occupiedNights} nights), but excluded from the Average Daily Rate denominator (${slice.pricedOccupiedNights} priced nights) so unentered payouts do not depress ADR.
+                    </p>
+                </div>
+            </div>
+            <button type="button" onclick="promptSetAirbnbPayout('res-abnb-2f9a04b1')" class="shrink-0 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-2xs cursor-pointer">
+                Set Host Payout (res-abnb-2f9a04b1)
+            </button>
+        </div>
+    `;
+}
+
+function renderSourceFilterNotice() {
+    if (state.source === 'all') return '';
+    return `
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-xs text-indigo-900 flex items-center justify-between">
+            <span><strong>Channel Contribution View (${SOURCE_META[state.source].label}):</strong> Revenue, ADR, RevPAR, and Occupancy % reflect this channel's contribution. Property-wide Operational Expenses and NOI are evaluated across All Sources.</span>
+            <button type="button" onclick="setFilter('source', 'all')" class="text-indigo-700 underline font-semibold ml-4 cursor-pointer">Show All Sources</button>
+        </div>
+    `;
+}
+
+function renderLedgerSection(slice) {
+    const isExp = state.activeLedgerTab === 'expenses';
+    return `
+        <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/60">
+                <div class="flex space-x-2">
+                    <button type="button" onclick="setLedgerTab('expenses')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${isExp ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}">
+                        Operational Expenses Ledger (${slice.filteredExpenses.length})
+                    </button>
+                    <button type="button" onclick="setLedgerTab('reservations')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${!isExp ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}">
+                        Attributed Reservations (${slice.attributedReservations.length})
+                    </button>
+                </div>
+                <div class="flex items-center space-x-3 text-xs text-gray-500">
+                    <span>Click <strong>Duplicate</strong> on any expense row to pre-fill recurring monthly bills.</span>
+                </div>
+            </div>
+            ${isExp ? renderExpensesTable(slice) : renderReservationsTable(slice)}
+        </div>
+    `;
+}
+
+function renderExpensesTable(slice) {
+    if (slice.filteredExpenses.length === 0) {
+        return `<div class="p-8 text-center text-xs text-gray-500">No Operational Expenses match the current filter criteria.</div>`;
+    }
+    return `
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-xs">
+                <thead class="bg-gray-50 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-4 py-3 text-left">Date</th>
+                        <th class="px-4 py-3 text-left">Property</th>
+                        <th class="px-4 py-3 text-left">Category</th>
+                        <th class="px-4 py-3 text-left">Title & Vendor</th>
+                        <th class="px-4 py-3 text-left">Ref / Linked Stay</th>
+                        <th class="px-4 py-3 text-right">Amount (COP)</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                    ${slice.filteredExpenses.map(e => {
+                        const cat = CATEGORY_META[e.category] || CATEGORY_META.other;
+                        const propBadge = e.propertyId === 'shared'
+                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">Shared (${e.allocationFactor === 0.5 ? '50% Alloc' : 'Portfolio'})</span>`
+                            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-800">Prop ${e.propertyId}</span>`;
+                        return `
+                            <tr class="hover:bg-gray-50/80">
+                                <td class="px-4 py-3 whitespace-nowrap font-mono text-gray-600">${e.expenseDate}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">${propBadge}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium ${cat.badge}">${cat.label}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="font-semibold text-gray-900">${e.title}</div>
+                                    ${e.vendorName ? `<div class="text-[11px] text-gray-500">${e.vendorName}</div>` : ''}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    ${e.referenceCode ? `<span class="font-mono text-[11px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">${e.referenceCode}</span>` : '<span class="text-gray-300">—</span>'}
+                                    ${e.reservationUid ? `<div class="mt-1"><span class="font-mono text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Stay: ${e.reservationUid}</span></div>` : ''}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right tabular-nums">
+                                    <div class="font-bold text-gray-900">${formatCop(e.allocatedAmount)}</div>
+                                    ${e.allocationFactor === 0.5 ? `<div class="text-[10px] text-amber-700">50% of ${formatCopCompact(e.amount)}</div>` : ''}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right space-x-1.5">
+                                    <button type="button" onclick="duplicateExpense(${e.id})" class="px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[11px] cursor-pointer" title="Duplicate for new month">Duplicate</button>
+                                    <button type="button" onclick="editExpense(${e.id})" class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-[11px] cursor-pointer">Edit</button>
+                                    <button type="button" onclick="deleteExpense(${e.id})" class="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium text-[11px] cursor-pointer">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderReservationsTable(slice) {
+    if (slice.attributedReservations.length === 0) {
+        return `<div class="p-8 text-center text-xs text-gray-500">No reservations overlap this reporting slice.</div>`;
+    }
+    return `
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-xs">
+                <thead class="bg-gray-50 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-4 py-3 text-left">Reservation UID</th>
+                        <th class="px-4 py-3 text-left">Property</th>
+                        <th class="px-4 py-3 text-left">Primary Guest</th>
+                        <th class="px-4 py-3 text-left">Booking Source</th>
+                        <th class="px-4 py-3 text-left">Stay Dates</th>
+                        <th class="px-4 py-3 text-center">In-Period Nights</th>
+                        <th class="px-4 py-3 text-right">Contract Net</th>
+                        <th class="px-4 py-3 text-right">In-Period Attributed</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                    ${slice.attributedReservations.map(r => {
+                        const src = SOURCE_META[r.channelGroup] || SOURCE_META.direct_online;
+                        const isZeroAirbnb = r.channelGroup === 'airbnb' && r.totalPrice === 0;
+                        return `
+                            <tr class="hover:bg-gray-50/80">
+                                <td class="px-4 py-3 whitespace-nowrap font-mono font-semibold text-indigo-700">${r.uid}</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded bg-gray-100 font-semibold text-gray-800">Prop ${r.propertyId}</span></td>
+                                <td class="px-4 py-3 font-medium text-gray-900">
+                                    ${r.guestName}
+                                    ${r.isRetention ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold">Cancelled · Policy Retention</span>` : ''}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-0.5 rounded border text-[11px] font-medium ${src.badge}">${src.label}</span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-mono text-gray-600">${r.checkIn} → ${r.checkOut}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-center">
+                                    <span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-800 font-semibold">${r.isRetention ? '0 (Retained)' : `${r.inPeriodNights} / ${r.totalNights} nights (${Math.round(r.factor * 100)}%)`}</span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right tabular-nums text-gray-600">
+                                    ${formatCop(r.totalPrice - r.refundedAmount)}
+                                    ${r.refundedAmount > 0 ? `<div class="text-[10px] text-rose-600">Refunded: ${formatCopCompact(r.refundedAmount)}</div>` : ''}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right tabular-nums">
+                                    ${isZeroAirbnb
+                                        ? `<button type="button" onclick="promptSetAirbnbPayout('${r.uid}')" class="px-2.5 py-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] cursor-pointer">$0 COP · Set Payout</button>`
+                                        : `<span class="font-bold text-emerald-700">${formatCop(r.attributedRevenue)}</span>`
+                                    }
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// ============================================================================
+// VARIANT A: EXECUTIVE P&L WORKBENCH (Stacked Cards + 3-Col Breakdown + Tabs)
+// ============================================================================
+function renderVariantA(slice) {
+    const s1606 = computeSlice('1606', state.period, state.source, state.category);
+    const s1707 = computeSlice('1707', state.period, state.source, state.category);
+
+    return `
+        <div class="space-y-6">
+            ${renderUnpricedAirbnbAlert(slice)}
+            ${renderSourceFilterNotice()}
+
+            <!-- ROW 1: 3 PRIMARY P&L HERO CARDS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Gross Revenue -->
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Gross Revenue (Realized)</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">+12.4% vs prior</span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-gray-900 mt-2 tabular-nums">${formatCop(slice.grossRevenue)}</div>
+                    <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+                        <div>
+                            <span class="text-gray-400 block">Active Stays</span>
+                            <span class="font-semibold text-gray-800 tabular-nums">${formatCopCompact(slice.activeStayRevenue)}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block">Policy Retention</span>
+                            <span class="font-semibold text-amber-700 tabular-nums">${formatCopCompact(slice.policyRetention)}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block">Refunded</span>
+                            <span class="font-semibold text-rose-600 tabular-nums">${formatCopCompact(slice.refundedAmount)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Expenses -->
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Operational Expenses</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700">Expense Ratio: ${slice.expenseRatioPct.toFixed(1)}%</span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-gray-900 mt-2 tabular-nums">${state.source === 'all' ? formatCop(slice.totalExpenses) : '— (Portfolio Scoped)'}</div>
+                    <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                            <span class="text-gray-400 block">Direct Property Expenses</span>
+                            <span class="font-semibold text-gray-800 tabular-nums">${formatCopCompact(slice.directExpenses)}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block">${state.propertyId === 'all' ? 'Shared Pool (100%)' : 'Allocated Shared (50%)'}</span>
+                            <span class="font-semibold text-amber-700 tabular-nums">${formatCopCompact(slice.allocatedSharedExpenses)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Net Operating Income -->
+                <div class="bg-white rounded-xl border ${slice.noi >= 0 ? 'border-emerald-200' : 'border-rose-200'} p-5 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Net Operating Income (NOI)</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${slice.noi >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            NOI Margin: ${slice.noiMarginPct.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div class="text-2xl font-extrabold ${slice.noi >= 0 ? 'text-emerald-700' : 'text-rose-700'} mt-2 tabular-nums">
+                        ${state.source === 'all' ? formatCop(slice.noi) : '— (Select All Sources)'}
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>Gross Revenue − Operational Expenses</span>
+                        <span class="font-semibold text-emerald-700">+16.8% vs prior</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: 4 HOSPITALITY KPI CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Occupancy Rate</div>
+                    <div class="text-xl font-extrabold text-gray-900 mt-1 tabular-nums">${slice.occupancyPct.toFixed(1)}%</div>
+                    <div class="text-[11px] text-gray-500 mt-1">${slice.occupiedNights} Occupied / ${slice.availableNights} Available Nights (${slice.deductedNights} Maint/Owner deducted)</div>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Average Daily Rate (ADR)</span>
+                        ${slice.unpricedAirbnbCount > 0 ? `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">${slice.unpricedAirbnbCount} Unpriced OTA</span>` : ''}
+                    </div>
+                    <div class="text-xl font-extrabold text-gray-900 mt-1 tabular-nums">${formatCop(slice.adr)}</div>
+                    <div class="text-[11px] text-gray-500 mt-1">Across ${slice.pricedOccupiedNights} priced Occupied Nights (excl. retention)</div>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">RevPAR</div>
+                    <div class="text-xl font-extrabold text-gray-900 mt-1 tabular-nums">${formatCop(slice.revpar)}</div>
+                    <div class="text-[11px] text-gray-500 mt-1">Gross Revenue ÷ ${slice.availableNights} Available Nights</div>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Stays & Cancellations</div>
+                    <div class="text-xl font-extrabold text-gray-900 mt-1 tabular-nums">${slice.activeStaysCount} Active Stays</div>
+                    <div class="text-[11px] text-gray-500 mt-1">${slice.cancelledWithRetentionCount} Settled Cancellation (${formatCopCompact(slice.policyRetention)} retained)</div>
+                </div>
+            </div>
+
+            <!-- ROW 3: 3-COLUMN ANALYTICAL BREAKDOWN GRID -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Col 1: Property 1606 vs 1707 Comparison -->
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Property Performance (1606 vs 1707)</h3>
+                    <div class="space-y-3 pt-1">
+                        ${[['1606', s1606], ['1707', s1707]].map(([pid, s]) => `
+                            <div class="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <div class="flex items-center justify-between text-xs font-bold text-gray-900">
+                                    <span>Property ${pid}</span>
+                                    <span class="text-emerald-700">NOI: ${formatCop(s.noi)} (${s.noiMarginPct.toFixed(0)}%)</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 mt-2 text-[11px] text-gray-600 tabular-nums">
+                                    <div>Rev: <strong>${formatCopCompact(s.grossRevenue)}</strong></div>
+                                    <div>Exp: <strong>${formatCopCompact(s.totalExpenses)}</strong></div>
+                                    <div>Occ: <strong>${s.occupancyPct.toFixed(1)}%</strong></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Col 2: Revenue by Booking Source -->
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Gross Revenue by Booking Source</h3>
+                    <div class="space-y-3 pt-1">
+                        ${['direct_online', 'direct_manual', 'airbnb'].map(k => {
+                            const item = slice.bySource[k];
+                            const pct = slice.grossRevenue > 0 ? (item.revenue / slice.grossRevenue) * 100 : 0;
+                            return `
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="font-medium text-gray-700">${SOURCE_META[k].label} (${item.nights}n)</span>
+                                        <span class="font-bold text-gray-900 tabular-nums">${formatCopCompact(item.revenue)} (${pct.toFixed(0)}%)</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                        <div class="h-full ${SOURCE_META[k].bar}" style="width: ${Math.max(2, pct)}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- Col 3: Operational Expenses by Category -->
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-2.5">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Operational Expenses by Category</h3>
+                    <div class="space-y-2 pt-1 max-h-52 overflow-y-auto pr-1">
+                        ${Object.entries(slice.byCategory).filter(([_, val]) => val > 0).sort((a, b) => b[1] - a[1]).map(([k, val]) => {
+                            const pct = slice.totalExpenses > 0 ? (val / slice.totalExpenses) * 100 : 0;
+                            return `
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="font-medium text-gray-700">${CATEGORY_META[k].label}</span>
+                                        <span class="font-bold text-gray-900 tabular-nums">${formatCopCompact(val)} (${pct.toFixed(0)}%)</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                        <div class="h-full ${CATEGORY_META[k].bar}" style="width: ${Math.max(3, pct)}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 4: TABBED BOTTOM DETAIL LEDGERS -->
+            ${renderLedgerSection(slice)}
+        </div>
+    `;
+}
+
+// ============================================================================
+// VARIANT B: SPLIT-PANE INCOME STATEMENT & LIVE LEDGER (Two-Column Bookkeeper)
+// ============================================================================
+function renderVariantB(slice) {
+    return `
+        <div class="space-y-4">
+            ${renderUnpricedAirbnbAlert(slice)}
+            ${renderSourceFilterNotice()}
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- LEFT PANE (5 cols): Formal Accounting Income Statement Waterfall -->
+                <div class="lg:col-span-5 bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden lg:sticky lg:top-20">
+                    <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold tracking-tight">Income Statement (P&L Waterfall)</h2>
+                            <p class="text-[11px] text-slate-300">${slice.win.label} &bull; ${state.propertyId === 'all' ? 'Portfolio (1606 + 1707)' : 'Property ' + state.propertyId}</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold">
+                            NOI ${slice.noiMarginPct.toFixed(1)}%
+                        </span>
+                    </div>
+
+                    <div class="p-5 space-y-4 text-xs">
+                        <!-- Revenue Section -->
+                        <div>
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">1. Gross Revenue Accrual</div>
+                            <div class="space-y-1.5 tabular-nums">
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Gross Quoted / Charged (Prorated)</span>
+                                    <span>${formatCop(slice.grossCharged)}</span>
+                                </div>
+                                <div class="flex justify-between text-rose-600">
+                                    <span>Less: Refunded Amount</span>
+                                    <span>- ${formatCop(slice.refundedAmount)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600 pl-3 border-l-2 border-gray-200">
+                                    <span>Active Stay Revenue (${slice.occupiedNights} nights)</span>
+                                    <span>${formatCop(slice.activeStayRevenue)}</span>
+                                </div>
+                                <div class="flex justify-between text-amber-700 pl-3 border-l-2 border-amber-300">
+                                    <span>Cancelled Policy Retention (${slice.cancelledWithRetentionCount})</span>
+                                    <span>+ ${formatCop(slice.policyRetention)}</span>
+                                </div>
+                                <div class="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200 text-sm">
+                                    <span>Total Gross Revenue</span>
+                                    <span>${formatCop(slice.grossRevenue)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expense Section -->
+                        <div>
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">2. Operational Expenses by Category</div>
+                            <div class="space-y-1.5 tabular-nums">
+                                ${Object.entries(CATEGORY_META).map(([key, meta]) => {
+                                    const amount = slice.byCategory[key] || 0;
+                                    return `
+                                        <div class="flex justify-between ${amount > 0 ? 'text-gray-800' : 'text-gray-400'}">
+                                            <span>${meta.label}</span>
+                                            <span class="font-medium">${formatCop(amount)}</span>
+                                        </div>
+                                    `;
+                                }).join('')}
+                                <div class="pt-2 border-t border-gray-100 flex justify-between text-[11px] text-gray-500">
+                                    <span>Direct: ${formatCopCompact(slice.directExpenses)} | Shared Alloc: ${formatCopCompact(slice.allocatedSharedExpenses)}</span>
+                                    <span>${slice.expenseRatioPct.toFixed(1)}% of Rev</span>
+                                </div>
+                                <div class="flex justify-between font-bold text-rose-700 pt-1.5 border-t border-gray-200 text-sm">
+                                    <span>Total Operational Expenses</span>
+                                    <span>- ${formatCop(slice.totalExpenses)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Line NOI -->
+                        <div class="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                            <div>
+                                <div class="text-[11px] font-bold uppercase text-emerald-800">Net Operating Income</div>
+                                <div class="text-[11px] text-emerald-700">Margin: ${slice.noiMarginPct.toFixed(1)}%</div>
+                            </div>
+                            <div class="text-lg font-extrabold text-emerald-800 tabular-nums">${formatCop(slice.noi)}</div>
+                        </div>
+
+                        <!-- Compact Hospitality KPI Strip -->
+                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200 text-center">
+                            <div class="p-2 rounded bg-gray-50">
+                                <div class="text-[10px] text-gray-500 uppercase font-semibold">Occupancy</div>
+                                <div class="text-sm font-bold text-gray-900 mt-0.5">${slice.occupancyPct.toFixed(1)}%</div>
+                                <div class="text-[10px] text-gray-400">${slice.occupiedNights}/${slice.availableNights}n</div>
+                            </div>
+                            <div class="p-2 rounded bg-gray-50">
+                                <div class="text-[10px] text-gray-500 uppercase font-semibold">ADR</div>
+                                <div class="text-sm font-bold text-gray-900 mt-0.5">${formatCopCompact(slice.adr)}</div>
+                                <div class="text-[10px] text-gray-400">${slice.pricedOccupiedNights} priced n</div>
+                            </div>
+                            <div class="p-2 rounded bg-gray-50">
+                                <div class="text-[10px] text-gray-500 uppercase font-semibold">RevPAR</div>
+                                <div class="text-sm font-bold text-gray-900 mt-0.5">${formatCopCompact(slice.revpar)}</div>
+                                <div class="text-[10px] text-gray-400">${slice.deductedNights}n blocked</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANE (7 cols): Live Interactive Workspace & Ledgers -->
+                <div class="lg:col-span-7 space-y-4">
+                    ${renderLedgerSection(slice)}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================================
+// VARIANT C: PROPERTY COMPARISON MATRIX & ACTION COCKPIT (1606 vs 1707 First)
+// ============================================================================
+function renderVariantC(slice) {
+    const sAll = computeSlice('all', state.period, state.source, state.category);
+    const s1606 = computeSlice('1606', state.period, state.source, state.category);
+    const s1707 = computeSlice('1707', state.period, state.source, state.category);
+
+    return `
+        <div class="space-y-6">
+            ${renderUnpricedAirbnbAlert(slice)}
+            ${renderSourceFilterNotice()}
+
+            <!-- PROPERTY BENCHMARK COMPARISON MATRIX (Portfolio vs 1606 vs 1707) -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-sm font-bold text-gray-900">Multi-Property Financial & Hospitality Matrix (${slice.win.label})</h2>
+                        <p class="text-xs text-gray-500">Side-by-side P&L and KPI comparison across Portfolio, Property 1606, and Property 1707 (including 50/50 shared expense allocation).</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-xs tabular-nums">
+                        <thead class="bg-gray-100/80 text-[11px] font-bold uppercase text-gray-600">
+                            <tr>
+                                <th class="px-5 py-3 text-left">Metric / Line Item</th>
+                                <th class="px-5 py-3 text-right bg-indigo-50/50 text-indigo-900">Portfolio Total (All)</th>
+                                <th class="px-5 py-3 text-right">Property 1606</th>
+                                <th class="px-5 py-3 text-right">Property 1707</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="bg-gray-50/50 font-semibold text-gray-500 text-[11px] uppercase"><td colspan="4" class="px-5 py-1.5">Hospitality Capacity & Yield KPIs</td></tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">Available Nights (after Maint & Owner Stay)</td>
+                                <td class="px-5 py-2.5 text-right font-semibold bg-indigo-50/20">${sAll.availableNights} / ${sAll.totalCalendarNights} nights</td>
+                                <td class="px-5 py-2.5 text-right">${s1606.availableNights} / ${s1606.totalCalendarNights} nights</td>
+                                <td class="px-5 py-2.5 text-right">${s1707.availableNights} / ${s1707.totalCalendarNights} nights</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">Occupied Nights & Occupancy %</td>
+                                <td class="px-5 py-2.5 text-right font-bold bg-indigo-50/20">${sAll.occupiedNights}n (${sAll.occupancyPct.toFixed(1)}%)</td>
+                                <td class="px-5 py-2.5 text-right font-semibold">${s1606.occupiedNights}n (${s1606.occupancyPct.toFixed(1)}%)</td>
+                                <td class="px-5 py-2.5 text-right font-semibold">${s1707.occupiedNights}n (${s1707.occupancyPct.toFixed(1)}%)</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">Average Daily Rate (ADR — Priced Nights)</td>
+                                <td class="px-5 py-2.5 text-right font-semibold bg-indigo-50/20">${formatCop(sAll.adr)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1606.adr)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1707.adr)}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">RevPAR (Gross Revenue ÷ Available Nights)</td>
+                                <td class="px-5 py-2.5 text-right font-semibold bg-indigo-50/20">${formatCop(sAll.revpar)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1606.revpar)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1707.revpar)}</td>
+                            </tr>
+
+                            <tr class="bg-gray-50/50 font-semibold text-gray-500 text-[11px] uppercase"><td colspan="4" class="px-5 py-1.5">Revenue Breakdown by Booking Source</td></tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">Direct Online (web)</td>
+                                <td class="px-5 py-2.5 text-right bg-indigo-50/20">${formatCop(sAll.bySource.direct_online.revenue)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1606.bySource.direct_online.revenue)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1707.bySource.direct_online.revenue)}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">Direct Manual (bank_transfer / cash / manual)</td>
+                                <td class="px-5 py-2.5 text-right bg-indigo-50/20">${formatCop(sAll.bySource.direct_manual.revenue)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1606.bySource.direct_manual.revenue)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1707.bySource.direct_manual.revenue)}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">External OTA — Airbnb</td>
+                                <td class="px-5 py-2.5 text-right bg-indigo-50/20">${formatCop(sAll.bySource.airbnb.revenue)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1606.bySource.airbnb.revenue)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1707.bySource.airbnb.revenue)}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-amber-800">Included Cancelled Policy Retention</td>
+                                <td class="px-5 py-2.5 text-right text-amber-800 bg-indigo-50/20">${formatCop(sAll.policyRetention)}</td>
+                                <td class="px-5 py-2.5 text-right text-amber-800">${formatCop(s1606.policyRetention)}</td>
+                                <td class="px-5 py-2.5 text-right text-amber-800">${formatCop(s1707.policyRetention)}</td>
+                            </tr>
+                            <tr class="bg-gray-50 font-bold text-gray-900">
+                                <td class="px-5 py-3">Gross Revenue</td>
+                                <td class="px-5 py-3 text-right bg-indigo-50/40">${formatCop(sAll.grossRevenue)}</td>
+                                <td class="px-5 py-3 text-right">${formatCop(s1606.grossRevenue)}</td>
+                                <td class="px-5 py-3 text-right">${formatCop(s1707.grossRevenue)}</td>
+                            </tr>
+
+                            <tr class="bg-gray-50/50 font-semibold text-gray-500 text-[11px] uppercase"><td colspan="4" class="px-5 py-1.5">Operational Expenses & Net Operating Income</td></tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-gray-700">Direct Property Operational Expenses (100%)</td>
+                                <td class="px-5 py-2.5 text-right bg-indigo-50/20">${formatCop(sAll.directExpenses)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1606.directExpenses)}</td>
+                                <td class="px-5 py-2.5 text-right">${formatCop(s1707.directExpenses)}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-2.5 text-amber-800">Shared Portfolio Expenses (Allocated 50/50 per Unit)</td>
+                                <td class="px-5 py-2.5 text-right text-amber-800 bg-indigo-50/20">${formatCop(sAll.allocatedSharedExpenses)} (100%)</td>
+                                <td class="px-5 py-2.5 text-right text-amber-800">${formatCop(s1606.allocatedSharedExpenses)} (50%)</td>
+                                <td class="px-5 py-2.5 text-right text-amber-800">${formatCop(s1707.allocatedSharedExpenses)} (50%)</td>
+                            </tr>
+                            <tr class="font-bold text-rose-700">
+                                <td class="px-5 py-2.5">Total Operational Expenses</td>
+                                <td class="px-5 py-2.5 text-right bg-indigo-50/20">- ${formatCop(sAll.totalExpenses)}</td>
+                                <td class="px-5 py-2.5 text-right">- ${formatCop(s1606.totalExpenses)}</td>
+                                <td class="px-5 py-2.5 text-right">- ${formatCop(s1707.totalExpenses)}</td>
+                            </tr>
+                            <tr class="bg-emerald-50/80 font-extrabold text-emerald-900 text-sm">
+                                <td class="px-5 py-3.5">Net Operating Income (NOI & Margin %)</td>
+                                <td class="px-5 py-3.5 text-right">${formatCop(sAll.noi)} (${sAll.noiMarginPct.toFixed(1)}%)</td>
+                                <td class="px-5 py-3.5 text-right">${formatCop(s1606.noi)} (${s1606.noiMarginPct.toFixed(1)}%)</td>
+                                <td class="px-5 py-3.5 text-right">${formatCop(s1707.noi)} (${s1707.noiMarginPct.toFixed(1)}%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            ${renderLedgerSection(slice)}
+        </div>
+    `;
+}
+
+// ============================================================================
+// CONTROLLER ACTIONS & VARIANT SWITCHER WIRING
+// ============================================================================
+function render() {
+    if (!['A', 'B', 'C'].includes(state.variant)) state.variant = 'A';
+
+    // Sync filter controls
+    document.querySelectorAll('.prop-pill').forEach(btn => {
+        const active = btn.getAttribute('data-prop') === state.propertyId;
+        btn.className = 'prop-pill py-1.5 px-2 rounded-md text-xs font-semibold transition cursor-pointer ' +
+            (active ? 'bg-white text-indigo-700 shadow-2xs' : 'text-gray-600 hover:text-gray-900');
+    });
+    document.getElementById('period-select').value = state.period;
+    document.getElementById('compare-select').value = state.compare;
+    document.getElementById('source-select').value = state.source;
+    document.getElementById('category-select').value = state.category;
+
+    // Sync variant switcher bar
+    document.getElementById('switcher-label').textContent = `${state.variant} — ${VARIANTS[state.variant]}`;
+    ['A', 'B', 'C'].forEach(v => {
+        const pill = document.getElementById('pill-var-' + v);
+        if (pill) {
+            pill.className = 'px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition ' +
+                (state.variant === v ? 'bg-indigo-500 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800');
+        }
+    });
+
+    const slice = computeSlice(state.propertyId, state.period, state.source, state.category);
+    const mount = document.getElementById('variant-mount');
+    if (state.variant === 'A') mount.innerHTML = renderVariantA(slice);
+    else if (state.variant === 'B') mount.innerHTML = renderVariantB(slice);
+    else mount.innerHTML = renderVariantC(slice);
+}
+
+function setVariant(v) {
+    state.variant = v;
+    const url = new URL(window.location.href);
+    url.searchParams.set('variant', v);
+    window.history.replaceState({}, '', url);
+    render();
+}
+
+function cycleVariant(delta) {
+    const keys = ['A', 'B', 'C'];
+    const idx = (keys.indexOf(state.variant) + delta + keys.length) % keys.length;
+    setVariant(keys[idx]);
+}
+
+document.addEventListener('keydown', function(evt) {
+    const tag = (evt.target && evt.target.tagName) || '';
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (evt.target && evt.target.isContentEditable)) return;
+    if (evt.key === 'ArrowLeft') cycleVariant(-1);
+    if (evt.key === 'ArrowRight') cycleVariant(1);
+});
+
+function setFilter(key, val) {
+    state[key] = val;
+    render();
+}
+
+function resetFilters() {
+    state.propertyId = 'all';
+    state.period = '2026-10';
+    state.compare = 'prev_period';
+    state.source = 'all';
+    state.category = 'all';
+    render();
+}
+
+function setLedgerTab(tab) {
+    state.activeLedgerTab = tab;
+    render();
+}
+
+function openExpenseModal(prefill = null) {
+    document.getElementById('modal-error').classList.add('hidden');
+    document.getElementById('exp-id').value = prefill && prefill.editId ? prefill.editId : '';
+    document.getElementById('modal-title').textContent = prefill && prefill.editId
+        ? 'Edit Operational Expense'
+        : (prefill ? 'Duplicate Operational Expense' : 'Record Operational Expense');
+    document.getElementById('exp-property').value = prefill ? prefill.propertyId : (state.propertyId === 'all' ? '1606' : state.propertyId);
+    document.getElementById('exp-category').value = prefill ? prefill.category : 'cleaning';
+    document.getElementById('exp-title').value = prefill ? prefill.title : '';
+    document.getElementById('exp-amount').value = prefill ? prefill.amount : '';
+    document.getElementById('exp-date').value = prefill && prefill.expenseDate ? prefill.expenseDate : '2026-10-16';
+    document.getElementById('exp-vendor').value = prefill && prefill.vendorName ? prefill.vendorName : '';
+    document.getElementById('exp-ref').value = prefill && prefill.referenceCode ? prefill.referenceCode : '';
+    document.getElementById('exp-res-uid').value = prefill && prefill.reservationUid ? prefill.reservationUid : '';
+    document.getElementById('expense-modal').classList.remove('hidden');
+}
+
+function closeExpenseModal() {
+    document.getElementById('expense-modal').classList.add('hidden');
+}
+
+function duplicateExpense(id) {
+    const exp = state.expenses.find(x => x.id === id);
+    if (!exp) return;
+    openExpenseModal({ ...exp, editId: null, expenseDate: '2026-10-16', referenceCode: '' });
+}
+
+function editExpense(id) {
+    const exp = state.expenses.find(x => x.id === id);
+    if (!exp) return;
+    openExpenseModal({ ...exp, editId: exp.id });
+}
+
+function deleteExpense(id) {
+    state.expenses = state.expenses.filter(x => x.id !== id);
+    render();
+}
+
+function saveExpense(evt) {
+    evt.preventDefault();
+    const editId = document.getElementById('exp-id').value;
+    const propertyId = document.getElementById('exp-property').value;
+    const category = document.getElementById('exp-category').value;
+    const title = document.getElementById('exp-title').value.trim();
+    const amount = parseFloat(document.getElementById('exp-amount').value);
+    const expenseDate = document.getElementById('exp-date').value;
+    const vendorName = document.getElementById('exp-vendor').value.trim();
+    const referenceCode = document.getElementById('exp-ref').value.trim();
+    const reservationUid = document.getElementById('exp-res-uid').value.trim();
+    const errEl = document.getElementById('modal-error');
+
+    // Enforce validated reservation_uid & property match invariant (#208)
+    if (reservationUid !== '') {
+        if (propertyId === 'shared') {
+            errEl.textContent = 'HTTP 422 Validation Error: Stay-linked expenses cannot be assigned to Shared Portfolio. Please select Property 1606 or 1707.';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        const found = state.reservations.find(r => r.uid === reservationUid);
+        if (!found) {
+            errEl.textContent = `HTTP 422 Validation Error: Reservation UID "${reservationUid}" was not found in the ledger.`;
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (found.propertyId !== propertyId) {
+            errEl.textContent = `HTTP 422 Validation Error: Reservation "${reservationUid}" belongs to Property ${found.propertyId}, not Property ${propertyId}.`;
+            errEl.classList.remove('hidden');
+            return;
+        }
+    }
+
+    if (editId) {
+        state.expenses = state.expenses.map(x => x.id === parseInt(editId, 10)
+            ? { ...x, propertyId, category, title, amount, expenseDate, vendorName, referenceCode, reservationUid }
+            : x
+        );
+    } else {
+        const nextId = Math.max(200, ...state.expenses.map(x => x.id)) + 1;
+        state.expenses.unshift({
+            id: nextId,
+            uid: 'exp_' + nextId,
+            propertyId,
+            category,
+            title,
+            amount,
+            expenseDate,
+            vendorName,
+            referenceCode,
+            reservationUid
+        });
+    }
+    closeExpenseModal();
+    render();
+}
+
+function promptSetAirbnbPayout(uid) {
+    const r = state.reservations.find(x => x.uid === uid);
+    if (!r) return;
+    const val = window.prompt(`Enter confirmed Airbnb Host Payout in COP for ${r.guestName} (${r.checkIn} to ${r.checkOut}):`, '1850000');
+    if (val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0) {
+        r.totalPrice = parseFloat(val);
+        render();
+    }
+}
+
+function exportCsv(kind) {
+    window.alert(`Streaming filter-aware UTF-8 BOM CSV: /financial-report/export/${kind}.csv?property_id=${state.propertyId}&period=${state.period}&source=${state.source}&category=${state.category}`);
+}
+
+render();
+</script>
+</body>
+</html>
