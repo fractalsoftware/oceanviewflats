@@ -1162,6 +1162,40 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringContainsString('No Refund (Policy Retention)', $body);
     }
 
+    public function testCancelModalDisablesHiddenPartialRefundInputAndAvoidsStepMismatch(): void
+    {
+        $server = ['HTTP_HX_REQUEST' => 'true'];
+        $request = (new Request('GET', '/reservations/res-1/cancel-modal', server: $server))
+            ->withAttribute('uid', 'res-1');
+
+        $response = $this->controller->cancelModal($request, $this->session);
+        $this->assertSame(200, $response->getStatusCode());
+        $body = $response->getBody();
+
+        // 1. Extract the refund_amount input tag
+        $this->assertSame(1, preg_match('/<input[^>]*name="refund_amount"[^>]*>/s', $body, $matches));
+        $inputTag = $matches[0] ?? '';
+
+        // 2. When default refund_type is 'full', the hidden partial refund input MUST be disabled so HTML5 constraint validation ignores it
+        $this->assertMatchesRegularExpression('/\bdisabled\b/', $inputTag);
+
+        // 3. The step attribute MUST NOT combine min="1" with step="1000" (which invalidates all multiples of 1000 via (val - 1) % 1000 != 0)
+        $this->assertStringNotContainsString('step="1000"', $inputTag);
+        $this->assertStringContainsString('step="any"', $inputTag);
+
+        // 4. Radio onchange handlers must toggle the disabled property on #partial-refund-amount in sync with visibility
+        $this->assertStringContainsString("getElementById('partial-refund-amount').disabled = true", $body);
+        $this->assertStringContainsString("getElementById('partial-refund-amount').disabled = false", $body);
+
+        // 5. Verify zero-balance reservation (e.g. Airbnb / $0 COP) also keeps refund_amount disabled and free of invalid min > max constraints
+        $this->pdo->exec("UPDATE reservations SET total_price = 0.00 WHERE reservation_uid = 'res-1'");
+        $zeroResponse = $this->controller->cancelModal($request, $this->session);
+        $this->assertSame(200, $zeroResponse->getStatusCode());
+        $this->assertSame(1, preg_match('/<input[^>]*name="refund_amount"[^>]*>/s', $zeroResponse->getBody(), $zeroMatches));
+        $zeroInputTag = $zeroMatches[0] ?? '';
+        $this->assertMatchesRegularExpression('/\bdisabled\b/', $zeroInputTag);
+    }
+
     public function testCancelModalReturns404ForNonExistentReservation(): void
     {
         $request = (new Request('GET', '/reservations/unknown/cancel-modal'))
