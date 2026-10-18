@@ -635,5 +635,194 @@ final class FinancialReportEngineTest extends TestCase
         $this->assertSame('2026-10-05', $custom->periodStart);
         $this->assertSame('2026-10-15', $custom->periodEnd);
         $this->assertSame(20, $custom->current->totalCalendarNights);
+        $this->assertFalse($custom->isMultiMonth());
+    }
+
+    #[DataProvider('adapterModeProvider')]
+    public function testMultiPropertyComparisonMatrixAndMonthlyTrendsReconcileAcrossAllDimensions(string $mode): void
+    {
+        $harness = $this->createEngineHarness($mode);
+        $resRepo = $harness['resRepo'];
+        $addBlock = $harness['addBlock'];
+        $expRepo = $harness['expRepo'];
+        $engine = $harness['engine'];
+        $refClock = new DateTimeImmutable('2026-10-17 12:00:00', new DateTimeZone('America/Bogota'));
+
+        // Seed reservations across Q4 2026 (Oct, Nov, Dec) covering all 3 commercial Booking Sources + Policy Retention:
+        // 1. Oct 1606 Direct Online: 6 nights, 3,000,000 COP
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_q4_oct_1606_web',
+            propertyId: '1606',
+            guestName: 'Markus Vance',
+            guestEmail: 'markus@example.com',
+            guestPhone: '+573001112233',
+            checkIn: '2026-10-05',
+            checkOut: '2026-10-11',
+            totalPrice: 3000000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'web'
+        ));
+        // 2. Oct-Nov Cross-Month 1707 Direct Manual: Oct 29 -> Nov 03 (5 nights: 3 in Oct, 2 in Nov), 2,500,000 COP
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-man-q4-1707',
+            propertyId: '1707',
+            guestName: 'Lucia Fernandez',
+            guestEmail: 'lucia@example.com',
+            guestPhone: '+573004445566',
+            checkIn: '2026-10-29',
+            checkOut: '2026-11-03',
+            totalPrice: 2500000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'bank_transfer'
+        ));
+        // 3. Nov 1606 External OTA Airbnb: 4 nights, 2,200,000 COP
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-abnb-q4-1606',
+            propertyId: '1606',
+            guestName: 'David Miller',
+            guestEmail: 'david@guest.oceanviewflats.com',
+            guestPhone: '+13055550199',
+            checkIn: '2026-11-10',
+            checkOut: '2026-11-14',
+            totalPrice: 2200000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'airbnb'
+        ));
+        // 4. Dec 1707 Settled Cancelled Policy Retention: 3 nights scheduled, 1,200,000 total, 600,000 refunded => 600,000 retained
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_q4_dec_1707_ret',
+            propertyId: '1707',
+            guestName: 'Carlos Mendoza',
+            guestEmail: 'carlos@example.com',
+            guestPhone: '+573007778899',
+            checkIn: '2026-12-15',
+            checkOut: '2026-12-18',
+            totalPrice: 1200000.0,
+            status: ReservationStatus::CANCELLED,
+            paymentStatus: 'partially_refunded',
+            source: 'web',
+            refundedAmount: 600000.0
+        ));
+
+        // Maintenance block on 1606 in Oct (2 nights)
+        $addBlock(new MaintenanceBlock(
+            propertyId: '1606',
+            startDate: '2026-10-20',
+            endDate: '2026-10-22',
+            reason: 'Preventative AC service'
+        ));
+
+        // Expenses across categories and months (1606, 1707, and shared):
+        $expRepo->save(new OperationalExpense(
+            propertyId: '1606',
+            category: ExpenseCategory::HOA_ADMIN,
+            title: 'HOA 1606 Oct',
+            amount: 720000.0,
+            expenseDate: '2026-10-02'
+        ));
+        $expRepo->save(new OperationalExpense(
+            propertyId: '1707',
+            category: ExpenseCategory::UTILITIES,
+            title: 'Utilities 1707 Nov',
+            amount: 480000.0,
+            expenseDate: '2026-11-05'
+        ));
+        $expRepo->save(new OperationalExpense(
+            propertyId: 'shared',
+            category: ExpenseCategory::SUPPLIES,
+            title: 'Shared Linens Dec',
+            amount: 640000.0,
+            expenseDate: '2026-12-08'
+        ));
+
+        $report = $engine->generate(
+            new FinancialReportFilter(propertyId: 'all', period: 'this_quarter'),
+            $refClock
+        );
+
+        $this->assertTrue($report->showMultiPropertyMatrix());
+        $this->assertTrue($report->isMultiMonth());
+        $this->assertCount(3, $report->monthlyTrends);
+
+        $sAll = $report->portfolioSlice;
+        $s1606 = $report->property1606Slice;
+        $s1707 = $report->property1707Slice;
+
+        // 1. Matrix horizontal reconciliation: Property 1606 + Property 1707 === Portfolio Total
+        $this->assertSame($sAll->totalCalendarNights, $s1606->totalCalendarNights + $s1707->totalCalendarNights);
+        $this->assertSame($sAll->availableNights, $s1606->availableNights + $s1707->availableNights);
+        $this->assertSame($sAll->occupiedNights, $s1606->occupiedNights + $s1707->occupiedNights);
+        $this->assertSame(
+            $sAll->bySource['direct_online']['active_revenue'],
+            $s1606->bySource['direct_online']['active_revenue'] + $s1707->bySource['direct_online']['active_revenue']
+        );
+        $this->assertSame(
+            $sAll->bySource['direct_manual']['active_revenue'],
+            $s1606->bySource['direct_manual']['active_revenue'] + $s1707->bySource['direct_manual']['active_revenue']
+        );
+        $this->assertSame(
+            $sAll->bySource['airbnb']['active_revenue'],
+            $s1606->bySource['airbnb']['active_revenue'] + $s1707->bySource['airbnb']['active_revenue']
+        );
+        $this->assertSame($sAll->policyRetention, $s1606->policyRetention + $s1707->policyRetention);
+        $this->assertSame($sAll->grossRevenue, $s1606->grossRevenue + $s1707->grossRevenue);
+        $this->assertSame($sAll->directExpenses, $s1606->directExpenses + $s1707->directExpenses);
+        $this->assertSame($sAll->allocatedSharedExpenses, $s1606->allocatedSharedExpenses + $s1707->allocatedSharedExpenses);
+        $this->assertSame($sAll->totalExpenses, $s1606->totalExpenses + $s1707->totalExpenses);
+        $this->assertSame($sAll->noi, $s1606->noi + $s1707->noi);
+
+        // 2. Matrix vertical revenue reconciliation: Direct Online + Direct Manual + Airbnb + Policy Retention === Gross Revenue
+        foreach ([$sAll, $s1606, $s1707] as $slice) {
+            $verticalRevenueSum = round(
+                $slice->bySource['direct_online']['active_revenue']
+                + $slice->bySource['direct_manual']['active_revenue']
+                + $slice->bySource['airbnb']['active_revenue']
+                + $slice->policyRetention,
+                2
+            );
+            $this->assertSame($slice->grossRevenue, $verticalRevenueSum);
+        }
+
+        // 3. Monthly P&L Trend rows (2026-10, 2026-11, 2026-12) reconcile to Q4 Portfolio Total
+        $this->assertSame('2026-10', $report->monthlyTrends[0]->periodLabel);
+        $this->assertSame('2026-11', $report->monthlyTrends[1]->periodLabel);
+        $this->assertSame('2026-12', $report->monthlyTrends[2]->periodLabel);
+
+        // Oct: 3,000,000 (1606 web) + 1,500,000 (3/5 of 1707 manual) = 4,500,000 rev; 720,000 exp
+        $this->assertSame(4500000.0, $report->monthlyTrends[0]->grossRevenue);
+        $this->assertSame(720000.0, $report->monthlyTrends[0]->totalExpenses);
+        $this->assertSame(3780000.0, $report->monthlyTrends[0]->noi);
+
+        // Nov: 1,000,000 (2/5 of 1707 manual) + 2,200,000 (1606 airbnb) = 3,200,000 rev; 480,000 exp
+        $this->assertSame(3200000.0, $report->monthlyTrends[1]->grossRevenue);
+        $this->assertSame(480000.0, $report->monthlyTrends[1]->totalExpenses);
+        $this->assertSame(2720000.0, $report->monthlyTrends[1]->noi);
+
+        // Dec: 600,000 (1707 policy retention) rev; 640,000 exp => -40,000 NOI
+        $this->assertSame(600000.0, $report->monthlyTrends[2]->grossRevenue);
+        $this->assertSame(640000.0, $report->monthlyTrends[2]->totalExpenses);
+        $this->assertSame(-40000.0, $report->monthlyTrends[2]->noi);
+
+        $sumAvailable = 0;
+        $sumOccupied = 0;
+        $sumGrossRev = 0.0;
+        $sumExpenses = 0.0;
+        $sumNoi = 0.0;
+        foreach ($report->monthlyTrends as $mSlice) {
+            $sumAvailable += $mSlice->availableNights;
+            $sumOccupied += $mSlice->occupiedNights;
+            $sumGrossRev = round($sumGrossRev + $mSlice->grossRevenue, 2);
+            $sumExpenses = round($sumExpenses + $mSlice->totalExpenses, 2);
+            $sumNoi = round($sumNoi + $mSlice->noi, 2);
+        }
+
+        $this->assertSame($sAll->availableNights, $sumAvailable);
+        $this->assertSame($sAll->occupiedNights, $sumOccupied);
+        $this->assertSame($sAll->grossRevenue, $sumGrossRev);
+        $this->assertSame($sAll->totalExpenses, $sumExpenses);
+        $this->assertSame($sAll->noi, $sumNoi);
     }
 }

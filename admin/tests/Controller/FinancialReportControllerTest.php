@@ -138,6 +138,8 @@ final class FinancialReportControllerTest extends TestCase
     {
         return [
             'GET /financial-report' => ['GET', '/financial-report'],
+            'GET /financial-report/export/expenses.csv' => ['GET', '/financial-report/export/expenses.csv'],
+            'GET /financial-report/export/reservations.csv' => ['GET', '/financial-report/export/reservations.csv'],
             'GET /financial-report/expenses/new' => ['GET', '/financial-report/expenses/new'],
             'POST /financial-report/expenses' => ['POST', '/financial-report/expenses'],
             'GET /financial-report/expenses/1/edit' => ['GET', '/financial-report/expenses/1/edit'],
@@ -693,5 +695,279 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertStringContainsString('id="financial-report-content" class="space-y-6" hx-swap-oob="outerHTML"', $mutateBody);
         $this->assertStringContainsString('$ 2.000.000 COP', $mutateBody);
         $this->assertStringContainsString('$ 4.780.000 COP', $mutateBody);
+    }
+
+    public function testMultiPropertyComparisonMatrixDimensionalBreakdownsAndMonthlyPnlTrendTableRendering(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations');
+        $this->pdo->exec('DELETE FROM calendar_blocks');
+        $this->pdo->exec('DELETE FROM operational_expenses');
+
+        // Seed reservations across Oct and Nov 2026:
+        // - 1606 Direct Online (web): Oct 05 -> Oct 11 (6 nights, 3,000,000 COP)
+        // - 1707 Direct Manual (bank_transfer): Oct 10 -> Oct 15 (5 nights, 2,000,000 COP)
+        // - 1606 External OTA (airbnb): Oct 20 -> Oct 24 (4 nights, 1,600,000 COP)
+        // - 1707 Settled Cancelled Policy Retention (web): Oct 16 -> Oct 19 (3 nights, 1,200,000 total, 800,000 refunded => 400,000 retained)
+        // - 1707 Nov Direct Online (web): Nov 05 -> Nov 10 (5 nights, 2,500,000 COP)
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES
+                ('ovf_oct_web_1606', '1606', 'Markus Vance', 'markus@example.com', '+573001112233', '2026-10-05', '2026-10-11', 3000000, 0, 'confirmed', 'approved', 'web'),
+                ('res-man-oct-1707', '1707', 'Lucia Fernandez', 'lucia@example.com', '+573004445566', '2026-10-10', '2026-10-15', 2000000, 0, 'confirmed', 'approved', 'bank_transfer'),
+                ('res-abnb-oct-1606', '1606', 'David Miller', 'david@guest.oceanviewflats.com', '+13055550199', '2026-10-20', '2026-10-24', 1600000, 0, 'confirmed', 'approved', 'airbnb'),
+                ('ovf_oct_ret_1707', '1707', 'Carlos Mendoza', 'carlos@example.com', '+573007778899', '2026-10-16', '2026-10-19', 1200000, 800000, 'cancelled', 'partially_refunded', 'web'),
+                ('ovf_nov_web_1707', '1707', 'Elena Rostova', 'elena@example.com', '+573009990011', '2026-11-05', '2026-11-10', 2500000, 0, 'confirmed', 'approved', 'web');
+        ");
+
+        // Maintenance block on 1606: Oct 29 -> Oct 31 (2 nights deducted)
+        $this->pdo->exec("
+            INSERT INTO calendar_blocks (property_id, start_date, end_date, reason, created_by)
+            VALUES ('1606', '2026-10-29', '2026-10-31', 'AC Maintenance', 1);
+        ");
+
+        // Operational Expenses in Oct 2026 with distinct category amounts to verify descending sort:
+        // - hoa_admin (1606 direct): 800,000 COP (40.0%)
+        // - supplies (shared): 600,000 COP (30.0%) -> allocated 300,000 to 1606 and 300,000 to 1707
+        // - utilities (1707 direct): 400,000 COP (20.0%)
+        // - cleaning (1606 direct): 200,000 COP (10.0%)
+        // Total Oct Expenses = 2,000,000 COP (Direct = 1,400,000, Shared = 600,000)
+        // Plus Nov 2026 expense on 1707: 500,000 COP
+        $this->pdo->exec("
+            INSERT INTO operational_expenses (expense_uid, property_id, category, title, amount, expense_date, vendor_name, reference_code, created_by)
+            VALUES
+                ('exp_oct_hoa', '1606', 'hoa_admin', 'HOA 1606 Oct', 800000, '2026-10-02', 'Salguero Sunset', 'HOA-10', 1),
+                ('exp_oct_sup', 'shared', 'supplies', 'Shared Hotel Linens', 600000, '2026-10-05', 'Makro', 'SUP-10', 1),
+                ('exp_oct_utl', '1707', 'utilities', 'Utilities 1707 Oct', 400000, '2026-10-08', 'Air-e', 'UTL-10', 1),
+                ('exp_oct_cln', '1606', 'cleaning', 'Turnover Cleaning 1606', 200000, '2026-10-11', 'Marta Ospina', 'CLN-10', 1),
+                ('exp_nov_mnt', '1707', 'maintenance', 'Nov Balcony Repair', 500000, '2026-11-12', 'Tecnicos Caribe', 'MNT-11', 1);
+        ");
+
+        // 1. Request All Properties (this_month = Oct 2026):
+        // Portfolio Total:
+        // - Available Nights: 60 / 62 nights (1606: 29 / 31 nights, 1707: 31 / 31 nights)
+        // - Occupied Nights: 15n (25.0%) (1606: 10n (34.5%), 1707: 5n (16.1%))
+        // - Direct Online (active): $ 3.000.000 COP (1606: $ 3.000.000 COP, 1707: $ 0 COP)
+        // - Direct Manual (active): $ 2.000.000 COP (1606: $ 0 COP, 1707: $ 2.000.000 COP)
+        // - External OTA — Airbnb (active): $ 1.600.000 COP (1606: $ 1.600.000 COP, 1707: $ 0 COP)
+        // - Policy Retention: $ 400.000 COP (1606: $ 0 COP, 1707: $ 400.000 COP)
+        // - Gross Revenue: $ 7.000.000 COP (1606: $ 4.600.000 COP, 1707: $ 2.400.000 COP)
+        // - Direct Property Operational Expenses (100%): $ 1.400.000 COP (1606: $ 1.000.000 COP, 1707: $ 400.000 COP)
+        // - Shared Portfolio Expenses (50/50): $ 600.000 COP (100%) (1606: $ 300.000 COP (50%), 1707: $ 300.000 COP (50%))
+        // - Total Operational Expenses: - $ 2.000.000 COP (1606: - $ 1.300.000 COP, 1707: - $ 700.000 COP)
+        // - Net Operating Income: $ 5.000.000 COP (71.4%) (1606: $ 3.300.000 COP (71.7%), 1707: $ 1.700.000 COP (70.8%))
+        $respAll = $this->app->handle(new Request('GET', '/financial-report'), $this->adminSession);
+        $this->assertSame(200, $respAll->getStatusCode());
+        $bodyAll = $respAll->getBody();
+
+        // Multi-Property Comparison Matrix is rendered when property_id=all
+        $this->assertStringContainsString('id="multi-property-comparison-matrix"', $bodyAll);
+        $this->assertStringContainsString('Portfolio Total (All)', $bodyAll);
+        $this->assertStringContainsString('60 / 62 nights', $bodyAll);
+        $this->assertStringContainsString('29 / 31 nights', $bodyAll);
+        $this->assertStringContainsString('31 / 31 nights', $bodyAll);
+        $this->assertStringContainsString('15n (25.0%)', $bodyAll);
+        $this->assertStringContainsString('10n (34.5%)', $bodyAll);
+        $this->assertStringContainsString('5n (16.1%)', $bodyAll);
+        $this->assertStringContainsString('$ 600.000 COP (100%)', $bodyAll);
+        $this->assertStringContainsString('$ 300.000 COP (50%)', $bodyAll);
+        $this->assertStringContainsString('- $ 2.000.000 COP', $bodyAll);
+        $this->assertStringContainsString('- $ 1.300.000 COP', $bodyAll);
+        $this->assertStringContainsString('- $ 700.000 COP', $bodyAll);
+        $this->assertStringContainsString('$ 5.000.000 COP (71.4%)', $bodyAll);
+        $this->assertStringContainsString('$ 3.300.000 COP (71.7%)', $bodyAll);
+        $this->assertStringContainsString('$ 1.700.000 COP (70.8%)', $bodyAll);
+
+        // Single-month window does NOT render Monthly P&L Trend Table
+        $this->assertStringNotContainsString('id="monthly-pnl-trend-table"', $bodyAll);
+
+        // Verify Booking Source breakdown panel (Direct Online = 3,400,000 incl. 400k retention = 48.6%, Direct Manual = 2,000,000 = 28.6%, Airbnb = 1,600,000 = 22.9%)
+        $this->assertStringContainsString('id="booking-source-breakdown-panel"', $bodyAll);
+        $this->assertStringContainsString('data-booking-source-row="direct_online"', $bodyAll);
+        $this->assertStringContainsString('$ 3.400.000 COP (48.6%)', $bodyAll);
+        $this->assertStringContainsString('data-booking-source-row="direct_manual"', $bodyAll);
+        $this->assertStringContainsString('$ 2.000.000 COP (28.6%)', $bodyAll);
+        $this->assertStringContainsString('data-booking-source-row="airbnb"', $bodyAll);
+        $this->assertStringContainsString('$ 1.600.000 COP (22.9%)', $bodyAll);
+
+        // Verify Expense Category breakdown panel is sorted descending across the 8 canonical categories:
+        // hoa_admin ($800k, 40.0%) -> supplies ($600k, 30.0%) -> utilities ($400k, 20.0%) -> cleaning ($200k, 10.0%) -> remaining 0% categories
+        $this->assertStringContainsString('id="expense-category-breakdown-panel"', $bodyAll);
+        $this->assertStringContainsString('$ 800.000 COP (40.0%)', $bodyAll);
+        $this->assertStringContainsString('$ 600.000 COP (30.0%)', $bodyAll);
+        $this->assertStringContainsString('$ 400.000 COP (20.0%)', $bodyAll);
+        $this->assertStringContainsString('$ 200.000 COP (10.0%)', $bodyAll);
+
+        $posHoa = strpos($bodyAll, 'data-expense-category-row="hoa_admin"');
+        $posSup = strpos($bodyAll, 'data-expense-category-row="supplies"');
+        $posUtl = strpos($bodyAll, 'data-expense-category-row="utilities"');
+        $posCln = strpos($bodyAll, 'data-expense-category-row="cleaning"');
+        $posMnt = strpos($bodyAll, 'data-expense-category-row="maintenance"');
+        $this->assertNotFalse($posHoa);
+        $this->assertNotFalse($posSup);
+        $this->assertNotFalse($posUtl);
+        $this->assertNotFalse($posCln);
+        $this->assertNotFalse($posMnt);
+        $this->assertLessThan($posSup, $posHoa);
+        $this->assertLessThan($posUtl, $posSup);
+        $this->assertLessThan($posCln, $posUtl);
+        $this->assertLessThan($posMnt, $posCln);
+
+        // 2. When Property Filter is 1606 or 1707, Multi-Property Comparison Matrix is NOT rendered
+        $resp1606 = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['property_id' => '1606'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resp1606->getStatusCode());
+        $this->assertStringNotContainsString('id="multi-property-comparison-matrix"', $resp1606->getBody());
+
+        $resp1707 = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['property_id' => '1707'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resp1707->getStatusCode());
+        $this->assertStringNotContainsString('id="multi-property-comparison-matrix"', $resp1707->getBody());
+
+        // 3. Multi-Month Period (this_quarter = Q4 2026) renders the Monthly P&L Trend Table with YYYY-MM rows and inline bars
+        $respQuarter = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['period' => 'this_quarter'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $respQuarter->getStatusCode());
+        $bodyQuarter = $respQuarter->getBody();
+        $this->assertStringContainsString('id="monthly-pnl-trend-table"', $bodyQuarter);
+        $this->assertStringContainsString('data-trend-month="2026-10"', $bodyQuarter);
+        $this->assertStringContainsString('data-trend-month="2026-11"', $bodyQuarter);
+        $this->assertStringContainsString('data-trend-month="2026-12"', $bodyQuarter);
+        $this->assertStringContainsString('trend-revenue-bar', $bodyQuarter);
+        $this->assertStringContainsString('trend-expense-bar', $bodyQuarter);
+    }
+
+    public function testFilterAwareUtf8BomCsvExportsAndDynamicHeaderActionsLinks(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations');
+        $this->pdo->exec('DELETE FROM operational_expenses');
+
+        // Seed reservations across properties and sources in Oct 2026
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES
+                ('ovf_csv_web_1606', '1606', 'Markus Vance', 'markus@example.com', '+573001112233', '2026-10-05', '2026-10-10', 2500000, 0, 'confirmed', 'approved', 'web'),
+                ('res-abnb-csv-1707', '1707', 'Sophie Laurent', 'sophie@guest.oceanviewflats.com', '+33612345678', '2026-10-12', '2026-10-16', 1800000, 0, 'confirmed', 'approved', 'airbnb'),
+                ('ovf_csv_sep_1606', '1606', 'September Guest', 'sep@example.com', '+573009998877', '2026-09-10', '2026-09-15', 2000000, 0, 'confirmed', 'approved', 'web');
+        ");
+
+        // Seed expenses across 1606, 1707, and shared
+        $this->pdo->exec("
+            INSERT INTO operational_expenses (expense_uid, property_id, category, title, amount, expense_date, vendor_name, reference_code, reservation_uid, notes, created_by)
+            VALUES
+                ('exp_csv_1606_cln', '1606', 'cleaning', 'Turnover Cleaning 1606', 180000, '2026-10-10', 'Marta Ospina', 'CLN-1606', 'ovf_csv_web_1606', 'Deep clean', 1),
+                ('exp_csv_1707_utl', '1707', 'utilities', 'Energia Air-e 1707', 450000, '2026-10-14', 'Air-e', 'UTL-1707', NULL, 'Monthly bill', 1),
+                ('exp_csv_shared_sup', 'shared', 'supplies', 'Shared Coffee & Linens', 600000, '2026-10-15', 'Makro', 'SUP-SHARED', NULL, '50/50 split', 1);
+        ");
+
+        // 1. Verify header actions carry dynamic filter query parameters and update via hx-swap-oob on HTMX filter change
+        $htmxFilterResp = $this->app->handle(
+            new Request(
+                method: 'GET',
+                uri: '/financial-report',
+                query: [
+                    'property_id' => '1606',
+                    'period' => 'custom',
+                    'date_from' => '2026-10-01',
+                    'date_to' => '2026-11-01',
+                    'source' => 'direct_online',
+                    'category' => 'cleaning',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $htmxFilterResp->getStatusCode());
+        $htmxBody = $htmxFilterResp->getBody();
+        $this->assertStringContainsString('id="financial-report-header-actions" class="flex flex-wrap items-center gap-2.5" hx-swap-oob="outerHTML"', $htmxBody);
+        $this->assertStringContainsString('/financial-report/export/reservations.csv?property_id=1606&amp;period=custom&amp;date_from=2026-10-01&amp;date_to=2026-11-01&amp;compare=prev_period&amp;source=direct_online&amp;category=cleaning', $htmxBody);
+        $this->assertStringContainsString('/financial-report/export/expenses.csv?property_id=1606&amp;period=custom&amp;date_from=2026-10-01&amp;date_to=2026-11-01&amp;compare=prev_period&amp;source=direct_online&amp;category=cleaning', $htmxBody);
+
+        // 2. Export Expenses CSV for Property 1606 (includes 100% of 1606 direct + 50% of shared, excludes 1707 direct)
+        $expCsvResp = $this->app->handle(
+            new Request(
+                method: 'GET',
+                uri: '/financial-report/export/expenses.csv',
+                query: ['property_id' => '1606', 'period' => 'this_month']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $expCsvResp->getStatusCode());
+        $this->assertSame('text/csv; charset=UTF-8', $expCsvResp->getHeader('Content-Type'));
+        $this->assertStringContainsString('attachment; filename="operational-expenses-1606-2026-10-01-to-2026-11-01.csv"', (string) $expCsvResp->getHeader('Content-Disposition'));
+
+        $expCsvBody = $expCsvResp->getBody();
+        // Starts with UTF-8 BOM (\xEF\xBB\xBF)
+        $this->assertTrue(str_starts_with($expCsvBody, "\xEF\xBB\xBF"));
+
+        $expCsvLines = array_values(array_filter(explode("\n", trim(substr($expCsvBody, 3)))));
+        $this->assertCount(3, $expCsvLines); // Header + 2 rows (exp_csv_shared_sup + exp_csv_1606_cln)
+        $headerRow = str_getcsv($expCsvLines[0], ',', '"', '');
+        $this->assertSame([
+            'expense_uid',
+            'expense_date',
+            'property_id',
+            'category',
+            'category_label',
+            'title',
+            'vendor_name',
+            'reference_code',
+            'reservation_uid',
+            'raw_amount_cop',
+            'allocation_factor',
+            'allocated_amount_cop',
+            'notes',
+        ], $headerRow);
+
+        $this->assertStringContainsString('exp_csv_1606_cln', $expCsvBody);
+        $this->assertStringContainsString('180000.00,1.00,180000.00', $expCsvBody);
+        $this->assertStringContainsString('exp_csv_shared_sup', $expCsvBody);
+        $this->assertStringContainsString('600000.00,0.50,300000.00', $expCsvBody);
+        $this->assertStringNotContainsString('exp_csv_1707_utl', $expCsvBody);
+
+        // Filter Expenses CSV by category = cleaning -> only exp_csv_1606_cln
+        $expCatCsvResp = $this->app->handle(
+            new Request(
+                method: 'GET',
+                uri: '/financial-report/export/expenses.csv',
+                query: ['property_id' => 'all', 'period' => 'this_month', 'category' => 'cleaning']
+            ),
+            $this->superadminSession
+        );
+        $this->assertSame(200, $expCatCsvResp->getStatusCode());
+        $expCatCsvBody = $expCatCsvResp->getBody();
+        $this->assertStringContainsString('exp_csv_1606_cln', $expCatCsvBody);
+        $this->assertStringNotContainsString('exp_csv_shared_sup', $expCatCsvBody);
+        $this->assertStringNotContainsString('exp_csv_1707_utl', $expCatCsvBody);
+
+        // 3. Export Reservations CSV filtered by source = airbnb and period = this_month
+        $resCsvResp = $this->app->handle(
+            new Request(
+                method: 'GET',
+                uri: '/financial-report/export/reservations.csv',
+                query: ['property_id' => 'all', 'period' => 'this_month', 'source' => 'airbnb']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resCsvResp->getStatusCode());
+        $this->assertSame('text/csv; charset=UTF-8', $resCsvResp->getHeader('Content-Type'));
+        $this->assertStringContainsString('attachment; filename="attributed-reservations-all-2026-10-01-to-2026-11-01.csv"', (string) $resCsvResp->getHeader('Content-Disposition'));
+
+        $resCsvBody = $resCsvResp->getBody();
+        $this->assertTrue(str_starts_with($resCsvBody, "\xEF\xBB\xBF"));
+        $this->assertStringContainsString('res-abnb-csv-1707', $resCsvBody);
+        $this->assertStringContainsString('Sophie Laurent', $resCsvBody);
+        $this->assertStringContainsString('1800000.00', $resCsvBody);
+        $this->assertStringNotContainsString('ovf_csv_web_1606', $resCsvBody);
+        $this->assertStringNotContainsString('ovf_csv_sep_1606', $resCsvBody);
     }
 }

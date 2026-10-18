@@ -474,6 +474,207 @@ final class FinancialReportController
     }
 
     /**
+     * GET /financial-report/export/expenses.csv:
+     * Streams a filter-aware UTF-8 BOM CSV file of Operational Expenses via native fputcsv().
+     *
+     * @param array<string, mixed> $session
+     */
+    public function exportExpensesCsv(Request $request, array &$session): Response
+    {
+        if (empty($session['admin_user_id'])) {
+            return $request->isHtmx()
+                ? Response::htmxUnauthorized('/login')
+                : Response::redirect('/login', 302);
+        }
+
+        $currentUser = $this->buildCurrentUser($session);
+        if (!$this->isAuthorized($currentUser)) {
+            return $this->forbiddenResponse($request, $currentUser, $session);
+        }
+
+        $filters = $this->resolveFiltersFromRequest($request);
+        $filterModel = FinancialReportFilter::fromArray($filters);
+        $reportData = $this->reportEngine->generate($filterModel, $this->now);
+        $slice = $reportData->current;
+
+        $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            return Response::html('Unable to initialize CSV export stream.', 500);
+        }
+
+        fwrite($stream, "\xEF\xBB\xBF");
+
+        fputcsv($stream, [
+            'expense_uid',
+            'expense_date',
+            'property_id',
+            'category',
+            'category_label',
+            'title',
+            'vendor_name',
+            'reference_code',
+            'reservation_uid',
+            'raw_amount_cop',
+            'allocation_factor',
+            'allocated_amount_cop',
+            'notes',
+        ], ',', '"', '');
+
+        foreach ($slice->allocatedExpenses as $allocatedRow) {
+            $expense = $allocatedRow->expense;
+            fputcsv($stream, [
+                $expense->expenseUid,
+                $expense->expenseDate,
+                $expense->propertyId,
+                $expense->category->value,
+                $expense->category->label(),
+                $expense->title,
+                (string) ($expense->vendorName ?? ''),
+                (string) ($expense->referenceCode ?? ''),
+                (string) ($expense->reservationUid ?? ''),
+                number_format($expense->amount, 2, '.', ''),
+                number_format($allocatedRow->allocationFactor, 2, '.', ''),
+                number_format($allocatedRow->allocatedAmount, 2, '.', ''),
+                (string) ($expense->notes ?? ''),
+            ], ',', '"', '');
+        }
+
+        rewind($stream);
+        $csvBody = (string) stream_get_contents($stream);
+        fclose($stream);
+
+        $filename = sprintf(
+            'operational-expenses-%s-%s-to-%s.csv',
+            $filterModel->propertyId,
+            $reportData->periodStart,
+            $reportData->periodEnd
+        );
+
+        return new Response(
+            statusCode: 200,
+            body: $csvBody,
+            headers: [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]
+        );
+    }
+
+    /**
+     * GET /financial-report/export/reservations.csv:
+     * Streams a filter-aware UTF-8 BOM CSV file of Attributed Reservations via native fputcsv().
+     *
+     * @param array<string, mixed> $session
+     */
+    public function exportReservationsCsv(Request $request, array &$session): Response
+    {
+        if (empty($session['admin_user_id'])) {
+            return $request->isHtmx()
+                ? Response::htmxUnauthorized('/login')
+                : Response::redirect('/login', 302);
+        }
+
+        $currentUser = $this->buildCurrentUser($session);
+        if (!$this->isAuthorized($currentUser)) {
+            return $this->forbiddenResponse($request, $currentUser, $session);
+        }
+
+        $filters = $this->resolveFiltersFromRequest($request);
+        $filterModel = FinancialReportFilter::fromArray($filters);
+        $reportData = $this->reportEngine->generate($filterModel, $this->now);
+        $slice = $reportData->current;
+
+        $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            return Response::html('Unable to initialize CSV export stream.', 500);
+        }
+
+        fwrite($stream, "\xEF\xBB\xBF");
+
+        fputcsv($stream, [
+            'reservation_uid',
+            'property_id',
+            'guest_name',
+            'booking_source',
+            'channel_group',
+            'channel_label',
+            'status',
+            'payment_status',
+            'check_in',
+            'check_out',
+            'total_nights',
+            'in_period_nights',
+            'proration_factor',
+            'total_price_cop',
+            'refunded_amount_cop',
+            'contract_net_cop',
+            'in_period_attributed_revenue_cop',
+            'attribution_type',
+        ], ',', '"', '');
+
+        $searchNeedle = strtolower($filterModel->search);
+
+        foreach ($slice->attributedReservations as $row) {
+            if ($searchNeedle !== '') {
+                $haystack = strtolower(implode(' ', [
+                    $row->reservationUid,
+                    $row->propertyId,
+                    $row->guestName,
+                    $row->source,
+                    $row->channelGroup->value,
+                    $row->channelGroup->label(),
+                ]));
+                if (!str_contains($haystack, $searchNeedle)) {
+                    continue;
+                }
+            }
+
+            fputcsv($stream, [
+                $row->reservationUid,
+                $row->propertyId,
+                $row->guestName,
+                $row->source,
+                $row->channelGroup->value,
+                $row->channelGroup->label(),
+                $row->status,
+                (string) ($row->paymentStatus ?? ''),
+                $row->checkIn,
+                $row->checkOut,
+                (string) $row->totalNights,
+                (string) $row->inPeriodNights,
+                number_format($row->prorationFactor, 4, '.', ''),
+                number_format($row->totalPrice, 2, '.', ''),
+                number_format($row->refundedAmount, 2, '.', ''),
+                number_format($row->contractNet, 2, '.', ''),
+                number_format($row->attributedRevenue, 2, '.', ''),
+                $row->isRetention ? 'policy_retention' : 'active_stay',
+            ], ',', '"', '');
+        }
+
+        rewind($stream);
+        $csvBody = (string) stream_get_contents($stream);
+        fclose($stream);
+
+        $filename = sprintf(
+            'attributed-reservations-%s-%s-to-%s.csv',
+            $filterModel->propertyId,
+            $reportData->periodStart,
+            $reportData->periodEnd
+        );
+
+        return new Response(
+            statusCode: 200,
+            body: $csvBody,
+            headers: [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]
+        );
+    }
+
+    /**
      * @param array<string, string> $form
      * @return array{errors: list<string>, fieldErrors: array<string, string>}
      */

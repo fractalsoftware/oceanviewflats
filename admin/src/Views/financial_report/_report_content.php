@@ -301,27 +301,168 @@ if (!function_exists('formatCopCompactCurrency')) {
         </div>
     </div>
 
+    <!-- MULTI-PROPERTY COMPARISON MATRIX (Rendered when Property Filter = All Properties) -->
+    <?php if ($report->showMultiPropertyMatrix()):
+        $sAll = $report->portfolioSlice;
+        $s1606 = $report->property1606Slice;
+        $s1707 = $report->property1707Slice;
+
+        $sAllNoi = $isChannelScoped ? $sAll->allSourcesNoi : $sAll->noi;
+        $sAllNoiMargin = $isChannelScoped ? $sAll->allSourcesNoiMarginPct : $sAll->noiMarginPct;
+        $s1606Noi = $isChannelScoped ? $s1606->allSourcesNoi : $s1606->noi;
+        $s1606NoiMargin = $isChannelScoped ? $s1606->allSourcesNoiMarginPct : $s1606->noiMarginPct;
+        $s1707Noi = $isChannelScoped ? $s1707->allSourcesNoi : $s1707->noi;
+        $s1707NoiMargin = $isChannelScoped ? $s1707->allSourcesNoiMarginPct : $s1707->noiMarginPct;
+    ?>
+        <div id="multi-property-comparison-matrix" class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+            <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900">
+                        Multi-Property Financial &amp; Hospitality Matrix (<?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?>)
+                    </h2>
+                    <p class="text-xs text-gray-500">
+                        Side-by-side P&amp;L and KPI comparison across Portfolio Total, Property 1606, and Property 1707 (including 50/50 shared expense allocation).
+                    </p>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    1606 + 1707 = Portfolio Total
+                </span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-xs tabular-nums">
+                    <thead class="bg-gray-100/80 text-[11px] font-bold uppercase text-gray-600">
+                        <tr>
+                            <th scope="col" class="px-5 py-3 text-left">Metric / Line Item</th>
+                            <th scope="col" class="px-5 py-3 text-right bg-indigo-50/50 text-indigo-900">Portfolio Total (All)</th>
+                            <th scope="col" class="px-5 py-3 text-right">Property 1606</th>
+                            <th scope="col" class="px-5 py-3 text-right">Property 1707</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        <!-- Section 1: Hospitality Capacity & Yield KPIs -->
+                        <tr class="bg-gray-50/50 font-semibold text-gray-500 text-[11px] uppercase">
+                            <td colspan="4" class="px-5 py-1.5">Hospitality Capacity &amp; Yield KPIs</td>
+                        </tr>
+                        <tr data-matrix-row="available-nights">
+                            <td class="px-5 py-2.5 text-gray-700">Available Nights (vs. Total Calendar Nights)</td>
+                            <td class="px-5 py-2.5 text-right font-semibold bg-indigo-50/20"><?= $sAll->availableNights ?> / <?= $sAll->totalCalendarNights ?> nights</td>
+                            <td class="px-5 py-2.5 text-right"><?= $s1606->availableNights ?> / <?= $s1606->totalCalendarNights ?> nights</td>
+                            <td class="px-5 py-2.5 text-right"><?= $s1707->availableNights ?> / <?= $s1707->totalCalendarNights ?> nights</td>
+                        </tr>
+                        <tr data-matrix-row="occupied-nights">
+                            <td class="px-5 py-2.5 text-gray-700">Occupied Nights &amp; Occupancy %</td>
+                            <td class="px-5 py-2.5 text-right font-bold bg-indigo-50/20"><?= $sAll->occupiedNights ?>n (<?= number_format($sAll->occupancyPct, 1) ?>%)</td>
+                            <td class="px-5 py-2.5 text-right font-semibold"><?= $s1606->occupiedNights ?>n (<?= number_format($s1606->occupancyPct, 1) ?>%)</td>
+                            <td class="px-5 py-2.5 text-right font-semibold"><?= $s1707->occupiedNights ?>n (<?= number_format($s1707->occupancyPct, 1) ?>%)</td>
+                        </tr>
+                        <tr data-matrix-row="adr">
+                            <td class="px-5 py-2.5 text-gray-700">Average Daily Rate (ADR &mdash; Priced Nights)</td>
+                            <td class="px-5 py-2.5 text-right font-semibold bg-indigo-50/20"><?= formatCopCurrency($sAll->adr) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1606->adr) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1707->adr) ?></td>
+                        </tr>
+                        <tr data-matrix-row="revpar">
+                            <td class="px-5 py-2.5 text-gray-700">RevPAR (Gross Revenue &divide; Available Nights)</td>
+                            <td class="px-5 py-2.5 text-right font-semibold bg-indigo-50/20"><?= formatCopCurrency($sAll->revpar) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1606->revpar) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1707->revpar) ?></td>
+                        </tr>
+
+                        <!-- Section 2: Revenue Breakdown by Booking Source -->
+                        <tr class="bg-gray-50/50 font-semibold text-gray-500 text-[11px] uppercase">
+                            <td colspan="4" class="px-5 py-1.5">Revenue Breakdown by Booking Source</td>
+                        </tr>
+                        <tr data-matrix-row="source-direct-online">
+                            <td class="px-5 py-2.5 text-gray-700">Direct Online (web)</td>
+                            <td class="px-5 py-2.5 text-right bg-indigo-50/20"><?= formatCopCurrency((float) ($sAll->bySource['direct_online']['active_revenue'] ?? 0.0)) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency((float) ($s1606->bySource['direct_online']['active_revenue'] ?? 0.0)) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency((float) ($s1707->bySource['direct_online']['active_revenue'] ?? 0.0)) ?></td>
+                        </tr>
+                        <tr data-matrix-row="source-direct-manual">
+                            <td class="px-5 py-2.5 text-gray-700">Direct Manual (bank_transfer / cash / manual)</td>
+                            <td class="px-5 py-2.5 text-right bg-indigo-50/20"><?= formatCopCurrency((float) ($sAll->bySource['direct_manual']['active_revenue'] ?? 0.0)) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency((float) ($s1606->bySource['direct_manual']['active_revenue'] ?? 0.0)) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency((float) ($s1707->bySource['direct_manual']['active_revenue'] ?? 0.0)) ?></td>
+                        </tr>
+                        <tr data-matrix-row="source-airbnb">
+                            <td class="px-5 py-2.5 text-gray-700">External OTA — Airbnb</td>
+                            <td class="px-5 py-2.5 text-right bg-indigo-50/20"><?= formatCopCurrency((float) ($sAll->bySource['airbnb']['active_revenue'] ?? 0.0)) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency((float) ($s1606->bySource['airbnb']['active_revenue'] ?? 0.0)) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency((float) ($s1707->bySource['airbnb']['active_revenue'] ?? 0.0)) ?></td>
+                        </tr>
+                        <tr data-matrix-row="policy-retention">
+                            <td class="px-5 py-2.5 text-amber-800">Policy Retention (Settled Cancellations)</td>
+                            <td class="px-5 py-2.5 text-right text-amber-800 bg-indigo-50/20"><?= formatCopCurrency($sAll->policyRetention) ?></td>
+                            <td class="px-5 py-2.5 text-right text-amber-800"><?= formatCopCurrency($s1606->policyRetention) ?></td>
+                            <td class="px-5 py-2.5 text-right text-amber-800"><?= formatCopCurrency($s1707->policyRetention) ?></td>
+                        </tr>
+                        <tr data-matrix-row="gross-revenue" class="bg-gray-50 font-bold text-gray-900">
+                            <td class="px-5 py-3">Gross Revenue</td>
+                            <td class="px-5 py-3 text-right bg-indigo-50/40"><?= formatCopCurrency($sAll->grossRevenue) ?></td>
+                            <td class="px-5 py-3 text-right"><?= formatCopCurrency($s1606->grossRevenue) ?></td>
+                            <td class="px-5 py-3 text-right"><?= formatCopCurrency($s1707->grossRevenue) ?></td>
+                        </tr>
+
+                        <!-- Section 3: Operational Expenses & Net Operating Income -->
+                        <tr class="bg-gray-50/50 font-semibold text-gray-500 text-[11px] uppercase">
+                            <td colspan="4" class="px-5 py-1.5">Operational Expenses &amp; Net Operating Income</td>
+                        </tr>
+                        <tr data-matrix-row="direct-expenses">
+                            <td class="px-5 py-2.5 text-gray-700">Direct Property Operational Expenses (100%)</td>
+                            <td class="px-5 py-2.5 text-right bg-indigo-50/20"><?= formatCopCurrency($sAll->directExpenses) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1606->directExpenses) ?></td>
+                            <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1707->directExpenses) ?></td>
+                        </tr>
+                        <tr data-matrix-row="shared-expenses">
+                            <td class="px-5 py-2.5 text-amber-800">Shared Portfolio Expenses (Allocated 50/50 per Unit)</td>
+                            <td class="px-5 py-2.5 text-right text-amber-800 bg-indigo-50/20"><?= formatCopCurrency($sAll->allocatedSharedExpenses) ?> (100%)</td>
+                            <td class="px-5 py-2.5 text-right text-amber-800"><?= formatCopCurrency($s1606->allocatedSharedExpenses) ?> (50%)</td>
+                            <td class="px-5 py-2.5 text-right text-amber-800"><?= formatCopCurrency($s1707->allocatedSharedExpenses) ?> (50%)</td>
+                        </tr>
+                        <tr data-matrix-row="total-expenses" class="font-bold text-rose-700">
+                            <td class="px-5 py-2.5">Total Operational Expenses</td>
+                            <td class="px-5 py-2.5 text-right bg-indigo-50/20">- <?= formatCopCurrency($sAll->totalExpenses) ?></td>
+                            <td class="px-5 py-2.5 text-right">- <?= formatCopCurrency($s1606->totalExpenses) ?></td>
+                            <td class="px-5 py-2.5 text-right">- <?= formatCopCurrency($s1707->totalExpenses) ?></td>
+                        </tr>
+                        <tr data-matrix-row="noi" class="bg-emerald-50/80 font-extrabold text-emerald-900 text-sm">
+                            <td class="px-5 py-3.5">Net Operating Income (NOI &amp; Margin %)</td>
+                            <td class="px-5 py-3.5 text-right"><?= formatCopCurrency($sAllNoi) ?> (<?= number_format($sAllNoiMargin, 1) ?>%)</td>
+                            <td class="px-5 py-3.5 text-right"><?= formatCopCurrency($s1606Noi) ?> (<?= number_format($s1606NoiMargin, 1) ?>%)</td>
+                            <td class="px-5 py-3.5 text-right"><?= formatCopCurrency($s1707Noi) ?> (<?= number_format($s1707NoiMargin, 1) ?>%)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- ROW 3: DIMENSIONAL BREAKDOWNS (Booking Source & Expense Category) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div id="dimensional-breakdowns" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Gross Revenue by Booking Source -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-3">
+        <div id="booking-source-breakdown-panel" class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-3">
             <div class="flex items-center justify-between">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Gross Revenue by Booking Source</h3>
-                <span class="text-[11px] text-gray-500">All Channels: <?= formatCopCompactCurrency($slice->allSourcesGrossRevenue) ?></span>
+                <span class="text-[11px] text-gray-500">Total: <?= formatCopCurrency($slice->grossRevenue) ?></span>
             </div>
-            <div class="space-y-3 pt-1">
+            <div class="space-y-3.5 pt-1">
                 <?php foreach (BookingSourceGroup::commercialCases() as $srcGroup):
                     $srcItem = $slice->bySource[$srcGroup->value] ?? ['revenue' => 0.0, 'nights' => 0, 'count' => 0];
                     $srcRev = (float) $srcItem['revenue'];
                     $srcNights = (int) $srcItem['nights'];
-                    $srcPct = $slice->allSourcesGrossRevenue > 0.0
-                        ? ($srcRev / $slice->allSourcesGrossRevenue) * 100.0
+                    $srcPct = $slice->grossRevenue > 0.0
+                        ? ($srcRev / $slice->grossRevenue) * 100.0
                         : 0.0;
                 ?>
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="font-medium text-gray-700"><?= htmlspecialchars($srcGroup->label(), ENT_QUOTES, 'UTF-8') ?> (<?= $srcNights ?>n)</span>
-                            <span class="font-bold text-gray-900 tabular-nums"><?= formatCopCompactCurrency($srcRev) ?> (<?= number_format($srcPct, 0) ?>%)</span>
+                    <div data-booking-source-row="<?= htmlspecialchars($srcGroup->value, ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="flex justify-between items-baseline text-xs mb-1 gap-2">
+                            <span class="font-medium text-gray-700">
+                                <?= htmlspecialchars($srcGroup->label(), ENT_QUOTES, 'UTF-8') ?>
+                                <span class="text-gray-400 font-normal">(<?= $srcNights ?> <?= $srcNights === 1 ? 'night' : 'nights' ?>)</span>
+                            </span>
+                            <span class="font-bold text-gray-900 tabular-nums">
+                                <?= formatCopCurrency($srcRev) ?> (<?= number_format($srcPct, 1) ?>%)
+                            </span>
                         </div>
                         <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div class="h-full <?= htmlspecialchars($srcGroup->barClass(), ENT_QUOTES, 'UTF-8') ?>" style="width: <?= $srcRev > 0.0 ? max(3, (int) round($srcPct)) : 0 ?>%"></div>
@@ -331,40 +472,141 @@ if (!function_exists('formatCopCompactCurrency')) {
             </div>
         </div>
 
-        <!-- Operational Expenses by Category -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-2.5">
+        <!-- Operational Expenses by Category (Sorted Descending Across 8 Canonical Categories) -->
+        <div id="expense-category-breakdown-panel" class="bg-white rounded-xl border border-gray-200 p-5 shadow-2xs space-y-2.5">
             <div class="flex items-center justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Operational Expenses by Category</h3>
-                <span class="text-[11px] text-gray-500"><?= count($slice->allocatedExpenses) ?> recorded <?= count($slice->allocatedExpenses) === 1 ? 'entry' : 'entries' ?></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Operational Expenses by Expense Category</h3>
+                <span class="text-[11px] text-gray-500"><?= count($slice->allocatedExpenses) ?> recorded <?= count($slice->allocatedExpenses) === 1 ? 'entry' : 'entries' ?> &middot; <?= formatCopCurrency($slice->totalExpenses) ?></span>
             </div>
             <?php
-            $nonZeroCategories = array_filter($slice->byCategory, static fn (float $val): bool => $val > 0.0);
-            arsort($nonZeroCategories);
+            $sortedCategories = [];
+            foreach (ExpenseCategory::cases() as $catCase) {
+                $sortedCategories[$catCase->value] = (float) ($slice->byCategory[$catCase->value] ?? 0.0);
+            }
+            arsort($sortedCategories);
             ?>
-            <?php if (empty($nonZeroCategories)): ?>
-                <div class="py-6 text-center text-xs text-gray-400">
-                    No category spend recorded for the selected filters.
-                </div>
-            <?php else: ?>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <?php foreach ($nonZeroCategories as $catKey => $catAmount):
-                        $catEnum = ExpenseCategory::tryFrom($catKey) ?? ExpenseCategory::OTHER;
-                        $pct = $slice->totalExpenses > 0.0 ? ($catAmount / $slice->totalExpenses) * 100.0 : 0.0;
-                    ?>
-                        <div>
-                            <div class="flex justify-between text-[11px] mb-0.5">
-                                <span class="font-medium text-gray-700"><?= htmlspecialchars($catEnum->label(), ENT_QUOTES, 'UTF-8') ?></span>
-                                <span class="font-bold text-gray-900 tabular-nums"><?= formatCopCompactCurrency($catAmount) ?> (<?= number_format($pct, 0) ?>%)</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full <?= htmlspecialchars($catEnum->barClass(), ENT_QUOTES, 'UTF-8') ?>" style="width: <?= max(3, (int) round($pct)) ?>%"></div>
-                            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <?php foreach ($sortedCategories as $catKey => $catAmount):
+                    $catEnum = ExpenseCategory::from($catKey);
+                    $pct = $slice->totalExpenses > 0.0 ? ($catAmount / $slice->totalExpenses) * 100.0 : 0.0;
+                ?>
+                    <div data-expense-category-row="<?= htmlspecialchars($catEnum->value, ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="flex justify-between items-baseline text-[11px] mb-0.5 gap-2">
+                            <span class="font-medium <?= $catAmount > 0.0 ? 'text-gray-700' : 'text-gray-400' ?>"><?= htmlspecialchars($catEnum->label(), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="font-bold <?= $catAmount > 0.0 ? 'text-gray-900' : 'text-gray-400' ?> tabular-nums"><?= formatCopCurrency($catAmount) ?> (<?= number_format($pct, 1) ?>%)</span>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                        <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full <?= htmlspecialchars($catEnum->barClass(), ENT_QUOTES, 'UTF-8') ?>" style="width: <?= $catAmount > 0.0 ? max(3, (int) round($pct)) : 0 ?>%"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
+
+    <!-- MONTHLY P&L TREND TABLE (Rendered on multi-month reporting windows) -->
+    <?php if ($report->isMultiMonth()):
+        $maxMonthlyScale = 1.0;
+        foreach ($report->monthlyTrends as $mItem) {
+            $maxMonthlyScale = max($maxMonthlyScale, $mItem->grossRevenue, $mItem->totalExpenses);
+        }
+    ?>
+        <div id="monthly-pnl-trend-table" class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+            <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900">
+                        Monthly P&amp;L Trend Table (<?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?>)
+                    </h2>
+                    <p class="text-xs text-gray-500">
+                        Month-by-month accrual Gross Revenue, Operational Expenses, Net Operating Income, and capacity utilization across <?= count($report->monthlyTrends) ?> calendar months.
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3 text-[11px] text-gray-600">
+                    <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-xs bg-emerald-500 mr-1.5"></span>Gross Revenue</span>
+                    <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-xs bg-rose-500 mr-1.5"></span>Operational Expenses</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-xs tabular-nums">
+                    <thead class="bg-gray-100/80 text-[11px] font-bold uppercase text-gray-600">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left">Month</th>
+                            <th scope="col" class="px-4 py-3 text-right">Available Nights</th>
+                            <th scope="col" class="px-4 py-3 text-right">Occupied Nights</th>
+                            <th scope="col" class="px-4 py-3 text-right">Occupancy %</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gross Revenue</th>
+                            <th scope="col" class="px-4 py-3 text-right">Operational Expenses</th>
+                            <th scope="col" class="px-4 py-3 text-right">Net Operating Income</th>
+                            <th scope="col" class="px-4 py-3 text-right">NOI Margin %</th>
+                            <th scope="col" class="px-4 py-3 text-left min-w-[160px]">Revenue vs. Expenses</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        <?php foreach ($report->monthlyTrends as $mSlice):
+                            $mNoi = $isChannelScoped ? $mSlice->allSourcesNoi : $mSlice->noi;
+                            $mNoiMargin = $isChannelScoped ? $mSlice->allSourcesNoiMarginPct : $mSlice->noiMarginPct;
+                            $revBarWidth = $mSlice->grossRevenue > 0.0
+                                ? max(3, (int) round(($mSlice->grossRevenue / $maxMonthlyScale) * 100.0))
+                                : 0;
+                            $expBarWidth = $mSlice->totalExpenses > 0.0
+                                ? max(3, (int) round(($mSlice->totalExpenses / $maxMonthlyScale) * 100.0))
+                                : 0;
+                        ?>
+                            <tr class="hover:bg-gray-50/80" data-trend-month="<?= htmlspecialchars($mSlice->periodLabel, ENT_QUOTES, 'UTF-8') ?>">
+                                <td class="px-4 py-2.5 font-mono font-bold text-gray-900 whitespace-nowrap">
+                                    <?= htmlspecialchars($mSlice->periodLabel, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+                                <td class="px-4 py-2.5 text-right text-gray-700 whitespace-nowrap">
+                                    <?= $mSlice->availableNights ?>
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-semibold text-gray-800 whitespace-nowrap">
+                                    <?= $mSlice->occupiedNights ?>
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-semibold text-indigo-700 whitespace-nowrap">
+                                    <?= number_format($mSlice->occupancyPct, 1) ?>%
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-semibold text-gray-900 whitespace-nowrap">
+                                    <?= formatCopCurrency($mSlice->grossRevenue) ?>
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-medium text-rose-700 whitespace-nowrap">
+                                    <?= formatCopCurrency($mSlice->totalExpenses) ?>
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-bold <?= $mNoi >= 0.0 ? 'text-emerald-700' : 'text-rose-700' ?> whitespace-nowrap">
+                                    <?= formatCopCurrency($mNoi) ?>
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-semibold <?= $mNoi >= 0.0 ? 'text-emerald-700' : 'text-rose-700' ?> whitespace-nowrap">
+                                    <?= number_format($mNoiMargin, 1) ?>%
+                                </td>
+                                <td class="px-4 py-2.5">
+                                    <div class="space-y-1">
+                                        <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden" title="Gross Revenue: <?= htmlspecialchars(formatCopCurrency($mSlice->grossRevenue), ENT_QUOTES, 'UTF-8') ?>">
+                                            <div class="h-full bg-emerald-500 trend-revenue-bar" style="width: <?= $revBarWidth ?>%"></div>
+                                        </div>
+                                        <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden" title="Operational Expenses: <?= htmlspecialchars(formatCopCurrency($mSlice->totalExpenses), ENT_QUOTES, 'UTF-8') ?>">
+                                            <div class="h-full bg-rose-500 trend-expense-bar" style="width: <?= $expBarWidth ?>%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot class="bg-gray-50 font-bold text-gray-900 border-t border-gray-200">
+                        <tr>
+                            <td class="px-4 py-3">Period Total</td>
+                            <td class="px-4 py-3 text-right"><?= $slice->availableNights ?></td>
+                            <td class="px-4 py-3 text-right"><?= $slice->occupiedNights ?></td>
+                            <td class="px-4 py-3 text-right text-indigo-700"><?= number_format($slice->occupancyPct, 1) ?>%</td>
+                            <td class="px-4 py-3 text-right"><?= formatCopCurrency($slice->grossRevenue) ?></td>
+                            <td class="px-4 py-3 text-right text-rose-700"><?= formatCopCurrency($slice->totalExpenses) ?></td>
+                            <td class="px-4 py-3 text-right <?= $displayedNoi >= 0.0 ? 'text-emerald-700' : 'text-rose-700' ?>"><?= formatCopCurrency($displayedNoi) ?></td>
+                            <td class="px-4 py-3 text-right <?= $displayedNoi >= 0.0 ? 'text-emerald-700' : 'text-rose-700' ?>"><?= number_format($displayedNoiMarginPct, 1) ?>%</td>
+                            <td class="px-4 py-3 text-[11px] text-gray-500 font-normal"><?= count($report->monthlyTrends) ?> months</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- ROW 4: TABBED BOTTOM DETAIL LEDGERS -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">

@@ -33,7 +33,16 @@ final class FinancialReportViewData
 
     public function isMultiMonth(): bool
     {
+        if (in_array($this->filter->period, ['this_quarter', 'ytd', 'last_12_months', 'last_year'], true)) {
+            return count($this->monthlyTrends) >= 1;
+        }
+
         return count($this->monthlyTrends) > 1;
+    }
+
+    public function showMultiPropertyMatrix(): bool
+    {
+        return $this->filter->propertyId === 'all';
     }
 
     public function isSingleChannelFiltered(): bool

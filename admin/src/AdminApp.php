@@ -408,6 +408,8 @@ final class AdminApp
             ->post('/calendar-blocks/{id}/delete', [$calendarBlockController, 'delete'])
             ->post('/calendar-blocks/{id}/release', [$calendarBlockController, 'delete'])
             ->get('/financial-report', [$financialReportController, 'index'])
+            ->get('/financial-report/export/expenses.csv', [$financialReportController, 'exportExpensesCsv'])
+            ->get('/financial-report/export/reservations.csv', [$financialReportController, 'exportReservationsCsv'])
             ->get('/financial-report/expenses/new', [$financialReportController, 'newExpense'])
             ->post('/financial-report/expenses', [$financialReportController, 'createExpense'])
             ->get('/financial-report/expenses/{id}/edit', [$financialReportController, 'editExpense'])

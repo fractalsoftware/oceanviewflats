@@ -174,6 +174,8 @@ final class AdminAppTest extends TestCase
             ['GET', '/calendar-blocks/new'],
             ['POST', '/calendar-blocks'],
             ['GET', '/financial-report'],
+            ['GET', '/financial-report/export/expenses.csv'],
+            ['GET', '/financial-report/export/reservations.csv'],
             ['GET', '/financial-report/expenses/new'],
             ['POST', '/financial-report/expenses'],
 
@@ -197,7 +199,7 @@ final class AdminAppTest extends TestCase
             ['POST', '/financial-report/expenses/42/delete'],
         ];
 
-        $this->assertCount(35, $expectedRoutes);
+        $this->assertCount(37, $expectedRoutes);
 
         foreach ($expectedRoutes as [$method, $path]) {
             $session = ['admin_user_id' => 1];

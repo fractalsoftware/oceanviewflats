@@ -298,14 +298,15 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                 }
 
                 $allSourcesGrossRevenue += $proratedNet;
-                $bySource[$channelGroup->value]['revenue'] = round($bySource[$channelGroup->value]['revenue'] + $proratedNet, 2);
-                $bySource[$channelGroup->value]['active_revenue'] = round($bySource[$channelGroup->value]['active_revenue'] + $proratedNet, 2);
-                $bySource[$channelGroup->value]['nights'] += $inPeriodNights;
-                $bySource[$channelGroup->value]['count']++;
 
                 if ($sourceFilter !== 'all' && $channelGroup->value !== $sourceFilter) {
                     continue;
                 }
+
+                $bySource[$channelGroup->value]['revenue'] = round($bySource[$channelGroup->value]['revenue'] + $proratedNet, 2);
+                $bySource[$channelGroup->value]['active_revenue'] = round($bySource[$channelGroup->value]['active_revenue'] + $proratedNet, 2);
+                $bySource[$channelGroup->value]['nights'] += $inPeriodNights;
+                $bySource[$channelGroup->value]['count']++;
 
                 foreach ($inPeriodDates as $nd) {
                     $nightKey = $reservation->propertyId . ':' . $nd;
@@ -364,12 +365,13 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                 }
 
                 $allSourcesGrossRevenue += $proratedNet;
-                $bySource[$channelGroup->value]['revenue'] = round($bySource[$channelGroup->value]['revenue'] + $proratedNet, 2);
-                $bySource[$channelGroup->value]['policy_retention'] = round($bySource[$channelGroup->value]['policy_retention'] + $proratedNet, 2);
 
                 if ($sourceFilter !== 'all' && $channelGroup->value !== $sourceFilter) {
                     continue;
                 }
+
+                $bySource[$channelGroup->value]['revenue'] = round($bySource[$channelGroup->value]['revenue'] + $proratedNet, 2);
+                $bySource[$channelGroup->value]['policy_retention'] = round($bySource[$channelGroup->value]['policy_retention'] + $proratedNet, 2);
 
                 $policyRetention += $proratedNet;
                 $grossCharged += $proratedCharged;
