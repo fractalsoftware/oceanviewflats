@@ -64,7 +64,9 @@ $search = (string) ($filters['search'] ?? '');
                         <option value="all" <?= $propertyId === 'all' ? 'selected' : '' ?>>All Properties (Portfolio)</option>
                         <option value="1606" <?= $propertyId === '1606' ? 'selected' : '' ?>>Property 1606</option>
                         <option value="1707" <?= $propertyId === '1707' ? 'selected' : '' ?>>Property 1707</option>
-                        <option value="shared" <?= $propertyId === 'shared' ? 'selected' : '' ?>>Shared Portfolio Only</option>
+                        <?php if ($propertyId === 'shared'): ?>
+                            <option value="shared" selected>Shared Portfolio Only</option>
+                        <?php endif; ?>
                     </select>
                 </div>
 

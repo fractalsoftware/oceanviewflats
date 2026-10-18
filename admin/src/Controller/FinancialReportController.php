@@ -11,8 +11,13 @@ use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
 use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Finance\ExpenseCategory;
+use OceanViewFlats\Domain\Finance\FinancialReportEngine;
+use OceanViewFlats\Domain\Finance\FinancialReportEngineInterface;
+use OceanViewFlats\Domain\Finance\FinancialReportFilter;
 use OceanViewFlats\Domain\Finance\OperationalExpense;
 use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
+use OceanViewFlats\Domain\Reservation\InMemoryMaintenanceBlockSource;
+use OceanViewFlats\Domain\Reservation\MaintenanceBlockSourceInterface;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 
 /**
@@ -24,13 +29,22 @@ final class FinancialReportController
 {
     public const AUTHORIZED_ROLES = ['admin', 'superadmin'];
 
+    private readonly FinancialReportEngineInterface $reportEngine;
+
     public function __construct(
         private readonly OperationalExpenseRepositoryInterface $expenseRepository,
         private readonly ReservationRepositoryInterface $reservationRepository,
         private readonly ViewRenderer $viewRenderer,
         private readonly AuditLogger $auditLogger,
-        private readonly ?DateTimeImmutable $now = null
+        private readonly ?DateTimeImmutable $now = null,
+        ?FinancialReportEngineInterface $reportEngine = null,
+        ?MaintenanceBlockSourceInterface $maintenanceBlockSource = null
     ) {
+        $this->reportEngine = $reportEngine ?? new FinancialReportEngine(
+            reservationRepository: $this->reservationRepository,
+            maintenanceBlockSource: $maintenanceBlockSource ?? new InMemoryMaintenanceBlockSource(),
+            expenseRepository: $this->expenseRepository
+        );
     }
 
     /**
@@ -607,8 +621,14 @@ final class FinancialReportController
 
         return Response::redirect('/financial-report?' . http_build_query([
             'property_id' => $filters['property_id'],
+            'period' => $filters['period'],
+            'date_from' => $filters['date_from'],
+            'date_to' => $filters['date_to'],
+            'compare' => $filters['compare'],
+            'source' => $filters['source'],
             'category' => $filters['category'],
-            'tab' => 'expenses',
+            'tab' => $filters['tab'] ?? 'expenses',
+            'search' => $filters['search'],
         ]));
     }
 
@@ -622,43 +642,21 @@ final class FinancialReportController
         bool $oob = false,
         ?string $flashMessage = null
     ): string {
-        $expenses = $this->expenseRepository->listForPeriod(
-            startDate: $filters['start_date'],
-            endDate: $filters['end_date'],
-            propertyId: $filters['property_id'],
-            category: $filters['category'],
-            search: $filters['search']
-        );
-
-        $propertyFilter = $filters['property_id'];
-        $directExpenses = 0.0;
-        $allocatedSharedExpenses = 0.0;
-        $categoryTotals = [];
-        foreach (ExpenseCategory::cases() as $catCase) {
-            $categoryTotals[$catCase->value] = 0.0;
-        }
-
-        foreach ($expenses as $expense) {
-            $allocated = $expense->allocatedAmountForProperty($propertyFilter);
-            if ($expense->propertyId === 'shared') {
-                $allocatedSharedExpenses += $allocated;
-            } else {
-                $directExpenses += $allocated;
-            }
-            $categoryTotals[$expense->category->value] += $allocated;
-        }
-
-        $totalExpenses = $directExpenses + $allocatedSharedExpenses;
+        $filterModel = FinancialReportFilter::fromArray($filters);
+        $reportData = $this->reportEngine->generate($filterModel, $this->now);
+        $currentSlice = $reportData->current;
 
         return $this->viewRenderer->renderPartial('financial_report/_report_content.php', [
-            'expenses' => $expenses,
-            'filters' => $filters,
+            'report' => $reportData,
+            'slice' => $currentSlice,
+            'expenses' => $currentSlice->expenses,
+            'filters' => $filterModel->toArray($this->now),
             'summary' => [
-                'direct_expenses' => $directExpenses,
-                'allocated_shared_expenses' => $allocatedSharedExpenses,
-                'total_expenses' => $totalExpenses,
+                'direct_expenses' => $currentSlice->directExpenses,
+                'allocated_shared_expenses' => $currentSlice->allocatedSharedExpenses,
+                'total_expenses' => $currentSlice->totalExpenses,
             ],
-            'categoryTotals' => $categoryTotals,
+            'categoryTotals' => $currentSlice->byCategory,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
             'oob' => $oob,
             'flashMessage' => $flashMessage,
@@ -699,52 +697,19 @@ final class FinancialReportController
      */
     private function resolveFiltersFromRequest(Request $request): array
     {
-        $rawProperty = trim((string) $request->getQuery('property_id', 'all'));
-        $propertyId = in_array($rawProperty, ['all', '1606', '1707', 'shared'], true) ? $rawProperty : 'all';
+        $filterModel = FinancialReportFilter::fromArray([
+            'property_id' => (string) $request->getQuery('property_id', 'all'),
+            'period' => (string) $request->getQuery('period', 'this_month'),
+            'date_from' => (string) ($request->getQuery('date_from', $request->getQuery('start_date', ''))),
+            'date_to' => (string) ($request->getQuery('date_to', $request->getQuery('end_date', ''))),
+            'compare' => (string) $request->getQuery('compare', 'prev_period'),
+            'source' => (string) $request->getQuery('source', 'all'),
+            'category' => (string) $request->getQuery('category', 'all'),
+            'tab' => (string) $request->getQuery('tab', 'expenses'),
+            'search' => (string) $request->getQuery('search', ''),
+        ]);
 
-        $rawCategory = trim((string) $request->getQuery('category', 'all'));
-        $category = ($rawCategory === 'all' || ExpenseCategory::tryFrom($rawCategory) !== null) ? $rawCategory : 'all';
-
-        $rawTab = trim((string) $request->getQuery('tab', 'expenses'));
-        $tab = in_array($rawTab, ['expenses', 'reservations'], true) ? $rawTab : 'expenses';
-
-        $rawCompare = trim((string) $request->getQuery('compare', 'prev_period'));
-        $compare = in_array($rawCompare, ['prev_period', 'yoy'], true) ? $rawCompare : 'prev_period';
-
-        $rawSource = trim((string) $request->getQuery('source', 'all'));
-        $source = in_array($rawSource, ['all', 'direct_online', 'direct_manual', 'airbnb'], true) ? $rawSource : 'all';
-
-        $search = trim((string) $request->getQuery('search', ''));
-        $dateFrom = trim((string) ($request->getQuery('date_from', $request->getQuery('start_date', ''))));
-        $dateTo = trim((string) ($request->getQuery('date_to', $request->getQuery('end_date', ''))));
-        $rawPeriod = $request->getQuery('period');
-        $period = is_string($rawPeriod) && trim($rawPeriod) !== '' ? trim($rawPeriod) : 'this_month';
-
-        $hasExplicitDateFilter = ($rawPeriod !== null && trim((string) $rawPeriod) !== '')
-            || $dateFrom !== ''
-            || $dateTo !== '';
-
-        [$startDate, $endDate, $periodLabel] = $this->resolveDateWindow(
-            period: $period,
-            dateFrom: $dateFrom,
-            dateTo: $dateTo,
-            hasExplicitDateFilter: $hasExplicitDateFilter
-        );
-
-        return [
-            'property_id' => $propertyId,
-            'period' => $period,
-            'date_from' => $dateFrom,
-            'date_to' => $dateTo,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'period_label' => $periodLabel,
-            'compare' => $compare,
-            'source' => $source,
-            'category' => $category,
-            'tab' => $tab,
-            'search' => $search,
-        ];
+        return $filterModel->toArray($this->now);
     }
 
     /**
@@ -752,100 +717,19 @@ final class FinancialReportController
      */
     private function resolveFiltersFromMutationRequest(Request $request): array
     {
-        $rawProperty = trim((string) $request->getPost('current_property_id', (string) $request->getQuery('property_id', 'all')));
-        $propertyId = in_array($rawProperty, ['all', '1606', '1707', 'shared'], true) ? $rawProperty : 'all';
+        $filterModel = FinancialReportFilter::fromArray([
+            'property_id' => (string) $request->getPost('current_property_id', (string) $request->getQuery('property_id', 'all')),
+            'period' => (string) $request->getPost('current_period', (string) $request->getQuery('period', 'this_month')),
+            'date_from' => (string) $request->getPost('current_date_from', (string) $request->getQuery('date_from', '')),
+            'date_to' => (string) $request->getPost('current_date_to', (string) $request->getQuery('date_to', '')),
+            'compare' => (string) $request->getPost('current_compare', (string) $request->getQuery('compare', 'prev_period')),
+            'source' => (string) $request->getPost('current_source', (string) $request->getQuery('source', 'all')),
+            'category' => (string) $request->getPost('current_category', (string) $request->getQuery('category', 'all')),
+            'tab' => (string) $request->getPost('current_tab', (string) $request->getQuery('tab', 'expenses')),
+            'search' => (string) $request->getPost('current_search', (string) $request->getQuery('search', '')),
+        ]);
 
-        $rawCategory = trim((string) $request->getPost('current_category', (string) $request->getQuery('category', 'all')));
-        $category = ($rawCategory === 'all' || ExpenseCategory::tryFrom($rawCategory) !== null) ? $rawCategory : 'all';
-
-        $search = trim((string) $request->getPost('current_search', (string) $request->getQuery('search', '')));
-        $rawPeriod = trim((string) $request->getPost('current_period', (string) $request->getQuery('period', '')));
-        $period = $rawPeriod !== '' ? $rawPeriod : 'this_month';
-
-        [$startDate, $endDate, $periodLabel] = $this->resolveDateWindow(
-            period: $period,
-            dateFrom: '',
-            dateTo: '',
-            hasExplicitDateFilter: false
-        );
-
-        return [
-            'property_id' => $propertyId,
-            'period' => $period,
-            'date_from' => '',
-            'date_to' => '',
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'period_label' => $periodLabel,
-            'compare' => 'prev_period',
-            'source' => 'all',
-            'category' => $category,
-            'tab' => 'expenses',
-            'search' => $search,
-        ];
-    }
-
-    /**
-     * @return array{0: string, 1: string, 2: string}
-     */
-    private function resolveDateWindow(
-        string $period,
-        string $dateFrom,
-        string $dateTo,
-        bool $hasExplicitDateFilter
-    ): array {
-        if (!$hasExplicitDateFilter) {
-            return ['0000-01-01', '9999-12-31', 'All Recorded Dates'];
-        }
-
-        $now = $this->now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
-
-        if ($dateFrom !== '' || $dateTo !== '' || $period === 'custom') {
-            $start = $this->isValidDate($dateFrom) ? $dateFrom : '0000-01-01';
-            if ($this->isValidDate($dateTo)) {
-                $end = (new DateTimeImmutable($dateTo))->modify('+1 day')->format('Y-m-d');
-            } else {
-                $end = '9999-12-31';
-            }
-            return [$start, $end, sprintf('%s to %s', $dateFrom ?: 'Start', $dateTo ?: 'Present')];
-        }
-
-        return match ($period) {
-            'this_month' => [
-                $now->format('Y-m-01'),
-                $now->modify('first day of next month')->format('Y-m-01'),
-                $now->format('M Y'),
-            ],
-            'last_month' => [
-                $now->modify('first day of last month')->format('Y-m-01'),
-                $now->format('Y-m-01'),
-                $now->modify('first day of last month')->format('M Y'),
-            ],
-            'this_quarter' => (static function (DateTimeImmutable $d): array {
-                $month = (int) $d->format('n');
-                $qStartMonth = (int) (floor(($month - 1) / 3) * 3 + 1);
-                $start = $d->setDate((int) $d->format('Y'), $qStartMonth, 1);
-                $end = $start->modify('+3 months');
-                $qNum = (int) ceil($month / 3);
-                return [$start->format('Y-m-d'), $end->format('Y-m-d'), sprintf('Q%d %s', $qNum, $d->format('Y'))];
-            })($now),
-            'ytd' => [
-                $now->format('Y-01-01'),
-                $now->modify('first day of next month')->format('Y-m-01'),
-                sprintf('YTD %s', $now->format('Y')),
-            ],
-            'last_12_months' => [
-                $now->modify('first day of this month -11 months')->format('Y-m-01'),
-                $now->modify('first day of next month')->format('Y-m-01'),
-                'Last 12 Months',
-            ],
-            'last_year' => [
-                ((int) $now->format('Y') - 1) . '-01-01',
-                $now->format('Y-01-01'),
-                (string) ((int) $now->format('Y') - 1),
-            ],
-            default => ['0000-01-01', '9999-12-31', 'All Recorded Dates'],
-        };
+        return $filterModel->toArray($this->now);
     }
 
     private function findExpenseByIdOrUid(string $rawId): ?OperationalExpense

@@ -70,8 +70,13 @@ $modalHeading = $isEdit
 
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="current_property_id" value="<?= htmlspecialchars((string) ($filters['property_id'] ?? 'all'), ENT_QUOTES, 'UTF-8') ?>">
-            <input type="hidden" name="current_period" value="<?= htmlspecialchars((string) ($filters['period'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="current_period" value="<?= htmlspecialchars((string) ($filters['period'] ?? 'this_month'), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="current_date_from" value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="current_date_to" value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="current_compare" value="<?= htmlspecialchars((string) ($filters['compare'] ?? 'prev_period'), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="current_source" value="<?= htmlspecialchars((string) ($filters['source'] ?? 'all'), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="current_category" value="<?= htmlspecialchars((string) ($filters['category'] ?? 'all'), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="current_tab" value="<?= htmlspecialchars((string) ($filters['tab'] ?? 'expenses'), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="current_search" value="<?= htmlspecialchars((string) ($filters['search'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 
             <?php if (!empty($errors)): ?>

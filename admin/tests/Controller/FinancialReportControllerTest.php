@@ -524,4 +524,174 @@ final class FinancialReportControllerTest extends TestCase
             $drawerResp->getBody()
         );
     }
+
+    public function testAccrualProrationScorecardsUnpricedAirbnbBannerAnd5050SharedAllocationInViews(): void
+    {
+        // Clear baseline reservations and seed rich October 2026 scenario
+        $this->pdo->exec('DELETE FROM reservations');
+        $this->pdo->exec('DELETE FROM calendar_blocks');
+        $this->pdo->exec('DELETE FROM operational_expenses');
+
+        // 1. Cross-month web stay: Sep 28 -> Oct 03 (5 nights total, 2 nights in Oct = 40% proration)
+        // Total: 2,250,000 COP => Oct attributed: 900,000 COP (2 occupied & priced nights)
+        // 2. Full-month web stay on 1606: Oct 05 -> Oct 11 (6 nights, 2,880,000 COP)
+        // 3. Direct manual stay on 1707 with partial refund: Oct 10 -> Oct 15 (5 nights, total 2,450,000, refunded 200,000 => net 2,250,000)
+        // 4. Unpriced ($0 COP) Airbnb stay on 1707: Oct 22 -> Oct 26 (4 occupied nights, 0 priced nights)
+        // 5. Settled cancelled reservation on 1707: Oct 17 -> Oct 20 (total 1,500,000, refunded 750,000 => 750,000 Policy Retention, 0 occupied nights)
+        // 6. Unpaid cancelled pending hold on 1606: Oct 12 -> Oct 14 (total 1,800,000, payment_status='pending' => excluded!)
+        // 7. Confirmed owner_stay on 1707: Oct 28 -> Oct 31 (3 nights deducted from capacity)
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES
+                ('ovf_cross_sep_oct', '1606', 'Camila Restrepo', 'camila@example.com', '+573001112233', '2026-09-28', '2026-10-03', 2250000, 0, 'confirmed', 'approved', 'web'),
+                ('ovf_oct_1606', '1606', 'Markus Vance', 'markus@example.com', '+573001112234', '2026-10-05', '2026-10-11', 2880000, 0, 'confirmed', 'approved', 'web'),
+                ('res-man-1707', '1707', 'Lucia Fernandez', 'lucia@example.com', '+573001112235', '2026-10-10', '2026-10-15', 2450000, 200000, 'confirmed', 'partially_refunded', 'cash'),
+                ('res-abnb-zero', '1707', 'Sophie Laurent', 'sophie@guest.oceanviewflats.com', '+336000000', '2026-10-22', '2026-10-26', 0, 0, 'confirmed', 'approved', 'airbnb'),
+                ('ovf_cancelled_ret', '1707', 'Carlos Mendoza', 'carlos@example.com', '+573001112236', '2026-10-17', '2026-10-20', 1500000, 750000, 'cancelled', 'partially_refunded', 'web'),
+                ('ovf_unpaid_void', '1606', 'Unpaid Void Guest', 'void@example.com', '+573001112237', '2026-10-12', '2026-10-14', 1800000, 0, 'cancelled', 'pending', 'web'),
+                ('res-owner-1707', '1707', 'Owner Personal Stay', 'owner@oceanviewflats.com', '+573000000000', '2026-10-28', '2026-10-31', 0, 0, 'confirmed', 'approved', 'owner_stay'),
+                ('ovf_oct25_yoy', '1606', 'YoY Guest', 'yoy@example.com', '+573009999999', '2025-10-05', '2025-10-10', 3390000, 0, 'confirmed', 'approved', 'web');
+        ");
+
+        // Maintenance block on 1606: Oct 29 -> Oct 31 (2 nights deducted from capacity)
+        $this->pdo->exec("
+            INSERT INTO calendar_blocks (property_id, start_date, end_date, reason, created_by)
+            VALUES ('1606', '2026-10-29', '2026-10-31', 'Deep AC servicing', 1);
+        ");
+
+        // Operational expenses in Oct 2026:
+        // Direct 1606: 720,000 COP; Direct 1707: 480,000 COP; Shared: 640,000 COP (320,000 per property)
+        $this->pdo->exec("
+            INSERT INTO operational_expenses (expense_uid, property_id, category, title, amount, expense_date, vendor_name, reference_code, created_by)
+            VALUES
+                ('exp_direct_1606', '1606', 'hoa_admin', 'HOA 1606 Oct', 720000, '2026-10-02', 'Edificio Salguero', 'ADM-1606', 1),
+                ('exp_direct_1707', '1707', 'utilities', 'Utilities 1707 Oct', 480000, '2026-10-06', 'Air-e', 'UTIL-1707', 1),
+                ('exp_shared_pool', 'shared', 'supplies', 'Bulk Hotel Linens', 640000, '2026-10-09', 'Makro', 'FAC-99201', 1);
+        ");
+
+        // 1. Portfolio View (All Properties, this_month):
+        // Active Stay Revenue = 900,000 + 2,880,000 + 2,250,000 = 6,030,000 COP
+        // Policy Retention = 750,000 COP (Unpaid void hold contributes 0!)
+        // Gross Revenue = 6,780,000 COP
+        // Refunded = 200,000 + 750,000 = 950,000 COP
+        // Total Expenses = 720,000 + 480,000 + 640,000 = 1,840,000 COP
+        // NOI = 6,780,000 - 1,840,000 = 4,940,000 COP
+        // Capacity: 62 total calendar nights - 5 deducted (2 maint + 3 owner) = 57 Available Nights
+        // Occupied Nights: 2 + 6 + 5 + 4 ($0 Airbnb) = 17 Occupied Nights (17 / 57 = 29.8%)
+        // Priced Occupied Nights: 2 + 6 + 5 = 13 Priced Nights (ADR = 6,030,000 / 13 = 463,846 COP)
+        $respAll = $this->app->handle(new Request('GET', '/financial-report'), $this->adminSession);
+        $this->assertSame(200, $respAll->getStatusCode());
+        $bodyAll = $respAll->getBody();
+
+        // Verify hx-push-url="true" on filter form
+        $this->assertStringContainsString('hx-push-url="true"', $bodyAll);
+
+        // Verify Row 1 P&L Hero Cards
+        $this->assertStringContainsString('Gross Revenue (Realized)', $bodyAll);
+        $this->assertStringContainsString('$ 6.780.000 COP', $bodyAll);
+        $this->assertStringContainsString('$ 6.030.000', $bodyAll); // Active Stays
+        $this->assertStringContainsString('$ 750.000', $bodyAll);   // Policy Retention
+        $this->assertStringContainsString('$ 950.000', $bodyAll);   // Refunded
+        $this->assertStringContainsString('$ 1.840.000 COP', $bodyAll); // Total Operational Expenses
+        $this->assertStringContainsString('Shared Pool (100%)', $bodyAll);
+        $this->assertStringContainsString('$ 4.940.000 COP', $bodyAll); // NOI
+
+        // Verify Row 2 Hospitality KPI Cards
+        $this->assertStringContainsString('29.8%', $bodyAll);
+        $this->assertStringContainsString('17 Occupied / 57 Available Nights (5 Maint/Owner deducted)', $bodyAll);
+        $this->assertStringContainsString('Across 13 priced Occupied Nights (excl. retention)', $bodyAll);
+        $this->assertStringContainsString('Gross Revenue &divide; 57 Available Nights', $bodyAll);
+        $this->assertStringContainsString('4 Active Stays', $bodyAll);
+        $this->assertStringContainsString('1 Settled Cancellation ($ 750.000 retained)', $bodyAll);
+
+        // Verify Unpriced ($0 COP) Airbnb Warning Banner & Shortcut
+        $this->assertStringContainsString('id="unpriced-airbnb-banner"', $bodyAll);
+        $this->assertStringContainsString('1 External Reservation (Airbnb) in this period has a $0 COP host payout', $bodyAll);
+        $this->assertStringContainsString('Set Host Payout (res-abnb-zero)', $bodyAll);
+        $this->assertStringContainsString('hx-get="/reservations/res-abnb-zero/edit"', $bodyAll);
+
+        // 2. Single Property Filter (property_id = 1606):
+        // Direct 1606 Expenses = 720,000; Allocated Shared (50%) = 320,000 (50% of 640,000) => Total = 1,040,000 COP
+        // 1606 Gross Revenue = 900,000 + 2,880,000 = 3,780,000 COP => 1606 NOI = 2,740,000 COP
+        $resp1606 = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['property_id' => '1606'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resp1606->getStatusCode());
+        $body1606 = $resp1606->getBody();
+
+        $this->assertStringContainsString('$ 3.780.000 COP', $body1606);
+        $this->assertStringContainsString('$ 1.040.000 COP', $body1606);
+        $this->assertStringContainsString('Allocated Shared Expenses (50%)', $body1606);
+        $this->assertStringContainsString('$ 320.000', $body1606);
+        $this->assertStringContainsString('50% of $ 640.000 COP', $body1606);
+        $this->assertStringContainsString('Shared (50% Alloc)', $body1606);
+        $this->assertStringContainsString('$ 2.740.000 COP', $body1606);
+
+        // 3. Compare Against YoY (compare = yoy):
+        // Oct 2026 Gross Revenue (6,780,000) vs Oct 2025 Gross Revenue (3,390,000) => +100.0% vs YoY (+$ 3.390.000 COP)
+        $respYoy = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['compare' => 'yoy'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $respYoy->getStatusCode());
+        $bodyYoy = $respYoy->getBody();
+        $this->assertStringContainsString('+100.0% vs YoY (+$ 3.390.000 COP)', $bodyYoy);
+
+        // 4. Single Booking Source Filter (source = direct_manual):
+        // Scopes revenue to Lucia Fernandez (2,250,000 COP, 5 nights) and displays Channel Contribution Notice
+        $respManualSource = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['source' => 'direct_manual'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $respManualSource->getStatusCode());
+        $bodyManualSource = $respManualSource->getBody();
+        $this->assertStringContainsString('id="channel-contribution-notice"', $bodyManualSource);
+        $this->assertStringContainsString('Channel Contribution View (Direct Manual):', $bodyManualSource);
+        $this->assertStringContainsString('Operational Expenses and Net Operating Income are evaluated at the Property/Portfolio (All Sources) level.', $bodyManualSource);
+        $this->assertStringContainsString('$ 2.250.000 COP', $bodyManualSource);
+
+        // 5. Tabbed Switching to Attributed Reservations (tab = reservations):
+        $respResTab = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['tab' => 'reservations'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $respResTab->getStatusCode());
+        $bodyResTab = $respResTab->getBody();
+        $this->assertStringContainsString('id="attributed-reservations-ledger-panel"', $bodyResTab);
+        $this->assertStringContainsString('ovf_cross_sep_oct', $bodyResTab);
+        $this->assertStringContainsString('Camila Restrepo', $bodyResTab);
+        $this->assertStringContainsString('2 / 5 nights (40%)', $bodyResTab);
+        $this->assertStringContainsString('$ 900.000 COP', $bodyResTab);
+        $this->assertStringContainsString('ovf_cancelled_ret', $bodyResTab);
+        $this->assertStringContainsString('Cancelled &middot; Policy Retention', $bodyResTab);
+        $this->assertStringContainsString('$0 COP &middot; Set Payout', $bodyResTab);
+        // Unpaid cancelled hold must not appear in Attributed Reservations
+        $this->assertStringNotContainsString('ovf_unpaid_void', $bodyResTab);
+
+        // 6. Verify HTMX Expense Mutation refreshes KPI Scorecards via hx-swap-oob
+        $mutateResp = $this->app->handle(new Request(
+            method: 'POST',
+            uri: '/financial-report/expenses',
+            post: [
+                'csrf_token' => 'valid-csrf-token',
+                'property_id' => '1606',
+                'category' => 'maintenance',
+                'title' => 'Lock Battery Replacement',
+                'amount' => '160000',
+                'expense_date' => '2026-10-16',
+                'current_property_id' => 'all',
+                'current_period' => 'this_month',
+            ],
+            server: ['HTTP_HX_REQUEST' => 'true']
+        ), $this->adminSession);
+        $this->assertSame(200, $mutateResp->getStatusCode());
+        $mutateBody = $mutateResp->getBody();
+        // Total Expenses increased from 1,840,000 to 2,000,000 COP; NOI updated from 4,940,000 to 4,780,000 COP
+        $this->assertStringContainsString('id="financial-report-content" class="space-y-6" hx-swap-oob="outerHTML"', $mutateBody);
+        $this->assertStringContainsString('$ 2.000.000 COP', $mutateBody);
+        $this->assertStringContainsString('$ 4.780.000 COP', $mutateBody);
+    }
 }

@@ -97,4 +97,18 @@ interface ReservationRepositoryInterface
      * @param array<string, mixed> $data
      */
     public function recordRefund(array $data): void;
+
+    /**
+     * Retrieves all reservations (including confirmed, cancelled, and pending_payment) whose
+     * stay interval [check_in, check_out) overlaps the half-open period [$startDate, $endDate).
+     *
+     * When $propertyId is 'all' or '', returns reservations across all properties ('1606', '1707').
+     *
+     * @return list<Reservation>
+     */
+    public function findOverlappingRange(
+        string $startDate,
+        string $endDate,
+        string $propertyId = 'all'
+    ): array;
 }

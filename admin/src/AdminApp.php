@@ -31,6 +31,8 @@ use OceanViewFlats\Admin\Service\MercadoPagoRefundClient;
 use OceanViewFlats\Admin\Service\MercadoPagoRefundClientInterface;
 use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Finance\FinancialReportEngine;
+use OceanViewFlats\Domain\Finance\FinancialReportEngineInterface;
 use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
 use OceanViewFlats\Domain\Finance\PdoOperationalExpenseRepository;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
@@ -334,6 +336,13 @@ final class AdminApp
         /** @var OperationalExpenseRepositoryInterface $expenseRepository */
         $expenseRepository = $options['operational_expense_repository']
             ?? new PdoOperationalExpenseRepository($pdo);
+        /** @var FinancialReportEngineInterface $financialReportEngine */
+        $financialReportEngine = $options['financial_report_engine']
+            ?? new FinancialReportEngine(
+                reservationRepository: $reservationRepository,
+                maintenanceBlockSource: $calendarBlockRepo,
+                expenseRepository: $expenseRepository
+            );
         $financialReportNow = isset($options['financial_report_now']) && $options['financial_report_now'] instanceof \DateTimeImmutable
             ? $options['financial_report_now']
             : null;
@@ -342,7 +351,8 @@ final class AdminApp
             reservationRepository: $reservationRepository,
             viewRenderer: $viewRenderer,
             auditLogger: $auditLogger,
-            now: $financialReportNow
+            now: $financialReportNow,
+            reportEngine: $financialReportEngine
         );
 
         // 10. Security Middlewares & Router (immutable internal security pipeline)

@@ -212,6 +212,34 @@ final class InMemoryReservationRepository implements ReservationRepositoryInterf
         $this->refunds[] = $data;
     }
 
+    public function findOverlappingRange(
+        string $startDate,
+        string $endDate,
+        string $propertyId = 'all'
+    ): array {
+        $normalizedProperty = trim($propertyId);
+        $matching = [];
+
+        foreach ($this->records as $reservation) {
+            if ($normalizedProperty !== '' && $normalizedProperty !== 'all' && $reservation->propertyId !== $normalizedProperty) {
+                continue;
+            }
+            if ($reservation->overlaps($startDate, $endDate)) {
+                $matching[] = $reservation;
+            }
+        }
+
+        usort($matching, static function (Reservation $a, Reservation $b): int {
+            $cmp = strcmp($a->checkIn, $b->checkIn);
+            if ($cmp !== 0) {
+                return $cmp;
+            }
+            return ($a->id ?? 0) <=> ($b->id ?? 0);
+        });
+
+        return $matching;
+    }
+
     /**
      * @return list<array<string, mixed>>
      */
