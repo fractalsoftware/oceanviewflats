@@ -49,7 +49,7 @@ $search = (string) ($filters['search'] ?? '');
               hx-target="#financial-report-content"
               hx-swap="outerHTML"
               hx-push-url="true"
-              hx-trigger="submit, change from:select, change from:input[type=date], keyup changed delay:300ms from:#expense-search-input"
+              hx-trigger="submit, change from:select, change from:input[type=date], keyup changed delay:300ms from:#expense-search-input, reservationUpdated from:body"
               class="space-y-3">
 
             <input type="hidden" name="tab" id="financial-report-tab-input" value="<?= htmlspecialchars($tab, ENT_QUOTES, 'UTF-8') ?>">
@@ -64,9 +64,6 @@ $search = (string) ($filters['search'] ?? '');
                         <option value="all" <?= $propertyId === 'all' ? 'selected' : '' ?>>All Properties (Portfolio)</option>
                         <option value="1606" <?= $propertyId === '1606' ? 'selected' : '' ?>>Property 1606</option>
                         <option value="1707" <?= $propertyId === '1707' ? 'selected' : '' ?>>Property 1707</option>
-                        <?php if ($propertyId === 'shared'): ?>
-                            <option value="shared" selected>Shared Portfolio Only</option>
-                        <?php endif; ?>
                     </select>
                 </div>
 
@@ -75,6 +72,7 @@ $search = (string) ($filters['search'] ?? '');
                     <label for="period-select" class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Time Period</label>
                     <select id="period-select"
                             name="period"
+                            onchange="if(this.value !== 'custom'){ var df=document.getElementById('date-from-input'), dt=document.getElementById('date-to-input'); if(df) df.value=''; if(dt) dt.value=''; }"
                             class="block w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
                         <option value="this_month" <?= $period === 'this_month' ? 'selected' : '' ?>>This Month</option>
                         <option value="last_month" <?= $period === 'last_month' ? 'selected' : '' ?>>Last Month</option>
@@ -129,6 +127,7 @@ $search = (string) ($filters['search'] ?? '');
                            hx-target="#financial-report-content"
                            hx-swap="outerHTML"
                            hx-push-url="true"
+                           onclick="var f=this.closest('form'); if(f){ f.reset(); var p=document.getElementById('property-filter-select'), pe=document.getElementById('period-select'), c=document.getElementById('compare-select'), s=document.getElementById('source-select'), cat=document.getElementById('category-select'), df=document.getElementById('date-from-input'), dt=document.getElementById('date-to-input'), sr=document.getElementById('expense-search-input'), t=document.getElementById('financial-report-tab-input'); if(p) p.value='all'; if(pe) pe.value='this_month'; if(c) c.value='prev_period'; if(s) s.value='all'; if(cat) cat.value='all'; if(df) df.value=''; if(dt) dt.value=''; if(sr) sr.value=''; if(t) t.value='expenses'; }"
                            title="Reset filters"
                            class="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,6 +146,7 @@ $search = (string) ($filters['search'] ?? '');
                            id="date-from-input"
                            name="date_from"
                            value="<?= htmlspecialchars($dateFrom, ENT_QUOTES, 'UTF-8') ?>"
+                           onchange="var pe=document.getElementById('period-select'); if(pe && this.value) pe.value='custom';"
                            class="block w-full py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" />
                 </div>
                 <div>
@@ -155,6 +155,7 @@ $search = (string) ($filters['search'] ?? '');
                            id="date-to-input"
                            name="date_to"
                            value="<?= htmlspecialchars($dateTo, ENT_QUOTES, 'UTF-8') ?>"
+                           onchange="var pe=document.getElementById('period-select'); if(pe && this.value) pe.value='custom';"
                            class="block w-full py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" />
                 </div>
                 <div>

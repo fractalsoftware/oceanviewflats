@@ -91,17 +91,6 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $currentSlice = match ($filter->propertyId) {
             '1606' => $property1606Slice,
             '1707' => $property1707Slice,
-            'shared' => $this->computeSlice(
-                propertyFilter: 'shared',
-                periodStart: $periodStart,
-                periodEnd: $periodEnd,
-                periodLabel: $periodLabel,
-                sourceFilter: $filter->source,
-                reservations: $currentReservations,
-                expenses: $currentExpenses,
-                blockedNights1606: $blockedNights1606,
-                blockedNights1707: $blockedNights1707
-            ),
             default => $portfolioSlice,
         };
 
@@ -328,26 +317,16 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                     $unpricedAirbnbUids[] = $reservation->reservationUid;
                 }
 
-                $attributedReservations[] = new AttributedReservationRow(
+                $attributedReservations[] = AttributedReservationRow::fromReservation(
                     reservation: $reservation,
-                    reservationUid: $reservation->reservationUid,
-                    propertyId: $reservation->propertyId,
-                    guestName: $reservation->guestName,
-                    source: $reservation->source,
                     channelGroup: $channelGroup,
-                    status: $reservation->status->value,
-                    paymentStatus: $reservation->paymentStatus,
-                    checkIn: $reservation->checkIn,
-                    checkOut: $reservation->checkOut,
                     totalNights: $totalNights,
                     inPeriodNights: $inPeriodNights,
                     prorationFactor: $factor,
-                    totalPrice: round($reservation->totalPrice, 2),
-                    refundedAmount: round($reservation->refundedAmount, 2),
-                    contractNet: round($netContract, 2),
-                    proratedCharged: round($proratedCharged, 2),
-                    proratedRefunded: round($proratedRefunded, 2),
-                    attributedRevenue: round($proratedNet, 2),
+                    contractNet: $netContract,
+                    proratedCharged: $proratedCharged,
+                    proratedRefunded: $proratedRefunded,
+                    attributedRevenue: $proratedNet,
                     isRetention: false,
                     isUnpricedAirbnb: $isUnpricedAirbnb
                 );
@@ -379,26 +358,16 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
 
                 if ($proratedNet > 0.0) {
                     $cancelledWithRetentionCount++;
-                    $attributedReservations[] = new AttributedReservationRow(
+                    $attributedReservations[] = AttributedReservationRow::fromReservation(
                         reservation: $reservation,
-                        reservationUid: $reservation->reservationUid,
-                        propertyId: $reservation->propertyId,
-                        guestName: $reservation->guestName,
-                        source: $reservation->source,
                         channelGroup: $channelGroup,
-                        status: $reservation->status->value,
-                        paymentStatus: $reservation->paymentStatus,
-                        checkIn: $reservation->checkIn,
-                        checkOut: $reservation->checkOut,
                         totalNights: $totalNights,
                         inPeriodNights: $inPeriodNights,
                         prorationFactor: $factor,
-                        totalPrice: round($reservation->totalPrice, 2),
-                        refundedAmount: round($reservation->refundedAmount, 2),
-                        contractNet: round($netContract, 2),
-                        proratedCharged: round($proratedCharged, 2),
-                        proratedRefunded: round($proratedRefunded, 2),
-                        attributedRevenue: round($proratedNet, 2),
+                        contractNet: $netContract,
+                        proratedCharged: $proratedCharged,
+                        proratedRefunded: $proratedRefunded,
+                        attributedRevenue: $proratedNet,
                         isRetention: true,
                         isUnpricedAirbnb: false
                     );

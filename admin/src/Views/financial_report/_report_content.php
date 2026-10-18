@@ -414,7 +414,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                             <td class="px-5 py-2.5 text-right"><?= formatCopCurrency($s1707->directExpenses) ?></td>
                         </tr>
                         <tr data-matrix-row="shared-expenses">
-                            <td class="px-5 py-2.5 text-amber-800">Shared Portfolio Expenses (Allocated 50/50 per Unit)</td>
+                            <td class="px-5 py-2.5 text-amber-800">Shared Portfolio Expenses (Allocated 50/50 per Property)</td>
                             <td class="px-5 py-2.5 text-right text-amber-800 bg-indigo-50/20"><?= formatCopCurrency($sAll->allocatedSharedExpenses) ?> (100%)</td>
                             <td class="px-5 py-2.5 text-right text-amber-800"><?= formatCopCurrency($s1606->allocatedSharedExpenses) ?> (50%)</td>
                             <td class="px-5 py-2.5 text-right text-amber-800"><?= formatCopCurrency($s1707->allocatedSharedExpenses) ?> (50%)</td>

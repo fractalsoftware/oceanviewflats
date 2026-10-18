@@ -289,7 +289,7 @@ final class OperationalExpense implements ArrayAccess
         throw new BadMethodCallException('OperationalExpense entity is immutable.');
     }
 
-    private static function isValidDate(string $date): bool
+    public static function isValidDate(string $date): bool
     {
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             return false;

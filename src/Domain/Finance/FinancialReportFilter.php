@@ -12,7 +12,7 @@ use DateTimeZone;
  */
 final class FinancialReportFilter
 {
-    public const VALID_PROPERTIES = ['all', '1606', '1707', 'shared'];
+    public const VALID_PROPERTIES = ['all', '1606', '1707'];
     public const VALID_PERIODS = [
         'this_month',
         'last_month',
@@ -56,16 +56,26 @@ final class FinancialReportFilter
 
         $normDateFrom = trim($dateFrom);
         $normDateTo = trim($dateTo);
-        $this->dateFrom = self::isValidDate($normDateFrom) ? $normDateFrom : '';
-        $this->dateTo = self::isValidDate($normDateTo) ? $normDateTo : '';
+        $validDateFrom = OperationalExpense::isValidDate($normDateFrom) ? $normDateFrom : '';
+        $validDateTo = OperationalExpense::isValidDate($normDateTo) ? $normDateTo : '';
 
         $normPeriod = trim($period);
-        if (($this->dateFrom !== '' || $this->dateTo !== '') && ($normPeriod === '' || $normPeriod === 'this_month' || $normPeriod === 'custom')) {
+        if ($normPeriod === 'custom' || ($normPeriod === '' && ($validDateFrom !== '' || $validDateTo !== ''))) {
             $this->period = 'custom';
-        } elseif (in_array($normPeriod, self::VALID_PERIODS, true) || preg_match('/^\d{4}-\d{2}$/', $normPeriod)) {
+            $this->dateFrom = $validDateFrom;
+            $this->dateTo = $validDateTo;
+        } elseif ($normPeriod !== '' && $normPeriod !== 'this_month' && (in_array($normPeriod, self::VALID_PERIODS, true) || preg_match('/^\d{4}-\d{2}$/', $normPeriod))) {
             $this->period = $normPeriod;
+            $this->dateFrom = '';
+            $this->dateTo = '';
+        } elseif ($validDateFrom !== '' || $validDateTo !== '') {
+            $this->period = 'custom';
+            $this->dateFrom = $validDateFrom;
+            $this->dateTo = $validDateTo;
         } else {
             $this->period = 'this_month';
+            $this->dateFrom = '';
+            $this->dateTo = '';
         }
 
         $normCompare = trim($compare);
@@ -82,12 +92,20 @@ final class FinancialReportFilter
 
         $this->search = trim($search);
 
-        $this->explicitPeriodStart = ($periodStart !== null && self::isValidDate(trim($periodStart)))
+        $this->explicitPeriodStart = ($periodStart !== null && OperationalExpense::isValidDate(trim($periodStart)))
             ? trim($periodStart)
             : null;
-        $this->explicitPeriodEnd = ($periodEnd !== null && self::isValidDate(trim($periodEnd)))
+        $this->explicitPeriodEnd = ($periodEnd !== null && OperationalExpense::isValidDate(trim($periodEnd)))
             ? trim($periodEnd)
             : null;
+    }
+
+    /**
+     * @param array<string, mixed> $query
+     */
+    public static function fromQuery(array $query): self
+    {
+        return self::fromArray($query);
     }
 
     /**
@@ -102,6 +120,13 @@ final class FinancialReportFilter
         $dateTo = isset($input['date_to']) && is_string($input['date_to'])
             ? trim($input['date_to'])
             : (isset($input['end_date']) && is_string($input['end_date']) ? trim($input['end_date']) : '');
+
+        if ($rawPeriod !== '' && $rawPeriod !== 'custom' && in_array($rawPeriod, self::VALID_PERIODS, true)) {
+            $dateFrom = '';
+            $dateTo = '';
+        } elseif ($rawPeriod === '' && ($dateFrom !== '' || $dateTo !== '')) {
+            $rawPeriod = 'custom';
+        }
 
         return new self(
             propertyId: isset($input['property_id']) && is_string($input['property_id']) ? $input['property_id'] : 'all',
@@ -136,7 +161,7 @@ final class FinancialReportFilter
         $tz = new DateTimeZone('America/Bogota');
         $clock = ($now ?? new DateTimeImmutable('now', $tz))->setTimezone($tz);
 
-        if ($this->period === 'custom' || $this->dateFrom !== '' || $this->dateTo !== '') {
+        if ($this->period === 'custom') {
             $start = $this->dateFrom !== '' ? $this->dateFrom : $clock->format('Y-m-01');
             if ($this->dateTo !== '') {
                 if ($this->dateTo > $start) {
@@ -257,14 +282,5 @@ final class FinancialReportFilter
             'tab' => $this->tab,
             'search' => $this->search,
         ], $overrides);
-    }
-
-    private static function isValidDate(string $date): bool
-    {
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            return false;
-        }
-        $parsed = DateTimeImmutable::createFromFormat('!Y-m-d', $date);
-        return $parsed !== false && $parsed->format('Y-m-d') === $date;
     }
 }

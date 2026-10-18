@@ -763,6 +763,7 @@ final class FinancialReportControllerTest extends TestCase
 
         // Multi-Property Comparison Matrix is rendered when property_id=all
         $this->assertStringContainsString('id="multi-property-comparison-matrix"', $bodyAll);
+        $this->assertStringContainsString('Shared Portfolio Expenses (Allocated 50/50 per Property)', $bodyAll);
         $this->assertStringContainsString('Portfolio Total (All)', $bodyAll);
         $this->assertStringContainsString('60 / 62 nights', $bodyAll);
         $this->assertStringContainsString('29 / 31 nights', $bodyAll);
@@ -969,5 +970,63 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertStringContainsString('1800000.00', $resCsvBody);
         $this->assertStringNotContainsString('ovf_csv_web_1606', $resCsvBody);
         $this->assertStringNotContainsString('ovf_csv_sep_1606', $resCsvBody);
+
+        // 4. Switching from custom range back to a non-custom preset clears stale date_from/date_to
+        $presetAfterCustomResp = $this->app->handle(
+            new Request(
+                method: 'GET',
+                uri: '/financial-report',
+                query: [
+                    'property_id' => 'all',
+                    'period' => 'this_month',
+                    'date_from' => '2026-10-05',
+                    'date_to' => '2026-10-10',
+                ]
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $presetAfterCustomResp->getStatusCode());
+        $presetAfterCustomBody = $presetAfterCustomResp->getBody();
+        $this->assertStringContainsString('name="date_from"' . "\n" . '                           value=""', $presetAfterCustomBody);
+        $this->assertStringContainsString('name="date_to"' . "\n" . '                           value=""', $presetAfterCustomBody);
+        $this->assertStringContainsString('reservationUpdated from:body', $presetAfterCustomBody);
+
+        // 5. Concluded unpriced ($0 COP) Airbnb reservation can be edited via Set Host Payout shortcut
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source, external_confirmation_code
+            ) VALUES (
+                'res-abnb-past-unpriced', '1606', 'Past Airbnb Guest', 'airbnb-past@guest.oceanviewflats.com', 'N/A',
+                '2025-05-01', '2025-05-05', 0, 0, 'confirmed', 'approved', 'airbnb', 'HMPAST999'
+            );
+        ");
+
+        $editPastAbnbResp = $this->app->handle(
+            new Request('GET', '/reservations/res-abnb-past-unpriced/edit', server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $editPastAbnbResp->getStatusCode());
+
+        $updatePastAbnbResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/reservations/res-abnb-past-unpriced/edit',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'property_id' => '1606',
+                    'check_in' => '2025-05-01',
+                    'check_out' => '2025-05-05',
+                    'total_price' => '1950000',
+                    'max_guests' => '4',
+                    'guest_name' => 'Past Airbnb Guest',
+                    'external_confirmation_code' => 'HMPAST999',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $updatePastAbnbResp->getStatusCode());
+        $this->assertSame('reservationUpdated', $updatePastAbnbResp->getHeader('HX-Trigger'));
     }
 }

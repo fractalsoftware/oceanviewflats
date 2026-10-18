@@ -636,6 +636,21 @@ final class FinancialReportEngineTest extends TestCase
         $this->assertSame('2026-10-15', $custom->periodEnd);
         $this->assertSame(20, $custom->current->totalCalendarNights);
         $this->assertFalse($custom->isMultiMonth());
+
+        // Switching from custom back to an explicit preset via fromQuery ignores stale date_from/date_to
+        $presetWithStaleDates = FinancialReportFilter::fromQuery([
+            'period' => 'last_month',
+            'date_from' => '2026-10-05',
+            'date_to' => '2026-10-15',
+            'property_id' => 'shared', // unrequested 'shared' falls back to 'all'
+        ]);
+        $this->assertSame('all', $presetWithStaleDates->propertyId);
+        $this->assertSame('last_month', $presetWithStaleDates->period);
+        $this->assertSame('', $presetWithStaleDates->dateFrom);
+        $this->assertSame('', $presetWithStaleDates->dateTo);
+        [$resolvedStart, $resolvedEnd] = $presetWithStaleDates->resolveDateWindow($refClock);
+        $this->assertSame('2026-09-01', $resolvedStart);
+        $this->assertSame('2026-10-01', $resolvedEnd);
     }
 
     #[DataProvider('adapterModeProvider')]

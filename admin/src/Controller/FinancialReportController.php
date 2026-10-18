@@ -54,15 +54,9 @@ final class FinancialReportController
      */
     public function index(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session, $currentUser);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         $filters = $this->resolveFiltersFromRequest($request);
@@ -96,20 +90,14 @@ final class FinancialReportController
      */
     public function newExpense(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         $filters = $this->resolveFiltersFromRequest($request);
         $todayBogota = $this->todayInBogota();
-        $defaultProperty = in_array($filters['property_id'], ['1606', '1707', 'shared'], true)
+        $defaultProperty = in_array($filters['property_id'], ['1606', '1707'], true)
             ? $filters['property_id']
             : '1606';
 
@@ -181,15 +169,9 @@ final class FinancialReportController
      */
     public function createExpense(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session, $currentUser);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         if (!$this->verifyCsrf($request, $session)) {
@@ -259,15 +241,9 @@ final class FinancialReportController
      */
     public function editExpense(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         $rawId = (string) ($request->getAttribute('id') ?? '');
@@ -314,15 +290,9 @@ final class FinancialReportController
      */
     public function updateExpense(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         if (!$this->verifyCsrf($request, $session)) {
@@ -405,15 +375,9 @@ final class FinancialReportController
      */
     public function deleteExpense(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         if (!$this->verifyCsrf($request, $session)) {
@@ -481,30 +445,17 @@ final class FinancialReportController
      */
     public function exportExpensesCsv(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         $filters = $this->resolveFiltersFromRequest($request);
-        $filterModel = FinancialReportFilter::fromArray($filters);
+        $filterModel = FinancialReportFilter::fromQuery($filters);
         $reportData = $this->reportEngine->generate($filterModel, $this->now);
         $slice = $reportData->current;
 
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            return Response::html('Unable to initialize CSV export stream.', 500);
-        }
-
-        fwrite($stream, "\xEF\xBB\xBF");
-
-        fputcsv($stream, [
+        $headerRow = [
             'expense_uid',
             'expense_date',
             'property_id',
@@ -518,11 +469,12 @@ final class FinancialReportController
             'allocation_factor',
             'allocated_amount_cop',
             'notes',
-        ], ',', '"', '');
+        ];
 
+        $dataRows = [];
         foreach ($slice->allocatedExpenses as $allocatedRow) {
             $expense = $allocatedRow->expense;
-            fputcsv($stream, [
+            $dataRows[] = [
                 $expense->expenseUid,
                 $expense->expenseDate,
                 $expense->propertyId,
@@ -536,12 +488,8 @@ final class FinancialReportController
                 number_format($allocatedRow->allocationFactor, 2, '.', ''),
                 number_format($allocatedRow->allocatedAmount, 2, '.', ''),
                 (string) ($expense->notes ?? ''),
-            ], ',', '"', '');
+            ];
         }
-
-        rewind($stream);
-        $csvBody = (string) stream_get_contents($stream);
-        fclose($stream);
 
         $filename = sprintf(
             'operational-expenses-%s-%s-to-%s.csv',
@@ -550,15 +498,7 @@ final class FinancialReportController
             $reportData->periodEnd
         );
 
-        return new Response(
-            statusCode: 200,
-            body: $csvBody,
-            headers: [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-                'Cache-Control' => 'no-store, no-cache, must-revalidate',
-            ]
-        );
+        return $this->streamCsvResponse($filename, $headerRow, $dataRows);
     }
 
     /**
@@ -569,30 +509,17 @@ final class FinancialReportController
      */
     public function exportReservationsCsv(Request $request, array &$session): Response
     {
-        if (empty($session['admin_user_id'])) {
-            return $request->isHtmx()
-                ? Response::htmxUnauthorized('/login')
-                : Response::redirect('/login', 302);
-        }
-
-        $currentUser = $this->buildCurrentUser($session);
-        if (!$this->isAuthorized($currentUser)) {
-            return $this->forbiddenResponse($request, $currentUser, $session);
+        $authResponse = $this->authorizeOrRespond($request, $session);
+        if ($authResponse !== null) {
+            return $authResponse;
         }
 
         $filters = $this->resolveFiltersFromRequest($request);
-        $filterModel = FinancialReportFilter::fromArray($filters);
+        $filterModel = FinancialReportFilter::fromQuery($filters);
         $reportData = $this->reportEngine->generate($filterModel, $this->now);
         $slice = $reportData->current;
 
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            return Response::html('Unable to initialize CSV export stream.', 500);
-        }
-
-        fwrite($stream, "\xEF\xBB\xBF");
-
-        fputcsv($stream, [
+        $headerRow = [
             'reservation_uid',
             'property_id',
             'guest_name',
@@ -611,9 +538,10 @@ final class FinancialReportController
             'contract_net_cop',
             'in_period_attributed_revenue_cop',
             'attribution_type',
-        ], ',', '"', '');
+        ];
 
         $searchNeedle = strtolower($filterModel->search);
+        $dataRows = [];
 
         foreach ($slice->attributedReservations as $row) {
             if ($searchNeedle !== '') {
@@ -630,7 +558,7 @@ final class FinancialReportController
                 }
             }
 
-            fputcsv($stream, [
+            $dataRows[] = [
                 $row->reservationUid,
                 $row->propertyId,
                 $row->guestName,
@@ -649,12 +577,8 @@ final class FinancialReportController
                 number_format($row->contractNet, 2, '.', ''),
                 number_format($row->attributedRevenue, 2, '.', ''),
                 $row->isRetention ? 'policy_retention' : 'active_stay',
-            ], ',', '"', '');
+            ];
         }
-
-        rewind($stream);
-        $csvBody = (string) stream_get_contents($stream);
-        fclose($stream);
 
         $filename = sprintf(
             'attributed-reservations-%s-%s-to-%s.csv',
@@ -663,15 +587,7 @@ final class FinancialReportController
             $reportData->periodEnd
         );
 
-        return new Response(
-            statusCode: 200,
-            body: $csvBody,
-            headers: [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-                'Cache-Control' => 'no-store, no-cache, must-revalidate',
-            ]
-        );
+        return $this->streamCsvResponse($filename, $headerRow, $dataRows);
     }
 
     /**
@@ -716,7 +632,7 @@ final class FinancialReportController
         }
 
         $expenseDate = trim($form['expense_date']);
-        if (!$this->isValidDate($expenseDate)) {
+        if (!OperationalExpense::isValidDate($expenseDate)) {
             $msg = 'Expense date must be a valid date in YYYY-MM-DD format.';
             $errors[] = $msg;
             $fieldErrors['expense_date'] = $msg;
@@ -898,9 +814,9 @@ final class FinancialReportController
      */
     private function resolveFiltersFromRequest(Request $request): array
     {
-        $filterModel = FinancialReportFilter::fromArray([
+        $filterModel = FinancialReportFilter::fromQuery([
             'property_id' => (string) $request->getQuery('property_id', 'all'),
-            'period' => (string) $request->getQuery('period', 'this_month'),
+            'period' => (string) $request->getQuery('period', ''),
             'date_from' => (string) ($request->getQuery('date_from', $request->getQuery('start_date', ''))),
             'date_to' => (string) ($request->getQuery('date_to', $request->getQuery('end_date', ''))),
             'compare' => (string) $request->getQuery('compare', 'prev_period'),
@@ -918,9 +834,9 @@ final class FinancialReportController
      */
     private function resolveFiltersFromMutationRequest(Request $request): array
     {
-        $filterModel = FinancialReportFilter::fromArray([
+        $filterModel = FinancialReportFilter::fromQuery([
             'property_id' => (string) $request->getPost('current_property_id', (string) $request->getQuery('property_id', 'all')),
-            'period' => (string) $request->getPost('current_period', (string) $request->getQuery('period', 'this_month')),
+            'period' => (string) $request->getPost('current_period', (string) $request->getQuery('period', '')),
             'date_from' => (string) $request->getPost('current_date_from', (string) $request->getQuery('date_from', '')),
             'date_to' => (string) $request->getPost('current_date_to', (string) $request->getQuery('date_to', '')),
             'compare' => (string) $request->getPost('current_compare', (string) $request->getQuery('compare', 'prev_period')),
@@ -962,13 +878,59 @@ final class FinancialReportController
         return number_format($amount, 2, '.', '');
     }
 
-    private function isValidDate(string $date): bool
+    /**
+     * @param array<string, mixed> $session
+     * @param array<string, mixed>|null $currentUser
+     * @param-out array<string, mixed> $currentUser
+     */
+    private function authorizeOrRespond(Request $request, array $session, ?array &$currentUser = null): ?Response
     {
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            return false;
+        $currentUser = $this->buildCurrentUser($session);
+
+        if (empty($session['admin_user_id'])) {
+            return $request->isHtmx()
+                ? Response::htmxUnauthorized('/login')
+                : Response::redirect('/login', 302);
         }
-        $d = DateTimeImmutable::createFromFormat('!Y-m-d', $date);
-        return $d !== false && $d->format('Y-m-d') === $date;
+
+        if (!$this->isAuthorized($currentUser)) {
+            return $this->forbiddenResponse($request, $currentUser, $session);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<string> $headerRow
+     * @param list<list<string>> $dataRows
+     */
+    private function streamCsvResponse(string $filename, array $headerRow, array $dataRows): Response
+    {
+        $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            return Response::html('Unable to initialize CSV export stream.', 500);
+        }
+
+        fwrite($stream, "\xEF\xBB\xBF");
+        fputcsv($stream, $headerRow, ',', '"', '');
+
+        foreach ($dataRows as $row) {
+            fputcsv($stream, $row, ',', '"', '');
+        }
+
+        rewind($stream);
+        $csvBody = (string) stream_get_contents($stream);
+        fclose($stream);
+
+        return new Response(
+            statusCode: 200,
+            body: $csvBody,
+            headers: [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]
+        );
     }
 
     /**
