@@ -200,6 +200,30 @@ CREATE TABLE IF NOT EXISTS `operational_alert_dismissals` (
   INDEX `idx_property_id` (`property_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 12. Create Operational Expenses Table (Admin Console Financial Report & Expense Ledger)
+CREATE TABLE IF NOT EXISTS `operational_expenses` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `expense_uid` VARCHAR(36) NOT NULL UNIQUE,
+  `property_id` VARCHAR(10) NOT NULL, -- '1606', '1707', or 'shared'
+  `category` VARCHAR(32) NOT NULL,    -- ExpenseCategory enum value
+  `title` VARCHAR(160) NOT NULL,
+  `amount` DECIMAL(12, 2) NOT NULL,   -- Strictly > 0.00 in Settlement Currency (COP)
+  `expense_date` DATE NOT NULL,       -- YYYY-MM-DD point-in-time attribution
+  `vendor_name` VARCHAR(120) DEFAULT NULL,
+  `reference_code` VARCHAR(120) DEFAULT NULL,
+  `reservation_uid` VARCHAR(36) DEFAULT NULL,
+  `notes` TEXT DEFAULT NULL,
+  `created_by` INT UNSIGNED DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_oe_property_date` (`property_id`, `expense_date`),
+  INDEX `idx_oe_expense_date` (`expense_date`),
+  INDEX `idx_oe_category` (`category`),
+  INDEX `idx_oe_reservation_uid` (`reservation_uid`),
+  INDEX `idx_oe_created_by` (`created_by`),
+  CONSTRAINT `fk_oe_created_by` FOREIGN KEY (`created_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =============================================================================
 -- Verification Query: SHOW TABLES;
 -- =============================================================================

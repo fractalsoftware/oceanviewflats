@@ -508,7 +508,8 @@ final class ReservationController
             return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Only confirmed reservations can be edited.</div>', 422);
         }
 
-        if ($reservation->isConcluded()) {
+        $isUnpricedAirbnb = $reservation->source === 'airbnb' && $reservation->totalPrice <= 0.0;
+        if ($reservation->isConcluded() && !$isUnpricedAirbnb) {
             return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Cannot edit a concluded reservation.</div>', 422);
         }
 
@@ -592,7 +593,8 @@ final class ReservationController
             return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Only confirmed reservations can be edited.</div>', 422);
         }
 
-        if ($reservation->isConcluded()) {
+        $isUnpricedAirbnb = $reservation->source === 'airbnb' && $reservation->totalPrice <= 0.0;
+        if ($reservation->isConcluded() && !$isUnpricedAirbnb) {
             return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Cannot edit a concluded reservation.</div>', 422);
         }
 

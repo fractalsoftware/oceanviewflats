@@ -453,6 +453,41 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
         ]);
     }
 
+    public function findOverlappingRange(
+        string $startDate,
+        string $endDate,
+        string $propertyId = 'all'
+    ): array {
+        $normalizedProperty = trim($propertyId);
+        $params = [
+            ':start_date' => $startDate,
+            ':end_date' => $endDate,
+        ];
+
+        $propertyClause = '';
+        if ($normalizedProperty !== '' && $normalizedProperty !== 'all') {
+            $propertyClause = ' AND `property_id` = :property_id';
+            $params[':property_id'] = $normalizedProperty;
+        }
+
+        $sql = "SELECT * FROM `reservations`
+            WHERE `check_in` < :end_date
+              AND `check_out` > :start_date"
+            . $propertyClause
+            . " ORDER BY `check_in` ASC, `id` ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $reservations = [];
+        foreach ($rows as $row) {
+            $reservations[] = $this->rowToEntity($row);
+        }
+
+        return $reservations;
+    }
+
     /**
      * @param array<string, mixed> $row
      */

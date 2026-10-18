@@ -173,8 +173,13 @@ final class AdminAppTest extends TestCase
             ['GET', '/calendar-blocks'],
             ['GET', '/calendar-blocks/new'],
             ['POST', '/calendar-blocks'],
+            ['GET', '/financial-report'],
+            ['GET', '/financial-report/export/expenses.csv'],
+            ['GET', '/financial-report/export/reservations.csv'],
+            ['GET', '/financial-report/expenses/new'],
+            ['POST', '/financial-report/expenses'],
 
-            // Dynamic routes (12)
+            // Dynamic routes
             ['GET', '/reservations/res_test_uid'],
             ['GET', '/reservations/res_test_uid/registry'],
             ['POST', '/reservations/res_test_uid/registry/complete'],
@@ -188,9 +193,13 @@ final class AdminAppTest extends TestCase
             ['DELETE', '/calendar-blocks/42'],
             ['POST', '/calendar-blocks/42/delete'],
             ['POST', '/calendar-blocks/42/release'],
+            ['GET', '/financial-report/expenses/42/edit'],
+            ['POST', '/financial-report/expenses/42'],
+            ['DELETE', '/financial-report/expenses/42'],
+            ['POST', '/financial-report/expenses/42/delete'],
         ];
 
-        $this->assertCount(28, $expectedRoutes);
+        $this->assertCount(37, $expectedRoutes);
 
         foreach ($expectedRoutes as [$method, $path]) {
             $session = ['admin_user_id' => 1];

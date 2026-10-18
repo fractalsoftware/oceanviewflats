@@ -167,6 +167,22 @@ _Avoid_: Available balance, remaining charge, credit
 The portion of the Quote withheld upon cancellation according to cancellation policy terms rather than refunded.
 _Avoid_: Cancellation penalty, forfeit, withheld fee
 
+**Gross Revenue**:
+The realized monetary inflow from Reservations in Settlement Currency (COP) after deducting any Refunded Amount, including retained Policy Retention from Cancelled Reservations where applicable.
+_Avoid_: Gross Earnings, Top-line Sales, Total Bookings Value, Turnover
+
+**Operational Expense**:
+A recorded monetary cost in Settlement Currency (COP) incurred on a specific calendar date to operate, maintain, clean, repair, or supply a single Property (`1606` or `1707`) or shared across the managed portfolio (`shared`, allocated 50/50 per Property in single-property evaluations).
+_Avoid_: Operational Cost, Property Cost, Overhead, Bill, Outflow
+
+**Expense Category**:
+The canonical operational classification assigned to an Operational Expense: Cleaning & Turnover (`cleaning`), Condominium Administration (`hoa_admin`), Utilities & Telecom (`utilities`), Maintenance & Repairs (`maintenance`), Guest Supplies & Consumables (`supplies`), Payment Gateway & Platform Fees (`platform_fees`), Taxes, Insurance & Statutory (`taxes_insurance`), or Other Operational Expense (`other`).
+_Avoid_: Cost Center, Expense Type, Ledger Account, Spend Tag
+
+**Net Operating Income**:
+The net financial performance of a Property or portfolio over a period in Settlement Currency (COP), defined as Gross Revenue minus Operational Expenses.
+_Avoid_: Net Profit, Net Earnings, Bottom Line, Take-home Pay
+
 **External Confirmation Code**:
 The authoritative reservation reference or confirmation token assigned to a stay by an external booking platform (e.g., Airbnb confirmation code `HMXXXXXXXX`), recorded on an External Reservation for operator cross-referencing and guest lookup.
 _Avoid_: Airbnb Code, Partner ID, Booking Reference
@@ -256,7 +272,7 @@ _Avoid_: Registration ID, External Consecutivo, Booking Voucher Number
 ### Administration & Operations
 
 **Admin Console**:
-The isolated administrative web application (`admin.oceanviewflats.com`) through which Admin Users manage Reservations, Seasonal Rate Tiers, Maintenance Blocks, Channel Sync, and Audit Logs.
+The isolated administrative web application (`admin.oceanviewflats.com`) through which Admin Users manage Reservations, Seasonal Rate Tiers, Maintenance Blocks, Channel Sync, Operational Expenses, Financial Reports, and Audit Logs.
 _Avoid_: Admin Platform, Admin Portal, Backoffice, Control Panel
 
 **Admin User**:
@@ -302,6 +318,32 @@ _Avoid_: Same-day Switch, Turnaround Flag, Double Day
 **Operational Warning Indicator**:
 A visual operational marker displayed on a current or future Occupancy Heatmap date cell signifying an active, non-dismissed Operational Alert (such as an upcoming Confirmed Reservation with an incomplete Guest Registry or failed Condominium Clearance Sync).
 _Avoid_: Warning Dot, Error Badge, Alert Pin
+
+**Financial Report**:
+The dedicated administrative analytical view in the Admin Console restricted to `admin` and `superadmin` roles that aggregates and slices Gross Revenue, Operational Expenses, Net Operating Income, and occupancy performance across properties, time dimensions, and booking sources.
+_Avoid_: Earnings Page, Accounting Dashboard, Revenue Sheet, Finance Tab
+
+**Available Night**:
+A calendar Night on a specific Property within a reporting period that is open for commercial guest rental, excluding distinct calendar Nights blocked solely by Maintenance Blocks or owner personal stays.
+_Avoid_: Total Calendar Night, Capacity Day, Open Slot
+
+**Occupied Night**:
+An Available Night on a specific Property occupied by a commercial Confirmed Reservation or Concluded Reservation.
+_Avoid_: Booked Day, Stay Day, Rented Night
+
+**Average Daily Rate**:
+The mean realized accommodation revenue earned per priced Occupied Night in Settlement Currency (COP), excluding zero-price stays and retained cancellation Policy Retention.
+_Avoid_: Mean Nightly Price, Average Stay Value, Daily Average
+
+**RevPAR**:
+Revenue Per Available Night in Settlement Currency (COP), measuring total realized Gross Revenue divided by total Available Nights for a Property or portfolio over a reporting period.
+_Avoid_: Revenue Per Unit, Daily Yield, Net Yield
+
+**Booking Source**:
+The origination channel classification of a Reservation, grouped into Direct Online (`web`), Direct Manual (`bank_transfer`, `cash`, `manual_override`), External OTA (`airbnb`), and non-commercial Owner Stay (`owner_stay`).
+_Avoid_: Sales Channel, Platform Type, Origin Code
+
+
 
 
 
