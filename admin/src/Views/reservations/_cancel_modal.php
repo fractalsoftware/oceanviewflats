@@ -173,7 +173,7 @@ $sendCancellationEmail = !empty($oldInput)
                                    value="full"
                                    <?= $selectedRefundType === 'full' ? 'checked' : '' ?>
                                    <?= $refundableBalance <= 0 ? 'disabled' : '' ?>
-                                   onchange="document.getElementById('partial-amount-container').classList.add('hidden');"
+                                   onchange="document.getElementById('partial-amount-container').classList.add('hidden'); document.getElementById('partial-refund-amount').disabled = true; document.getElementById('partial-refund-amount').required = false;"
                                    class="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 border-gray-300">
                             <div class="ml-3">
                                 <span class="block font-semibold text-gray-900">
@@ -192,7 +192,7 @@ $sendCancellationEmail = !empty($oldInput)
                                    value="partial"
                                    <?= $selectedRefundType === 'partial' ? 'checked' : '' ?>
                                    <?= $refundableBalance <= 0 ? 'disabled' : '' ?>
-                                   onchange="document.getElementById('partial-amount-container').classList.remove('hidden');"
+                                   onchange="document.getElementById('partial-amount-container').classList.remove('hidden'); document.getElementById('partial-refund-amount').disabled = false; document.getElementById('partial-refund-amount').required = true;"
                                    class="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 border-gray-300">
                             <div class="ml-3 flex-1">
                                 <span class="block font-semibold text-gray-900">
@@ -214,10 +214,11 @@ $sendCancellationEmail = !empty($oldInput)
                                 <input type="number"
                                        id="partial-refund-amount"
                                        name="refund_amount"
-                                       min="1"
-                                       max="<?= (int) $refundableBalance ?>"
-                                       step="1000"
+                                       min="<?= $refundableBalance > 0 ? 1 : 0 ?>"
+                                       max="<?= max(0, (int) $refundableBalance) ?>"
+                                       step="any"
                                        value="<?= (int) $inputRefundAmount ?>"
+                                       <?= $selectedRefundType === 'partial' ? 'required' : 'disabled' ?>
                                        class="pl-6 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg w-full font-mono focus:ring-1 focus:ring-rose-500 focus:border-rose-500">
                             </div>
                         </div>
@@ -228,7 +229,7 @@ $sendCancellationEmail = !empty($oldInput)
                                    name="refund_type"
                                    value="none"
                                    <?= $selectedRefundType === 'none' ? 'checked' : '' ?>
-                                   onchange="document.getElementById('partial-amount-container').classList.add('hidden');"
+                                   onchange="document.getElementById('partial-amount-container').classList.add('hidden'); document.getElementById('partial-refund-amount').disabled = true; document.getElementById('partial-refund-amount').required = false;"
                                    class="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 border-gray-300">
                             <div class="ml-3">
                                 <span class="block font-semibold text-gray-900">
