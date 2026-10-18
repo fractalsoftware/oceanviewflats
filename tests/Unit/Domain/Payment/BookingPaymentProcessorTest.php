@@ -481,7 +481,7 @@ final class BookingPaymentProcessorTest extends TestCase
             rawResponse: ['id' => 'mp_pay_approved_999', 'status' => 'approved']
         ));
 
-        $idempotencyKey = 'idem_card_12345';
+        $idempotencyKey = 'idem_card_test';
         $request = $this->createValidRequest([
             'idempotency_key' => $idempotencyKey,
             'lang' => 'en',
@@ -551,7 +551,7 @@ final class BookingPaymentProcessorTest extends TestCase
             rawResponse: ['id' => 'mp_pay_efecty_888', 'status' => 'pending']
         ));
 
-        $idempotencyKey = 'idem_efecty_6789';
+        $idempotencyKey = 'idem_efecty_test';
         $request = $this->createValidRequest([
             'payment_method_id' => 'efecty',
             'idempotency_key' => $idempotencyKey,
