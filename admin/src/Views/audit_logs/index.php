@@ -74,8 +74,15 @@ $dateTo = (string) ($filters['date_to'] ?? '');
                             <option value="cat:reservations" <?= $selectedAction === 'cat:reservations' ? 'selected' : '' ?>>All Reservations & Access</option>
                             <option value="cat:rates" <?= $selectedAction === 'cat:rates' ? 'selected' : '' ?>>All Rates & Pricing</option>
                             <option value="cat:blocks" <?= $selectedAction === 'cat:blocks' ? 'selected' : '' ?>>All Calendar Holds</option>
+                            <option value="cat:expenses" <?= $selectedAction === 'cat:expenses' ? 'selected' : '' ?>>All Operational Expenses</option>
                             <option value="cat:auth" <?= $selectedAction === 'cat:auth' ? 'selected' : '' ?>>All Authentication</option>
                             <option value="cat:system" <?= $selectedAction === 'cat:system' ? 'selected' : '' ?>>All System & Webhooks</option>
+                        </optgroup>
+
+                        <optgroup label="Operational Expenses">
+                            <option value="operational_expense_created" <?= $selectedAction === 'operational_expense_created' ? 'selected' : '' ?>>Operational Expense Created</option>
+                            <option value="operational_expense_updated" <?= $selectedAction === 'operational_expense_updated' ? 'selected' : '' ?>>Operational Expense Updated</option>
+                            <option value="operational_expense_deleted" <?= $selectedAction === 'operational_expense_deleted' ? 'selected' : '' ?>>Operational Expense Deleted</option>
                         </optgroup>
 
                         <optgroup label="Reservations & Access">

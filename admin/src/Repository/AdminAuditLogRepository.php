@@ -58,6 +58,11 @@ class AdminAuditLogRepository
             'webhook_refund',
             'refund_issued',
         ],
+        'cat:expenses' => [
+            'operational_expense_created',
+            'operational_expense_updated',
+            'operational_expense_deleted',
+        ],
     ];
 
     public function __construct(

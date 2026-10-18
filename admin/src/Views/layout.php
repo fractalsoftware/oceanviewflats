@@ -96,6 +96,9 @@
                         Calendar Blocks
                     </a>
                     <?php if (in_array($currentUser['role'] ?? '', ['admin', 'superadmin'], true)): ?>
+                    <a href="/financial-report" class="px-3 py-2 rounded-md text-sm font-medium <?= ($currentRoute ?? '') === '/financial-report' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                        Financial Report
+                    </a>
                     <a href="/audit-logs" class="px-3 py-2 rounded-md text-sm font-medium <?= ($currentRoute ?? '') === '/audit-logs' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
                         Audit Logs
                     </a>
@@ -144,6 +147,9 @@
                 Calendar Blocks
             </a>
             <?php if (in_array($currentUser['role'] ?? '', ['admin', 'superadmin'], true)): ?>
+            <a href="/financial-report" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/financial-report' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
+                Financial Report
+            </a>
             <a href="/audit-logs" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/audit-logs' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
                 Audit Logs
             </a>

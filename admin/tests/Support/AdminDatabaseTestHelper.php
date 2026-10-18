@@ -179,6 +179,29 @@ final class AdminDatabaseTestHelper
                 dismissed_by INTEGER DEFAULT NULL,
                 dismissed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS operational_expenses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                expense_uid TEXT NOT NULL UNIQUE,
+                property_id TEXT NOT NULL,
+                category TEXT NOT NULL,
+                title TEXT NOT NULL,
+                amount NUMERIC NOT NULL,
+                expense_date TEXT NOT NULL,
+                vendor_name TEXT DEFAULT NULL,
+                reference_code TEXT DEFAULT NULL,
+                reservation_uid TEXT DEFAULT NULL,
+                notes TEXT DEFAULT NULL,
+                created_by INTEGER DEFAULT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (created_by) REFERENCES admin_users (id) ON DELETE SET NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_oe_property_date ON operational_expenses (property_id, expense_date);
+            CREATE INDEX IF NOT EXISTS idx_oe_expense_date ON operational_expenses (expense_date);
+            CREATE INDEX IF NOT EXISTS idx_oe_category ON operational_expenses (category);
+            CREATE INDEX IF NOT EXISTS idx_oe_reservation_uid ON operational_expenses (reservation_uid);
+            CREATE INDEX IF NOT EXISTS idx_oe_created_by ON operational_expenses (created_by);
         ');
     }
 

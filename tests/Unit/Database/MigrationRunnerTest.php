@@ -26,6 +26,7 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('Table `calendar_blocks` verified/created.', $logs);
         $this->assertContains('Table `condominium_clearances` verified/created.', $logs);
         $this->assertContains('Table `operational_alert_dismissals` verified/created.', $logs);
+        $this->assertContains('Table `operational_expenses` verified/created.', $logs);
 
         // Verify tables exist in SQLite master
         $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'");
@@ -41,6 +42,33 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('reservation_refunds', $tables);
         $this->assertContains('condominium_clearances', $tables);
         $this->assertContains('operational_alert_dismissals', $tables);
+        $this->assertContains('operational_expenses', $tables);
+
+        // Verify columns and indexes in operational_expenses table
+        $oeColsStmt = $pdo->query("PRAGMA table_info(operational_expenses)");
+        $oeCols = $oeColsStmt !== false ? array_column($oeColsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('id', $oeCols);
+        $this->assertContains('expense_uid', $oeCols);
+        $this->assertContains('property_id', $oeCols);
+        $this->assertContains('category', $oeCols);
+        $this->assertContains('title', $oeCols);
+        $this->assertContains('amount', $oeCols);
+        $this->assertContains('expense_date', $oeCols);
+        $this->assertContains('vendor_name', $oeCols);
+        $this->assertContains('reference_code', $oeCols);
+        $this->assertContains('reservation_uid', $oeCols);
+        $this->assertContains('notes', $oeCols);
+        $this->assertContains('created_by', $oeCols);
+        $this->assertContains('created_at', $oeCols);
+        $this->assertContains('updated_at', $oeCols);
+
+        $oeIdxStmt = $pdo->query("PRAGMA index_list(operational_expenses)");
+        $oeIndexes = $oeIdxStmt !== false ? array_column($oeIdxStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('idx_oe_property_date', $oeIndexes);
+        $this->assertContains('idx_oe_expense_date', $oeIndexes);
+        $this->assertContains('idx_oe_category', $oeIndexes);
+        $this->assertContains('idx_oe_reservation_uid', $oeIndexes);
+        $this->assertContains('idx_oe_created_by', $oeIndexes);
 
         // Verify columns in operational_alert_dismissals table
         $oadColsStmt = $pdo->query("PRAGMA table_info(operational_alert_dismissals)");

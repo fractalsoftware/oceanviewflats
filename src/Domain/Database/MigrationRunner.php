@@ -353,6 +353,33 @@ final class MigrationRunner
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
         $logs[] = "Table `operational_alert_dismissals` verified/created.";
+
+        // 11. operational_expenses table
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS `operational_expenses` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `expense_uid` VARCHAR(36) NOT NULL UNIQUE,
+              `property_id` VARCHAR(10) NOT NULL,
+              `category` VARCHAR(32) NOT NULL,
+              `title` VARCHAR(160) NOT NULL,
+              `amount` DECIMAL(12, 2) NOT NULL,
+              `expense_date` DATE NOT NULL,
+              `vendor_name` VARCHAR(120) DEFAULT NULL,
+              `reference_code` VARCHAR(120) DEFAULT NULL,
+              `reservation_uid` VARCHAR(36) DEFAULT NULL,
+              `notes` TEXT DEFAULT NULL,
+              `created_by` INT UNSIGNED DEFAULT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              INDEX `idx_oe_property_date` (`property_id`, `expense_date`),
+              INDEX `idx_oe_expense_date` (`expense_date`),
+              INDEX `idx_oe_category` (`category`),
+              INDEX `idx_oe_reservation_uid` (`reservation_uid`),
+              INDEX `idx_oe_created_by` (`created_by`),
+              CONSTRAINT `fk_oe_created_by` FOREIGN KEY (`created_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ");
+        $logs[] = "Table `operational_expenses` verified/created.";
     }
 
     /**
@@ -560,5 +587,31 @@ final class MigrationRunner
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_reservation_uid ON operational_alert_dismissals (reservation_uid);');
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_property_id ON operational_alert_dismissals (property_id);');
         $logs[] = "Table `operational_alert_dismissals` verified/created.";
+
+        $pdo->exec('
+            CREATE TABLE IF NOT EXISTS operational_expenses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                expense_uid TEXT NOT NULL UNIQUE,
+                property_id TEXT NOT NULL,
+                category TEXT NOT NULL,
+                title TEXT NOT NULL,
+                amount NUMERIC NOT NULL,
+                expense_date TEXT NOT NULL,
+                vendor_name TEXT DEFAULT NULL,
+                reference_code TEXT DEFAULT NULL,
+                reservation_uid TEXT DEFAULT NULL,
+                notes TEXT DEFAULT NULL,
+                created_by INTEGER DEFAULT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (created_by) REFERENCES admin_users (id) ON DELETE SET NULL
+            );
+        ');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_property_date ON operational_expenses (property_id, expense_date);');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_expense_date ON operational_expenses (expense_date);');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_category ON operational_expenses (category);');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_reservation_uid ON operational_expenses (reservation_uid);');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_created_by ON operational_expenses (created_by);');
+        $logs[] = "Table `operational_expenses` verified/created.";
     }
 }

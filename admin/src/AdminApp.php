@@ -13,6 +13,7 @@ use OceanViewFlats\Admin\Controller\AuthController;
 use OceanViewFlats\Admin\Controller\CalendarBlockController;
 use OceanViewFlats\Admin\Controller\ChannelSyncController;
 use OceanViewFlats\Admin\Controller\DashboardController;
+use OceanViewFlats\Admin\Controller\FinancialReportController;
 use OceanViewFlats\Admin\Controller\RateController;
 use OceanViewFlats\Admin\Controller\ReservationController;
 use OceanViewFlats\Admin\Http\Request;
@@ -30,6 +31,8 @@ use OceanViewFlats\Admin\Service\MercadoPagoRefundClient;
 use OceanViewFlats\Admin\Service\MercadoPagoRefundClientInterface;
 use OceanViewFlats\Admin\Service\PublicUrlBuilder;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
+use OceanViewFlats\Domain\Finance\PdoOperationalExpenseRepository;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRenderer;
@@ -320,12 +323,26 @@ final class AdminApp
             urlBuilder: $urlBuilder
         );
 
-        // 9. Audit Log Repository & Controller
+        // 9. Audit Log & Financial Report Repositories & Controllers
         $adminAuditLogRepo = $options['admin_audit_log_repository']
             ?? new AdminAuditLogRepository($pdo);
         $auditLogController = new AuditLogController(
             repository: $adminAuditLogRepo,
             viewRenderer: $viewRenderer
+        );
+
+        /** @var OperationalExpenseRepositoryInterface $expenseRepository */
+        $expenseRepository = $options['operational_expense_repository']
+            ?? new PdoOperationalExpenseRepository($pdo);
+        $financialReportNow = isset($options['financial_report_now']) && $options['financial_report_now'] instanceof \DateTimeImmutable
+            ? $options['financial_report_now']
+            : null;
+        $financialReportController = new FinancialReportController(
+            expenseRepository: $expenseRepository,
+            reservationRepository: $reservationRepository,
+            viewRenderer: $viewRenderer,
+            auditLogger: $auditLogger,
+            now: $financialReportNow
         );
 
         // 10. Security Middlewares & Router (immutable internal security pipeline)
@@ -380,6 +397,13 @@ final class AdminApp
             ->delete('/calendar-blocks/{id}', [$calendarBlockController, 'delete'])
             ->post('/calendar-blocks/{id}/delete', [$calendarBlockController, 'delete'])
             ->post('/calendar-blocks/{id}/release', [$calendarBlockController, 'delete'])
+            ->get('/financial-report', [$financialReportController, 'index'])
+            ->get('/financial-report/expenses/new', [$financialReportController, 'newExpense'])
+            ->post('/financial-report/expenses', [$financialReportController, 'createExpense'])
+            ->get('/financial-report/expenses/{id}/edit', [$financialReportController, 'editExpense'])
+            ->post('/financial-report/expenses/{id}', [$financialReportController, 'updateExpense'])
+            ->delete('/financial-report/expenses/{id}', [$financialReportController, 'deleteExpense'])
+            ->post('/financial-report/expenses/{id}/delete', [$financialReportController, 'deleteExpense'])
             ->get('/audit-logs', [$auditLogController, 'index'])
             ->get('/audit-logs/{id}', [$auditLogController, 'show']);
 

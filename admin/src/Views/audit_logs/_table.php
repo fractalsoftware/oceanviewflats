@@ -78,6 +78,7 @@ $endEntry = min($total, $page * $per_page);
                             $entityType = (string) $item['entity_type'];
                             $entityId = (string) $item['entity_id'];
                             $isReservation = ($entityType === 'reservation');
+                            $isOperationalExpense = ($entityType === 'operational_expense');
                         ?>
                         <tr class="hover:bg-gray-50/75 transition-colors group">
                             
@@ -107,6 +108,12 @@ $endEntry = min($total, $page * $per_page);
                                     <?php if ($isReservation): ?>
                                         <a href="/reservations?search=<?= urlencode($entityId) ?>"
                                            title="View reservation in ledger"
+                                           class="font-mono text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+                                            <?= htmlspecialchars($entityId, ENT_QUOTES, 'UTF-8') ?>
+                                        </a>
+                                    <?php elseif ($isOperationalExpense): ?>
+                                        <a href="/financial-report?tab=expenses&amp;search=<?= urlencode($entityId) ?>"
+                                           title="View operational expense in ledger"
                                            class="font-mono text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
                                             <?= htmlspecialchars($entityId, ENT_QUOTES, 'UTF-8') ?>
                                         </a>
