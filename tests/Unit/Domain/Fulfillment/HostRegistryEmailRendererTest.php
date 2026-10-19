@@ -32,14 +32,16 @@ final class HostRegistryEmailRendererTest extends TestCase
                 name: 'Jane Doe',
                 age: 34,
                 docType: 'Passport',
-                docNum: 'US12345678'
+                docNum: 'US12345678',
+                phone: '+57 300 123 4567'
             ),
             new OccupantDetails(
                 index: 2,
                 name: 'John Doe',
                 age: 36,
                 docType: 'Driver License',
-                docNum: 'DL887766'
+                docNum: 'DL887766',
+                phone: '+1 305 555 9876'
             ),
         ];
 
@@ -107,12 +109,14 @@ final class HostRegistryEmailRendererTest extends TestCase
         $this->assertStringContainsString('Plates:        XYZ-123', $text);
         $this->assertStringContainsString('Make & Model:  Toyota RAV4', $text);
 
-        // Registered guests: document numbers must be masked (****5678, ****7766)
+        // Registered guests: document numbers and phones must be masked (****5678, ****7766, ****4567, ****9876)
         $this->assertStringContainsString('REGISTERED GUESTS DETAILS', $text);
-        $this->assertStringContainsString("Guest #1:\n  Name:     Jane Doe\n  Email:    jane.doe@example.com\n  ID/Doc:   Passport (****5678)\n  Age:      34", $text);
-        $this->assertStringContainsString("Guest #2:\n  Name:     John Doe\n  ID/Doc:   Driver License (****7766)\n  Age:      36", $text);
+        $this->assertStringContainsString("Guest #1:\n  Name:     Jane Doe\n  Email:    jane.doe@example.com\n  Phone:    ****4567\n  ID/Doc:   Passport (****5678)\n  Age:      34", $text);
+        $this->assertStringContainsString("Guest #2:\n  Name:     John Doe\n  Phone:    ****9876\n  ID/Doc:   Driver License (****7766)\n  Age:      36", $text);
         $this->assertStringNotContainsString('US12345678', $text);
         $this->assertStringNotContainsString('DL887766', $text);
+        $this->assertStringNotContainsString('300 123 4567', $text);
+        $this->assertStringNotContainsString('305 555 9876', $text);
 
         // Smart lock access PIN: Primary Guest Doc line must be removed
         $this->assertStringContainsString('SMART LOCK ACCESS PIN (ACTION REQUIRED)', $text);
@@ -160,15 +164,19 @@ final class HostRegistryEmailRendererTest extends TestCase
         $this->assertStringContainsString('ABC-999', $html);
         $this->assertStringContainsString('Hyundai Tucson', $html);
 
-        // Occupants with masked document numbers
+        // Occupants with masked document numbers and phone numbers
         $this->assertStringContainsString('Registered Guests Details', $html);
         $this->assertStringContainsString('Jane Doe', $html);
         $this->assertStringContainsString('<code>jane.doe@example.com</code>', $html);
         $this->assertStringContainsString('Passport (****5678)', $html);
+        $this->assertStringContainsString('Phone: <code>****4567</code>', $html);
         $this->assertStringContainsString('John Doe', $html);
         $this->assertStringContainsString('Driver License (****7766)', $html);
+        $this->assertStringContainsString('Phone: <code>****9876</code>', $html);
         $this->assertStringNotContainsString('US12345678', $html);
         $this->assertStringNotContainsString('DL887766', $html);
+        $this->assertStringNotContainsString('300 123 4567', $html);
+        $this->assertStringNotContainsString('305 555 9876', $html);
 
         // PIN box without Primary Guest Doc
         $this->assertStringContainsString('Smart Lock Access PIN (Action Required)', $html);

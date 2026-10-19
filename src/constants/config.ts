@@ -8,6 +8,11 @@ export const MERCADOPAGO_PUBLIC_KEY =
 
 export const PRIVACY_POLICY_VERSION = "2026-10";
 
+export const MINOR_DOC_TYPES = [
+	"Tarjeta de Identidad",
+	"Registro Civil",
+] as const;
+
 export const DATA_CONTROLLER = {
 	name: "OceanViewFlats — Manuel Enrique Herrera",
 	rnt1707: "RNT #268781",
@@ -41,6 +46,24 @@ export const CONTACT_PAGE_PATHS: Record<string, string> = {
 	ja: "contact/ja.html",
 };
 
+export const GUIDE_PAGE_PATHS: Record<string, string> = {
+	en: "guide/index.html",
+	es: "guide/es.html",
+	fr: "guide/fr.html",
+	it: "guide/it.html",
+	de: "guide/de.html",
+	ja: "guide/ja.html",
+};
+
+export const HOME_PAGE_PATHS: Record<string, string> = {
+	en: "",
+	es: "es.html",
+	fr: "fr.html",
+	it: "it.html",
+	de: "de.html",
+	ja: "ja.html",
+};
+
 export const getPrivacyPolicyPath = (
 	lang: string,
 	assetPrefix = "./",
@@ -57,7 +80,41 @@ export const getContactPagePath = (
 	return `${assetPrefix}${relPath}`;
 };
 
+export const getGuidePagePath = (lang: string, assetPrefix = "./"): string => {
+	const relPath = GUIDE_PAGE_PATHS[lang] || GUIDE_PAGE_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getHomePagePath = (lang: string, assetPrefix = "./"): string => {
+	const relPath = HOME_PAGE_PATHS[lang] ?? HOME_PAGE_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export interface RegistryGuestSlotConfig {
+	num: number;
+	isPrimary: boolean;
+	isCompanion: boolean;
+	cardClassName: string;
+	phoneLabelKey: "registryPhone" | "registryPhoneOpt";
+}
+
+export const REGISTRY_GUEST_SLOTS: readonly RegistryGuestSlotConfig[] =
+	Array.from({ length: 12 }, (_, idx) => {
+		const num = idx + 1;
+		const isPrimary = num === 1;
+		return {
+			num,
+			isPrimary,
+			isCompanion: !isPrimary,
+			cardClassName: isPrimary
+				? "p-5 rounded-2xl border transition-all duration-300 bg-slate-50/50 border-slate-200 shadow-sm"
+				: "p-5 rounded-2xl border transition-all duration-300 bg-white border-slate-150 shadow-xs hidden",
+			phoneLabelKey: isPrimary ? "registryPhone" : "registryPhoneOpt",
+		};
+	});
+
 export const IMAGES = {
+	mainEntrance: "images/main-entrance.webp",
 	"1707": {
 		hero: "images/1707-main-room-seaside.webp",
 		nomad: "images/1707-balcony-working-nomad.webp",

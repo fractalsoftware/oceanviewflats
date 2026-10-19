@@ -65,7 +65,8 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
                 $emailBody .= "  Email:    " . $this->stripNewlines($g->email) . "\n";
             }
             if ($g->phone !== null && $g->phone !== '') {
-                $emailBody .= "  Phone:    " . $this->stripNewlines($g->phone) . "\n";
+                $maskedPhone = (string) PiiMasker::maskPhone($this->stripNewlines($g->phone));
+                $emailBody .= "  Phone:    " . $maskedPhone . "\n";
             }
             if ($g->country !== null && $g->country !== '') {
                 $emailBody .= "  Country:  " . $this->stripNewlines($g->country) . "\n";
@@ -139,7 +140,8 @@ HTML;
 
             $phoneSnippet = '';
             if ($g->phone !== null && $g->phone !== '') {
-                $safePhone = htmlspecialchars($this->stripNewlines($g->phone), ENT_QUOTES, 'UTF-8');
+                $maskedPhone = (string) PiiMasker::maskPhone($this->stripNewlines($g->phone));
+                $safePhone = htmlspecialchars($maskedPhone, ENT_QUOTES, 'UTF-8');
                 $phoneSnippet = "<span>Phone: <code>{$safePhone}</code></span>";
             }
             $countrySnippet = '';

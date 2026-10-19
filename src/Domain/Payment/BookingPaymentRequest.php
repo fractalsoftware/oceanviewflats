@@ -6,6 +6,7 @@ namespace OceanViewFlats\Domain\Payment;
 
 use JsonSerializable;
 use OceanViewFlats\Domain\Reservation\Reservation;
+use OceanViewFlats\Domain\Security\PiiMasker;
 use OceanViewFlats\Domain\Support\PathResolver;
 
 if (!function_exists('clean_input')) {
@@ -133,9 +134,7 @@ final class BookingPaymentRequest implements JsonSerializable
         }
 
         $rawConsent = $data['privacy_consent'] ?? $data['privacyConsent'] ?? false;
-        $privacyConsent = $rawConsent === true
-            || $rawConsent === 1
-            || in_array(strtolower(trim((string) $rawConsent)), ['1', 'true', 'on', 'yes'], true);
+        $privacyConsent = PiiMasker::isTruthyConsent($rawConsent);
 
         $rawPolicyVersion = $data['privacy_policy_version'] ?? $data['privacyPolicyVersion'] ?? null;
         $privacyPolicyVersion = is_string($rawPolicyVersion) && trim($rawPolicyVersion) !== ''

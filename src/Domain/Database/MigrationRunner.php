@@ -699,6 +699,10 @@ final class MigrationRunner
      */
     private static function encryptLegacyGuestRegistries(PDO $pdo, array &$logs): void
     {
+        if (!PayloadEncryptor::hasConfiguredKey()) {
+            return;
+        }
+
         $stmt = $pdo->query('SELECT id, guests_payload FROM guest_registries');
         if ($stmt === false) {
             return;
@@ -709,6 +713,9 @@ final class MigrationRunner
         $encryptedCount = 0;
 
         $updateStmt = $pdo->prepare('UPDATE guest_registries SET guests_payload = :payload WHERE id = :id');
+        if ($updateStmt === false) {
+            return;
+        }
 
         foreach ($rows as $row) {
             $rawPayload = (string) ($row['guests_payload'] ?? '');

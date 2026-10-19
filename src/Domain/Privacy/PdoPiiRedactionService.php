@@ -151,6 +151,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
               AND `check_out` < :cutoff_date
             ORDER BY `check_out` ASC, `id` ASC
         ");
+        if ($stmt === false) {
+            return 0;
+        }
         $stmt->execute([':cutoff_date' => $cutoffDate]);
 
         /** @var list<string> $uids */
@@ -188,6 +191,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                     `updated_at` = :updated_at
                 WHERE `reservation_uid` = :uid
             ");
+            if ($stmt === false) {
+                return;
+            }
             $stmt->execute([
                 ':guest_name' => self::REDACTED_GUEST_NAME,
                 ':guest_email' => self::REDACTED_GUEST_EMAIL,
@@ -207,6 +213,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                     `notes` = NULL
                 WHERE `reservation_uid` = :uid
             ");
+            if ($stmt === false) {
+                return;
+            }
             $stmt->execute([
                 ':guest_name' => self::REDACTED_GUEST_NAME,
                 ':guest_email' => self::REDACTED_GUEST_EMAIL,
@@ -228,6 +237,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                     `pii_redacted_at` = COALESCE(NULLIF(`pii_redacted_at`, ''), :redacted_at)
                 WHERE `reservation_uid` = :uid
             ");
+            if ($stmt === false) {
+                return 0;
+            }
             $stmt->execute([
                 ':redacted_at' => $redactedAt,
                 ':uid' => $uid,
@@ -244,6 +256,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                         `ip_address` = NULL
                     WHERE `reservation_uid` = :uid
                 ");
+                if ($stmt === false) {
+                    return 0;
+                }
                 $stmt->execute([':uid' => $uid]);
 
                 return $stmt->rowCount();
@@ -263,6 +278,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                     `updated_at` = :updated_at
                 WHERE `reservation_uid` = :uid
             ");
+            if ($stmt === false) {
+                return 0;
+            }
             $stmt->execute([
                 ':updated_at' => $updatedAt,
                 ':uid' => $uid,
@@ -283,6 +301,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                 WHERE `entity_type` = 'reservation' AND `entity_id` = :uid
                 ORDER BY `id` ASC
             ");
+            if ($selectStmt === false) {
+                return 0;
+            }
             $selectStmt->execute([':uid' => $uid]);
             /** @var list<array<string, mixed>> $rows */
             $rows = $selectStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -300,6 +321,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                 `payload_after` = :payload_after
             WHERE `id` = :id
         ");
+        if ($updateStmt === false) {
+            return 0;
+        }
 
         $scrubbedCount = 0;
         foreach ($rows as $row) {
@@ -433,6 +457,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                     NULL, :payload_after, :ip_address, :user_agent, CURRENT_TIMESTAMP
                 )
             ");
+            if ($stmt === false) {
+                return null;
+            }
             $stmt->execute([
                 ':admin_user_id' => $admin?->adminUserId,
                 ':action' => 'pii_redacted',
@@ -456,6 +483,9 @@ final class PdoPiiRedactionService implements PiiRedactionServiceInterface
                         NULL, :payload_after, :ip_address, CURRENT_TIMESTAMP
                     )
                 ");
+                if ($stmt === false) {
+                    return null;
+                }
                 $stmt->execute([
                     ':admin_user_id' => $admin?->adminUserId,
                     ':action' => 'pii_redacted',

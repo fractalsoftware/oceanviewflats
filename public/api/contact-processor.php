@@ -7,7 +7,10 @@
 declare(strict_types=1);
 
 // 1. Load Shared Utilities & Configuration
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once __DIR__ . '/utils.php';
+
+use OceanViewFlats\Domain\Security\PiiMasker;
 
 // Load Unified Translations
 $all_translations = require __DIR__ . '/translations.php';
@@ -81,9 +84,7 @@ if ($captcha_check !== true) {
 }
 
 // Verify Personal Data Authorization (Ley 1581 of 2012)
-$has_privacy_consent = $privacy_consent_raw === true
-    || $privacy_consent_raw === 1
-    || in_array(strtolower(trim((string) $privacy_consent_raw)), ['1', 'true', 'on', 'yes'], true);
+$has_privacy_consent = PiiMasker::isTruthyConsent($privacy_consent_raw);
 if (!$has_privacy_consent) {
     http_response_code(400);
     send_json_response(false, $t['err_privacy_consent']);

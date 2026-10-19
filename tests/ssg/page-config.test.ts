@@ -510,7 +510,7 @@ test("Guest Registry pages render Personal Data Authorization and hidden disable
 			`${item.file} #minor-guardian-consent must not be required while hidden`,
 		);
 
-		// 3. Page config includes localized consent validation keys
+		// 3. Page config includes localized consent validation keys and minorDocTypes
 		const match = content.match(
 			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
 		);
@@ -523,6 +523,21 @@ test("Guest Registry pages render Personal Data Authorization and hidden disable
 		assert.ok(
 			parsed.i18n.registryErrMinorConsent,
 			`${item.file} i18n must include registryErrMinorConsent`,
+		);
+		assert.equal(
+			parsed.i18n.regErrPrivacyConsent,
+			undefined,
+			`${item.file} i18n must not include duplicate alias regErrPrivacyConsent`,
+		);
+		assert.equal(
+			parsed.i18n.regErrMinorGuardianConsent,
+			undefined,
+			`${item.file} i18n must not include duplicate alias regErrMinorGuardianConsent`,
+		);
+		assert.deepEqual(
+			parsed.minorDocTypes,
+			["Tarjeta de Identidad", "Registro Civil"],
+			`${item.file} pageConfig must include minorDocTypes`,
 		);
 	}
 });
@@ -673,6 +688,7 @@ test("registry.js dynamically toggles Minor Guardian Attestation when any active
 				lang: "en",
 				assetPrefix: "../",
 				apiBase: "../api/",
+				minorDocTypes: ["Tarjeta de Identidad", "Registro Civil"],
 			}),
 			t: (key: string, _params?: any, fallback?: string) => fallback || key,
 			scrollTo: () => {},

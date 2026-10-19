@@ -95,4 +95,33 @@ final class PayloadEncryptorTest extends TestCase
         $encrypted = PayloadEncryptor::encrypt($payload, $b64Key);
         $this->assertSame($payload, PayloadEncryptor::decrypt($encrypted, $b64Key));
     }
+
+    public function testHasConfiguredKeyDetectsExplicitOrEnvironmentKeys(): void
+    {
+        $prevEnv = $_ENV['APP_ENCRYPTION_KEY'] ?? null;
+        $prevGetEnv = getenv('APP_ENCRYPTION_KEY');
+
+        try {
+            unset($_ENV['APP_ENCRYPTION_KEY'], $_SERVER['APP_ENCRYPTION_KEY']);
+            putenv('APP_ENCRYPTION_KEY');
+
+            $this->assertFalse(PayloadEncryptor::hasConfiguredKey());
+            $this->assertFalse(PayloadEncryptor::hasConfiguredKey('   '));
+            $this->assertTrue(PayloadEncryptor::hasConfiguredKey('explicit-key'));
+
+            $_ENV['APP_ENCRYPTION_KEY'] = 'env-key-2026';
+            $this->assertTrue(PayloadEncryptor::hasConfiguredKey());
+        } finally {
+            if ($prevEnv !== null) {
+                $_ENV['APP_ENCRYPTION_KEY'] = $prevEnv;
+            } else {
+                unset($_ENV['APP_ENCRYPTION_KEY']);
+            }
+            if ($prevGetEnv !== false) {
+                putenv("APP_ENCRYPTION_KEY={$prevGetEnv}");
+            } else {
+                putenv('APP_ENCRYPTION_KEY');
+            }
+        }
+    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Domain\Fulfillment;
 
 use InvalidArgumentException;
+use OceanViewFlats\Domain\Security\PiiMasker;
 
 /**
  * Immutable typed DTO carrying guest registration details.
@@ -286,14 +287,10 @@ final class GuestRegistrySubmission
         }
 
         $rawPrivacyConsent = $data['privacy_consent'] ?? $data['privacyConsent'] ?? false;
-        $privacyConsent = in_array(strtolower(trim((string) $rawPrivacyConsent)), ['1', 'true', 'on', 'yes'], true)
-            || $rawPrivacyConsent === true
-            || $rawPrivacyConsent === 1;
+        $privacyConsent = PiiMasker::isTruthyConsent($rawPrivacyConsent);
 
         $rawMinorConsent = $data['minor_guardian_consent'] ?? $data['minorGuardianConsent'] ?? false;
-        $minorGuardianConsent = in_array(strtolower(trim((string) $rawMinorConsent)), ['1', 'true', 'on', 'yes'], true)
-            || $rawMinorConsent === true
-            || $rawMinorConsent === 1;
+        $minorGuardianConsent = PiiMasker::isTruthyConsent($rawMinorConsent);
 
         $privacyPolicyVersion = trim((string) ($data['privacy_policy_version'] ?? $data['privacyPolicyVersion'] ?? '2026-10'));
         if ($privacyPolicyVersion === '') {

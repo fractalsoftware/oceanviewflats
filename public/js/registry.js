@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgConcluded = t('registryConcluded', {}, 'This reservation has concluded. Access to guest registration is no longer active.');
     const msgErrEmail = t('registryErrEmail', {}, '');
     const msgErrPhone = t('registryErrPhoneRequired', {}, '');
-    const msgErrPrivacyConsent = t('registryErrPrivacyConsent', {}, t('regErrPrivacyConsent', {}, ''));
-    const msgErrMinorConsent = t('registryErrMinorConsent', {}, t('regErrMinorGuardianConsent', {}, ''));
+    const msgErrPrivacyConsent = t('registryErrPrivacyConsent', {}, '');
+    const msgErrMinorConsent = t('registryErrMinorConsent', {}, '');
 
     const addGuestBtn = document.getElementById('add-guest-button');
     const guestCountInput = document.getElementById('guest-count-input');
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Manage Dynamic Guest Cards (up to maxGuests guests; default 6, max 12)
     const ABSOLUTE_MAX_GUESTS = 12;
-    const MINOR_DOC_TYPES = ['Tarjeta de Identidad', 'Registro Civil'];
+    const minorDocTypes = Array.isArray(pageConfig.minorDocTypes) ? pageConfig.minorDocTypes : [];
     let maxGuests = 6;
     let currentGuestCount = 1;
     let isRegistryCompleted = false;
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (docTypeSelect) {
             const docType = String(docTypeSelect.value || '').trim();
-            if (MINOR_DOC_TYPES.includes(docType)) {
+            if (minorDocTypes.includes(docType)) {
                 return true;
             }
         }

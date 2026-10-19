@@ -1,4 +1,4 @@
-import { IMAGES } from "../constants/config";
+import { IMAGES, MINOR_DOC_TYPES } from "../constants/config";
 import type { TranslationDict } from "../i18n/dict";
 import BookingFailure from "../pages/BookingFailure";
 import BookingPending from "../pages/BookingPending";
@@ -84,8 +84,6 @@ export const getClientDictionaryForPage = (
 			registryErrPhoneRequired: t.registryErrPhoneRequired || "",
 			registryErrPrivacyConsent: t.registryErrPrivacyConsent || "",
 			registryErrMinorConsent: t.registryErrMinorConsent || "",
-			regErrPrivacyConsent: t.registryErrPrivacyConsent || "",
-			regErrMinorGuardianConsent: t.registryErrMinorConsent || "",
 			registrySuccess: t.registrySuccess || "",
 			registryWarmMsg: t.registryWarmMsg || "",
 			registrySubmit: t.registrySubmit || "",
@@ -113,6 +111,18 @@ export const getClientDictionaryForPage = (
 	}
 
 	return common;
+};
+
+export const getClientExtraConfigForPage = (
+	pageId: string,
+): Record<string, unknown> => {
+	if (pageId === "registry") {
+		return {
+			minorDocTypes: [...MINOR_DOC_TYPES],
+		};
+	}
+
+	return {};
 };
 
 export const pages: PageConfig[] = [

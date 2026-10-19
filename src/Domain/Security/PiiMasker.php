@@ -111,4 +111,24 @@ final class PiiMasker
 
         return $masked;
     }
+
+    /**
+     * Evaluates whether a raw form or JSON consent field represents an affirmative boolean grant.
+     */
+    public static function isTruthyConsent(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return $value === 1;
+        }
+
+        if (is_string($value) || is_numeric($value)) {
+            return in_array(strtolower(trim((string) $value)), ['1', 'true', 'on', 'yes'], true);
+        }
+
+        return false;
+    }
 }

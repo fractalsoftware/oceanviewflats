@@ -18,6 +18,7 @@ use OceanViewFlats\Domain\Reservation\DirectHoldRequest;
 use OceanViewFlats\Domain\Reservation\PrimaryGuest;
 use OceanViewFlats\Domain\Reservation\ReservationConflictException;
 use OceanViewFlats\Domain\Reservation\ReservationValidationException;
+use OceanViewFlats\Domain\Security\PiiMasker;
 use OceanViewFlats\Infrastructure\Reservation\ReservationLifecycleEngineFactory;
 
 // Load central utilities & configuration
@@ -95,9 +96,7 @@ $clientPriceCop = (float)($_POST['total_price_cop'] ?? 0);
 $privacyConsentRaw = $_POST['privacy_consent'] ?? '';
 $privacyPolicyVersionRaw = clean_input((string) ($_POST['privacy_policy_version'] ?? PRIVACY_POLICY_VERSION));
 
-$hasPrivacyConsent = $privacyConsentRaw === true
-    || $privacyConsentRaw === 1
-    || in_array(strtolower(trim((string) $privacyConsentRaw)), ['1', 'true', 'on', 'yes'], true);
+$hasPrivacyConsent = PiiMasker::isTruthyConsent($privacyConsentRaw);
 if (!$hasPrivacyConsent) {
     http_response_code(400);
     send_json_response(false, $t['err_privacy_consent']);

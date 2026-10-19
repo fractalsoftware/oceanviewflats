@@ -57,4 +57,23 @@ final class PiiMaskerTest extends TestCase
         $this->assertSame('****5432', $masked['occupants'][1]['doc_num']);
         $this->assertNull($masked['occupants'][1]['phone']);
     }
+
+    public function testIsTruthyConsentEvaluatesAffirmativeValuesAndRejectsOthers(): void
+    {
+        $this->assertTrue(PiiMasker::isTruthyConsent(true));
+        $this->assertTrue(PiiMasker::isTruthyConsent(1));
+        $this->assertTrue(PiiMasker::isTruthyConsent('1'));
+        $this->assertTrue(PiiMasker::isTruthyConsent('true'));
+        $this->assertTrue(PiiMasker::isTruthyConsent(' TRUE '));
+        $this->assertTrue(PiiMasker::isTruthyConsent('on'));
+        $this->assertTrue(PiiMasker::isTruthyConsent('yes'));
+
+        $this->assertFalse(PiiMasker::isTruthyConsent(false));
+        $this->assertFalse(PiiMasker::isTruthyConsent(0));
+        $this->assertFalse(PiiMasker::isTruthyConsent('0'));
+        $this->assertFalse(PiiMasker::isTruthyConsent('false'));
+        $this->assertFalse(PiiMasker::isTruthyConsent(''));
+        $this->assertFalse(PiiMasker::isTruthyConsent(null));
+        $this->assertFalse(PiiMasker::isTruthyConsent([]));
+    }
 }

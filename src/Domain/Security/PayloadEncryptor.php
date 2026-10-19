@@ -110,6 +110,23 @@ final class PayloadEncryptor
     }
 
     /**
+     * Checks whether a non-empty encryption key is explicitly provided or configured in the environment.
+     */
+    public static function hasConfiguredKey(?string $rawKey = null): bool
+    {
+        if ($rawKey !== null && trim($rawKey) !== '') {
+            return true;
+        }
+
+        $envVal = $_ENV['APP_ENCRYPTION_KEY']
+            ?? $_SERVER['APP_ENCRYPTION_KEY']
+            ?? (getenv('APP_ENCRYPTION_KEY') ?: null)
+            ?? (defined('APP_ENCRYPTION_KEY') ? (string) constant('APP_ENCRYPTION_KEY') : null);
+
+        return is_string($envVal) && trim($envVal) !== '';
+    }
+
+    /**
      * Derives a 32-byte binary key for sodium_crypto_secretbox from APP_ENCRYPTION_KEY.
      */
     public static function resolveKey(?string $rawKey = null): string

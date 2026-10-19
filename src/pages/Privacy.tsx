@@ -17,13 +17,16 @@ import { Navigation } from "../components/Navigation";
 import {
 	DATA_CONTROLLER,
 	getContactPagePath,
+	IMAGES,
 	PRIVACY_POLICY_VERSION,
 } from "../constants/config";
+import { THEMES } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
 export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 	const t = dict[lang];
+	const theme = THEMES["1707"];
 	const [isScrolled, setIsScrolled] = useState(false);
 
 	useEffect(() => {
@@ -36,7 +39,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 	const contactHref = getContactPagePath(lang, assetPrefix);
 
 	return (
-		<div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth">
+		<div className={theme.privacyPageWrapper}>
 			<Navigation
 				isScrolled={isScrolled}
 				lang={lang}
@@ -48,14 +51,14 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 			<header className="relative pt-32 pb-16 px-6 text-center overflow-hidden">
 				<div className="absolute inset-0 w-full h-full">
 					<img
-						src={`${assetPrefix}images/main-entrance.webp`}
+						src={`${assetPrefix}${IMAGES.mainEntrance}`}
 						alt="OceanViewFlats Main Entrance"
 						className="w-full h-full object-cover"
 					/>
-					<div className="absolute inset-0 bg-slate-900/75 backdrop-blur-[2px]"></div>
+					<div className={theme.privacyHeroOverlay}></div>
 				</div>
 				<div className="relative z-10 max-w-4xl mx-auto mt-4">
-					<span className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mb-4 tracking-wider uppercase backdrop-blur-md">
+					<span className={theme.privacyHeroBadge}>
 						<ShieldCheck className="w-4 h-4" />
 						<span>{t.privacyBadge}</span>
 					</span>
@@ -65,7 +68,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 					<p className="text-base md:text-lg text-slate-200 font-light max-w-3xl mx-auto drop-shadow leading-relaxed">
 						{t.privacySubtitle}
 					</p>
-					<div className="mt-6 inline-flex items-center space-x-3 bg-white/10 border border-white/15 rounded-full px-5 py-2 text-xs text-slate-200 font-mono">
+					<div className={theme.privacyVersionPill}>
 						<span>
 							{t.privacyVersionLabel}: <strong>{PRIVACY_POLICY_VERSION}</strong>
 						</span>
@@ -77,12 +80,9 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 
 			<main className="flex-grow w-full py-12 px-6 max-w-5xl mx-auto space-y-10">
 				{/* 1. Data Controller Identification */}
-				<section
-					id="data-controller"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
-				>
+				<section id="data-controller" className={theme.privacySectionCard}>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-[#FF5A5F]/10 text-[#FF5A5F] rounded-2xl">
+						<div className={theme.privacyControllerIconBox}>
 							<Building className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -155,12 +155,9 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				</section>
 
 				{/* 2. Applicable Legal Framework */}
-				<section
-					id="legal-framework"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
-				>
+				<section id="legal-framework" className={theme.privacySectionCard}>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+						<div className={theme.privacyLegalIconBox}>
 							<Scale className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -187,12 +184,9 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				</section>
 
 				{/* 3. Purposes of Processing */}
-				<section
-					id="processing-purposes"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
-				>
+				<section id="processing-purposes" className={theme.privacySectionCard}>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+						<div className={theme.privacyPurposesIconBox}>
 							<FileText className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -204,7 +198,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 					</p>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-2">
 								{t.privacyPurpose1Title}
 							</h3>
@@ -213,7 +207,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</p>
 						</div>
 
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-2">
 								{t.privacyPurpose2Title}
 							</h3>
@@ -222,7 +216,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</p>
 						</div>
 
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-2">
 								{t.privacyPurpose3Title}
 							</h3>
@@ -231,7 +225,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</p>
 						</div>
 
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-2">
 								{t.privacyPurpose4Title}
 							</h3>
@@ -243,12 +237,9 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				</section>
 
 				{/* 4. Protection of Minors */}
-				<section
-					id="minors-protection"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
-				>
+				<section id="minors-protection" className={theme.privacySectionCard}>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-rose-50 text-rose-600 rounded-2xl">
+						<div className={theme.privacyMinorsIconBox}>
 							<Users className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -257,19 +248,17 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 					</div>
 					<div className="space-y-4 text-sm md:text-base text-slate-600 leading-relaxed">
 						<p>{t.privacyMinorsDesc1}</p>
-						<p className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm font-medium">
-							{t.privacyMinorsDesc2}
-						</p>
+						<p className={theme.privacyMinorsCallout}>{t.privacyMinorsDesc2}</p>
 					</div>
 				</section>
 
 				{/* 5. Third-Party Transmissions */}
 				<section
 					id="third-party-transmissions"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
+					className={theme.privacySectionCard}
 				>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-sky-50 text-sky-600 rounded-2xl">
+						<div className={theme.privacyTransmissionsIconBox}>
 							<ShieldCheck className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -281,7 +270,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 					</p>
 
 					<div className="space-y-4">
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-1">
 								{t.privacyTransMercadoPagoTitle}
 							</h3>
@@ -290,7 +279,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</p>
 						</div>
 
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-1">
 								{t.privacyTransCondoTitle}
 							</h3>
@@ -299,7 +288,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</p>
 						</div>
 
-						<div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+						<div className={theme.privacySubCard}>
 							<h3 className="font-bold text-slate-900 mb-1">
 								{t.privacyTransAuthoritiesTitle}
 							</h3>
@@ -311,12 +300,9 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				</section>
 
 				{/* 6. Habeas Data (ARCO) Rights & SLAs */}
-				<section
-					id="arco-rights"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
-				>
+				<section id="arco-rights" className={theme.privacySectionCard}>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+						<div className={theme.privacyArcoIconBox}>
 							<Clock className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -331,7 +317,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 					</p>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-						<div className="p-6 rounded-2xl bg-emerald-50/60 border border-emerald-200">
+						<div className={theme.privacyConsultasCard}>
 							<h3 className="font-extrabold text-slate-900 mb-1">
 								{t.privacyArcoConsultasTitle}
 							</h3>
@@ -344,7 +330,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</p>
 						</div>
 
-						<div className="p-6 rounded-2xl bg-indigo-50/60 border border-indigo-200">
+						<div className={theme.privacyReclamosCard}>
 							<h3 className="font-extrabold text-slate-900 mb-1">
 								{t.privacyArcoReclamosTitle}
 							</h3>
@@ -358,7 +344,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 						</div>
 					</div>
 
-					<div className="p-5 rounded-2xl bg-slate-900 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
+					<div className={theme.privacyChannelBanner}>
 						<div>
 							<span className="text-slate-400 block text-xs uppercase font-bold tracking-wider mb-1">
 								{t.privacyArcoChannelDesc}
@@ -371,10 +357,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							</a>
 							<span className="text-slate-300">{DATA_CONTROLLER.phone}</span>
 						</div>
-						<a
-							href={contactHref}
-							className="inline-flex items-center justify-center bg-[#FF5A5F] hover:bg-[#FF424D] text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-colors shrink-0"
-						>
+						<a href={contactHref} className={theme.privacyChannelCtaBtn}>
 							{t.navContact}
 						</a>
 					</div>
@@ -383,10 +366,10 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				{/* 7. Cryptographic Security & 90-Day Retention */}
 				<section
 					id="security-and-retention"
-					className="bg-white rounded-3xl p-8 md:p-10 shadow-md border border-slate-100"
+					className={theme.privacySectionCard}
 				>
 					<div className="flex items-center space-x-3 mb-4">
-						<div className="p-3 bg-purple-50 text-purple-600 rounded-2xl">
+						<div className={theme.privacySecurityIconBox}>
 							<Lock className="w-6 h-6" />
 						</div>
 						<h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
@@ -396,7 +379,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 					<div className="space-y-3 text-sm md:text-base text-slate-600 leading-relaxed">
 						<p>{t.privacySecurityDesc1}</p>
 						<p>{t.privacySecurityDesc2}</p>
-						<p className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-sm">
+						<p className={theme.privacyRetentionCallout}>
 							{t.privacyRetentionDesc}
 						</p>
 					</div>
