@@ -47,6 +47,11 @@
             animation: progress-shimmer 1.5s infinite linear;
         }
 
+        #global-progress-bar,
+        #global-alert-container {
+            z-index: 70;
+        }
+
         #global-progress-bar.bg-rose-500 {
             background-image: none !important;
             animation: none !important;
@@ -512,6 +517,7 @@ document.body.addEventListener('htmx:beforeSwap', function(evt) {
         var btn = evt.target && evt.target.closest('button, [type="submit"], a[hx-post], a[hx-delete], a[hx-put]');
         if (!btn) return;
         if (btn.hasAttribute('hx-confirm') || (btn.form && btn.form.hasAttribute('hx-confirm'))) return;
+        if (btn.form && typeof btn.form.checkValidity === 'function' && !btn.form.checkValidity()) return;
         if (isMutatingElement(btn)) {
             lockTarget(btn);
         }
@@ -520,9 +526,14 @@ document.body.addEventListener('htmx:beforeSwap', function(evt) {
     document.body.addEventListener('submit', function(evt) {
         var form = evt.target;
         if (form && form.tagName === 'FORM' && isMutatingElement(form)) {
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) return;
             lockMutatingTriggers(form);
         }
     });
+
+    document.addEventListener('invalid', function() {
+        unlockAllButtons();
+    }, true);
 
     // Centralized HTMX lifecycle event listeners
     document.body.addEventListener('htmx:beforeRequest', function(evt) {
@@ -558,11 +569,11 @@ document.body.addEventListener('htmx:beforeSwap', function(evt) {
         handleAsyncError();
     });
 
-    // Server error (HTTP >= 500 or status 0): decrement activeRequests and trigger error resiliency
+    // Server error (HTTP >= 500 or status 0 or non-422 4xx): decrement activeRequests and trigger error resiliency
     document.body.addEventListener('htmx:responseError', function(evt) {
         decrementActiveRequests(evt);
         var status = evt.detail && evt.detail.xhr ? evt.detail.xhr.status : 0;
-        if (status >= 500 || status === 0) {
+        if (status >= 500 || status === 0 || (status >= 400 && status !== 422)) {
             handleAsyncError();
         } else {
             unlockAllButtons();

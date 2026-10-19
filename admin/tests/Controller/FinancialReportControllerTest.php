@@ -1029,4 +1029,100 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertSame(200, $updatePastAbnbResp->getStatusCode());
         $this->assertSame('reservationUpdated', $updatePastAbnbResp->getHeader('HX-Trigger'));
     }
+
+    public function testCreateExpenseSelfHealsMissingTableAndSurfacesPersistenceErrorInsideModalWith422(): void
+    {
+        // 1. Simulate an environment where operational_expenses table has not yet been migrated
+        $this->pdo->exec('DROP TABLE operational_expenses');
+
+        $indexResp = $this->app->handle(new Request('GET', '/financial-report'), $this->adminSession);
+        $this->assertSame(200, $indexResp->getStatusCode());
+
+        $newModalResp = $this->app->handle(
+            new Request('GET', '/financial-report/expenses/new', server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $newModalResp->getStatusCode());
+        $this->assertStringContainsString('z-40', $newModalResp->getBody());
+        $this->assertStringContainsString('overflow-y-auto', $newModalResp->getBody());
+
+        // Submitting POST /financial-report/expenses self-heals the missing table via MigrationRunner,
+        // closes #modal-container, and renders the success flash banner in #financial-report-content
+        $createReq = new Request(
+            method: 'POST',
+            uri: '/financial-report/expenses',
+            post: [
+                'csrf_token' => 'valid-csrf-token',
+                'property_id' => '1606',
+                'category' => 'hoa_admin',
+                'title' => 'Monthly HOA Administration Oct 2026',
+                'amount' => '680000',
+                'expense_date' => '2026-10-18',
+                'vendor_name' => 'Edificio Salguero Sunset',
+                'reference_code' => 'FAC-2026-1094',
+                'reservation_uid' => '',
+                'notes' => 'Preserve this note on DB failure',
+            ],
+            server: ['HTTP_HX_REQUEST' => 'true']
+        );
+
+        $healedResp = $this->app->handle($createReq, $this->adminSession);
+        $this->assertSame(200, $healedResp->getStatusCode());
+        $this->assertSame('expenseSaved', $healedResp->getHeader('HX-Trigger'));
+        $this->assertStringContainsString('<div id="modal-container" hx-swap-oob="innerHTML"></div>', $healedResp->getBody());
+        $this->assertStringContainsString('Monthly HOA Administration Oct 2026', $healedResp->getBody());
+
+        // 2. When persistence throws an unrecoverable database error, FinancialReportController catches Throwable
+        //    and returns HTTP 422 targeting #modal-container with #modal-error and 100% preserved inputs
+        $failingRepo = new class implements \OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface {
+            public function findById(int $id): ?\OceanViewFlats\Domain\Finance\OperationalExpense
+            {
+                return null;
+            }
+
+            public function findByUid(string $expenseUid): ?\OceanViewFlats\Domain\Finance\OperationalExpense
+            {
+                return null;
+            }
+
+            public function listForPeriod(
+                string $startDate,
+                string $endDate,
+                string $propertyId = 'all',
+                string $category = 'all',
+                string $search = ''
+            ): array {
+                return [];
+            }
+
+            public function save(\OceanViewFlats\Domain\Finance\OperationalExpense $expense): \OceanViewFlats\Domain\Finance\OperationalExpense
+            {
+                throw new \PDOException('SQLSTATE[HY000]: Disk I/O error');
+            }
+
+            public function delete(int $id): bool
+            {
+                return false;
+            }
+        };
+
+        $failingApp = AdminApp::createDefault($this->pdo, [
+            'operational_expense_repository' => $failingRepo,
+            'financial_report_now' => new DateTimeImmutable('2026-10-17 14:30:00', new \DateTimeZone('America/Bogota')),
+        ]);
+
+        $errorResp = $failingApp->handle($createReq, $this->adminSession);
+        $this->assertSame(422, $errorResp->getStatusCode());
+        $this->assertSame('#modal-container', $errorResp->getHeader('HX-Retarget'));
+        $this->assertSame('innerHTML', $errorResp->getHeader('HX-Reswap'));
+
+        $body = $errorResp->getBody();
+        $this->assertStringContainsString('id="modal-error"', $body);
+        $this->assertStringContainsString('Unable to save operational expense due to a database error.', $body);
+        $this->assertStringContainsString('value="Monthly HOA Administration Oct 2026"', $body);
+        $this->assertStringContainsString('value="680000"', $body);
+        $this->assertStringContainsString('value="Edificio Salguero Sunset"', $body);
+        $this->assertStringContainsString('value="FAC-2026-1094"', $body);
+        $this->assertStringContainsString('Preserve this note on DB failure', $body);
+    }
 }

@@ -19,6 +19,7 @@ use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\InMemoryMaintenanceBlockSource;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlockSourceInterface;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
+use Throwable;
 
 /**
  * Administrative controller for the Financial Report workspace and Operational Expense Ledger CRUD.
@@ -212,18 +213,32 @@ final class FinancialReportController
             createdByName: $adminUserName
         );
 
-        $saved = $this->expenseRepository->save($expense);
+        try {
+            $saved = $this->expenseRepository->save($expense);
 
-        $this->auditLogger->record(
-            action: 'operational_expense_created',
-            entityType: 'operational_expense',
-            entityId: $saved->expenseUid,
-            before: null,
-            after: $saved->toArray(),
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
+            $this->auditLogger->record(
+                action: 'operational_expense_created',
+                entityType: 'operational_expense',
+                entityId: $saved->expenseUid,
+                before: null,
+                after: $saved->toArray(),
+                adminUserId: $adminUserId,
+                ipAddress: $request->getClientIp(),
+                userAgent: (string) $request->getHeader('User-Agent', '')
+            );
+        } catch (Throwable $e) {
+            error_log('[FinancialReportController::createExpense] ' . $e->getMessage());
+            return $this->renderModalValidationError(
+                isEdit: false,
+                expenseId: null,
+                expenseUid: null,
+                form: $form,
+                errors: [$this->resolvePersistenceErrorMessage($e)],
+                fieldErrors: [],
+                filters: $filters,
+                session: $session
+            );
+        }
 
         $flashMessage = sprintf(
             'Operational expense "%s" (%s) recorded successfully.',
@@ -344,19 +359,33 @@ final class FinancialReportController
             createdAt: $existing->createdAt
         );
 
-        $saved = $this->expenseRepository->save($updated);
-        $adminUserId = (int) $session['admin_user_id'];
+        try {
+            $saved = $this->expenseRepository->save($updated);
+            $adminUserId = (int) $session['admin_user_id'];
 
-        $this->auditLogger->record(
-            action: 'operational_expense_updated',
-            entityType: 'operational_expense',
-            entityId: $saved->expenseUid,
-            before: $beforePayload,
-            after: $saved->toArray(),
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
+            $this->auditLogger->record(
+                action: 'operational_expense_updated',
+                entityType: 'operational_expense',
+                entityId: $saved->expenseUid,
+                before: $beforePayload,
+                after: $saved->toArray(),
+                adminUserId: $adminUserId,
+                ipAddress: $request->getClientIp(),
+                userAgent: (string) $request->getHeader('User-Agent', '')
+            );
+        } catch (Throwable $e) {
+            error_log('[FinancialReportController::updateExpense] ' . $e->getMessage());
+            return $this->renderModalValidationError(
+                isEdit: true,
+                expenseId: $existing->id,
+                expenseUid: $existing->expenseUid,
+                form: $form,
+                errors: [$this->resolvePersistenceErrorMessage($e)],
+                fieldErrors: [],
+                filters: $filters,
+                session: $session
+            );
+        }
 
         $flashMessage = sprintf(
             'Operational expense "%s" (%s) updated successfully.',
@@ -876,6 +905,16 @@ final class FinancialReportController
             return (string) (int) $amount;
         }
         return number_format($amount, 2, '.', '');
+    }
+
+    private function resolvePersistenceErrorMessage(Throwable $e): string
+    {
+        $msg = $e->getMessage();
+        if (str_contains($msg, 'no such table') || str_contains($msg, "doesn't exist")) {
+            return 'Database table "operational_expenses" is not initialized. Please run "php scripts/migrate.php" on the server and try again.';
+        }
+
+        return 'Unable to save operational expense due to a database error. Please try again.';
     }
 
     /**
