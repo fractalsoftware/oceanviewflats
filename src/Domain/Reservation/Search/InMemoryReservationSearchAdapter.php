@@ -62,6 +62,9 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
     {
         $data = $reservation instanceof Reservation ? $reservation->toArray() : $reservation;
         $data['max_guests'] = Reservation::normalizeMaxGuests($data['max_guests'] ?? $data['maxGuests'] ?? null);
+        $redactedAtRaw = $data['pii_redacted_at'] ?? $data['piiRedactedAt'] ?? null;
+        $data['pii_redacted_at'] = ($redactedAtRaw !== null && (string) $redactedAtRaw !== '') ? (string) $redactedAtRaw : null;
+        $data['piiRedactedAt'] = $data['pii_redacted_at'];
 
         $uid = (string) ($data['reservation_uid'] ?? '');
         if ($uid !== '') {
@@ -258,6 +261,10 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
         if (isset($registry['guests_payload']) && (is_string($registry['guests_payload']) || is_array($registry['guests_payload']))) {
             $registry['guests_payload'] = PayloadEncryptor::decrypt($registry['guests_payload']);
         }
+
+        $redactedAtRaw = $registry['pii_redacted_at'] ?? $registry['piiRedactedAt'] ?? null;
+        $registry['pii_redacted_at'] = ($redactedAtRaw !== null && (string) $redactedAtRaw !== '') ? (string) $redactedAtRaw : null;
+        $registry['piiRedactedAt'] = $registry['pii_redacted_at'];
 
         return $registry;
     }

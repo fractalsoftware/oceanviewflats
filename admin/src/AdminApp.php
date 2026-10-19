@@ -48,6 +48,8 @@ use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync;
 use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
 use OceanViewFlats\Domain\Fulfillment\PhpMailSender;
+use OceanViewFlats\Domain\Privacy\PdoPiiRedactionService;
+use OceanViewFlats\Domain\Privacy\PiiRedactionServiceInterface;
 use OceanViewFlats\Domain\Quote\CsvRateSource;
 use OceanViewFlats\Domain\Quote\PdoRateRepository;
 use OceanViewFlats\Domain\Quote\PdoRateSource;
@@ -240,6 +242,10 @@ final class AdminApp
         $dismissalRepo = $options['alert_dismissal_repository']
             ?? new PdoOperationalAlertDismissalRepository($pdo);
 
+        /** @var PiiRedactionServiceInterface $piiRedactionService */
+        $piiRedactionService = $options['pii_redaction_service']
+            ?? new PdoPiiRedactionService($pdo, $reservationRepository);
+
         $reservationController = new ReservationController(
             repository: $reservationRepository,
             search: $reservationSearch,
@@ -258,7 +264,8 @@ final class AdminApp
             clearanceSync: $clearanceSync,
             lifecycleEngine: $lifecycleEngine,
             bookingFulfillment: $bookingFulfillment,
-            alertDismissalRepo: $dismissalRepo
+            alertDismissalRepo: $dismissalRepo,
+            piiRedactionService: $piiRedactionService
         );
 
         // 6. Rates Repository & Controller
@@ -389,6 +396,7 @@ final class AdminApp
             ->post('/reservations/{uid}/clearance-retry', [$reservationController, 'retryClearance'])
             ->post('/reservations/{uid}/door-code/override', [$reservationController, 'overrideDoorCode'])
             ->post('/reservations/{uid}/door-code/regenerate', [$reservationController, 'regenerateDoorCode'])
+            ->post('/reservations/{uid}/redact-pii', [$reservationController, 'redactPii'])
             ->get('/reservations/{uid}/cancel-modal', [$reservationController, 'cancelModal'])
             ->post('/reservations/{uid}/cancel', [$reservationController, 'cancel'])
             ->get('/rates', [$rateController, 'index'])

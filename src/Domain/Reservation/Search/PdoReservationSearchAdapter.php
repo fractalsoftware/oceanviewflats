@@ -191,6 +191,10 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
                 $registry['guests_payload'] = PayloadEncryptor::decrypt($registry['guests_payload']);
             }
 
+            $redactedAtRaw = $registry['pii_redacted_at'] ?? $registry['piiRedactedAt'] ?? null;
+            $registry['pii_redacted_at'] = ($redactedAtRaw !== null && (string) $redactedAtRaw !== '') ? (string) $redactedAtRaw : null;
+            $registry['piiRedactedAt'] = $registry['pii_redacted_at'];
+
             return $registry;
         } catch (PDOException) {
             return null;
@@ -224,6 +228,9 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
     private function normalizeReservationProjection(array $row): array
     {
         $row['max_guests'] = Reservation::normalizeMaxGuests($row['max_guests'] ?? $row['maxGuests'] ?? null);
+        $redactedAtRaw = $row['pii_redacted_at'] ?? $row['piiRedactedAt'] ?? null;
+        $row['pii_redacted_at'] = ($redactedAtRaw !== null && (string) $redactedAtRaw !== '') ? (string) $redactedAtRaw : null;
+        $row['piiRedactedAt'] = $row['pii_redacted_at'];
 
         return $row;
     }

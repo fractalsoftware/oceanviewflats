@@ -26,6 +26,8 @@ use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentServiceInterface;
 use OceanViewFlats\Domain\Fulfillment\GuestRegistryRequiredException;
 use OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync;
 use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
+use OceanViewFlats\Domain\Privacy\PdoPiiRedactionService;
+use OceanViewFlats\Domain\Privacy\PiiRedactionServiceInterface;
 use OceanViewFlats\Domain\Quote\QuoteEngineInterface;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\CancellationPreview;
@@ -68,8 +70,11 @@ final class ReservationController
     private readonly ?CondominiumClearanceRepositoryInterface $clearanceRepo;
     private readonly ?CondominiumClearanceSyncInterface $clearanceSync;
     private readonly ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo;
+    private readonly ?PiiRedactionServiceInterface $piiRedactionService;
     private readonly ReservationLifecycleEngineInterface $lifecycleEngine;
     private readonly AdminReservationUpdateService $updateService;
+
+    public const AUTHORIZED_PII_REDACTION_ROLES = ['admin', 'superadmin'];
 
     public function __construct(
         private readonly ReservationRepositoryInterface $repository,
@@ -90,7 +95,8 @@ final class ReservationController
         ?ReservationLifecycleEngineInterface $lifecycleEngine = null,
         private readonly ?BookingFulfillmentInterface $bookingFulfillment = null,
         ?AdminReservationUpdateService $updateService = null,
-        ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo = null
+        ?OperationalAlertDismissalRepositoryInterface $alertDismissalRepo = null,
+        ?PiiRedactionServiceInterface $piiRedactionService = null
     ) {
         $this->cancellationEmailRenderer = $cancellationEmailRenderer ?? new CancellationEmailRenderer($this->publicSiteUrl);
         $this->urlBuilder = $urlBuilder ?? new PublicUrlBuilder($this->publicSiteUrl);
@@ -102,6 +108,7 @@ final class ReservationController
             auditLogger: $this->auditLogger
         ) : null);
         $this->alertDismissalRepo = $alertDismissalRepo ?? ($this->pdo !== null ? new PdoOperationalAlertDismissalRepository($this->pdo) : null);
+        $this->piiRedactionService = $piiRedactionService ?? ($this->pdo !== null ? new PdoPiiRedactionService($this->pdo, $this->repository) : null);
         $this->lifecycleEngine = $lifecycleEngine ?? $this->buildFallbackLifecycleEngine();
         $this->updateService = $updateService ?? new AdminReservationUpdateService(
             repository: $this->repository,
@@ -808,6 +815,74 @@ final class ReservationController
     }
 
     /**
+     * Executes an administrative ARCO suppression action (Ley 1581 of 2012 / ADR 0012),
+     * atomically redacting guest PII for a Concluded or Cancelled reservation while
+     * preserving financial and occupancy reporting records.
+     *
+     * @param array<string, mixed> $session
+     */
+    public function redactPii(Request $request, array &$session): Response
+    {
+        // 1. Session authentication & role authorization check (admin / superadmin only)
+        $currentUser = $this->buildCurrentUser($session);
+        if ($currentUser['id'] === null) {
+            if ($request->isHtmx()) {
+                return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Unauthorized: Administrative session required.</div>', 401);
+            }
+            return Response::redirect('/login', 302);
+        }
+
+        if (!in_array($currentUser['role'], self::AUTHORIZED_PII_REDACTION_ROLES, true)) {
+            if ($request->isHtmx()) {
+                return Response::forbidden('<div class="p-4 text-xs text-rose-600 font-semibold">Forbidden: Administrator privileges required to redact guest PII.</div>', isHtmx: true);
+            }
+            return Response::forbidden('403 Forbidden: Administrator privileges required to redact guest PII.', isHtmx: false);
+        }
+
+        // 2. CSRF validation for mutating requests
+        if ($request->isMutating()) {
+            $sessionCsrf = (string) ($session['csrf_token'] ?? '');
+            $clientCsrf = (string) (
+                $request->getHeader('HX-CSRF-TOKEN')
+                ?? $request->getHeader('X-CSRF-TOKEN')
+                ?? $request->getPost('csrf_token')
+                ?? ''
+            );
+            if ($sessionCsrf === '' || $clientCsrf === '' || !hash_equals($sessionCsrf, $clientCsrf)) {
+                if ($request->isHtmx()) {
+                    return Response::forbidden('<div class="p-4 text-xs text-rose-600 font-semibold">Forbidden: Invalid CSRF token.</div>', isHtmx: true);
+                }
+                return Response::forbidden('403 Forbidden: Invalid CSRF token.', isHtmx: false);
+            }
+        }
+
+        if ($this->piiRedactionService === null) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">PII redaction service is unavailable.</div>', 500);
+        }
+
+        $uid = (string) ($request->getAttribute('uid') ?? '');
+        $adminContext = new AdminContext(
+            adminUserId: $currentUser['id'],
+            ipAddress: $request->getClientIp(),
+            userAgent: (string) $request->getHeader('User-Agent', '')
+        );
+
+        try {
+            $result = $this->piiRedactionService->redactReservation($uid, $adminContext);
+        } catch (ReservationNotFoundException) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">Reservation not found.</div>', 404);
+        } catch (InvalidReservationStateException|\DomainException $e) {
+            return Response::html('<div class="p-4 text-xs text-rose-600 font-semibold">' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</div>', 422);
+        }
+
+        if ($request->isHtmx()) {
+            return $this->renderDetailDrawerResponse($uid, $session, $result->reservation?->toArray() ?? []);
+        }
+
+        return Response::redirect('/reservations/' . urlencode($uid));
+    }
+
+    /**
      * Helper to render detail drawer HTML from a reservation dossier array.
      *
      * @param array<string, mixed> $dossier
@@ -870,6 +945,7 @@ final class ReservationController
             'condominiumClearance' => $resolvedClearance,
             'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
+            'currentUserRole' => (string) ($session['admin_user_role'] ?? ($session['admin_role'] ?? 'admin')),
             'publicSiteUrl' => $publicSiteUrl,
             'urlBuilder' => $urlBuilder ?? new PublicUrlBuilder($publicSiteUrl),
         ]);
@@ -1309,7 +1385,7 @@ final class ReservationController
             'id' => isset($session['admin_user_id']) ? (int) $session['admin_user_id'] : null,
             'name' => (string) ($session['admin_user_name'] ?? 'Admin'),
             'email' => (string) ($session['admin_user_email'] ?? ''),
-            'role' => (string) ($session['admin_user_role'] ?? 'admin'),
+            'role' => (string) ($session['admin_user_role'] ?? ($session['admin_role'] ?? 'admin')),
         ];
     }
 

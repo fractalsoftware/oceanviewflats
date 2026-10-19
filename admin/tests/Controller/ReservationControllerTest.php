@@ -2370,4 +2370,93 @@ final class ReservationControllerTest extends TestCase
         $injectedFulfillment = $ref->getProperty('bookingFulfillment')->getValue($controller);
         $this->assertSame($mockFulfillment, $injectedFulfillment);
     }
+
+    public function testRedactPiiEnforcesRoleGatingCsrfAndDrawerBadgeRendering(): void
+    {
+        // Seed a concluded reservation and a cancelled reservation
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, door_code, notes)
+            VALUES
+                ('res-pii-concluded', '1606', 'Concluded Guest', 'concluded@example.com', '+573001112233', '2024-03-01', '2024-03-05', 1400000.00, 'confirmed', '0112233#', 'Check-out note'),
+                ('res-pii-cancelled', '1707', 'Cancelled Guest', 'cancelled@example.com', '+573004445566', '2026-12-01', '2026-12-05', 1800000.00, 'cancelled', NULL, 'Cancelled note');
+        ");
+
+        // 1. Dossier drawer shows 'Redact Guest PII (Ley 1581)' button for admin on concluded & cancelled stays, but NOT on active stays
+        $drawerConcluded = $this->executeShow('res-pii-concluded', true, 'drawer-container');
+        $this->assertSame(200, $drawerConcluded->getStatusCode());
+        $this->assertStringContainsString('Redact Guest PII (Ley 1581)', $drawerConcluded->getBody());
+        $this->assertStringContainsString('/reservations/res-pii-concluded/redact-pii', $drawerConcluded->getBody());
+
+        $drawerActive = $this->executeShow('res-1', true, 'drawer-container');
+        $this->assertSame(200, $drawerActive->getStatusCode());
+        $this->assertStringNotContainsString('Redact Guest PII (Ley 1581)', $drawerActive->getBody());
+
+        // 2. Viewer role is rejected with 403 Forbidden and does not see the button in drawer
+        $viewerSession = $this->session;
+        $viewerSession['admin_user_role'] = 'viewer';
+
+        $viewerDrawerReq = (new Request('GET', '/reservations/res-pii-concluded', server: [
+            'HTTP_HX_REQUEST' => 'true',
+            'HTTP_HX_TARGET' => 'drawer-container',
+        ]))->withAttribute('uid', 'res-pii-concluded');
+        $viewerDrawerRes = $this->controller->show($viewerDrawerReq, $viewerSession);
+        $this->assertStringNotContainsString('Redact Guest PII (Ley 1581)', $viewerDrawerRes->getBody());
+
+        $viewerPostReq = (new Request(
+            'POST',
+            '/reservations/res-pii-concluded/redact-pii',
+            post: ['csrf_token' => 'test-csrf-token-xyz'],
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_X_CSRF_TOKEN' => 'test-csrf-token-xyz']
+        ))->withAttribute('uid', 'res-pii-concluded');
+        $viewerPostRes = $this->controller->redactPii($viewerPostReq, $viewerSession);
+        $this->assertSame(403, $viewerPostRes->getStatusCode());
+
+        // 3. Invalid CSRF token is rejected with 403 Forbidden
+        $badCsrfReq = (new Request(
+            'POST',
+            '/reservations/res-pii-concluded/redact-pii',
+            post: ['csrf_token' => 'wrong-token'],
+            server: ['HTTP_HX_REQUEST' => 'true']
+        ))->withAttribute('uid', 'res-pii-concluded');
+        $badCsrfRes = $this->controller->redactPii($badCsrfReq, $this->session);
+        $this->assertSame(403, $badCsrfRes->getStatusCode());
+
+        // 4. Active reservation is rejected with 422 Unprocessable Entity
+        $activeRedactReq = (new Request(
+            'POST',
+            '/reservations/res-1/redact-pii',
+            post: ['csrf_token' => 'test-csrf-token-xyz'],
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_X_CSRF_TOKEN' => 'test-csrf-token-xyz']
+        ))->withAttribute('uid', 'res-1');
+        $activeRedactRes = $this->controller->redactPii($activeRedactReq, $this->session);
+        $this->assertSame(422, $activeRedactRes->getStatusCode());
+        $this->assertStringContainsString('Only concluded or cancelled reservations can be redacted', $activeRedactRes->getBody());
+
+        // 5. Admin successfully redacts concluded reservation via HTMX and receives updated drawer with PII Redacted badge
+        $adminRedactReq = (new Request(
+            'POST',
+            '/reservations/res-pii-concluded/redact-pii',
+            post: ['csrf_token' => 'test-csrf-token-xyz'],
+            server: ['HTTP_HX_REQUEST' => 'true', 'HTTP_X_CSRF_TOKEN' => 'test-csrf-token-xyz']
+        ))->withAttribute('uid', 'res-pii-concluded');
+        $adminRedactRes = $this->controller->redactPii($adminRedactReq, $this->session);
+        $this->assertSame(200, $adminRedactRes->getStatusCode());
+        $this->assertSame('reservationUpdated', $adminRedactRes->getHeaders()['HX-Trigger'] ?? null);
+        $this->assertStringContainsString('PII Redacted', $adminRedactRes->getBody());
+        $this->assertStringContainsString('Redacted Guest', $adminRedactRes->getBody());
+        $this->assertStringNotContainsString('Redact Guest PII (Ley 1581)', $adminRedactRes->getBody());
+
+        // 6. Superadmin successfully redacts cancelled reservation via non-HTMX POST (redirects to /reservations/{uid})
+        $superadminSession = $this->session;
+        $superadminSession['admin_user_role'] = 'superadmin';
+        $superadminRedactReq = (new Request(
+            'POST',
+            '/reservations/res-pii-cancelled/redact-pii',
+            post: ['csrf_token' => 'test-csrf-token-xyz']
+        ))->withAttribute('uid', 'res-pii-cancelled');
+        $superadminRedactRes = $this->controller->redactPii($superadminRedactReq, $superadminSession);
+        $this->assertSame(302, $superadminRedactRes->getStatusCode());
+        $this->assertSame('/reservations/res-pii-cancelled', $superadminRedactRes->getHeaders()['Location'] ?? null);
+        $this->assertSame('Redacted Guest', $this->repository->findByUid('res-pii-cancelled')?->guestName);
+    }
 }
