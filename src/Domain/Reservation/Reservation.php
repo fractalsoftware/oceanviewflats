@@ -785,6 +785,56 @@ final class Reservation
     }
 
     /**
+     * Identifies whether guest PII has been redacted for this reservation (ADR 0012).
+     */
+    public function isPiiRedacted(): bool
+    {
+        return $this->piiRedactedAt !== null || $this->guestName === 'Redacted Guest';
+    }
+
+    /**
+     * Creates an updated clone with personal identification and contact details scrubbed (ADR 0012).
+     */
+    public function withPiiRedacted(?DateTimeImmutable $redactedAt = null): self
+    {
+        $timestamp = $redactedAt ?? $this->piiRedactedAt ?? new DateTimeImmutable();
+
+        return new self(
+            reservationUid: $this->reservationUid,
+            propertyId: $this->propertyId,
+            guestName: 'Redacted Guest',
+            guestEmail: 'redacted@oceanviewflats.local',
+            guestPhone: 'REDACTED',
+            checkIn: $this->checkIn,
+            checkOut: $this->checkOut,
+            totalPrice: $this->totalPrice,
+            status: $this->status,
+            paymentMethodId: $this->paymentMethodId,
+            id: $this->id,
+            mercadopagoPreferenceId: $this->mercadopagoPreferenceId,
+            mercadopagoPaymentId: $this->mercadopagoPaymentId,
+            paymentStatus: $this->paymentStatus,
+            paymentDetail: $this->paymentDetail,
+            lang: $this->lang,
+            createdAt: $this->createdAt,
+            updatedAt: $timestamp,
+            registryCompleted: $this->registryCompleted,
+            registryCompletedAt: $this->registryCompletedAt,
+            doorCode: null,
+            source: $this->source,
+            notes: null,
+            refundedAmount: $this->refundedAmount,
+            externalConfirmationCode: $this->externalConfirmationCode,
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $timestamp
+        );
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
