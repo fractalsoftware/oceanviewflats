@@ -83,7 +83,7 @@ export default function BookingFailure({ lang, assetPrefix = "/" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

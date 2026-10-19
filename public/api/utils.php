@@ -9,6 +9,10 @@
 
 declare(strict_types=1);
 
+if (!defined('PRIVACY_POLICY_VERSION')) {
+    define('PRIVACY_POLICY_VERSION', '2026-10');
+}
+
 /**
  * Centrally manages the database connection using PDO.
  * 

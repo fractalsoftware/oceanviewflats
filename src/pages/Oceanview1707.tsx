@@ -39,9 +39,13 @@ export default function Oceanview1707({ lang, assetPrefix = "./" }: AppProps) {
 					assetPrefix={assetPrefix}
 				/>
 				<ReviewsSection1707 lang={lang} />
-				<BookingSection lang={lang} propertyId="1707" />
+				<BookingSection
+					lang={lang}
+					propertyId="1707"
+					assetPrefix={assetPrefix}
+				/>
 			</main>
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

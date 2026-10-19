@@ -1,6 +1,10 @@
 import { ExternalLink, Info } from "lucide-react";
 import React, { useMemo, useState } from "react";
-import { MERCADOPAGO_PUBLIC_KEY } from "../constants/config";
+import {
+	getPrivacyPolicyPath,
+	MERCADOPAGO_PUBLIC_KEY,
+	PRIVACY_POLICY_VERSION,
+} from "../constants/config";
 import { THEMES } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
@@ -10,14 +14,17 @@ import { CalendarWidget } from "./CalendarWidget";
 interface BookingSectionProps {
 	lang: Lang;
 	propertyId?: "1707" | "1606";
+	assetPrefix?: string;
 }
 
 export const BookingSection = ({
 	lang,
 	propertyId = "1707",
+	assetPrefix = "../",
 }: BookingSectionProps) => {
 	const t = dict[lang];
 	const theme = THEMES[propertyId];
+	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
 	const [checkIn, setCheckIn] = useState<Date | null>(null);
 	const [checkOut, setCheckOut] = useState<Date | null>(null);
 
@@ -302,6 +309,41 @@ export const BookingSection = ({
 									>
 										{t.dbVerifyHelp}
 									</div>
+								</div>
+
+								{/* Personal Data Authorization (Ley 1581 of 2012) */}
+								<div
+									className={`${theme.bookingConsentBoxBg} p-4 rounded-xl flex items-start space-x-3`}
+								>
+									<input
+										type="checkbox"
+										id="booking-privacy-consent"
+										name="privacy_consent"
+										value="1"
+										required
+										className="mt-1 h-4 w-4 rounded border-slate-300 text-[#FF5A5F] focus:ring-[#FF5A5F] cursor-pointer shrink-0"
+									/>
+									<input
+										type="hidden"
+										id="booking-privacy-policy-version"
+										name="privacy_policy_version"
+										value={PRIVACY_POLICY_VERSION}
+									/>
+									<label
+										htmlFor="booking-privacy-consent"
+										className={`text-xs ${theme.bookingConsentText} leading-relaxed cursor-pointer`}
+									>
+										{t.dbPrivacyConsentPrefix}{" "}
+										<a
+											href={privacyHref}
+											target="_blank"
+											rel="noopener noreferrer"
+											className={`font-semibold underline ${theme.bookingConsentLink}`}
+										>
+											{t.dbPrivacyConsentLink}
+										</a>{" "}
+										{t.dbPrivacyConsentSuffix}
+									</label>
 								</div>
 
 								<div id="booking-form-message" className="hidden"></div>

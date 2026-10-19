@@ -44,5 +44,16 @@ return [
             'wifi_password' => $_ENV['PROPERTY_1707_WIFI_PASSWORD'] ?? $_SERVER['PROPERTY_1707_WIFI_PASSWORD'] ?? getenv('PROPERTY_1707_WIFI_PASSWORD') ?: 'Invitado@1707@HN',
             'parking_spot' => $_ENV['PROPERTY_1707_PARKING_SPOT'] ?? $_SERVER['PROPERTY_1707_PARKING_SPOT'] ?? getenv('PROPERTY_1707_PARKING_SPOT') ?: '95',
         ],
-    ]
+    ],
+    'privacy_policy_version' => '2026-10',
+    'data_controller' => [
+        'name' => 'OceanViewFlats — Manuel Enrique Herrera',
+        'rnt_1707' => 'RNT #268781',
+        'rnt_1606' => 'RNT #270413',
+        'address' => 'Calle 26 # 2-80, Playa Salguero, Santa Marta, Magdalena, Colombia',
+        'email' => 'rentals@oceanviewflats.com',
+        'phone' => '+57 (310) 815-5234',
+        'consulta_sla_business_days' => 10,
+        'reclamo_sla_business_days' => 15,
+    ],
 ];

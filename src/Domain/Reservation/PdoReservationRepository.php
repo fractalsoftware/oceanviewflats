@@ -47,6 +47,10 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             'door_code',
             'notes',
             'max_guests',
+            'privacy_policy_version',
+            'privacy_consent_at',
+            'privacy_consent_ip',
+            'pii_redacted_at',
         ];
 
         $updatableColumns = [
@@ -73,6 +77,10 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             'door_code',
             'notes',
             'max_guests',
+            'privacy_policy_version',
+            'privacy_consent_at',
+            'privacy_consent_ip',
+            'pii_redacted_at',
         ];
 
         if ($driver === 'sqlite') {
@@ -118,6 +126,10 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             ':door_code' => $reservation->doorCode,
             ':notes' => $reservation->notes,
             ':max_guests' => $reservation->maxGuests,
+            ':privacy_policy_version' => $reservation->privacyPolicyVersion,
+            ':privacy_consent_at' => $reservation->privacyConsentAt?->format('Y-m-d H:i:s'),
+            ':privacy_consent_ip' => $reservation->privacyConsentIp,
+            ':pii_redacted_at' => $reservation->piiRedactedAt?->format('Y-m-d H:i:s'),
         ];
 
         $params = [];
@@ -520,7 +532,11 @@ final class PdoReservationRepository implements ReservationRepositoryInterface
             refundedAmount: isset($row['refunded_amount']) ? (float) $row['refunded_amount'] : 0.0,
             externalConfirmationCode: isset($row['external_confirmation_code']) && $row['external_confirmation_code'] !== '' ? (string) $row['external_confirmation_code'] : null,
             channelBlockUid: isset($row['channel_block_uid']) && $row['channel_block_uid'] !== '' ? (string) $row['channel_block_uid'] : null,
-            maxGuests: Reservation::normalizeMaxGuests($row['max_guests'] ?? null)
+            maxGuests: Reservation::normalizeMaxGuests($row['max_guests'] ?? null),
+            privacyPolicyVersion: isset($row['privacy_policy_version']) && $row['privacy_policy_version'] !== '' ? (string) $row['privacy_policy_version'] : null,
+            privacyConsentAt: !empty($row['privacy_consent_at']) ? new DateTimeImmutable((string) $row['privacy_consent_at']) : null,
+            privacyConsentIp: isset($row['privacy_consent_ip']) && $row['privacy_consent_ip'] !== '' ? (string) $row['privacy_consent_ip'] : null,
+            piiRedactedAt: !empty($row['pii_redacted_at']) ? new DateTimeImmutable((string) $row['pii_redacted_at']) : null
         );
     }
 }

@@ -9,6 +9,7 @@ import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
 import Oceanview1606 from "../pages/Oceanview1606";
 import Oceanview1707 from "../pages/Oceanview1707";
+import Privacy from "../pages/Privacy";
 import Registry from "../pages/Registry";
 import type { Lang } from "../types";
 
@@ -53,12 +54,14 @@ export const getClientDictionaryForPage = (
 		dbVerifying: t.dbVerifying || "",
 		dbSecured: t.dbSecured || "",
 		dbFillFields: t.dbFillFields || "",
+		dbErrPrivacyConsent: t.dbErrPrivacyConsent || "",
 		dbDeclined: t.dbDeclined || "",
 		dbSubmit: t.dbSubmit || "",
 		dbNetworkError: t.dbNetworkError || "",
 		dbGatewayError: t.dbGatewayError || "",
 		contactSuccess: t.contactSuccess || "",
 		contactError: t.contactError || "",
+		contactErrPrivacyConsent: t.contactErrPrivacyConsent || "",
 		contactSubmitting: t.contactSubmitting || "",
 		contactSubmit: t.contactSubmit || "",
 		contactDateError: t.contactDateError || "",
@@ -79,6 +82,8 @@ export const getClientDictionaryForPage = (
 			registryDefaultProperty: t.registryDefaultProperty || "",
 			registryErrEmail: t.registryErrEmail || "",
 			registryErrPhoneRequired: t.registryErrPhoneRequired || "",
+			registryErrPrivacyConsent: t.registryErrPrivacyConsent || "",
+			registryErrMinorConsent: t.registryErrMinorConsent || "",
 			registrySuccess: t.registrySuccess || "",
 			registryWarmMsg: t.registryWarmMsg || "",
 			registrySubmit: t.registrySubmit || "",
@@ -682,6 +687,30 @@ export const pages: PageConfig[] = [
 				"@type": "WebPage",
 				name: t.dbPendingTitle,
 				description: t.dbPendingSubtitle,
+				url: url,
+			});
+		},
+		scripts: ["js/main.js"],
+	},
+	{
+		id: "privacy",
+		path: "privacy",
+		component: Privacy,
+		filename: (lang: Lang) =>
+			lang === "en" ? "privacy/index.html" : `privacy/${lang}.html`,
+		seoTitle: (t: any) => t.privacySeoTitle,
+		seoDescription: (t: any) => t.privacySeoDescription,
+		ogImage: IMAGES["1707"].hero,
+		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
+			const url =
+				lang === "en"
+					? `${baseUrl}/privacy`
+					: `${baseUrl}/privacy/${lang}.html`;
+			return JSON.stringify({
+				"@context": "https://schema.org",
+				"@type": "WebPage",
+				name: t.privacySeoTitle,
+				description: t.privacySeoDescription,
 				url: url,
 			});
 		},

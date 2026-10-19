@@ -66,6 +66,8 @@ $phone_number = $_POST['phone_number'] ?? '';
 $check_in = $_POST['check_in'] ?? '';
 $check_out = $_POST['check_out'] ?? '';
 $message = $_POST['message'] ?? '';
+$privacy_consent_raw = $_POST['privacy_consent'] ?? '';
+$privacy_policy_version_raw = $_POST['privacy_policy_version'] ?? PRIVACY_POLICY_VERSION;
 
 // Captcha inputs
 $captcha_challenge = $_POST['captcha_challenge'] ?? '';
@@ -76,6 +78,15 @@ $captcha_response = $_POST['captcha_response'] ?? '';
 $captcha_check = verify_captcha_challenge($captcha_challenge, $captcha_signature, $captcha_response, CAPTCHA_SECRET);
 if ($captcha_check !== true) {
     send_json_response(false, $captcha_check);
+}
+
+// Verify Personal Data Authorization (Ley 1581 of 2012)
+$has_privacy_consent = $privacy_consent_raw === true
+    || $privacy_consent_raw === 1
+    || in_array(strtolower(trim((string) $privacy_consent_raw)), ['1', 'true', 'on', 'yes'], true);
+if (!$has_privacy_consent) {
+    http_response_code(400);
+    send_json_response(false, $t['err_privacy_consent']);
 }
 
 // Sanitize inputs using shared utils
@@ -145,7 +156,16 @@ if (!empty($check_out)) {
 $email_body .= "--------------------------------------------------\n\n";
 $email_body .= "Message:\n$message\n\n";
 $email_body .= "--------------------------------------------------\n";
-$email_body .= "IP Address: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+$clean_policy_version = strip_newlines(clean_input((string) $privacy_policy_version_raw));
+if ($clean_policy_version === '') {
+    $clean_policy_version = PRIVACY_POLICY_VERSION;
+}
+$consent_timestamp = (new DateTimeImmutable('now', new DateTimeZone('America/Bogota')))->format('Y-m-d H:i:s P');
+$email_body .= "IP Address:             " . $client_ip . "\n";
+$email_body .= "Privacy Policy Version: " . $clean_policy_version . "\n";
+$email_body .= "Privacy Consent At:     " . $consent_timestamp . "\n";
+$email_body .= "Privacy Consent IP:     " . $client_ip . "\n";
 
 $headers = [
     'From' => 'no-reply@oceanviewflats.com',
@@ -155,7 +175,11 @@ $headers = [
 ];
 
 // Send email
-$success = mail(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+if (isset($GLOBALS['__ovf_contact_mail_callback']) && is_callable($GLOBALS['__ovf_contact_mail_callback'])) {
+    $success = (bool) ($GLOBALS['__ovf_contact_mail_callback'])(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+} else {
+    $success = mail(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+}
 
 if ($success) {
     if ($is_ajax) {

@@ -9,12 +9,17 @@ import {
 import React, { useEffect, useState } from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
+import {
+	getPrivacyPolicyPath,
+	PRIVACY_POLICY_VERSION,
+} from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
 export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 	const t = dict[lang];
 	const [isScrolled, setIsScrolled] = useState(false);
+	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -347,6 +352,39 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 								/>
 							</div>
 
+							{/* Personal Data Authorization (Ley 1581 of 2012) */}
+							<div className="flex items-start space-x-3 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+								<input
+									type="checkbox"
+									id="privacy-consent"
+									name="privacy_consent"
+									value="1"
+									required
+									className="mt-1 h-4 w-4 rounded border-slate-300 text-[#FF5A5F] focus:ring-[#FF5A5F] cursor-pointer shrink-0"
+								/>
+								<input
+									type="hidden"
+									id="privacy-policy-version"
+									name="privacy_policy_version"
+									value={PRIVACY_POLICY_VERSION}
+								/>
+								<label
+									htmlFor="privacy-consent"
+									className="text-xs text-slate-600 leading-relaxed cursor-pointer"
+								>
+									{t.contactPrivacyConsentPrefix}{" "}
+									<a
+										href={privacyHref}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="font-semibold text-[#FF5A5F] hover:text-[#FF424D] underline"
+									>
+										{t.contactPrivacyConsentLink}
+									</a>{" "}
+									{t.contactPrivacyConsentSuffix}
+								</label>
+							</div>
+
 							{/* Submit Button */}
 							<button
 								type="submit"
@@ -361,7 +399,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Domain\Payment;
 
 use JsonSerializable;
+use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Support\PathResolver;
 
 if (!function_exists('clean_input')) {
@@ -39,7 +40,9 @@ final class BookingPaymentRequest implements JsonSerializable
         public readonly ?string $financialInstitution = null,
         public readonly string $lang = 'en',
         public readonly ?string $clientIp = null,
-        public readonly ?string $idempotencyKey = null
+        public readonly ?string $idempotencyKey = null,
+        public readonly bool $privacyConsent = false,
+        public readonly ?string $privacyPolicyVersion = null
     ) {
     }
 
@@ -129,6 +132,19 @@ final class BookingPaymentRequest implements JsonSerializable
             }
         }
 
+        $rawConsent = $data['privacy_consent'] ?? $data['privacyConsent'] ?? false;
+        $privacyConsent = $rawConsent === true
+            || $rawConsent === 1
+            || in_array(strtolower(trim((string) $rawConsent)), ['1', 'true', 'on', 'yes'], true);
+
+        $rawPolicyVersion = $data['privacy_policy_version'] ?? $data['privacyPolicyVersion'] ?? null;
+        $privacyPolicyVersion = is_string($rawPolicyVersion) && trim($rawPolicyVersion) !== ''
+            ? clean_input($rawPolicyVersion)
+            : ($privacyConsent ? Reservation::DEFAULT_PRIVACY_POLICY_VERSION : null);
+        if ($privacyPolicyVersion === '') {
+            $privacyPolicyVersion = $privacyConsent ? Reservation::DEFAULT_PRIVACY_POLICY_VERSION : null;
+        }
+
         return new self(
             propertyId: $propertyId,
             checkIn: $checkIn,
@@ -145,7 +161,9 @@ final class BookingPaymentRequest implements JsonSerializable
             financialInstitution: $financialInstitution,
             lang: $effectiveLang,
             clientIp: $effectiveClientIp,
-            idempotencyKey: $idempotencyKey
+            idempotencyKey: $idempotencyKey,
+            privacyConsent: $privacyConsent,
+            privacyPolicyVersion: $privacyPolicyVersion
         );
     }
 
@@ -171,6 +189,8 @@ final class BookingPaymentRequest implements JsonSerializable
             'lang' => $this->lang,
             'client_ip' => $this->clientIp,
             'idempotency_key' => $this->idempotencyKey,
+            'privacy_consent' => $this->privacyConsent,
+            'privacy_policy_version' => $this->privacyPolicyVersion,
         ];
     }
 
