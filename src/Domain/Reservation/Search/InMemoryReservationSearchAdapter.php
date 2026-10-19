@@ -6,6 +6,7 @@ namespace OceanViewFlats\Domain\Reservation\Search;
 
 use OceanViewFlats\Domain\Reservation\InMemoryReservationRepository;
 use OceanViewFlats\Domain\Reservation\Reservation;
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
 
 /**
  * Fast in-memory search adapter for hermetic unit testing without database fixtures.
@@ -254,9 +255,8 @@ final class InMemoryReservationSearchAdapter implements ReservationSearchInterfa
             return null;
         }
 
-        if (isset($registry['guests_payload']) && is_string($registry['guests_payload'])) {
-            $decoded = json_decode($registry['guests_payload'], true);
-            $registry['guests_payload'] = is_array($decoded) ? $decoded : [];
+        if (isset($registry['guests_payload']) && (is_string($registry['guests_payload']) || is_array($registry['guests_payload']))) {
+            $registry['guests_payload'] = PayloadEncryptor::decrypt($registry['guests_payload']);
         }
 
         return $registry;

@@ -83,13 +83,12 @@ final class HostRegistryEmailRendererTest extends TestCase
         $this->assertSame('OceanViewFlats Guest Registry Report - OceanViewFlats 1606Injected Header: evil', $subject);
     }
 
-    public function testRenderPlainTextWithAllSectionsAndVehicleInfo(): void
+    public function testRenderPlainTextMasksDocNumbersAndOmitsPrimaryDocAndGoogleSheet(): void
     {
         $submission = $this->createSubmission('1606', 'XYZ-123', 'Toyota RAV4');
         $text = $this->renderer->renderPlainText(
             submission: $submission,
-            doorCode: '749201#',
-            spreadsheetSuccess: true
+            doorCode: '0749201#'
         );
 
         // Header
@@ -108,23 +107,25 @@ final class HostRegistryEmailRendererTest extends TestCase
         $this->assertStringContainsString('Plates:        XYZ-123', $text);
         $this->assertStringContainsString('Make & Model:  Toyota RAV4', $text);
 
-        // Registered guests
+        // Registered guests: document numbers must be masked (****5678, ****7766)
         $this->assertStringContainsString('REGISTERED GUESTS DETAILS', $text);
-        $this->assertStringContainsString("Guest #1:\n  Name:     Jane Doe\n  Email:    jane.doe@example.com\n  ID/Doc:   Passport (US12345678)\n  Age:      34", $text);
-        $this->assertStringContainsString("Guest #2:\n  Name:     John Doe\n  ID/Doc:   Driver License (DL887766)\n  Age:      36", $text);
+        $this->assertStringContainsString("Guest #1:\n  Name:     Jane Doe\n  Email:    jane.doe@example.com\n  ID/Doc:   Passport (****5678)\n  Age:      34", $text);
+        $this->assertStringContainsString("Guest #2:\n  Name:     John Doe\n  ID/Doc:   Driver License (****7766)\n  Age:      36", $text);
+        $this->assertStringNotContainsString('US12345678', $text);
+        $this->assertStringNotContainsString('DL887766', $text);
 
-        // Smart lock access PIN
+        // Smart lock access PIN: Primary Guest Doc line must be removed
         $this->assertStringContainsString('SMART LOCK ACCESS PIN (ACTION REQUIRED)', $text);
-        $this->assertStringContainsString('Generated Door PIN:  749201#', $text);
-        $this->assertStringContainsString('Primary Guest Doc:   US12345678', $text);
+        $this->assertStringContainsString('Generated Door PIN:  0749201#', $text);
+        $this->assertStringNotContainsString('Primary Guest Doc', $text);
         $this->assertStringContainsString('Lock Instructions:   Program this 7-digit code (ending in #)', $text);
         $this->assertStringContainsString('into the apartment smart lock companion app.', $text);
 
-        // System logs
+        // System logs: Google Sheet line must be removed
         $this->assertStringContainsString('SYSTEM LOGS', $text);
         $this->assertStringContainsString('Submission IP:  190.24.15.2', $text);
         $this->assertStringContainsString('Timestamp:      2026-10-01 14:30:00', $text);
-        $this->assertStringContainsString('Google Sheet:   Recorded successfully.', $text);
+        $this->assertStringNotContainsString('Google Sheet', $text);
     }
 
     public function testRenderPlainTextWithoutVehicleInfo(): void
@@ -132,48 +133,20 @@ final class HostRegistryEmailRendererTest extends TestCase
         $submission = $this->createSubmission('1707', null, null);
         $text = $this->renderer->renderPlainText(
             submission: $submission,
-            doorCode: '112233#',
-            spreadsheetSuccess: true
+            doorCode: '0112233#'
         );
 
         $this->assertStringNotContainsString('VEHICLE INFORMATION (OPTIONAL)', $text);
         $this->assertStringContainsString('Property:      OceanViewFlats 1707', $text);
-        $this->assertStringContainsString('Generated Door PIN:  112233#', $text);
+        $this->assertStringContainsString('Generated Door PIN:  0112233#', $text);
     }
 
-    public function testRenderPlainTextWithSpreadsheetFailure(): void
-    {
-        $submission = $this->createSubmission();
-        $text = $this->renderer->renderPlainText(
-            submission: $submission,
-            doorCode: '749201#',
-            spreadsheetSuccess: false,
-            spreadsheetError: 'HTTP 502'
-        );
-
-        $this->assertStringContainsString('Google Sheet:   FAILED (HTTP 502)', $text);
-    }
-
-    public function testRenderPlainTextWithSpreadsheetNotConfigured(): void
-    {
-        $submission = $this->createSubmission();
-        $text = $this->renderer->renderPlainText(
-            submission: $submission,
-            doorCode: '749201#',
-            spreadsheetSuccess: false,
-            spreadsheetError: null
-        );
-
-        $this->assertStringContainsString('Google Sheet:   Not configured.', $text);
-    }
-
-    public function testRenderHtmlProducesFormattedDocument(): void
+    public function testRenderHtmlMasksDocNumbersAndOmitsPrimaryDocAndGoogleSheet(): void
     {
         $submission = $this->createSubmission('1606', 'ABC-999', 'Hyundai Tucson');
         $html = $this->renderer->renderHtml(
             submission: $submission,
-            doorCode: '556677#',
-            spreadsheetSuccess: true
+            doorCode: '0556677#'
         );
 
         // Structure & Sections
@@ -187,25 +160,27 @@ final class HostRegistryEmailRendererTest extends TestCase
         $this->assertStringContainsString('ABC-999', $html);
         $this->assertStringContainsString('Hyundai Tucson', $html);
 
-        // Occupants
+        // Occupants with masked document numbers
         $this->assertStringContainsString('Registered Guests Details', $html);
         $this->assertStringContainsString('Jane Doe', $html);
         $this->assertStringContainsString('<code>jane.doe@example.com</code>', $html);
-        $this->assertStringContainsString('Passport (US12345678)', $html);
+        $this->assertStringContainsString('Passport (****5678)', $html);
         $this->assertStringContainsString('John Doe', $html);
-        $this->assertStringContainsString('Driver License (DL887766)', $html);
+        $this->assertStringContainsString('Driver License (****7766)', $html);
+        $this->assertStringNotContainsString('US12345678', $html);
+        $this->assertStringNotContainsString('DL887766', $html);
 
-        // PIN box
+        // PIN box without Primary Guest Doc
         $this->assertStringContainsString('Smart Lock Access PIN (Action Required)', $html);
-        $this->assertStringContainsString('556677#', $html);
-        $this->assertStringContainsString('<code>US12345678</code>', $html);
+        $this->assertStringContainsString('0556677#', $html);
+        $this->assertStringNotContainsString('Primary Guest Doc', $html);
         $this->assertStringContainsString('Program this 7-digit code (ending in #) into the apartment smart lock companion app.', $html);
 
-        // System logs
+        // System logs without Google Sheet
         $this->assertStringContainsString('Submission IP', $html);
         $this->assertStringContainsString('190.24.15.2', $html);
         $this->assertStringContainsString('2026-10-01 14:30:00', $html);
-        $this->assertStringContainsString('Recorded successfully.', $html);
+        $this->assertStringNotContainsString('Google Sheet', $html);
     }
 
     public function testRenderHtmlEscapesUserInputs(): void
@@ -233,8 +208,7 @@ final class HostRegistryEmailRendererTest extends TestCase
 
         $html = $this->renderer->renderHtml(
             submission: $submission,
-            doorCode: '123456#',
-            spreadsheetSuccess: true
+            doorCode: '0123456#'
         );
 
         $this->assertStringNotContainsString('<script>alert("hacked")</script>', $html);
@@ -243,7 +217,7 @@ final class HostRegistryEmailRendererTest extends TestCase
         $this->assertStringNotContainsString('<test-ip>', $html);
 
         $this->assertStringContainsString('&lt;script&gt;alert(&quot;hacked&quot;)&lt;/script&gt;', $html);
-        $this->assertStringContainsString('&lt;img src=x onerror=alert(1)&gt;', $html);
+        $this->assertStringContainsString('****(1)&gt;', $html);
         $this->assertStringContainsString('OceanViewFlats &lt;b&gt;1606&lt;/b&gt;', $html);
         $this->assertStringContainsString('&lt;test-ip&gt;', $html);
     }
@@ -264,12 +238,12 @@ final class HostRegistryEmailRendererTest extends TestCase
             primaryGuestEmail: 'primary.person@example.com'
         );
 
-        $text = $this->renderer->renderPlainText($submission, '123456#');
-        $html = $this->renderer->renderHtml($submission, '123456#');
+        $text = $this->renderer->renderPlainText($submission, '0123456#');
+        $html = $this->renderer->renderHtml($submission, '0123456#');
 
-        // Plain text checks
+        // Plain text checks (short doc numbers <= 4 chars mask to ****)
         $this->assertStringContainsString("Guest #1:\n  Name:     Primary Person\n  Email:    primary.person@example.com", $text);
-        $this->assertStringContainsString("Guest #2:\n  Name:     Companion Person\n  ID/Doc:   Passport (P222)", $text);
+        $this->assertStringContainsString("Guest #2:\n  Name:     Companion Person\n  ID/Doc:   Passport (****)", $text);
         $this->assertStringNotContainsString("Guest #2:\n  Name:     Companion Person\n  Email:", $text);
 
         // HTML checks

@@ -23,6 +23,8 @@ use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Search\InMemoryReservationSearchAdapter;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
+use OceanViewFlats\Domain\Security\PiiMasker;
 use PDO;
 use Throwable;
 
@@ -551,14 +553,8 @@ final class AdminReservationUpdateService
             return 0;
         }
         $guestsPayload = $registry['guests_payload'] ?? null;
-        if (is_array($guestsPayload)) {
-            return count($guestsPayload);
-        }
-        if (is_string($guestsPayload) && $guestsPayload !== '') {
-            $decoded = json_decode($guestsPayload, true);
-            if (is_array($decoded)) {
-                return count($decoded);
-            }
+        if (is_array($guestsPayload) || (is_string($guestsPayload) && $guestsPayload !== '')) {
+            return count(PayloadEncryptor::decrypt($guestsPayload));
         }
         return isset($registry['guest_count']) ? (int) $registry['guest_count'] : 0;
     }
@@ -573,20 +569,10 @@ final class AdminReservationUpdateService
             return [];
         }
         $rawPayload = $registry['guests_payload'] ?? [];
-        if (is_string($rawPayload) && $rawPayload !== '') {
-            $decoded = json_decode($rawPayload, true);
-            $rawPayload = is_array($decoded) ? $decoded : [];
-        }
-        if (!is_array($rawPayload)) {
+        if (!is_string($rawPayload) && !is_array($rawPayload)) {
             return [];
         }
-        $occupants = [];
-        foreach ($rawPayload as $item) {
-            if (is_array($item)) {
-                $occupants[] = $item;
-            }
-        }
-        return $occupants;
+        return PayloadEncryptor::decrypt($rawPayload);
     }
 
     /**
@@ -775,10 +761,12 @@ final class AdminReservationUpdateService
 
                 foreach ($occupants as $i => $occ) {
                     $occDoc = trim((string) ($occ['doc_num'] ?? $occ['doc_number'] ?? ''));
+                    $maskedOccDoc = PiiMasker::maskDocNumber($occDoc);
                     $occFn = trim((string) ($occ['first_name'] ?? $occ['name'] ?? ''));
                     $occLn = trim((string) ($occ['last_name'] ?? ''));
 
-                    if (($syncedDocs[$i] ?? null) !== $occDoc) {
+                    $syncedDoc = $syncedDocs[$i] ?? null;
+                    if ($syncedDoc !== $occDoc && $syncedDoc !== $maskedOccDoc) {
                         return true;
                     }
                     if ($occLn !== '' && ($syncedNames[$i] ?? null) !== $occFn) {
@@ -959,10 +947,9 @@ final class AdminReservationUpdateService
         string $ipAddress,
         DateTimeImmutable $now
     ): void {
-        $guestsPayloadJson = (string) json_encode(
-            $occupantsPayloadArray,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        );
+        $guestsPayloadJson = $occupantsPayloadArray !== []
+            ? PayloadEncryptor::encrypt($occupantsPayloadArray)
+            : '[]';
 
         if ($this->pdo !== null) {
             $stmtExists = $this->pdo->prepare('SELECT id FROM guest_registries WHERE reservation_uid = :uid ORDER BY id DESC LIMIT 1');
@@ -1059,7 +1046,10 @@ final class AdminReservationUpdateService
         if ($registry === null) {
             return null;
         }
-        $occupants = $this->extractRegistryOccupants($registry);
+        $occupants = array_map(
+            static fn(array $o): array => PiiMasker::maskOccupantArray($o),
+            $this->extractRegistryOccupants($registry)
+        );
         return [
             'property_id' => $registry['property_id'] ?? $fallbackPropertyId,
             'check_in' => $registry['check_in'] ?? $fallbackCheckIn,

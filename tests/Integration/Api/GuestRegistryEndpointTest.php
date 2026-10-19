@@ -315,13 +315,11 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertTrue($res['json']['success']);
         $this->assertSame('Guest registration completed successfully.', $res['json']['message']);
 
-        // Validate Door PIN format per ADR 0001
+        // Validate Door PIN format per ADR 0001 & ADR 0012 (cryptographically random 0XXXXXX#)
         $doorCode = $res['json']['door_code'] ?? null;
         $this->assertIsString($doorCode);
         $this->assertStringEndsWith('#', $doorCode);
-        $this->assertMatchesRegularExpression('/^[0-9]{4,10}#$/', $doorCode);
-        // Primary doc "US12345678" -> last 6 digits "345678" -> padded with leading 0 -> "0345678#"
-        $this->assertSame('0345678#', $doorCode);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $doorCode);
 
         // Guide URL
         $guideUrl = $res['json']['guide_url'] ?? null;
@@ -339,10 +337,10 @@ final class GuestRegistryEndpointTest extends TestCase
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame(1, (int) $row['registry_completed']);
-        $this->assertSame('0345678#', $row['door_code']);
+        $this->assertSame($doorCode, $row['door_code']);
         $this->assertNotNull($row['registry_completed_at']);
 
-        // Verify guest_registries table entry
+        // Verify guest_registries table entry (encrypted at rest per ADR 0012)
         $stmtReg = $this->pdo->prepare('SELECT * FROM guest_registries WHERE reservation_uid = :uid');
         $stmtReg->execute([':uid' => 'ovf_conf_100']);
         $reg = $stmtReg->fetch();
@@ -355,8 +353,8 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame('Mazda CX-5', $reg['car_model']);
         $this->assertSame('127.0.0.1', $reg['ip_address']);
 
-        $occupantsPayload = json_decode((string) $reg['guests_payload'], true);
-        $this->assertIsArray($occupantsPayload);
+        $this->assertTrue(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope((string) $reg['guests_payload']));
+        $occupantsPayload = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $reg['guests_payload']);
         $this->assertCount(2, $occupantsPayload);
         $this->assertSame('Maria Gomez', $occupantsPayload[0]['name']);
         $this->assertSame('US12345678', $occupantsPayload[0]['doc_num']);
@@ -418,7 +416,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
         $this->assertSame('ovf_conf_100', $res['json']['reservation_code']);
-        $this->assertSame('0345678#', $res['json']['door_code']);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $res['json']['door_code']);
     }
 
     public function testInvalidSubmissionRejectsZeroOccupantsWith400(): void
@@ -739,7 +737,8 @@ PHP;
         $this->assertSame(200, $res['statusCode']);
         $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
-        $this->assertSame('0345678#', $res['json']['door_code']);
+        $doorCode = (string) ($res['json']['door_code'] ?? '');
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $doorCode);
 
         $this->assertFileExists($logFile);
         $sentMessages = json_decode((string) file_get_contents($logFile), true);
@@ -756,7 +755,7 @@ PHP;
         $guestEmail = $sentMessages[1];
         $this->assertSame('maria.gomez@example.com', $guestEmail['to']);
         $this->assertStringContainsString('Access Credentials & Arrival Guide', $guestEmail['subject']);
-        $this->assertStringContainsString('0345678#', $guestEmail['htmlBody']);
+        $this->assertStringContainsString($doorCode, $guestEmail['htmlBody']);
         $this->assertStringContainsString('Maria Gomez', $guestEmail['htmlBody']);
         $this->assertStringContainsString('/guide/index.html?code=ovf_conf_100', $guestEmail['htmlBody']);
     }
@@ -788,7 +787,8 @@ PHP;
         $this->assertSame(200, $res['statusCode']);
         $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
-        $this->assertSame('0345678#', $res['json']['door_code']);
+        $doorCode = (string) ($res['json']['door_code'] ?? '');
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $doorCode);
 
         // Assert database was still updated
         $stmt = $this->pdo->prepare('SELECT * FROM reservations WHERE reservation_uid = :uid');
@@ -796,7 +796,7 @@ PHP;
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame(1, (int) $row['registry_completed']);
-        $this->assertSame('0345678#', $row['door_code']);
+        $this->assertSame($doorCode, $row['door_code']);
     }
 
     public function testRegistryEndpointAcceptsStructuredGuestFields(): void
@@ -836,13 +836,13 @@ PHP;
         $this->assertTrue($res['json']['success']);
         $this->assertArrayHasKey('door_code', $res['json']);
 
-        // Check occupants in SQLite database
+        // Check occupants in SQLite database (encrypted at rest per ADR 0012)
         $stmt = $this->pdo->prepare('SELECT guests_payload FROM guest_registries WHERE reservation_uid = :uid');
         $stmt->execute([':uid' => 'ovf_conf_100']);
         $jsonStr = $stmt->fetchColumn();
         $this->assertIsString($jsonStr);
-        $occupants = json_decode($jsonStr, true);
-        $this->assertIsArray($occupants);
+        $this->assertTrue(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope($jsonStr));
+        $occupants = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt($jsonStr);
         $this->assertCount(2, $occupants);
         $this->assertSame('Lucia Mendez', $occupants[0]['name']);
         $this->assertSame('+57 312 456 7890', $occupants[0]['phone']);
@@ -1054,7 +1054,7 @@ PHP;
         $regRow12 = $stmtReg12->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($regRow12);
         $this->assertSame(12, (int) $regRow12['guest_count']);
-        $decoded12 = json_decode((string) $regRow12['guests_payload'], true);
+        $decoded12 = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $regRow12['guests_payload']);
         $this->assertCount(12, $decoded12);
 
         // 4. Reject re-submission once registry_completed = 1

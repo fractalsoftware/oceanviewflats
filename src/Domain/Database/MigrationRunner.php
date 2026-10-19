@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Database;
 
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
 use PDO;
 use PDOException;
 
@@ -212,6 +213,7 @@ final class MigrationRunner
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
         $logs[] = "Table `guest_registries` verified/created.";
+        self::encryptLegacyGuestRegistries($pdo, $logs);
 
         // 4. admin_users table
         $pdo->exec("
@@ -466,6 +468,7 @@ final class MigrationRunner
             );
         ');
         $logs[] = "Table `guest_registries` verified/created.";
+        self::encryptLegacyGuestRegistries($pdo, $logs);
 
         $pdo->exec('
             CREATE TABLE IF NOT EXISTS admin_users (
@@ -613,5 +616,53 @@ final class MigrationRunner
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_reservation_uid ON operational_expenses (reservation_uid);');
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_oe_created_by ON operational_expenses (created_by);');
         $logs[] = "Table `operational_expenses` verified/created.";
+    }
+
+    /**
+     * Encrypts any existing plaintext guest_registries.guests_payload rows in-place (ADR 0012).
+     *
+     * @param PDO $pdo
+     * @param list<string> $logs
+     */
+    private static function encryptLegacyGuestRegistries(PDO $pdo, array &$logs): void
+    {
+        $stmt = $pdo->query('SELECT id, guests_payload FROM guest_registries');
+        if ($stmt === false) {
+            return;
+        }
+
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $encryptedCount = 0;
+
+        $updateStmt = $pdo->prepare('UPDATE guest_registries SET guests_payload = :payload WHERE id = :id');
+
+        foreach ($rows as $row) {
+            $rawPayload = (string) ($row['guests_payload'] ?? '');
+            $trimmed = trim($rawPayload);
+            if ($trimmed === '' || $trimmed === '[]') {
+                continue;
+            }
+
+            if (PayloadEncryptor::isEncryptedEnvelope($trimmed)) {
+                continue;
+            }
+
+            $decoded = json_decode($trimmed, true);
+            if (!is_array($decoded) || $decoded === []) {
+                continue;
+            }
+
+            $encrypted = PayloadEncryptor::encrypt($decoded);
+            $updateStmt->execute([
+                ':payload' => $encrypted,
+                ':id' => (int) $row['id'],
+            ]);
+            $encryptedCount++;
+        }
+
+        if ($encryptedCount > 0) {
+            $logs[] = "Encrypted {$encryptedCount} legacy guest_registries row(s).";
+        }
     }
 }

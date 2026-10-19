@@ -12,7 +12,6 @@ final class FulfillmentResult
     public function __construct(
         public readonly bool $isGuestEmailSent,
         public readonly bool $isHostEmailSent,
-        public readonly bool $isSpreadsheetSynced,
         public readonly array $errors = []
     ) {}
 

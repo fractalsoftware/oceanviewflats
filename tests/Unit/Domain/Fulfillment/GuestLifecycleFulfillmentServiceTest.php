@@ -12,11 +12,11 @@ use OceanViewFlats\Domain\Fulfillment\GuestLifecycleFulfillmentService;
 use OceanViewFlats\Domain\Fulfillment\GuestRegistrySubmission;
 use OceanViewFlats\Domain\Fulfillment\HostRegistryEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\InMemoryEmailSender;
-use OceanViewFlats\Domain\Fulfillment\InMemorySpreadsheetSync;
 use OceanViewFlats\Domain\Fulfillment\OccupantDetails;
 use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationStatus;
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +26,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
     private PdoReservationRepository $reservationRepository;
     private HostRegistryEmailRenderer $hostRegistryRenderer;
     private InMemoryEmailSender $emailSender;
-    private InMemorySpreadsheetSync $spreadsheetSync;
     private GuestLifecycleFulfillmentService $service;
 
     protected function setUp(): void
@@ -112,14 +111,12 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->reservationRepository = new PdoReservationRepository($this->pdo);
         $this->hostRegistryRenderer = new HostRegistryEmailRenderer(new DateTimeImmutable('2026-10-01 12:00:00'));
         $this->emailSender = new InMemoryEmailSender();
-        $this->spreadsheetSync = new InMemorySpreadsheetSync();
 
         $this->service = new GuestLifecycleFulfillmentService(
             pdo: $this->pdo,
             reservationRepository: $this->reservationRepository,
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             hostNotificationEmail: 'rentals@oceanviewflats.com',
             publicSiteUrl: 'https://oceanviewflats.com'
         );
@@ -212,15 +209,13 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->assertNotNull($result->reservation);
         $this->assertTrue($result->reservation->registryCompleted);
         $this->assertTrue($result->hostReportDispatched);
-        $this->assertTrue($result->spreadsheetSynced);
 
-        // ADR 0001: Algorithmic PIN derived from primary doc "US12345678" -> last 6 digits "345678" -> "0345678#"
-        $expectedDoorCode = '0345678#';
-        $this->assertSame($expectedDoorCode, $result->doorCode);
-        $this->assertSame($expectedDoorCode, $result->reservation->doorCode);
+        // ADR 0001 & ADR 0012: Cryptographically random 0XXXXXX# PIN (decoupled from government ID)
+        $this->assertNotNull($result->doorCode);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $result->doorCode);
+        $this->assertSame($result->doorCode, $result->reservation->doorCode);
         $this->assertSame('https://oceanviewflats.com/guide/index.html?code=ovf_sample_100', $result->guideUrl);
         $this->assertTrue($result->hostReportDispatched);
-        $this->assertTrue($result->spreadsheetSynced);
         $this->assertTrue($result->accessDispatchDispatched);
 
         // Verify DB update on reservations table
@@ -229,10 +224,10 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $row = $stmt->fetch();
         $this->assertNotEmpty($row);
         $this->assertSame(1, (int) $row['registry_completed']);
-        $this->assertSame($expectedDoorCode, $row['door_code']);
+        $this->assertSame($result->doorCode, $row['door_code']);
         $this->assertNotNull($row['registry_completed_at']);
 
-        // Verify guest_registries record
+        // Verify guest_registries record is encrypted at rest with XSalsa20-Poly1305 JSON envelope
         $stmtReg = $this->pdo->prepare('SELECT * FROM guest_registries WHERE reservation_uid = :uid');
         $stmtReg->execute([':uid' => 'ovf_sample_100']);
         $regRow = $stmtReg->fetch();
@@ -243,13 +238,22 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->assertSame('Mazda CX-5', $regRow['car_model']);
         $this->assertSame('190.24.15.2', $regRow['ip_address']);
 
-        $payload = json_decode((string) $regRow['guests_payload'], true);
-        $this->assertIsArray($payload);
+        $rawStoredPayload = (string) $regRow['guests_payload'];
+        $this->assertTrue(PayloadEncryptor::isEncryptedEnvelope($rawStoredPayload));
+        $this->assertStringNotContainsString('US12345678', $rawStoredPayload);
+        $this->assertStringNotContainsString('BC987654', $rawStoredPayload);
+        $envelope = json_decode($rawStoredPayload, true);
+        $this->assertIsArray($envelope);
+        $this->assertTrue($envelope['_encrypted'] ?? false);
+        $this->assertSame(1, $envelope['v'] ?? null);
+        $this->assertSame('xsalsa20-poly1305', $envelope['alg'] ?? null);
+
+        $payload = PayloadEncryptor::decrypt($rawStoredPayload);
         $this->assertCount(2, $payload);
         $this->assertSame('Jane Smith', $payload[0]['name']);
         $this->assertSame('US12345678', $payload[0]['doc_num']);
 
-        // Verify admin_audit_logs record
+        // Verify admin_audit_logs record masks document numbers
         $stmtAudit = $this->pdo->prepare("SELECT * FROM admin_audit_logs WHERE action = 'guest_registry_submitted'");
         $stmtAudit->execute();
         $auditRow = $stmtAudit->fetch();
@@ -258,29 +262,29 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->assertSame('ovf_sample_100', $auditRow['entity_id']);
         $this->assertSame('190.24.15.2', $auditRow['ip_address']);
         $this->assertStringContainsString('Jane Smith', (string) $auditRow['payload_after']);
+        $this->assertStringContainsString('****5678', (string) $auditRow['payload_after']);
+        $this->assertStringContainsString('****7654', (string) $auditRow['payload_after']);
+        $this->assertStringNotContainsString('US12345678', (string) $auditRow['payload_after']);
+        $this->assertStringNotContainsString('BC987654', (string) $auditRow['payload_after']);
 
         // Verify Dispatched Emails: Host Notification & Guest Access Dispatch
         $this->assertSame(2, $this->emailSender->count());
         $hostEmail = $this->emailSender->getSentMessages()[0];
         $this->assertSame('rentals@oceanviewflats.com', $hostEmail['to']);
         $this->assertStringContainsString('OceanViewFlats Guest Registry Report', $hostEmail['subject']);
-        $this->assertStringContainsString($expectedDoorCode, $hostEmail['htmlBody']);
+        $this->assertStringContainsString((string) $result->doorCode, $hostEmail['htmlBody']);
         $this->assertStringContainsString('Mazda CX-5', $hostEmail['htmlBody']);
+        $this->assertStringContainsString('****5678', $hostEmail['htmlBody']);
+        $this->assertStringNotContainsString('US12345678', $hostEmail['htmlBody']);
+        $this->assertStringNotContainsString('Google Sheet', $hostEmail['htmlBody']);
 
         $guestEmail = $this->emailSender->getSentMessages()[1];
         $this->assertSame('jane.smith@example.com', $guestEmail['to']);
         $this->assertStringContainsString('Access Credentials & Arrival Guide', $guestEmail['subject']);
-        $this->assertStringContainsString($expectedDoorCode, $guestEmail['htmlBody']);
+        $this->assertStringContainsString((string) $result->doorCode, $guestEmail['htmlBody']);
         $this->assertStringContainsString('/guide/index.html?code=ovf_sample_100', $guestEmail['htmlBody']);
         $this->assertStringContainsString('Assigned Parking', $guestEmail['htmlBody']);
         $this->assertStringContainsString('#87', $guestEmail['htmlBody']);
-
-        // Verify Spreadsheet Sync
-        $this->assertSame(1, $this->spreadsheetSync->count());
-        $sync = $this->spreadsheetSync->getSyncedRecords()[0];
-        $this->assertSame('ovf_sample_100', $sync['reservation']->reservationUid);
-        $this->assertSame('guest_registry', $sync['extra']['event']);
-        $this->assertSame($expectedDoorCode, $sync['extra']['door_code']);
     }
 
     public function testSubmitRegistryMatchesByPropertyAndStayDatesWhenCodeIsEmpty(): void
@@ -297,7 +301,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
 
         $this->assertTrue($result->success);
         $this->assertSame('ovf_sample_dates', $result->reservation?->reservationUid);
-        $this->assertSame('0345678#', $result->doorCode);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $result->doorCode);
     }
 
     public function testSubmitRegistryRejectsInvalidOccupantCount(): void
@@ -489,7 +493,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
 
         // Verify side-effects were not invoked
         $this->assertSame(0, $this->emailSender->count());
-        $this->assertSame(0, $this->spreadsheetSync->count());
     }
 
     public function testSubmitRegistrySucceedsEvenIfSideEffectsFail(): void
@@ -497,15 +500,13 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->createSampleReservation('ovf_side_effects_fail');
         $submission = $this->createSubmission('ovf_side_effects_fail');
 
-        $this->spreadsheetSync->setShouldFail(true);
         $this->emailSender->setShouldFail(true);
 
         $result = $this->service->submitRegistry($submission);
 
         // Core business transaction succeeded
         $this->assertTrue($result->success);
-        $this->assertSame('0345678#', $result->doorCode);
-        $this->assertFalse($result->spreadsheetSynced);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $result->doorCode);
         $this->assertFalse($result->hostReportDispatched);
         $this->assertFalse($result->accessDispatchDispatched);
 
@@ -513,7 +514,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $res = $this->reservationRepository->findByUid('ovf_side_effects_fail');
         $this->assertNotNull($res);
         $this->assertTrue($res->registryCompleted);
-        $this->assertSame('0345678#', $res->doorCode);
+        $this->assertSame($result->doorCode, $res->doorCode);
     }
 
     public function testSubmitRegistryDispatchesAccessDispatchToPrimaryGuest(): void
@@ -530,7 +531,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $dispatchEmail = $this->emailSender->getSentMessages()[1];
         $this->assertSame('jane.smith@example.com', $dispatchEmail['to']);
         $this->assertStringContainsString('Access Credentials & Arrival Guide', $dispatchEmail['subject']);
-        $this->assertStringContainsString('0345678#', $dispatchEmail['htmlBody']);
+        $this->assertStringContainsString((string) $result->doorCode, $dispatchEmail['htmlBody']);
         $this->assertStringContainsString('https://oceanviewflats.com/guide/index.html?code=ovf_dispatch_test', $dispatchEmail['htmlBody']);
         $this->assertStringContainsString('Jane Smith', $dispatchEmail['htmlBody']);
     }
@@ -555,14 +556,13 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
 
         $service = GuestLifecycleFulfillmentService::createDefault($this->pdo, [
             'email_sender' => $failingSender,
-            'spreadsheet_sync' => $this->spreadsheetSync,
             'clearance_sync' => null,
         ]);
 
         $result = $service->submitRegistry($submission);
 
         $this->assertTrue($result->success);
-        $this->assertSame('0345678#', $result->doorCode);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $result->doorCode);
         $this->assertTrue($result->hostReportDispatched);
         $this->assertFalse($result->accessDispatchDispatched);
 
@@ -570,7 +570,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $res = $this->reservationRepository->findByUid('ovf_dispatch_throw');
         $this->assertNotNull($res);
         $this->assertTrue($res->registryCompleted);
-        $this->assertSame('0345678#', $res->doorCode);
+        $this->assertSame($result->doorCode, $res->doorCode);
     }
 
     // ==========================================
@@ -680,7 +680,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             reservationRepository: $this->reservationRepository,
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             clearanceSync: $mockSync
         );
 
@@ -708,7 +707,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             reservationRepository: $this->reservationRepository,
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             clearanceSync: $mockSync
         );
 
@@ -1051,7 +1049,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             'host_notification_email' => 'custom_host@example.com',
             'public_site_url' => 'https://custom.oceanviewflats.com',
             'email_sender' => $this->emailSender,
-            'spreadsheet_sync' => $this->spreadsheetSync,
         ]);
 
         $this->assertInstanceOf(GuestLifecycleFulfillmentService::class, $service);
@@ -1076,7 +1073,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             reservationRepository: $this->reservationRepository,
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             clearanceSync: $mockSync
         );
 
@@ -1113,7 +1109,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             reservationRepository: $this->reservationRepository,
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             clearanceSync: $mockSync
         );
 
@@ -1154,7 +1149,6 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             reservationRepository: $this->reservationRepository,
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             clearanceSync: $mockSync
         );
 

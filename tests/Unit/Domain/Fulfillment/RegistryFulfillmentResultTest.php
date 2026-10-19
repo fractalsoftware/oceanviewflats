@@ -34,7 +34,6 @@ final class RegistryFulfillmentResultTest extends TestCase
             doorCode: '123456#',
             guideUrl: '/guide/?code=ovf_res_test',
             hostReportDispatched: true,
-            spreadsheetSynced: true,
             accessDispatchDispatched: true
         );
 
@@ -43,7 +42,6 @@ final class RegistryFulfillmentResultTest extends TestCase
         $this->assertSame('123456#', $result->doorCode);
         $this->assertSame('/guide/?code=ovf_res_test', $result->guideUrl);
         $this->assertTrue($result->hostReportDispatched);
-        $this->assertTrue($result->spreadsheetSynced);
         $this->assertTrue($result->accessDispatchDispatched);
         $this->assertEmpty($result->errors);
 
@@ -54,7 +52,7 @@ final class RegistryFulfillmentResultTest extends TestCase
         $this->assertSame('/guide/?code=ovf_res_test', $array['guide_url']);
         $this->assertTrue($array['host_report_dispatched']);
         $this->assertTrue($array['access_dispatch_dispatched']);
-        $this->assertTrue($array['spreadsheet_synced']);
+        $this->assertArrayNotHasKey('spreadsheet_synced', $array);
         $this->assertSame([], $array['errors']);
     }
 
@@ -68,7 +66,6 @@ final class RegistryFulfillmentResultTest extends TestCase
         $this->assertNull($result->guideUrl);
         $this->assertFalse($result->hostReportDispatched);
         $this->assertFalse($result->accessDispatchDispatched);
-        $this->assertFalse($result->spreadsheetSynced);
         $this->assertSame(['Invalid guest name', 'Age out of range'], $result->errors);
     }
 

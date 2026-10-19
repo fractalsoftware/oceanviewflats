@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\ConfirmationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\InMemoryEmailSender;
-use OceanViewFlats\Domain\Fulfillment\InMemorySpreadsheetSync;
 use OceanViewFlats\Domain\Payment\BookingPaymentProcessor;
 use OceanViewFlats\Domain\Payment\BookingPaymentRequest;
 use OceanViewFlats\Domain\Payment\BookingPaymentResult;
@@ -41,7 +40,6 @@ final class BookingPaymentProcessorTest extends TestCase
     private InMemoryRateSource $rateSource;
     private QuoteEngine $quoteEngine;
     private InMemoryEmailSender $emailSender;
-    private InMemorySpreadsheetSync $spreadsheetSync;
     private BookingFulfillment $fulfillment;
     private BookingPaymentProcessor $processor;
 
@@ -139,11 +137,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->quoteEngine = new QuoteEngine($this->rateSource, $ratesConfig);
 
         $this->emailSender = new InMemoryEmailSender();
-        $this->spreadsheetSync = new InMemorySpreadsheetSync();
         $renderer = new ConfirmationEmailRenderer('https://oceanviewflats.com');
         $this->fulfillment = new BookingFulfillment(
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             renderer: $renderer,
             hostEmail: 'reservas@oceanviewflats.com'
         );
@@ -529,11 +525,6 @@ final class BookingPaymentProcessorTest extends TestCase
             $this->assertStringNotContainsString('door code', strtolower($email['htmlBody']));
             $this->assertStringNotContainsString('smart lock', strtolower($email['htmlBody']));
         }
-
-        // Verify spreadsheet sync was invoked
-        $synced = $this->spreadsheetSync->getSyncedRecords();
-        $this->assertCount(1, $synced);
-        $this->assertSame($result->reservationUid, $synced[0]['reservation']->reservationUid);
     }
 
     public function testPendingPaymentSendsEmailsAndSavesPendingReservation(): void

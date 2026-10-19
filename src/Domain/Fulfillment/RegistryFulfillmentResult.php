@@ -20,7 +20,6 @@ final class RegistryFulfillmentResult
         public readonly ?string $doorCode = null,
         public readonly ?string $guideUrl = null,
         public readonly bool $hostReportDispatched = false,
-        public readonly bool $spreadsheetSynced = false,
         public readonly array $errors = [],
         public readonly bool $accessDispatchDispatched = false
     ) {}
@@ -30,7 +29,6 @@ final class RegistryFulfillmentResult
         string $doorCode,
         string $guideUrl,
         bool $hostReportDispatched = false,
-        bool $spreadsheetSynced = false,
         bool $accessDispatchDispatched = false
     ): self {
         return new self(
@@ -39,7 +37,6 @@ final class RegistryFulfillmentResult
             doorCode: $doorCode,
             guideUrl: $guideUrl,
             hostReportDispatched: $hostReportDispatched,
-            spreadsheetSynced: $spreadsheetSynced,
             errors: [],
             accessDispatchDispatched: $accessDispatchDispatched
         );
@@ -84,7 +81,6 @@ final class RegistryFulfillmentResult
             'guide_url' => $this->guideUrl,
             'host_report_dispatched' => $this->hostReportDispatched,
             'access_dispatch_dispatched' => $this->accessDispatchDispatched,
-            'spreadsheet_synced' => $this->spreadsheetSynced,
             'errors' => $this->errors,
         ];
     }

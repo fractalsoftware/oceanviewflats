@@ -96,7 +96,7 @@ final class ReservationLifecycleEngineFactoryTest extends TestCase
                         && ($extra['payment_status'] ?? null) === 'approved';
                 })
             )
-            ->willReturn(new FulfillmentResult(true, true, true));
+            ->willReturn(new FulfillmentResult(true, true));
 
         $engine = ReservationLifecycleEngineFactory::create(null, [
             'bookingFulfillment' => $mockFulfillment,

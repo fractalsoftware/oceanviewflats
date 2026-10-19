@@ -55,7 +55,7 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new FulfillmentResult(true, true, true));
+            ->willReturn(new FulfillmentResult(true, true));
 
         $adapter = new TransactionalLifecycleEventPublisherAdapter(
             bookingFulfillment: $bookingFulfillment
@@ -81,7 +81,7 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new FulfillmentResult(true, true, true));
+            ->willReturn(new FulfillmentResult(true, true));
 
         $adapter = new TransactionalLifecycleEventPublisherAdapter(
             bookingFulfillment: $bookingFulfillment
@@ -108,7 +108,7 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
                     'payment_status' => 'approved',
                 ])
             )
-            ->willReturn(new FulfillmentResult(true, true, true));
+            ->willReturn(new FulfillmentResult(true, true));
 
         $adapter = new TransactionalLifecycleEventPublisherAdapter(
             bookingFulfillment: $bookingFulfillment
@@ -135,7 +135,7 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
                 $this->isInstanceOf(Reservation::class),
                 $this->identicalTo([])
             )
-            ->willReturn(new FulfillmentResult(true, true, true));
+            ->willReturn(new FulfillmentResult(true, true));
 
         $adapter = new TransactionalLifecycleEventPublisherAdapter(
             bookingFulfillment: $bookingFulfillment
@@ -221,7 +221,6 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
         $failedResult = new FulfillmentResult(
             isGuestEmailSent: false,
             isHostEmailSent: true,
-            isSpreadsheetSynced: false,
             errors: ['SMTP timeout error']
         );
 
@@ -242,7 +241,6 @@ final class TransactionalLifecycleEventPublisherAdapterTest extends TestCase
                     'errors' => ['SMTP timeout error'],
                     'guest_email_sent' => false,
                     'host_email_sent' => true,
-                    'spreadsheet_synced' => false,
                 ],
                 $actorContext
             );

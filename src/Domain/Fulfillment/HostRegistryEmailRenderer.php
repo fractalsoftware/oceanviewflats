@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace OceanViewFlats\Domain\Fulfillment;
 
 use DateTimeInterface;
+use OceanViewFlats\Domain\Security\PiiMasker;
 
 /**
  * Renders plain-text and HTML guest registry reports dispatched to host staff and condominium reception.
+ *
+ * Per ADR 0012, government identification document numbers are masked (****5678),
+ * the Primary Guest Doc line is omitted from the Smart Lock PIN section, and
+ * third-party spreadsheet status lines are excised.
  */
 final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterface
 {
@@ -24,18 +29,13 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
 
     public function renderPlainText(
         GuestRegistrySubmission $submission,
-        string $doorCode,
-        bool $spreadsheetSuccess = true,
-        ?string $spreadsheetError = null
+        string $doorCode
     ): string {
         $property = trim($submission->propertyId);
         $propertyStr = $property !== '' ? "OceanViewFlats {$property}" : 'Not specified';
         $checkInStr = trim($submission->checkIn) !== '' ? trim($submission->checkIn) : 'Not specified';
         $checkOutStr = trim($submission->checkOut) !== '' ? trim($submission->checkOut) : 'Not specified';
-        $primary = $submission->getPrimaryOccupant();
-        $primaryGuestDoc = $primary !== null ? $primary->docNum : 'N/A';
 
-        $sheetStatus = $this->resolveSpreadsheetStatus($spreadsheetSuccess, $spreadsheetError);
         $timestamp = $this->getTimestamp();
 
         $emailBody = "OceanViewFlats Official Guest Registry Report\n";
@@ -58,6 +58,7 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
         $emailBody .= "REGISTERED GUESTS DETAILS\n";
         $emailBody .= "--------------------------------------------------\n";
         foreach ($submission->occupants as $g) {
+            $maskedDoc = PiiMasker::maskDocNumber($this->stripNewlines($g->docNum));
             $emailBody .= "Guest #" . $g->index . ":\n";
             $emailBody .= "  Name:     " . $this->stripNewlines($g->name) . "\n";
             if ($g->index === 1 && $g->email !== null) {
@@ -69,7 +70,7 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
             if ($g->country !== null && $g->country !== '') {
                 $emailBody .= "  Country:  " . $this->stripNewlines($g->country) . "\n";
             }
-            $emailBody .= "  ID/Doc:   " . $this->stripNewlines($g->docType) . " (" . $this->stripNewlines($g->docNum) . ")\n";
+            $emailBody .= "  ID/Doc:   " . $this->stripNewlines($g->docType) . " (" . $maskedDoc . ")\n";
             $emailBody .= "  Age:      " . $g->age . "\n";
             $emailBody .= "--------------------------------------------------\n";
         }
@@ -77,7 +78,6 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
         $emailBody .= "\nSMART LOCK ACCESS PIN (ACTION REQUIRED)\n";
         $emailBody .= "--------------------------------------------------\n";
         $emailBody .= "Generated Door PIN:  " . $this->stripNewlines($doorCode) . "\n";
-        $emailBody .= "Primary Guest Doc:   " . $this->stripNewlines($primaryGuestDoc) . "\n";
         $emailBody .= "Lock Instructions:   Program this 7-digit code (ending in #)\n";
         $emailBody .= "                     into the apartment smart lock companion app.\n";
 
@@ -85,7 +85,6 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
         $emailBody .= "--------------------------------------------------\n";
         $emailBody .= "Submission IP:  " . ($submission->ipAddress ?: 'Unknown') . "\n";
         $emailBody .= "Timestamp:      " . $timestamp . "\n";
-        $emailBody .= "Google Sheet:   " . $sheetStatus . "\n";
         $emailBody .= "==================================================\n";
 
         return $emailBody;
@@ -93,18 +92,13 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
 
     public function renderHtml(
         GuestRegistrySubmission $submission,
-        string $doorCode,
-        bool $spreadsheetSuccess = true,
-        ?string $spreadsheetError = null
+        string $doorCode
     ): string {
         $property = trim($submission->propertyId);
         $propertyStr = $property !== '' ? "OceanViewFlats {$property}" : 'Not specified';
         $checkInStr = trim($submission->checkIn) !== '' ? trim($submission->checkIn) : 'Not specified';
         $checkOutStr = trim($submission->checkOut) !== '' ? trim($submission->checkOut) : 'Not specified';
-        $primary = $submission->getPrimaryOccupant();
-        $primaryGuestDoc = $primary !== null ? $primary->docNum : 'N/A';
 
-        $sheetStatus = $this->resolveSpreadsheetStatus($spreadsheetSuccess, $spreadsheetError);
         $timestamp = $this->getTimestamp();
 
         $safeProperty = htmlspecialchars($propertyStr, ENT_QUOTES, 'UTF-8');
@@ -112,11 +106,9 @@ final class HostRegistryEmailRenderer implements HostRegistryEmailRendererInterf
         $safeCheckOut = htmlspecialchars($checkOutStr, ENT_QUOTES, 'UTF-8');
         $safeGuestCount = $submission->getGuestCount();
         $safeDoorCode = htmlspecialchars($this->stripNewlines($doorCode), ENT_QUOTES, 'UTF-8');
-        $safePrimaryGuestDoc = htmlspecialchars($this->stripNewlines($primaryGuestDoc), ENT_QUOTES, 'UTF-8');
         $safePrimaryEmail = htmlspecialchars($this->stripNewlines($submission->primaryGuestEmail), ENT_QUOTES, 'UTF-8');
         $safeIp = htmlspecialchars($submission->ipAddress ?: 'Unknown', ENT_QUOTES, 'UTF-8');
         $safeTimestamp = htmlspecialchars($timestamp, ENT_QUOTES, 'UTF-8');
-        $safeSheetStatus = htmlspecialchars($sheetStatus, ENT_QUOTES, 'UTF-8');
 
         $vehicleSection = '';
         if ($this->hasVehicleInfo($submission)) {
@@ -135,7 +127,8 @@ HTML;
         foreach ($submission->occupants as $g) {
             $safeName = htmlspecialchars($this->stripNewlines($g->name), ENT_QUOTES, 'UTF-8');
             $safeDocType = htmlspecialchars($this->stripNewlines($g->docType), ENT_QUOTES, 'UTF-8');
-            $safeDocNum = htmlspecialchars($this->stripNewlines($g->docNum), ENT_QUOTES, 'UTF-8');
+            $maskedDoc = PiiMasker::maskDocNumber($this->stripNewlines($g->docNum));
+            $safeDocNum = htmlspecialchars($maskedDoc, ENT_QUOTES, 'UTF-8');
             $safeAge = $g->age;
             $safeIndex = $g->index;
             $emailSnippet = '';
@@ -192,7 +185,6 @@ HTML;
     .pin-box { background-color: #eff6ff; border: 2px solid #0284c7; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; }
     .pin-box-title { font-weight: 800; font-size: 13px; text-transform: uppercase; color: #0369a1; letter-spacing: 1px; margin-bottom: 8px; }
     .pin-display { font-size: 32px; font-weight: 800; font-family: monospace; letter-spacing: 4px; color: #0284c7; margin: 8px 0; }
-    .pin-doc { font-size: 13px; color: #334155; margin-bottom: 8px; }
     .pin-instructions { font-size: 13px; color: #0369a1; background-color: #e0f2fe; padding: 8px 12px; border-radius: 6px; display: inline-block; }
     .footer { text-align: center; padding: 20px; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
   </style>
@@ -223,7 +215,6 @@ HTML;
       <div class="pin-box">
         <div class="pin-box-title">Smart Lock Access PIN (Action Required)</div>
         <div class="pin-display">{$safeDoorCode}</div>
-        <div class="pin-doc">Primary Guest Doc: <strong><code>{$safePrimaryGuestDoc}</code></strong></div>
         <div class="pin-instructions">
           Program this 7-digit code (ending in #) into the apartment smart lock companion app.
         </div>
@@ -233,7 +224,6 @@ HTML;
         <div class="card-title">System Logs</div>
         <div class="row"><span>Submission IP</span><strong>{$safeIp}</strong></div>
         <div class="row"><span>Timestamp</span><strong>{$safeTimestamp}</strong></div>
-        <div class="row"><span>Google Sheet</span><strong>{$safeSheetStatus}</strong></div>
       </div>
     </div>
     <div class="footer">
@@ -254,26 +244,6 @@ HTML;
     {
         return ($submission->carPlates !== null && $submission->carPlates !== '')
             || ($submission->carModel !== null && $submission->carModel !== '');
-    }
-
-    private function resolveSpreadsheetStatus(bool $success, ?string $error): string
-    {
-        if ($success) {
-            return 'Recorded successfully.';
-        }
-
-        if ($error !== null && $error !== '') {
-            $upper = strtoupper($error);
-            if (str_starts_with($upper, 'NOT CONFIGURED')) {
-                return 'Not configured.';
-            }
-            if (str_starts_with($upper, 'FAILED')) {
-                return $error;
-            }
-            return "FAILED ({$error})";
-        }
-
-        return 'Not configured.';
     }
 
     private function getTimestamp(): string

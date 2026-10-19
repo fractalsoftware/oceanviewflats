@@ -11,6 +11,8 @@ use OceanViewFlats\Domain\Access\PropertyCredentialsProviderInterface;
 use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
+use OceanViewFlats\Domain\Security\PiiMasker;
 use OceanViewFlats\Domain\Support\PublicUrlBuilder;
 use PDO;
 use Throwable;
@@ -32,7 +34,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         private readonly ReservationRepositoryInterface $reservationRepository,
         private readonly HostRegistryEmailRendererInterface $hostRegistryRenderer,
         private readonly EmailSenderInterface $emailSender,
-        private readonly SpreadsheetSyncInterface $spreadsheetSync,
         private readonly string $hostNotificationEmail = 'rentals@oceanviewflats.com',
         private readonly string $publicSiteUrl = 'https://oceanviewflats.com',
         ?AccessDispatchEmailRendererInterface $accessDispatchRenderer = null,
@@ -75,8 +76,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         $hostRegistryRenderer = $options['host_registry_renderer'] ?? new HostRegistryEmailRenderer();
         /** @var EmailSenderInterface $emailSender */
         $emailSender = $options['email_sender'] ?? new PhpMailSender();
-        /** @var SpreadsheetSyncInterface $spreadsheetSync */
-        $spreadsheetSync = $options['spreadsheet_sync'] ?? GoogleSheetWebhookSync::createFromEnv();
         /** @var AccessDispatchEmailRendererInterface $accessDispatchRenderer */
         $accessDispatchRenderer = $options['access_dispatch_renderer'] ?? new AccessDispatchEmailRenderer($resolvedPublicSiteUrl);
         /** @var ?CondominiumClearanceSyncInterface $clearanceSync */
@@ -95,7 +94,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             reservationRepository: $reservationRepository,
             hostRegistryRenderer: $hostRegistryRenderer,
             emailSender: $emailSender,
-            spreadsheetSync: $spreadsheetSync,
             hostNotificationEmail: $resolvedHost,
             publicSiteUrl: $resolvedPublicSiteUrl,
             accessDispatchRenderer: $accessDispatchRenderer,
@@ -232,6 +230,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
                 ipAddress: $submission->ipAddress
             );
 
+            $maskedAuditSubmission = PiiMasker::maskSubmissionArray($submission->toArray());
+
             $stmtAudit = $this->pdo->prepare("
                 INSERT INTO `admin_audit_logs` (
                     `action`, `entity_type`, `entity_id`,
@@ -243,7 +243,7 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             ");
             $stmtAudit->execute([
                 ':entity_id' => $reservation->reservationUid,
-                ':payload_after' => json_encode($submission->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                ':payload_after' => json_encode($maskedAuditSubmission, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
                 ':ip_address' => $submission->ipAddress ?? '127.0.0.1',
             ]);
 
@@ -256,29 +256,12 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         }
 
         // 7. Side effects (after commit, catching exceptions)
-        $spreadsheetSynced = false;
-        $spreadsheetError = null;
-        try {
-            $spreadsheetSynced = $this->spreadsheetSync->sync($reservation, [
-                'event' => 'guest_registry',
-                'door_code' => $doorCode,
-                'occupants' => $submission->toArray(),
-            ]);
-            if (!$spreadsheetSynced) {
-                $spreadsheetError = 'Spreadsheet synchronization returned false.';
-            }
-        } catch (Throwable $e) {
-            $spreadsheetError = $e->getMessage();
-        }
-
         $hostReportSent = false;
         try {
             $subject = $this->hostRegistryRenderer->renderSubject($submission);
             $html = $this->hostRegistryRenderer->renderHtml(
                 $submission,
-                $doorCode,
-                $spreadsheetSynced,
-                $spreadsheetError
+                $doorCode
             );
             $hostReportSent = $this->emailSender->send($this->hostNotificationEmail, $subject, $html);
         } catch (Throwable) {
@@ -338,7 +321,6 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             doorCode: $doorCode,
             guideUrl: $guideUrl,
             hostReportDispatched: $hostReportSent,
-            spreadsheetSynced: $spreadsheetSynced,
             accessDispatchDispatched: $accessDispatchSent
         );
     }
@@ -436,8 +418,7 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             reservation: $freshReservation,
             doorCode: $doorCode,
             guideUrl: $guideUrl,
-            hostReportDispatched: false,
-            spreadsheetSynced: false
+            hostReportDispatched: false
         );
     }
 
@@ -562,10 +543,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         ?string $carModel,
         ?string $ipAddress
     ): void {
-        $guestsPayloadJson = (string) json_encode(
-            array_map(fn (OccupantDetails $o): array => $o->toArray(), $occupants),
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        );
+        $occupantsArray = array_map(fn (OccupantDetails $o): array => $o->toArray(), $occupants);
+        $guestsPayloadJson = PayloadEncryptor::encrypt($occupantsArray);
 
         $stmtCheck = $this->pdo->prepare('SELECT id, car_plates, car_model FROM `guest_registries` WHERE `reservation_uid` = :uid ORDER BY `id` DESC LIMIT 1');
         $stmtCheck->execute([':uid' => $reservationUid]);
