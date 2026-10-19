@@ -15,6 +15,14 @@ import {
 import React, { useEffect, useState } from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
+import {
+	getGuidePagePath,
+	getHomePagePath,
+	getPrivacyPolicyPath,
+	IMAGES,
+	PRIVACY_POLICY_VERSION,
+	REGISTRY_GUEST_SLOTS,
+} from "../constants/config";
 import { CONDOMINIUM_PORTAL_COUNTRIES } from "../constants/countries";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
@@ -22,6 +30,9 @@ import type { AppProps } from "../types";
 export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 	const t = dict[lang];
 	const [isScrolled, setIsScrolled] = useState(false);
+	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
+	const guideHref = getGuidePagePath(lang, assetPrefix);
+	const homeHref = getHomePagePath(lang, assetPrefix);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -43,7 +54,7 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 			<header className="relative pt-32 pb-16 px-6 text-center overflow-hidden">
 				<div className="absolute inset-0 w-full h-full">
 					<img
-						src={`${assetPrefix}images/main-entrance.webp`}
+						src={`${assetPrefix}${IMAGES.mainEntrance}`}
 						alt="OceanViewFlats Beachfront Entrance"
 						className="w-full h-full object-cover"
 					/>
@@ -161,14 +172,14 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 							<div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
 								<a
 									id="btn-unlocked-guide"
-									href={`${assetPrefix}guide/${lang === "en" ? "index.html" : `${lang}.html`}`}
+									href={guideHref}
 									className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white px-8 py-3.5 rounded-full font-bold shadow-lg transition-all transform hover:scale-[1.02]"
 								>
 									<span>{t.registryBtnViewGuide}</span>
 									<ArrowRight className="w-4 h-4 ml-1" />
 								</a>
 								<a
-									href={`${assetPrefix}${lang === "en" ? "" : `${lang}.html`}`}
+									href={homeHref}
 									className="w-full sm:w-auto inline-block bg-slate-100 hover:bg-slate-200 text-slate-800 px-6 py-3.5 rounded-full font-semibold transition-all"
 								>
 									Return to Home
@@ -213,28 +224,27 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 								</h3>
 
 								{/* Pre-render 12 guest segments (up to Occupancy Override max_guests = 12). Javascript will toggle hidden states */}
-								{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+								{REGISTRY_GUEST_SLOTS.map((slot) => (
 									<div
-										key={num}
-										id={`guest-card-${num}`}
-										className={`p-5 rounded-2xl border transition-all duration-300 ${
-											num === 1
-												? "bg-slate-50/50 border-slate-200 shadow-sm"
-												: "bg-white border-slate-150 shadow-xs hidden"
-										}`}
+										key={slot.num}
+										id={`guest-card-${slot.num}`}
+										className={slot.cardClassName}
 									>
 										<div className="flex justify-between items-center mb-4">
 											<h4 className="font-bold text-slate-700 flex items-center space-x-2">
 												<User className="w-4 h-4 text-[#FF5A5F]" />
 												<span>
-													{t.registryGuestNum.replace("{num}", num.toString())}
+													{t.registryGuestNum.replace(
+														"{num}",
+														slot.num.toString(),
+													)}
 												</span>
 											</h4>
-											{num > 1 && (
+											{slot.isCompanion && (
 												<button
 													type="button"
 													onClick={() => {}} // Hooked in registry.js
-													data-remove-guest={num}
+													data-remove-guest={slot.num}
 													className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-all cursor-pointer flex items-center space-x-1 text-xs font-semibold"
 												>
 													<Trash2 className="w-3.5 h-3.5" />
@@ -247,11 +257,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* First Name */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-first-name-${num}`}
+													htmlFor={`guest-first-name-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
 													<span>{t.registryFirstName}</span>
-													{num === 1 && (
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
@@ -259,9 +269,9 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 												</label>
 												<input
 													type="text"
-													id={`guest-first-name-${num}`}
-													name={`guest_first_name_${num}`}
-													required={num === 1}
+													id={`guest-first-name-${slot.num}`}
+													name={`guest_first_name_${slot.num}`}
+													required={slot.isPrimary}
 													placeholder={t.registryPlaceholderFirstName}
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:ring-2 focus:ring-[#FF5A5F]/15 focus:outline-none transition-all text-sm text-slate-800 placeholder-slate-400 bg-white"
 												/>
@@ -270,11 +280,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Last Name */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-last-name-${num}`}
+													htmlFor={`guest-last-name-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
 													<span>{t.registryLastName}</span>
-													{num === 1 && (
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
@@ -282,9 +292,9 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 												</label>
 												<input
 													type="text"
-													id={`guest-last-name-${num}`}
-													name={`guest_last_name_${num}`}
-													required={num === 1}
+													id={`guest-last-name-${slot.num}`}
+													name={`guest_last_name_${slot.num}`}
+													required={slot.isPrimary}
 													placeholder={t.registryPlaceholderLastName}
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:ring-2 focus:ring-[#FF5A5F]/15 focus:outline-none transition-all text-sm text-slate-800 placeholder-slate-400 bg-white"
 												/>
@@ -293,12 +303,12 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Backwards-compatibility hidden name field */}
 											<input
 												type="hidden"
-												id={`guest-name-${num}`}
-												name={`guest_name_${num}`}
+												id={`guest-name-${slot.num}`}
+												name={`guest_name_${slot.num}`}
 											/>
 
 											{/* Primary Guest Email (Guest 1 only) */}
-											{num === 1 && (
+											{slot.isPrimary && (
 												<div className="flex flex-col">
 													<label
 														htmlFor="guest-email-1"
@@ -323,13 +333,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Phone Number */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-phone-${num}`}
+													htmlFor={`guest-phone-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
-													<span>
-														{num === 1 ? t.registryPhone : t.registryPhoneOpt}
-													</span>
-													{num === 1 && (
+													<span>{t[slot.phoneLabelKey]}</span>
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
@@ -337,9 +345,9 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 												</label>
 												<input
 													type="tel"
-													id={`guest-phone-${num}`}
-													name={`guest_phone_${num}`}
-													required={num === 1}
+													id={`guest-phone-${slot.num}`}
+													name={`guest_phone_${slot.num}`}
+													required={slot.isPrimary}
 													placeholder={t.registryPlaceholderPhone}
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:ring-2 focus:ring-[#FF5A5F]/15 focus:outline-none transition-all text-sm text-slate-800 placeholder-slate-400 bg-white"
 												/>
@@ -348,20 +356,20 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Country of Nationality / Residence */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-country-${num}`}
+													htmlFor={`guest-country-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
 													<span>{t.registryCountry}</span>
-													{num === 1 && (
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
 													)}
 												</label>
 												<select
-													id={`guest-country-${num}`}
-													name={`guest_country_${num}`}
-													required={num === 1}
+													id={`guest-country-${slot.num}`}
+													name={`guest_country_${slot.num}`}
+													required={slot.isPrimary}
 													defaultValue="COLOMBIA"
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:outline-none text-sm text-slate-700 bg-white cursor-pointer hover:bg-slate-50/50 transition-colors"
 												>
@@ -377,11 +385,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Age */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-age-${num}`}
+													htmlFor={`guest-age-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
 													<span>{t.registryAge}</span>
-													{num === 1 && (
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
@@ -389,11 +397,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 												</label>
 												<input
 													type="number"
-													id={`guest-age-${num}`}
-													name={`guest_age_${num}`}
+													id={`guest-age-${slot.num}`}
+													name={`guest_age_${slot.num}`}
 													min="0"
 													max="120"
-													required={num === 1}
+													required={slot.isPrimary}
 													placeholder={t.registryPlaceholderAge}
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:ring-2 focus:ring-[#FF5A5F]/15 focus:outline-none transition-all text-sm text-slate-800 placeholder-slate-400 bg-white"
 												/>
@@ -402,20 +410,20 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Document Type */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-doc-type-${num}`}
+													htmlFor={`guest-doc-type-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
 													<span>{t.registryDocType}</span>
-													{num === 1 && (
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
 													)}
 												</label>
 												<select
-													id={`guest-doc-type-${num}`}
-													name={`guest_doc_type_${num}`}
-													required={num === 1}
+													id={`guest-doc-type-${slot.num}`}
+													name={`guest_doc_type_${slot.num}`}
+													required={slot.isPrimary}
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:outline-none text-sm text-slate-700 bg-white cursor-pointer hover:bg-slate-50/50 transition-colors"
 												>
 													<option value="Passport">
@@ -445,11 +453,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 											{/* Document Number */}
 											<div className="flex flex-col">
 												<label
-													htmlFor={`guest-doc-num-${num}`}
+													htmlFor={`guest-doc-num-${slot.num}`}
 													className="text-xs font-bold text-slate-500 mb-1 flex justify-between"
 												>
 													<span>{t.registryDocNumber}</span>
-													{num === 1 && (
+													{slot.isPrimary && (
 														<span className="text-[#FF5A5F] text-[10px] uppercase font-bold tracking-wider">
 															{t.registryRequired}
 														</span>
@@ -457,9 +465,9 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 												</label>
 												<input
 													type="text"
-													id={`guest-doc-num-${num}`}
-													name={`guest_doc_num_${num}`}
-													required={num === 1}
+													id={`guest-doc-num-${slot.num}`}
+													name={`guest_doc_num_${slot.num}`}
+													required={slot.isPrimary}
 													placeholder={t.registryPlaceholderDocNumber}
 													className="px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#FF5A5F] focus:ring-2 focus:ring-[#FF5A5F]/15 focus:outline-none transition-all text-sm text-slate-800 placeholder-slate-400 bg-white"
 												/>
@@ -556,6 +564,76 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 								/>
 							</div>
 
+							{/* Reactive Minor Guardian Attestation (Ley 1581 Art. 7 & Ley 679 of 2001) */}
+							<div
+								id="minor-attestation-container"
+								className="hidden p-5 bg-amber-50/80 rounded-2xl border border-amber-200 space-y-3 transition-all duration-300"
+							>
+								<div className="flex items-center space-x-2 text-amber-800">
+									<ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+									<div className="flex flex-wrap items-center gap-2">
+										<span className="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-200/70 text-amber-900">
+											{t.registryMinorConsentBadge}
+										</span>
+										<h4 className="text-sm font-bold text-amber-950">
+											{t.registryMinorConsentTitle}
+										</h4>
+									</div>
+								</div>
+								<div className="flex items-start space-x-3 pt-1">
+									<input
+										type="checkbox"
+										id="minor-guardian-consent"
+										name="minor_guardian_consent"
+										value="1"
+										disabled
+										className="mt-1 h-4 w-4 rounded border-amber-400 text-[#FF5A5F] focus:ring-[#FF5A5F] cursor-pointer shrink-0"
+									/>
+									<label
+										htmlFor="minor-guardian-consent"
+										className="text-xs text-amber-900 leading-relaxed cursor-pointer"
+									>
+										{t.registryMinorConsentText}
+									</label>
+								</div>
+							</div>
+
+							{/* Personal Data Authorization (Ley 1581 of 2012) */}
+							<div
+								id="privacy-consent-container"
+								className="flex items-start space-x-3 p-5 bg-slate-50 rounded-2xl border border-slate-100"
+							>
+								<input
+									type="checkbox"
+									id="privacy-consent"
+									name="privacy_consent"
+									value="1"
+									required
+									className="mt-1 h-4 w-4 rounded border-slate-300 text-[#FF5A5F] focus:ring-[#FF5A5F] cursor-pointer shrink-0"
+								/>
+								<input
+									type="hidden"
+									id="privacy-policy-version"
+									name="privacy_policy_version"
+									value={PRIVACY_POLICY_VERSION}
+								/>
+								<label
+									htmlFor="privacy-consent"
+									className="text-xs text-slate-600 leading-relaxed cursor-pointer"
+								>
+									{t.registryPrivacyConsentPrefix}{" "}
+									<a
+										href={privacyHref}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="font-semibold text-[#FF5A5F] hover:text-[#FF424D] underline"
+									>
+										{t.registryPrivacyConsentLink}
+									</a>{" "}
+									{t.registryPrivacyConsentSuffix}
+								</label>
+							</div>
+
 							{/* Submit Button */}
 							<button
 								type="submit"
@@ -570,7 +648,7 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

@@ -6,12 +6,14 @@
  * @var \OceanViewFlats\Domain\Fulfillment\CondominiumClearance|null $condominiumClearance
  * @var bool|null $clearanceAlertDismissed
  * @var string $csrfToken
+ * @var string|null $currentUserRole
  * @var string $publicSiteUrl
  * @var \OceanViewFlats\Admin\Service\PublicUrlBuilder|null $urlBuilder
  */
 
 $condominiumClearance = $condominiumClearance ?? null;
 $clearanceAlertDismissed = (bool) ($clearanceAlertDismissed ?? false);
+$currentUserRole = (string) ($currentUserRole ?? 'admin');
 $urlBuilder = $urlBuilder ?? new \OceanViewFlats\Admin\Service\PublicUrlBuilder($publicSiteUrl);
 
 $refunds = $refunds ?? [];
@@ -37,9 +39,14 @@ $createdAt = (string) ($reservation['created_at'] ?? '');
 $externalConfirmationCode = (string) ($reservation['external_confirmation_code'] ?? '');
 $channelBlockUid = (string) ($reservation['channel_block_uid'] ?? '');
 $isAirbnbReservation = (strtolower((string) $source) === 'airbnb' || str_starts_with($uid, 'res-abnb-'));
+$piiRedactedAt = (string) ($reservation['pii_redacted_at'] ?? $reservation['piiRedactedAt'] ?? '');
+$isPiiRedacted = $piiRedactedAt !== '' || $guestName === 'Redacted Guest';
 
 $isConcluded = \OceanViewFlats\Domain\Reservation\Reservation::isStayConcluded($status, $checkOut);
-$isEditable = ($status === 'confirmed' && !$isConcluded);
+$isEditable = ($status === 'confirmed' && !$isConcluded && !$isPiiRedacted);
+$canRedactPii = !$isPiiRedacted
+    && ($isConcluded || $status === 'cancelled')
+    && in_array($currentUserRole, ['admin', 'superadmin'], true);
 $todayCot = (new \DateTimeImmutable('today', new \DateTimeZone('America/Bogota')))->format('Y-m-d');
 $isFutureOrActiveClearance = $status !== 'cancelled' && $checkOut !== '' && $checkOut > $todayCot;
 $canSyncClearance = $registryCompleted
@@ -136,6 +143,11 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                 Cancelled
                             </span>
                         <?php endif; ?>
+                        <?php if ($isPiiRedacted): ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300" title="PII Redacted at <?= htmlspecialchars($piiRedactedAt, ENT_QUOTES, 'UTF-8') ?>">
+                                PII Redacted
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <h2 class="text-lg font-bold text-gray-900 mt-1" id="slide-over-title">
                         <?= htmlspecialchars($guestName, ENT_QUOTES, 'UTF-8') ?>
@@ -159,7 +171,35 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                 
                 <!-- 1. Guest & Contact -->
                 <div class="space-y-3 pt-1">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Primary Guest</h3>
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Primary Guest</h3>
+                        <?php if ($isPiiRedacted): ?>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <span>PII Redacted<?= $piiRedactedAt !== '' ? ' · ' . htmlspecialchars($piiRedactedAt, ENT_QUOTES, 'UTF-8') : '' ?></span>
+                            </span>
+                        <?php elseif ($canRedactPii): ?>
+                            <form method="POST"
+                                  action="/reservations/<?= urlencode($uid) ?>/redact-pii"
+                                  hx-post="/reservations/<?= urlencode($uid) ?>/redact-pii"
+                                  hx-target="#drawer-container"
+                                  hx-swap="innerHTML"
+                                  hx-confirm="Are you sure you want to permanently redact all guest PII for this reservation under Ley 1581? Financial and occupancy records will be preserved."
+                                  hx-headers='{"X-CSRF-Token": "<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>"}'
+                                  class="inline">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                <button type="submit"
+                                        class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition cursor-pointer">
+                                    <svg class="w-3.5 h-3.5 mr-1 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Redact Guest PII (Ley 1581)
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
                     <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50/80 p-4 rounded-xl border border-gray-100">
                         <div>
                             <span class="block text-xs text-gray-500">Full Name</span>

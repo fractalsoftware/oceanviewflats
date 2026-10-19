@@ -807,7 +807,7 @@ final class DashboardQueryServiceTest extends TestCase
             channelSyncService: $syncService
         );
 
-        $summary = $service->getDaySummary('2026-10-18', '1606');
+        $summary = $service->getDaySummary('2026-10-18', '1606', new DateTimeImmutable('2026-10-16'));
 
         $this->assertTrue($summary->hasTurnover);
         $this->assertTrue($summary->hasWarning); // Arriving guest has incomplete registry

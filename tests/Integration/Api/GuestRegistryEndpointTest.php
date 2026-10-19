@@ -73,6 +73,10 @@ final class GuestRegistryEndpointTest extends TestCase
                 registry_completed_at TEXT,
                 door_code TEXT,
                 max_guests INTEGER NOT NULL DEFAULT 6,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -88,6 +92,11 @@ final class GuestRegistryEndpointTest extends TestCase
                 car_plates TEXT,
                 car_model TEXT,
                 ip_address TEXT,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                minor_guardian_consent INTEGER NOT NULL DEFAULT 0,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -192,6 +201,8 @@ final class GuestRegistryEndpointTest extends TestCase
             'guest_doc_num_2' => 'US87654321',
             'car_plates' => 'ABC-123',
             'car_model' => 'Mazda CX-5',
+            'privacy_consent' => '1',
+            'privacy_policy_version' => '2026-10',
             'lang' => 'en',
         ], $captcha, $overrides);
     }
@@ -315,13 +326,11 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertTrue($res['json']['success']);
         $this->assertSame('Guest registration completed successfully.', $res['json']['message']);
 
-        // Validate Door PIN format per ADR 0001
+        // Validate Door PIN format per ADR 0001 & ADR 0012 (cryptographically random 0XXXXXX#)
         $doorCode = $res['json']['door_code'] ?? null;
         $this->assertIsString($doorCode);
         $this->assertStringEndsWith('#', $doorCode);
-        $this->assertMatchesRegularExpression('/^[0-9]{4,10}#$/', $doorCode);
-        // Primary doc "US12345678" -> last 6 digits "345678" -> padded with leading 0 -> "0345678#"
-        $this->assertSame('0345678#', $doorCode);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $doorCode);
 
         // Guide URL
         $guideUrl = $res['json']['guide_url'] ?? null;
@@ -339,10 +348,10 @@ final class GuestRegistryEndpointTest extends TestCase
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame(1, (int) $row['registry_completed']);
-        $this->assertSame('0345678#', $row['door_code']);
+        $this->assertSame($doorCode, $row['door_code']);
         $this->assertNotNull($row['registry_completed_at']);
 
-        // Verify guest_registries table entry
+        // Verify guest_registries table entry (encrypted at rest per ADR 0012)
         $stmtReg = $this->pdo->prepare('SELECT * FROM guest_registries WHERE reservation_uid = :uid');
         $stmtReg->execute([':uid' => 'ovf_conf_100']);
         $reg = $stmtReg->fetch();
@@ -354,9 +363,13 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame('ABC-123', $reg['car_plates']);
         $this->assertSame('Mazda CX-5', $reg['car_model']);
         $this->assertSame('127.0.0.1', $reg['ip_address']);
+        $this->assertSame('2026-10', $reg['privacy_policy_version']);
+        $this->assertNotEmpty($reg['privacy_consent_at']);
+        $this->assertSame('127.0.0.1', $reg['privacy_consent_ip']);
+        $this->assertSame(0, (int) $reg['minor_guardian_consent']);
 
-        $occupantsPayload = json_decode((string) $reg['guests_payload'], true);
-        $this->assertIsArray($occupantsPayload);
+        $this->assertTrue(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope((string) $reg['guests_payload']));
+        $occupantsPayload = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $reg['guests_payload']);
         $this->assertCount(2, $occupantsPayload);
         $this->assertSame('Maria Gomez', $occupantsPayload[0]['name']);
         $this->assertSame('US12345678', $occupantsPayload[0]['doc_num']);
@@ -388,6 +401,8 @@ final class GuestRegistryEndpointTest extends TestCase
                     'doc_num' => 'US12345678',
                 ],
             ],
+            'privacy_consent' => '1',
+            'privacy_policy_version' => '2026-10',
             'lang' => 'es',
         ], $captcha);
 
@@ -418,7 +433,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
         $this->assertSame('ovf_conf_100', $res['json']['reservation_code']);
-        $this->assertSame('0345678#', $res['json']['door_code']);
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $res['json']['door_code']);
     }
 
     public function testInvalidSubmissionRejectsZeroOccupantsWith400(): void
@@ -739,7 +754,8 @@ PHP;
         $this->assertSame(200, $res['statusCode']);
         $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
-        $this->assertSame('0345678#', $res['json']['door_code']);
+        $doorCode = (string) ($res['json']['door_code'] ?? '');
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $doorCode);
 
         $this->assertFileExists($logFile);
         $sentMessages = json_decode((string) file_get_contents($logFile), true);
@@ -756,7 +772,7 @@ PHP;
         $guestEmail = $sentMessages[1];
         $this->assertSame('maria.gomez@example.com', $guestEmail['to']);
         $this->assertStringContainsString('Access Credentials & Arrival Guide', $guestEmail['subject']);
-        $this->assertStringContainsString('0345678#', $guestEmail['htmlBody']);
+        $this->assertStringContainsString($doorCode, $guestEmail['htmlBody']);
         $this->assertStringContainsString('Maria Gomez', $guestEmail['htmlBody']);
         $this->assertStringContainsString('/guide/index.html?code=ovf_conf_100', $guestEmail['htmlBody']);
     }
@@ -788,7 +804,8 @@ PHP;
         $this->assertSame(200, $res['statusCode']);
         $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
-        $this->assertSame('0345678#', $res['json']['door_code']);
+        $doorCode = (string) ($res['json']['door_code'] ?? '');
+        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $doorCode);
 
         // Assert database was still updated
         $stmt = $this->pdo->prepare('SELECT * FROM reservations WHERE reservation_uid = :uid');
@@ -796,7 +813,7 @@ PHP;
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame(1, (int) $row['registry_completed']);
-        $this->assertSame('0345678#', $row['door_code']);
+        $this->assertSame($doorCode, $row['door_code']);
     }
 
     public function testRegistryEndpointAcceptsStructuredGuestFields(): void
@@ -825,6 +842,9 @@ PHP;
             'guest_doc_num_2' => 'TI11223344',
             'car_plates' => 'COL-999',
             'car_model' => 'Renault Duster',
+            'privacy_consent' => '1',
+            'minor_guardian_consent' => '1',
+            'privacy_policy_version' => '2026-10',
             'lang' => 'es',
         ], $captcha);
 
@@ -836,13 +856,13 @@ PHP;
         $this->assertTrue($res['json']['success']);
         $this->assertArrayHasKey('door_code', $res['json']);
 
-        // Check occupants in SQLite database
+        // Check occupants in SQLite database (encrypted at rest per ADR 0012)
         $stmt = $this->pdo->prepare('SELECT guests_payload FROM guest_registries WHERE reservation_uid = :uid');
         $stmt->execute([':uid' => 'ovf_conf_100']);
         $jsonStr = $stmt->fetchColumn();
         $this->assertIsString($jsonStr);
-        $occupants = json_decode($jsonStr, true);
-        $this->assertIsArray($occupants);
+        $this->assertTrue(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope($jsonStr));
+        $occupants = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt($jsonStr);
         $this->assertCount(2, $occupants);
         $this->assertSame('Lucia Mendez', $occupants[0]['name']);
         $this->assertSame('+57 312 456 7890', $occupants[0]['phone']);
@@ -993,6 +1013,7 @@ PHP;
         $sevenData['guest_count'] = 7;
         $sevenData['guest_email_1'] = 'maria@example.com';
         $sevenData['guest_phone_1'] = '+573001234567';
+        $sevenData['privacy_consent'] = '1';
         for ($i = 1; $i <= 7; $i++) {
             $sevenData["guest_first_name_{$i}"] = "First{$i}";
             $sevenData["guest_last_name_{$i}"] = "Last{$i}";
@@ -1015,6 +1036,7 @@ PHP;
         $nineData['guest_count'] = 9;
         $nineData['guest_email_1'] = 'group8@example.com';
         $nineData['guest_phone_1'] = '+573001234567';
+        $nineData['privacy_consent'] = '1';
         for ($i = 1; $i <= 9; $i++) {
             $nineData["guest_first_name_{$i}"] = "First{$i}";
             $nineData["guest_last_name_{$i}"] = "Last{$i}";
@@ -1037,6 +1059,7 @@ PHP;
         $twelveData['guest_count'] = 12;
         $twelveData['guest_email_1'] = 'group12@example.com';
         $twelveData['guest_phone_1'] = '+573001234567';
+        $twelveData['privacy_consent'] = '1';
         for ($i = 1; $i <= 12; $i++) {
             $twelveData["guest_first_name_{$i}"] = "First{$i}";
             $twelveData["guest_last_name_{$i}"] = "Last{$i}";
@@ -1054,7 +1077,7 @@ PHP;
         $regRow12 = $stmtReg12->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($regRow12);
         $this->assertSame(12, (int) $regRow12['guest_count']);
-        $decoded12 = json_decode((string) $regRow12['guests_payload'], true);
+        $decoded12 = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $regRow12['guests_payload']);
         $this->assertCount(12, $decoded12);
 
         // 4. Reject re-submission once registry_completed = 1
@@ -1062,6 +1085,84 @@ PHP;
         $this->assertSame(400, $resubmit['statusCode']);
         $this->assertFalse($resubmit['json']['success']);
         $this->assertContains('Guest registry has already been completed for this reservation.', $resubmit['json']['errors']);
+    }
+
+    public function testRegistryEndpointRejectsMissingOrFalsePrivacyConsentWith400(): void
+    {
+        // 1. Omitted privacy_consent
+        $missingConsent = $this->createValidRegistryData();
+        unset($missingConsent['privacy_consent']);
+
+        $resMissing = $this->callRegistryEndpoint($missingConsent);
+        $this->assertSame(400, $resMissing['statusCode']);
+        $this->assertIsArray($resMissing['json']);
+        $this->assertFalse($resMissing['json']['success']);
+        $this->assertSame('Personal data processing authorization is required.', $resMissing['json']['error']);
+
+        // 2. False privacy_consent in Spanish
+        $falseConsentEs = $this->createValidRegistryData([
+            'privacy_consent' => '0',
+            'lang' => 'es',
+        ]);
+        $resEs = $this->callRegistryEndpoint($falseConsentEs);
+        $this->assertSame(400, $resEs['statusCode']);
+        $this->assertIsArray($resEs['json']);
+        $this->assertFalse($resEs['json']['success']);
+        $this->assertSame('Se requiere la autorización para el tratamiento de datos personales.', $resEs['json']['error']);
+    }
+
+    public function testRegistryEndpointEnforcesMinorGuardianAttestationAndPersistsProof(): void
+    {
+        // 1. Reject minor by age (< 18) when minor_guardian_consent is omitted
+        $minorByAge = $this->createValidRegistryData([
+            'guest_age_2' => 11,
+            'guest_doc_type_2' => 'Passport',
+        ]);
+        $resAge = $this->callRegistryEndpoint($minorByAge);
+        $this->assertSame(400, $resAge['statusCode']);
+        $this->assertIsArray($resAge['json']);
+        $this->assertFalse($resAge['json']['success']);
+        $this->assertSame(
+            'Parental authority or legal guardian attestation is required when registering minors under 18.',
+            $resAge['json']['error']
+        );
+
+        // 2. Reject minor by document type (Tarjeta de Identidad / Registro Civil) even when age >= 18
+        $minorByDoc = $this->createValidRegistryData([
+            'guest_age_2' => 18,
+            'guest_doc_type_2' => 'Registro Civil',
+            'lang' => 'es',
+        ]);
+        $resDoc = $this->callRegistryEndpoint($minorByDoc);
+        $this->assertSame(400, $resDoc['statusCode']);
+        $this->assertIsArray($resDoc['json']);
+        $this->assertFalse($resDoc['json']['success']);
+        $this->assertSame(
+            'Se requiere la declaración de patria potestad o representación legal cuando se registran menores de 18 años.',
+            $resDoc['json']['error']
+        );
+
+        // 3. Accept minor when minor_guardian_consent = '1' and persist proof in guest_registries
+        $validMinor = $this->createValidRegistryData([
+            'guest_age_2' => 11,
+            'guest_doc_type_2' => 'Tarjeta de Identidad',
+            'privacy_consent' => '1',
+            'minor_guardian_consent' => '1',
+            'privacy_policy_version' => '2026-10',
+        ]);
+        $resOk = $this->callRegistryEndpoint($validMinor, 'POST', ['REMOTE_ADDR' => '190.85.10.22']);
+        $this->assertSame(200, $resOk['statusCode']);
+        $this->assertIsArray($resOk['json']);
+        $this->assertTrue($resOk['json']['success']);
+
+        $stmt = $this->pdo->prepare('SELECT * FROM guest_registries WHERE reservation_uid = :uid');
+        $stmt->execute([':uid' => 'ovf_conf_100']);
+        $reg = $stmt->fetch(PDO::FETCH_ASSOC);
+        $this->assertIsArray($reg);
+        $this->assertSame('2026-10', $reg['privacy_policy_version']);
+        $this->assertNotEmpty($reg['privacy_consent_at']);
+        $this->assertSame('190.85.10.22', $reg['privacy_consent_ip']);
+        $this->assertSame(1, (int) $reg['minor_guardian_consent']);
     }
 
     /**

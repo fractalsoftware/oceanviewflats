@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
 	BASE_URL,
 	getClientDictionaryForPage,
+	getClientExtraConfigForPage,
 	getHrefLangTags,
 	LANGUAGES,
 	type PageConfig,
@@ -140,6 +141,7 @@ pages.forEach((page) => {
 			lang,
 			assetPrefix,
 			apiBase,
+			...getClientExtraConfigForPage(page.id),
 			i18n: i18nSlice,
 		};
 

@@ -13,6 +13,8 @@ use OceanViewFlats\Domain\Reservation\ReservationNotFoundException;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 use OceanViewFlats\Domain\Reservation\Search\PdoReservationSearchAdapter;
 use OceanViewFlats\Domain\Reservation\Search\ReservationSearchInterface;
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
+use OceanViewFlats\Domain\Security\PiiMasker;
 use PDO;
 use Throwable;
 
@@ -116,11 +118,7 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             throw new GuestRegistryRequiredException("Guest registry must be submitted before condominium clearance can be synced for reservation: {$reservationUid}");
         }
 
-        $guests = $registry['guests_payload'] ?? [];
-        if (is_string($guests)) {
-            $decoded = json_decode($guests, true);
-            $guests = is_array($decoded) ? $decoded : [];
-        }
+        $guests = PayloadEncryptor::decrypt($registry['guests_payload'] ?? []);
 
         $carPlates = isset($registry['car_plates']) && trim((string) $registry['car_plates']) !== ''
             ? trim((string) $registry['car_plates'])
@@ -329,9 +327,19 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             'covid10' => $covid,
         ];
 
+        $maskedStep2Payload = $step2Payload;
+        $maskedStep2Payload['ide'] = array_map(
+            static fn (string $docNum): string => PiiMasker::maskDocNumber($docNum),
+            $ide
+        );
+        $maskedStep2Payload['phone'] = array_map(
+            static fn (string $p): string => (string) PiiMasker::maskPhone($p),
+            $phone
+        );
+
         $fullPayload = [
             'step1' => $step1Payload,
-            'step2' => $step2Payload,
+            'step2' => $maskedStep2Payload,
         ];
 
         try {

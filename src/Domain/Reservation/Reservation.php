@@ -21,6 +21,7 @@ final class Reservation
     public const DEFAULT_MAX_GUESTS = 6;
     public const MIN_MAX_GUESTS = 1;
     public const MAX_MAX_GUESTS = 12;
+    public const DEFAULT_PRIVACY_POLICY_VERSION = '2026-10';
 
     /**
      * @internal Hydrated exclusively by ReservationPersistencePort and repositories. For new reservation creation, use ReservationDraft and ReservationLifecycleEngineInterface.
@@ -52,7 +53,11 @@ final class Reservation
         public readonly float $refundedAmount = 0.0,
         public readonly ?string $externalConfirmationCode = null,
         public readonly ?string $channelBlockUid = null,
-        public readonly int $maxGuests = self::DEFAULT_MAX_GUESTS
+        public readonly int $maxGuests = self::DEFAULT_MAX_GUESTS,
+        public readonly ?string $privacyPolicyVersion = null,
+        public readonly ?DateTimeImmutable $privacyConsentAt = null,
+        public readonly ?string $privacyConsentIp = null,
+        public readonly ?DateTimeImmutable $piiRedactedAt = null
     ) {
         if ($this->reservationUid === '') {
             throw new InvalidArgumentException('Reservation UID cannot be empty');
@@ -102,7 +107,11 @@ final class Reservation
         float $refundedAmount = 0.0,
         ?string $externalConfirmationCode = null,
         ?string $channelBlockUid = null,
-        int $maxGuests = self::DEFAULT_MAX_GUESTS
+        int $maxGuests = self::DEFAULT_MAX_GUESTS,
+        ?string $privacyPolicyVersion = null,
+        ?DateTimeImmutable $privacyConsentAt = null,
+        ?string $privacyConsentIp = null,
+        ?DateTimeImmutable $piiRedactedAt = null
     ): self {
         return new self(
             reservationUid: $reservationUid,
@@ -131,7 +140,11 @@ final class Reservation
             refundedAmount: $refundedAmount,
             externalConfirmationCode: $externalConfirmationCode,
             channelBlockUid: $channelBlockUid,
-            maxGuests: $maxGuests
+            maxGuests: $maxGuests,
+            privacyPolicyVersion: $privacyPolicyVersion,
+            privacyConsentAt: $privacyConsentAt,
+            privacyConsentIp: $privacyConsentIp,
+            piiRedactedAt: $piiRedactedAt
         );
     }
 
@@ -182,6 +195,32 @@ final class Reservation
             ? (int) $maxGuestsRaw
             : self::DEFAULT_MAX_GUESTS;
 
+        $privacyConsentAtRaw = $data['privacy_consent_at'] ?? $data['privacyConsentAt'] ?? null;
+        $privacyConsentAt = null;
+        if ($privacyConsentAtRaw instanceof DateTimeImmutable) {
+            $privacyConsentAt = $privacyConsentAtRaw;
+        } elseif (is_string($privacyConsentAtRaw) && $privacyConsentAtRaw !== '') {
+            $privacyConsentAt = new DateTimeImmutable($privacyConsentAtRaw);
+        }
+
+        $piiRedactedAtRaw = $data['pii_redacted_at'] ?? $data['piiRedactedAt'] ?? null;
+        $piiRedactedAt = null;
+        if ($piiRedactedAtRaw instanceof DateTimeImmutable) {
+            $piiRedactedAt = $piiRedactedAtRaw;
+        } elseif (is_string($piiRedactedAtRaw) && $piiRedactedAtRaw !== '') {
+            $piiRedactedAt = new DateTimeImmutable($piiRedactedAtRaw);
+        }
+
+        $privacyPolicyVersionRaw = $data['privacy_policy_version'] ?? $data['privacyPolicyVersion'] ?? null;
+        $privacyPolicyVersion = ($privacyPolicyVersionRaw !== null && (string) $privacyPolicyVersionRaw !== '')
+            ? (string) $privacyPolicyVersionRaw
+            : null;
+
+        $privacyConsentIpRaw = $data['privacy_consent_ip'] ?? $data['privacyConsentIp'] ?? null;
+        $privacyConsentIp = ($privacyConsentIpRaw !== null && (string) $privacyConsentIpRaw !== '')
+            ? (string) $privacyConsentIpRaw
+            : null;
+
         return new self(
             reservationUid: (string) ($data['reservation_uid'] ?? $data['reservationUid'] ?? ''),
             propertyId: (string) ($data['property_id'] ?? $data['propertyId'] ?? ''),
@@ -225,7 +264,11 @@ final class Reservation
             channelBlockUid: isset($data['channel_block_uid']) || isset($data['channelBlockUid'])
                 ? (string) ($data['channel_block_uid'] ?? $data['channelBlockUid'])
                 : null,
-            maxGuests: $maxGuests
+            maxGuests: $maxGuests,
+            privacyPolicyVersion: $privacyPolicyVersion,
+            privacyConsentAt: $privacyConsentAt,
+            privacyConsentIp: $privacyConsentIp,
+            piiRedactedAt: $piiRedactedAt
         );
     }
 
@@ -430,7 +473,11 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $this->maxGuests
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -468,7 +515,11 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $this->maxGuests
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -504,7 +555,11 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $this->maxGuests
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -540,7 +595,11 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $this->maxGuests
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -582,7 +641,11 @@ final class Reservation
             refundedAmount: $newRefundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $this->maxGuests
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -618,7 +681,11 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $this->maxGuests
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -654,7 +721,11 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $this->externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $maxGuests
+            maxGuests: $maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
         );
     }
 
@@ -705,7 +776,61 @@ final class Reservation
             refundedAmount: $this->refundedAmount,
             externalConfirmationCode: $externalConfirmationCode,
             channelBlockUid: $this->channelBlockUid,
-            maxGuests: $maxGuests
+            maxGuests: $maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $this->piiRedactedAt
+        );
+    }
+
+    /**
+     * Identifies whether guest PII has been redacted for this reservation (ADR 0012).
+     */
+    public function isPiiRedacted(): bool
+    {
+        return $this->piiRedactedAt !== null || $this->guestName === 'Redacted Guest';
+    }
+
+    /**
+     * Creates an updated clone with personal identification and contact details scrubbed (ADR 0012).
+     */
+    public function withPiiRedacted(?DateTimeImmutable $redactedAt = null): self
+    {
+        $timestamp = $redactedAt ?? $this->piiRedactedAt ?? new DateTimeImmutable();
+
+        return new self(
+            reservationUid: $this->reservationUid,
+            propertyId: $this->propertyId,
+            guestName: 'Redacted Guest',
+            guestEmail: 'redacted@oceanviewflats.local',
+            guestPhone: 'REDACTED',
+            checkIn: $this->checkIn,
+            checkOut: $this->checkOut,
+            totalPrice: $this->totalPrice,
+            status: $this->status,
+            paymentMethodId: $this->paymentMethodId,
+            id: $this->id,
+            mercadopagoPreferenceId: $this->mercadopagoPreferenceId,
+            mercadopagoPaymentId: $this->mercadopagoPaymentId,
+            paymentStatus: $this->paymentStatus,
+            paymentDetail: $this->paymentDetail,
+            lang: $this->lang,
+            createdAt: $this->createdAt,
+            updatedAt: $timestamp,
+            registryCompleted: $this->registryCompleted,
+            registryCompletedAt: $this->registryCompletedAt,
+            doorCode: null,
+            source: $this->source,
+            notes: null,
+            refundedAmount: $this->refundedAmount,
+            externalConfirmationCode: $this->externalConfirmationCode,
+            channelBlockUid: $this->channelBlockUid,
+            maxGuests: $this->maxGuests,
+            privacyPolicyVersion: $this->privacyPolicyVersion,
+            privacyConsentAt: $this->privacyConsentAt,
+            privacyConsentIp: $this->privacyConsentIp,
+            piiRedactedAt: $timestamp
         );
     }
 
@@ -740,6 +865,10 @@ final class Reservation
             'external_confirmation_code' => $this->externalConfirmationCode,
             'channel_block_uid' => $this->channelBlockUid,
             'max_guests' => $this->maxGuests,
+            'privacy_policy_version' => $this->privacyPolicyVersion,
+            'privacy_consent_at' => $this->privacyConsentAt?->format('Y-m-d H:i:s'),
+            'privacy_consent_ip' => $this->privacyConsentIp,
+            'pii_redacted_at' => $this->piiRedactedAt?->format('Y-m-d H:i:s'),
             'created_at' => $this->createdAt?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updatedAt?->format('Y-m-d H:i:s'),
         ];

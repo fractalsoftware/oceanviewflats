@@ -536,6 +536,68 @@ final class ReservationSearchTest extends TestCase
         $this->assertSame([], $adapter->findRefunds('non_existent'));
     }
 
+    public function testFindGuestRegistryTransparentlyDecryptsEncryptedEnvelopeAndReadsLegacyPlaintext(): void
+    {
+        $pdo = $this->createSqlitePdo();
+        $adapter = new PdoReservationSearchAdapter($pdo);
+
+        $encryptedPayload = \OceanViewFlats\Domain\Security\PayloadEncryptor::encrypt([
+            [
+                'index' => 1,
+                'name' => 'Elena Gomez',
+                'doc_type' => 'Passport',
+                'doc_num' => 'US99887766',
+                'age' => 34,
+                'country' => 'COLOMBIA',
+                'email' => 'elena@example.com',
+                'phone' => '+57 300 111 2233',
+            ],
+        ]);
+
+        $stmt = $pdo->prepare('
+            INSERT INTO guest_registries (
+                reservation_uid, property_id, check_in, check_out, guest_count, guests_payload
+            ) VALUES (
+                :uid, :prop, :in, :out, :cnt, :payload
+            )
+        ');
+        $stmt->execute([
+            ':uid' => 'ovf_encrypted_reg',
+            ':prop' => '1606',
+            ':in' => '2026-12-01',
+            ':out' => '2026-12-05',
+            ':cnt' => 1,
+            ':payload' => $encryptedPayload,
+        ]);
+
+        // Verify raw SQL stores ciphertext envelope without plaintext doc_num
+        $rawInDb = (string) $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'ovf_encrypted_reg'")->fetchColumn();
+        $this->assertStringContainsString('"_encrypted":true', $rawInDb);
+        $this->assertStringNotContainsString('US99887766', $rawInDb);
+
+        // Verify findGuestRegistry transparently decrypts
+        $found = $adapter->findGuestRegistry('ovf_encrypted_reg');
+        $this->assertNotNull($found);
+        $this->assertIsArray($found['guests_payload']);
+        $this->assertCount(1, $found['guests_payload']);
+        $this->assertSame('Elena Gomez', $found['guests_payload'][0]['name']);
+        $this->assertSame('US99887766', $found['guests_payload'][0]['doc_num']);
+
+        // Verify InMemoryReservationSearchAdapter also decrypts encrypted envelopes
+        $inMem = new InMemoryReservationSearchAdapter(
+            guestRegistries: [
+                'ovf_encrypted_reg' => [
+                    'reservation_uid' => 'ovf_encrypted_reg',
+                    'guest_count' => 1,
+                    'guests_payload' => $encryptedPayload,
+                ],
+            ]
+        );
+        $foundInMem = $inMem->findGuestRegistry('ovf_encrypted_reg');
+        $this->assertNotNull($foundInMem);
+        $this->assertSame('US99887766', $foundInMem['guests_payload'][0]['doc_num']);
+    }
+
     public function testSearchByExternalConfirmationCode(): void
     {
         $pdo = $this->createSqlitePdo();

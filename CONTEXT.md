@@ -271,6 +271,26 @@ _Avoid_: Registration ID, External Consecutivo, Booking Voucher Number
 
 ### Administration & Operations
 
+**Data Controller**:
+The legal entity and registered tourism operator (OceanViewFlats — Manuel Enrique Herrera, RNT #268781 and RNT #270413) legally responsible for determining the purposes and means of processing personal data under Colombian Statutory Law 1581 of 2012.
+_Avoid_: Data Owner, Privacy Admin, Site Operator, Processor
+
+**Personal Data Authorization**:
+The prior, express, and informed consent granted by a Primary Guest or prospective visitor authorizing the collection, storage, use, and statutory transmission of personal data under the Data Processing Policy, recorded with an immutable timestamp, policy version, and client IP address.
+_Avoid_: Terms Acceptance, Privacy Checkbox, GDPR Consent, Opt-in
+
+**Data Processing Policy**:
+The authoritative public legal document (*Política de Tratamiento de Datos Personales*) defining the Data Controller's identity, processing purposes, data transfers, retention periods, and procedures for exercising Habeas Data rights under Colombian Law 1581 of 2012 and Decree 1377 of 2013.
+_Avoid_: Terms of Service, Legal Disclaimer, Cookie Policy
+
+**Minor Guardian Attestation**:
+The mandatory declaration by the Primary Guest confirming parental authority (*patria potestad*) or written legal representation when registering any Guest under 18 years of age or bearing a minor identification document, enforcing Colombian Law 1581 of 2012 (Art. 7) and ESCNNA hospitality prevention statutes (Law 679 of 2001).
+_Avoid_: Child Waiver, Age Checkbox, Minor Release
+
+**PII Redaction**:
+The irreversible replacement or masking of personal identification documents, contact details, and vehicle records across secondary logs, emails, or concluded stays once their operational and statutory retention purpose has expired or upon a valid suppression request.
+_Avoid_: Record Deletion, Hard Delete, Data Wipe
+
 **Admin Console**:
 The isolated administrative web application (`admin.oceanviewflats.com`) through which Admin Users manage Reservations, Seasonal Rate Tiers, Maintenance Blocks, Channel Sync, Operational Expenses, Financial Reports, and Audit Logs.
 _Avoid_: Admin Platform, Admin Portal, Backoffice, Control Panel

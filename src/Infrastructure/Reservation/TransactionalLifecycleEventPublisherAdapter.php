@@ -54,7 +54,6 @@ final class TransactionalLifecycleEventPublisherAdapter implements LifecycleEven
                             'errors' => $result->errors,
                             'guest_email_sent' => $result->isGuestEmailSent,
                             'host_email_sent' => $result->isHostEmailSent,
-                            'spreadsheet_synced' => $result->isSpreadsheetSynced,
                         ],
                         actor: $event->actorContext
                     );

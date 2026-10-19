@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Reservation;
 
+use DateTimeImmutable;
+
 /**
  * Request DTO to place a temporary concurrency-safe hold for direct web checkout.
  */
@@ -19,7 +21,10 @@ final class DirectHoldRequest
         public readonly ?string $reservationUid = null,
         public readonly ?ActorContext $actor = null,
         public readonly ?string $notes = null,
-        public readonly ?DraftPaymentDetails $payment = null
+        public readonly ?DraftPaymentDetails $payment = null,
+        public readonly ?string $privacyPolicyVersion = null,
+        public readonly ?DateTimeImmutable $privacyConsentAt = null,
+        public readonly ?string $privacyConsentIp = null
     ) {
     }
 
@@ -33,7 +38,10 @@ final class DirectHoldRequest
         ?string $reservationUid = null,
         ?ActorContext $actor = null,
         ?string $notes = null,
-        ?DraftPaymentDetails $payment = null
+        ?DraftPaymentDetails $payment = null,
+        ?string $privacyPolicyVersion = null,
+        ?DateTimeImmutable $privacyConsentAt = null,
+        ?string $privacyConsentIp = null
     ): self {
         return new self(
             $propertyId,
@@ -45,7 +53,10 @@ final class DirectHoldRequest
             $reservationUid,
             $actor,
             $notes,
-            $payment
+            $payment,
+            $privacyPolicyVersion,
+            $privacyConsentAt,
+            $privacyConsentIp
         );
     }
 }

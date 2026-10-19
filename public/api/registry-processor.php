@@ -65,6 +65,7 @@ $data = $sanitizedData;
 
 // Validate language and load translations
 $lang = get_validated_lang((string) ($data['lang'] ?? ''));
+$data['lang'] = $lang;
 $allTranslations = require __DIR__ . '/translations.php';
 $t = $allTranslations[$lang]['registry'] ?? $allTranslations['en']['registry'];
 $successMessage = $t['msg_success'] ?? 'Registration successfully processed.';

@@ -18,13 +18,9 @@ $guestPhone = (string) ($reservation['guest_phone'] ?? '');
 
 $guestsPayload = [];
 if ($registry !== null) {
-    if (is_array($registry['guests_payload'] ?? null)) {
-        $guestsPayload = $registry['guests_payload'];
-    } elseif (is_string($registry['guests_payload'] ?? null)) {
-        $decoded = json_decode($registry['guests_payload'], true);
-        if (is_array($decoded)) {
-            $guestsPayload = $decoded;
-        }
+    $rawPayload = $registry['guests_payload'] ?? null;
+    if (is_array($rawPayload) || is_string($rawPayload)) {
+        $guestsPayload = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt($rawPayload);
     }
 }
 $registryCompleted = (int) ($reservation['registry_completed'] ?? 0) === 1 && $registry !== null && count($guestsPayload) > 0;

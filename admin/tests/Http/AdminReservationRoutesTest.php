@@ -956,8 +956,8 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertSame(2, (int) $regRow['guest_count']);
         $this->assertSame('KLM-987', $regRow['car_plates']);
         $this->assertSame('Toyota Corolla Cross', $regRow['car_model']);
-        $payload = json_decode((string) $regRow['guests_payload'], true);
-        $this->assertIsArray($payload);
+        $this->assertTrue(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope((string) $regRow['guests_payload']));
+        $payload = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $regRow['guests_payload']);
         $this->assertCount(2, $payload);
         $this->assertSame('Camila Vargas', $payload[0]['name']);
         $this->assertSame('camila.verified@gmail.com', $payload[0]['email']);
@@ -1081,8 +1081,7 @@ final class AdminReservationRoutesTest extends TestCase
         $regRow = $stmtReg->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($regRow);
         $this->assertSame(8, (int) $regRow['guest_count']);
-        $guestsDecoded = json_decode((string) $regRow['guests_payload'], true);
-        $this->assertIsArray($guestsDecoded);
+        $guestsDecoded = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $regRow['guests_payload']);
         $this->assertCount(8, $guestsDecoded);
 
         // 2. Submitting an invalid Guest row (e.g. invalid doc_num < 2 chars or invalid age > 120) returns 422 and preserves input
@@ -1175,8 +1174,7 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertSame(2, (int) $regRow['guest_count']);
         $this->assertSame('NEW-222', $regRow['car_plates']);
         $this->assertSame('Mazda CX-5', $regRow['car_model']);
-        $payload = json_decode((string) $regRow['guests_payload'], true);
-        $this->assertIsArray($payload);
+        $payload = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $regRow['guests_payload']);
         $this->assertCount(2, $payload);
         $this->assertSame(1, $payload[0]['index']);
         $this->assertSame('Ana Perez', $payload[0]['name']);

@@ -698,7 +698,6 @@ final class SpyBookingFulfillment implements BookingFulfillmentInterface
         return new FulfillmentResult(
             isGuestEmailSent: true,
             isHostEmailSent: true,
-            isSpreadsheetSynced: true,
             errors: []
         );
     }

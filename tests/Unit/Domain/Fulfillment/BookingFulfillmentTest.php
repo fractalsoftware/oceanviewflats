@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\ConfirmationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\InMemoryEmailSender;
-use OceanViewFlats\Domain\Fulfillment\InMemorySpreadsheetSync;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationStatus;
 use PHPUnit\Framework\TestCase;
@@ -16,18 +15,15 @@ use PHPUnit\Framework\TestCase;
 final class BookingFulfillmentTest extends TestCase
 {
     private InMemoryEmailSender $emailSender;
-    private InMemorySpreadsheetSync $spreadsheetSync;
     private ConfirmationEmailRenderer $renderer;
     private BookingFulfillment $fulfillment;
 
     protected function setUp(): void
     {
         $this->emailSender = new InMemoryEmailSender();
-        $this->spreadsheetSync = new InMemorySpreadsheetSync();
         $this->renderer = new ConfirmationEmailRenderer('https://www.oceanviewflats.com');
         $this->fulfillment = new BookingFulfillment(
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             renderer: $this->renderer,
             hostEmail: 'host@oceanviewflats.com'
         );
@@ -65,7 +61,6 @@ final class BookingFulfillmentTest extends TestCase
         $this->assertTrue($result->isSuccess());
         $this->assertTrue($result->isGuestEmailSent);
         $this->assertTrue($result->isHostEmailSent);
-        $this->assertTrue($result->isSpreadsheetSynced);
         $this->assertEmpty($result->errors);
 
         // Verify sent emails (guest + host)
@@ -82,27 +77,6 @@ final class BookingFulfillmentTest extends TestCase
         $this->assertSame('host@oceanviewflats.com', $hostMessage['to']);
         $this->assertStringContainsString('Jane Smith', $hostMessage['htmlBody']);
         $this->assertStringContainsString('ovf_ful_12345', $hostMessage['htmlBody']);
-
-        // Verify spreadsheet sync
-        $this->assertSame(1, $this->spreadsheetSync->count());
-        $synced = $this->spreadsheetSync->getSyncedRecords()[0];
-        $this->assertSame('ovf_ful_12345', $synced['reservation']->reservationUid);
-        $this->assertSame('pay_abc_456', $synced['extra']['payment_id']);
-    }
-
-    public function testFulfillDispatchesEmailsEvenIfSpreadsheetSyncFails(): void
-    {
-        $this->spreadsheetSync->setShouldFail(true);
-
-        $reservation = $this->createReservation();
-        $result = $this->fulfillment->fulfillConfirmation($reservation);
-
-        // Guest and Host emails should still succeed
-        $this->assertTrue($result->isGuestEmailSent);
-        $this->assertTrue($result->isHostEmailSent);
-        $this->assertFalse($result->isSpreadsheetSynced);
-        $this->assertNotEmpty($result->errors);
-        $this->assertSame(2, $this->emailSender->count());
     }
 
     public function testFulfillHandlesEmailDispatchFailure(): void
@@ -114,7 +88,6 @@ final class BookingFulfillmentTest extends TestCase
 
         $this->assertFalse($result->isGuestEmailSent);
         $this->assertFalse($result->isSuccess());
-        $this->assertTrue($result->isSpreadsheetSynced);
         $this->assertNotEmpty($result->errors);
     }
 }

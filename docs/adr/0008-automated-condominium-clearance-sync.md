@@ -16,7 +16,7 @@ We introduce an automated, fault-isolated **Condominium Clearance Sync** pipelin
 
 To preserve high reliability and prevent third-party platform instability from degrading the guest arrival experience:
 - **Non-blocking Execution**: Condominium Clearance Sync runs as an asynchronous or out-of-band side-effect within `GuestLifecycleFulfillmentService` immediately following successful local database commit of the Guest Registry.
-- **Access Fulfillment Independence**: If the external Condominium Administration Portal is unavailable, times out, or encounters errors (e.g. HTTP 502/503), the guest's local registry submission remains successful. The algorithmic door PIN is generated and the unlocked Guest Guide is issued immediately per ADR 0001.
+- **Access Fulfillment Independence**: If the external Condominium Administration Portal is unavailable, times out, or encounters errors (e.g. HTTP 502/503), the guest's local registry submission remains successful. The cryptographically random door PIN is generated and the unlocked Guest Guide is issued immediately per ADR 0001 and [ADR 0012](0012-personal-data-protection-and-ley-1581-compliance.md).
 - **Operational Alerting**: Any failed clearance attempt is persisted and surfaced as an `Operational Alert` on the administrative Dashboard Hub (`AlertType::FAILED_CONDOMINIUM_CLEARANCE`), notifying operators before guest arrival.
 
 ### 2. Multi-Property Configuration
@@ -41,7 +41,7 @@ A dedicated table `condominium_clearances` isolates third-party integration stat
 - **`status`**: State machine (`pending`, `synced`, `failed`).
 - **`clearance_number`**: Authoritative numeric sequence (`last_id` / `consecutivo`) returned by the portal upon successful creation (e.g., `#495`).
 - **`error_message`**: Captured error strings or HTTP diagnostics upon failure.
-- **`request_payload`**: Audited JSON payload transmitted to the portal.
+- **`request_payload`**: Audited JSON payload transmitted to the portal, with government document numbers (`ide`) and contact phone numbers (`phone`) masked (`****5678`) at rest per [ADR 0012](0012-personal-data-protection-and-ley-1581-compliance.md) while full unmasked fields are transmitted over the outbound HTTP request to building reception.
 - **`attempts` & `last_attempt_at`**: Retry counter and timestamp.
 - **`synced_at`**: Timestamp of confirmed synchronization.
 

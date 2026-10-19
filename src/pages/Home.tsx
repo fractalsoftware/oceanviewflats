@@ -305,7 +305,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				</section>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

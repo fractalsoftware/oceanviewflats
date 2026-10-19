@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\ConfirmationEmailRenderer;
 use OceanViewFlats\Domain\Fulfillment\InMemoryEmailSender;
-use OceanViewFlats\Domain\Fulfillment\InMemorySpreadsheetSync;
 use OceanViewFlats\Domain\Payment\BookingPaymentProcessor;
 use OceanViewFlats\Domain\Payment\BookingPaymentRequest;
 use OceanViewFlats\Domain\Payment\BookingPaymentResult;
@@ -41,7 +40,6 @@ final class BookingPaymentProcessorTest extends TestCase
     private InMemoryRateSource $rateSource;
     private QuoteEngine $quoteEngine;
     private InMemoryEmailSender $emailSender;
-    private InMemorySpreadsheetSync $spreadsheetSync;
     private BookingFulfillment $fulfillment;
     private BookingPaymentProcessor $processor;
 
@@ -79,6 +77,10 @@ final class BookingPaymentProcessorTest extends TestCase
             channel_block_uid TEXT DEFAULT NULL,
             notes TEXT,
             refunded_amount REAL DEFAULT 0.0,
+            privacy_policy_version TEXT DEFAULT NULL,
+            privacy_consent_at TEXT DEFAULT NULL,
+            privacy_consent_ip TEXT DEFAULT NULL,
+            pii_redacted_at TEXT DEFAULT NULL,
             created_at TEXT,
             updated_at TEXT
         )");
@@ -139,11 +141,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->quoteEngine = new QuoteEngine($this->rateSource, $ratesConfig);
 
         $this->emailSender = new InMemoryEmailSender();
-        $this->spreadsheetSync = new InMemorySpreadsheetSync();
         $renderer = new ConfirmationEmailRenderer('https://oceanviewflats.com');
         $this->fulfillment = new BookingFulfillment(
             emailSender: $this->emailSender,
-            spreadsheetSync: $this->spreadsheetSync,
             renderer: $renderer,
             hostEmail: 'reservas@oceanviewflats.com'
         );
@@ -176,6 +176,8 @@ final class BookingPaymentProcessorTest extends TestCase
             'lang' => 'en',
             'client_ip' => '190.24.12.34',
             'idempotency_key' => 'idem_' . bin2hex(random_bytes(4)),
+            'privacy_consent' => true,
+            'privacy_policy_version' => '2026-10',
         ], $overrides);
 
         return BookingPaymentRequest::fromArray($data);
@@ -255,6 +257,18 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertFalse($result->success);
         $this->assertSame(400, $result->httpStatusCode);
         $this->assertStringContainsString('payment method', strtolower($result->message));
+    }
+
+    public function testMissingOrFalsePrivacyConsentReturns400AndPreventsGatewayCharge(): void
+    {
+        $unconsentedRequest = $this->createValidRequest(['privacy_consent' => false]);
+        $result = $this->processor->processBookingPayment($unconsentedRequest);
+
+        $this->assertFalse($result->success);
+        $this->assertSame(400, $result->httpStatusCode);
+        $this->assertSame('error', $result->status);
+        $this->assertStringContainsString('personal data processing policy', strtolower($result->message));
+        $this->assertEmpty($this->gateway->getRecordedIntents());
     }
 
     public function testChannelBlockConflictReturns409(): void
@@ -511,6 +525,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertSame('mp_pay_approved_999', $persisted->mercadopagoPaymentId);
         $this->assertSame('1606', $persisted->propertyId);
         $this->assertSame('Carlos Rodriguez', $persisted->guestName);
+        $this->assertSame('2026-10', $persisted->privacyPolicyVersion);
+        $this->assertNotNull($persisted->privacyConsentAt);
+        $this->assertSame('190.24.12.34', $persisted->privacyConsentIp);
 
         // Verify idempotency was saved
         $stmt = $this->pdo->prepare('SELECT payment_id FROM payment_idempotency WHERE idempotency_key = :k');
@@ -529,11 +546,6 @@ final class BookingPaymentProcessorTest extends TestCase
             $this->assertStringNotContainsString('door code', strtolower($email['htmlBody']));
             $this->assertStringNotContainsString('smart lock', strtolower($email['htmlBody']));
         }
-
-        // Verify spreadsheet sync was invoked
-        $synced = $this->spreadsheetSync->getSyncedRecords();
-        $this->assertCount(1, $synced);
-        $this->assertSame($result->reservationUid, $synced[0]['reservation']->reservationUid);
     }
 
     public function testPendingPaymentSendsEmailsAndSavesPendingReservation(): void
@@ -576,6 +588,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertNotNull($persisted);
         $this->assertSame(ReservationStatus::PENDING_PAYMENT, $persisted->status);
         $this->assertSame('pending', $persisted->paymentStatus);
+        $this->assertSame('2026-10', $persisted->privacyPolicyVersion);
+        $this->assertNotNull($persisted->privacyConsentAt);
+        $this->assertSame('190.24.12.34', $persisted->privacyConsentIp);
 
         // Verify audit log
         $auditCount = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "direct_hold_created"')->fetchColumn();

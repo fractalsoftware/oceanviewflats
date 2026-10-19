@@ -92,6 +92,10 @@ final class AdminDatabaseTestHelper
                 door_code TEXT DEFAULT NULL,
                 notes TEXT DEFAULT NULL,
                 max_guests INTEGER NOT NULL DEFAULT 6,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -107,6 +111,11 @@ final class AdminDatabaseTestHelper
                 car_plates TEXT DEFAULT NULL,
                 car_model TEXT DEFAULT NULL,
                 ip_address TEXT DEFAULT NULL,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                minor_guardian_consent INTEGER NOT NULL DEFAULT 0,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 

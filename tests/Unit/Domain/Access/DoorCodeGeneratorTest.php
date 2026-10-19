@@ -9,68 +9,49 @@ use PHPUnit\Framework\TestCase;
 
 final class DoorCodeGeneratorTest extends TestCase
 {
-    public function testGeneratesCodeFromStandardDocumentNumber(): void
+    public function testGenerateProducesValidCryptographicallyRandomPinIgnoringDocumentAndPhone(): void
     {
-        // 10-digit ID: 1020304050 -> last 6 digits are 304050 -> '0304050#'
-        $code = DoorCodeGenerator::generate('1020304050');
-        $this->assertSame('0304050#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
+        $docNum = '1020304050';
+        $phone = '+57 300 987 6543';
+
+        $codes = [];
+        for ($i = 0; $i < 30; $i++) {
+            $code = DoorCodeGenerator::generate($docNum, $phone);
+            $this->assertSame(8, strlen($code));
+            $this->assertStringStartsWith('0', $code);
+            $this->assertStringEndsWith('#', $code);
+            $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $code);
+            $codes[] = $code;
+        }
+
+        // Must be non-deterministic across invocations
+        $this->assertGreaterThan(1, count(array_unique($codes)));
+
+        // Must never deterministically equal the trailing 6 digits of the document or phone
+        $uniqueCodes = array_unique($codes);
+        $this->assertNotSame(['0304050#'], array_values($uniqueCodes));
+        $this->assertNotSame(['0876543#'], array_values($uniqueCodes));
     }
 
-    public function testGeneratesCodeFromExactSixDigitDocument(): void
+    public function testGenerateWithShortOrEmptyInputsNeverProducesZeroPaddedDocDigits(): void
     {
-        // Exact 6 digits: 123456 -> '0123456#'
-        $code = DoorCodeGenerator::generate('123456');
-        $this->assertSame('0123456#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
-    }
+        $samples = [
+            ['1234', ''],
+            ['ABC', '99'],
+            ['', ''],
+            ['N/A', 'NONE'],
+            ['CC 1.020.304.050-K', '+57 300 123 4567'],
+        ];
 
-    public function testPadsShortDocumentNumberWithLeadingZeros(): void
-    {
-        // Short ID: 1234 -> padded to 6 digits '001234' -> '0001234#'
-        $code = DoorCodeGenerator::generate('1234');
-        $this->assertSame('0001234#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
-    }
-
-    public function testStripsNonDigitCharactersFromDocument(): void
-    {
-        // ID with letters, spaces, dots, dashes: CC 1.020.304.050-K
-        $code = DoorCodeGenerator::generate('CC 1.020.304.050-K');
-        $this->assertSame('0304050#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
-    }
-
-    public function testFallsBackToPhoneWhenDocumentContainsNoDigits(): void
-    {
-        // Document has only letters: 'PASSPORT'
-        // Phone: '+57 300 987 6543' -> digits '573009876543' -> last 6 '876543' -> '0876543#'
-        $code = DoorCodeGenerator::generate('PASSPORT', '+57 300 987 6543');
-        $this->assertSame('0876543#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
-    }
-
-    public function testFallsBackToPhoneAndPadsWhenPhoneIsShort(): void
-    {
-        // Document: 'ABC', Phone: '99' -> digits '99' -> padded to '000099' -> '0000099#'
-        $code = DoorCodeGenerator::generate('ABC', '99');
-        $this->assertSame('0000099#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
-    }
-
-    public function testHandlesCompletelyEmptyDocumentAndPhoneGracefully(): void
-    {
-        // Empty document and empty phone -> '0000000#'
-        $code = DoorCodeGenerator::generate('', '');
-        $this->assertSame('0000000#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
-    }
-
-    public function testHandlesNonDigitStringsForBothDocAndPhone(): void
-    {
-        $code = DoorCodeGenerator::generate('N/A', 'NONE');
-        $this->assertSame('0000000#', $code);
-        $this->assertMatchesRegularExpression('/^0\d{6}#$/', $code);
+        foreach ($samples as [$doc, $phone]) {
+            $code = DoorCodeGenerator::generate($doc, $phone);
+            $this->assertSame(8, strlen($code));
+            $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', $code);
+            // random_int(100000, 999999) guarantees first core digit is 1-9, never 0001234# or 0000000#
+            $this->assertNotSame('0001234#', $code);
+            $this->assertNotSame('0000099#', $code);
+            $this->assertNotSame('0000000#', $code);
+        }
     }
 
     public function testAlwaysReturnsSevenDigitsPlusHash(): void
@@ -80,7 +61,7 @@ final class DoorCodeGeneratorTest extends TestCase
             ['A1B2C3D4E5F6', ''],
             ['555', ''],
             ['', '3001234567'],
-            ['SPECIAL-DOC-1', '']
+            ['SPECIAL-DOC-1', ''],
         ];
 
         foreach ($samples as [$doc, $phone]) {

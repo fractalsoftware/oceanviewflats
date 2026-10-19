@@ -11,7 +11,6 @@ final class BookingFulfillment implements BookingFulfillmentInterface
 {
     public function __construct(
         private readonly EmailSenderInterface $emailSender,
-        private readonly SpreadsheetSyncInterface $spreadsheetSync,
         private readonly ConfirmationEmailRendererInterface $renderer,
         private readonly string $hostEmail = 'rentals@oceanviewflats.com'
     ) {}
@@ -26,7 +25,6 @@ final class BookingFulfillment implements BookingFulfillmentInterface
 
         return new self(
             emailSender: $emailSender ?? new PhpMailSender(),
-            spreadsheetSync: GoogleSheetWebhookSync::createFromEnv(),
             renderer: new ConfirmationEmailRenderer(),
             hostEmail: (string)$resolvedHost
         );
@@ -36,18 +34,7 @@ final class BookingFulfillment implements BookingFulfillmentInterface
     {
         $errors = [];
 
-        // 1. Spreadsheet Synchronization
-        $spreadsheetSynced = false;
-        try {
-            $spreadsheetSynced = $this->spreadsheetSync->sync($reservation, $extra);
-            if (!$spreadsheetSynced) {
-                $errors[] = 'Spreadsheet synchronization did not complete successfully.';
-            }
-        } catch (Throwable $e) {
-            $errors[] = 'Spreadsheet synchronization error: ' . $e->getMessage();
-        }
-
-        // 2. Localized Reservation Confirmation Email to Primary Guest
+        // 1. Localized Reservation Confirmation Email to Primary Guest
         $guestEmailSent = false;
         try {
             $guestSubject = $this->renderer->renderGuestSubject($reservation);
@@ -60,7 +47,7 @@ final class BookingFulfillment implements BookingFulfillmentInterface
             $errors[] = 'Primary Guest confirmation email error: ' . $e->getMessage();
         }
 
-        // 3. Host Notification Email
+        // 2. Host Notification Email
         $hostEmailSent = false;
         try {
             $hostSubject = $this->renderer->renderHostSubject($reservation);
@@ -76,7 +63,6 @@ final class BookingFulfillment implements BookingFulfillmentInterface
         return new FulfillmentResult(
             isGuestEmailSent: $guestEmailSent,
             isHostEmailSent: $hostEmailSent,
-            isSpreadsheetSynced: $spreadsheetSynced,
             errors: $errors
         );
     }

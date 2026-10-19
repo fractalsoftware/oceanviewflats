@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
-use OceanViewFlats\Domain\Fulfillment\GoogleSheetWebhookSync;
 use OceanViewFlats\Domain\Fulfillment\PhpMailSender;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\DirectHoldRequest;
 use OceanViewFlats\Domain\Reservation\PrimaryGuest;
 use OceanViewFlats\Domain\Reservation\ReservationConflictException;
 use OceanViewFlats\Domain\Reservation\ReservationValidationException;
+use OceanViewFlats\Domain\Security\PiiMasker;
 use OceanViewFlats\Infrastructure\Reservation\ReservationLifecycleEngineFactory;
 
 // Load central utilities & configuration
@@ -28,7 +28,6 @@ $config = require __DIR__ . '/config.php';
 // Configuration parameters
 define('RECIPIENT_EMAIL', $_ENV['RECIPIENT_EMAIL'] ?? $_SERVER['RECIPIENT_EMAIL'] ?? getenv('RECIPIENT_EMAIL') ?: 'rentals@oceanviewflats.com');
 define('CAPTCHA_SECRET', $_ENV['CAPTCHA_SECRET'] ?? $_SERVER['CAPTCHA_SECRET'] ?? getenv('CAPTCHA_SECRET') ?: 'securesaltsecret');
-define('GOOGLE_SHEET_WEBAPP_URL', $_ENV['GOOGLE_SHEET_WEBAPP_URL'] ?? $_SERVER['GOOGLE_SHEET_WEBAPP_URL'] ?? getenv('GOOGLE_SHEET_WEBAPP_URL') ?: '');
 
 // Enforce security headers & CORS policy dynamically
 enforce_security_headers_and_cors(['GET', 'POST', 'OPTIONS']);
@@ -94,6 +93,20 @@ $guestName = clean_input($_POST['guest_name'] ?? '');
 $guestEmail = clean_input($_POST['guest_email'] ?? '');
 $guestPhone = clean_input($_POST['guest_phone'] ?? '');
 $clientPriceCop = (float)($_POST['total_price_cop'] ?? 0);
+$privacyConsentRaw = $_POST['privacy_consent'] ?? '';
+$privacyPolicyVersionRaw = clean_input((string) ($_POST['privacy_policy_version'] ?? PRIVACY_POLICY_VERSION));
+
+$hasPrivacyConsent = PiiMasker::isTruthyConsent($privacyConsentRaw);
+if (!$hasPrivacyConsent) {
+    http_response_code(400);
+    send_json_response(false, $t['err_privacy_consent']);
+}
+$privacyPolicyVersion = $privacyPolicyVersionRaw !== '' ? $privacyPolicyVersionRaw : PRIVACY_POLICY_VERSION;
+$privacyConsentAt = new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
+$privacyConsentIp = clean_input((string) ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));
+if ($privacyConsentIp === '') {
+    $privacyConsentIp = '127.0.0.1';
+}
 
 if ($propertyId !== '1606' && $propertyId !== '1707') {
     send_json_response(false, $t['err_property']);
@@ -144,7 +157,10 @@ $holdRequest = DirectHoldRequest::create(
         phone: $guestPhone,
         lang: $lang
     ),
-    actor: ActorContext::guest()
+    actor: ActorContext::guest(ipAddress: $privacyConsentIp),
+    privacyPolicyVersion: $privacyPolicyVersion,
+    privacyConsentAt: $privacyConsentAt,
+    privacyConsentIp: $privacyConsentIp
 );
 
 try {
@@ -179,10 +195,6 @@ if (abs($serverTotalCop - $clientPriceCop) > 1.0) {
 }
 
 $dbLogged = $pdo !== null;
-
-// 7. Forward Details to Google Sheet webhook
-$sheetSync = GoogleSheetWebhookSync::createFromEnv();
-$sheetSuccess = $sheetSync->sync($reservation);
 
 // 10. Send Structured Emails (Host & Guest)
 $copFormatter = "$ " . number_format($serverTotalCop, 0, ',', '.') . " COP";
@@ -242,7 +254,7 @@ $html_message = "
 
       <p>{$t['email_footer']}</p>
       
-      <p style='font-size:13px;color:#64748b;'><em>Inquiries automatically secured. Google Sheets sync: " . ($sheetSuccess ? 'YES' : 'NO') . ". DB storage: " . ($dbLogged ? 'YES' : 'NO') . ". Language Code: " . strtoupper($lang) . ".</em></p>
+      <p style='font-size:13px;color:#64748b;'><em>Inquiries automatically secured. DB storage: " . ($dbLogged ? 'YES' : 'NO') . ". Language Code: " . strtoupper($lang) . ".</em></p>
     </div>
     <div class='footer'>
       &copy; 2026 OceanViewFlats. Calle 26 # 2-80, Playa Salguero, Santa Marta, Colombia.

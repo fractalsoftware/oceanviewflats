@@ -10,15 +10,11 @@ interface HostRegistryEmailRendererInterface
 
     public function renderPlainText(
         GuestRegistrySubmission $submission,
-        string $doorCode,
-        bool $spreadsheetSuccess = true,
-        ?string $spreadsheetError = null
+        string $doorCode
     ): string;
 
     public function renderHtml(
         GuestRegistrySubmission $submission,
-        string $doorCode,
-        bool $spreadsheetSuccess = true,
-        ?string $spreadsheetError = null
+        string $doorCode
     ): string;
 }

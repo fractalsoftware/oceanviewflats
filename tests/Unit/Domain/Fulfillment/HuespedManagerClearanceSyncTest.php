@@ -235,7 +235,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $this->assertSame(['PHPSESSID' => 'test-session-token-xyz'], $step2['options']['cookies']);
         $this->assertSame('495', $step2['data']['consecutivo']);
 
-        // Verify form arrays
+        // Verify form arrays sent over HTTP transport are unmasked for building reception
         $this->assertSame(['PA', 'CC'], $step2['data']['typeid']);
         $this->assertSame(['PA987654', '1098765432'], $step2['data']['ide']);
         $this->assertSame(['Carlos', 'Maria'], $step2['data']['name']);
@@ -248,6 +248,16 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $this->assertSame(['TITULAR', 'ACOMPAÑANTE'], $step2['data']['nexo']);
         $this->assertSame(['0', '0'], $step2['data']['covid3']);
         $this->assertSame(['0', '0'], $step2['data']['covid10']);
+
+        // ADR 0012: Persisted request_payload in condominium_clearances must mask ide and phone
+        $this->assertIsArray($persisted->requestPayload);
+        $this->assertSame(['****7654', '****5432'], $persisted->requestPayload['step2']['ide'] ?? null);
+        $this->assertSame(['****3456', '****3456'], $persisted->requestPayload['step2']['phone'] ?? null);
+        $rawClearancePayload = (string) $this->pdo->query("SELECT request_payload FROM condominium_clearances WHERE reservation_uid = 'ovf_res_sync_test'")->fetchColumn();
+        $this->assertStringNotContainsString('PA987654', $rawClearancePayload);
+        $this->assertStringNotContainsString('1098765432', $rawClearancePayload);
+        $this->assertStringContainsString('****7654', $rawClearancePayload);
+        $this->assertStringContainsString('****5432', $rawClearancePayload);
     }
 
     public function testCompanionWithoutPhoneInheritsPrimaryGuestPhoneWhileIndependentRetainsOwn(): void
@@ -775,6 +785,8 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $after1 = json_decode((string) $log1['payload_after'], true);
         $this->assertSame('888', $after1['clearance_number']);
         $this->assertSame('synced', $after1['status']);
+        $this->assertSame(['****7654'], $after1['request_payload']['step2']['ide'] ?? null);
+        $this->assertStringNotContainsString('PA987654', (string) $log1['payload_after']);
 
         // Retry sync (second attempt)
         $clearance2 = $adapter->syncForReservation('ovf_res_deep_test', $admin);

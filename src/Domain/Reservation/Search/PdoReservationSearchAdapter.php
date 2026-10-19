@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Domain\Reservation\Search;
 
 use OceanViewFlats\Domain\Reservation\Reservation;
+use OceanViewFlats\Domain\Security\PayloadEncryptor;
 use PDO;
 use PDOException;
 
@@ -186,10 +187,13 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
                 return null;
             }
 
-            if (isset($registry['guests_payload']) && is_string($registry['guests_payload'])) {
-                $decoded = json_decode($registry['guests_payload'], true);
-                $registry['guests_payload'] = is_array($decoded) ? $decoded : [];
+            if (isset($registry['guests_payload']) && (is_string($registry['guests_payload']) || is_array($registry['guests_payload']))) {
+                $registry['guests_payload'] = PayloadEncryptor::decrypt($registry['guests_payload']);
             }
+
+            $redactedAtRaw = $registry['pii_redacted_at'] ?? $registry['piiRedactedAt'] ?? null;
+            $registry['pii_redacted_at'] = ($redactedAtRaw !== null && (string) $redactedAtRaw !== '') ? (string) $redactedAtRaw : null;
+            $registry['piiRedactedAt'] = $registry['pii_redacted_at'];
 
             return $registry;
         } catch (PDOException) {
@@ -224,6 +228,9 @@ final class PdoReservationSearchAdapter implements ReservationSearchInterface
     private function normalizeReservationProjection(array $row): array
     {
         $row['max_guests'] = Reservation::normalizeMaxGuests($row['max_guests'] ?? $row['maxGuests'] ?? null);
+        $redactedAtRaw = $row['pii_redacted_at'] ?? $row['piiRedactedAt'] ?? null;
+        $row['pii_redacted_at'] = ($redactedAtRaw !== null && (string) $redactedAtRaw !== '') ? (string) $redactedAtRaw : null;
+        $row['piiRedactedAt'] = $row['pii_redacted_at'];
 
         return $row;
     }

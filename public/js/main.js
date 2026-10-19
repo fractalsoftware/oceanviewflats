@@ -572,6 +572,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function processBricksPayment(selectedPaymentMethod, formData, reservationUid, guestEmail, guestName, propertyId) {
+        const privacyCheckboxEl = document.getElementById('booking-privacy-consent');
+        const privacyVersionEl = document.getElementById('booking-privacy-policy-version');
         const payload = {
             reservation_uid: reservationUid,
             property_id: propertyId,
@@ -582,6 +584,8 @@ document.addEventListener('DOMContentLoaded', () => {
             check_out: document.getElementById('form-check-out-date').value,
             payment_method_id: selectedPaymentMethod,
             lang: lang || document.documentElement.lang || 'en',
+            privacy_consent: Boolean(privacyCheckboxEl && privacyCheckboxEl.checked),
+            privacy_policy_version: (privacyVersionEl && privacyVersionEl.value) ? privacyVersionEl.value : '2026-10',
             ...formData
         };
 
@@ -657,6 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const msgVerifying = t('dbVerifying', {}, "Verifying details...");
             const msgSecured = t('dbSecured', {}, "Booking secured! Please select your payment method below to guarantee your reservation.");
             const msgFillFields = t('dbFillFields', {}, "Please fill in all required fields.");
+            const msgPrivacyConsent = t('dbErrPrivacyConsent', {}, "Please accept the Personal Data Processing Policy before proceeding with your booking.");
             const msgSubmitDefault = t('dbSubmit', {}, "Send Booking Request");
             const msgNetworkError = t('dbNetworkError', {}, "Network error. Please verify connection and try again.");
 
@@ -664,10 +669,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('booking-guest-email').value.trim();
             const phone = document.getElementById('booking-guest-phone').value.trim();
             const captchaVal = bookingCaptchaResponse.value.trim();
+            const privacyCheckbox = document.getElementById('booking-privacy-consent');
 
             if (!name || !email || !phone || !captchaVal || !checkIn || !checkOut) {
                 if (msgBox) {
                     msgBox.textContent = msgFillFields;
+                    msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+                }
+                return;
+            }
+
+            if (!privacyCheckbox || !privacyCheckbox.checked) {
+                if (msgBox) {
+                    msgBox.textContent = msgPrivacyConsent;
                     msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
                 }
                 return;
@@ -793,6 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Retrieve localized messages via window.t
     const msgSuccess = t('contactSuccess', {}, 'Thank you! Your message has been sent successfully.');
     const msgError = t('contactError', {}, 'Something went wrong. Please check the fields and try again.');
+    const msgPrivacyError = t('contactErrPrivacyConsent', {}, 'Please accept the Personal Data Processing Policy before sending your inquiry.');
     const msgSubmitting = t('contactSubmitting', {}, 'Sending...');
     const msgDefaultSubmit = t('contactSubmit', {}, 'Send Inquiry');
     const msgDateError = t('contactDateError', {}, 'Check-out date must be after check-in date.');
@@ -869,9 +884,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const phoneVal = document.getElementById('phone-number').value.trim();
         const messageVal = document.getElementById('message').value.trim();
         const captchaVal = captchaResponse.value.trim();
+        const privacyConsent = document.getElementById('privacy-consent');
 
         if (!nameVal || !emailVal || !phoneVal || !messageVal || !captchaVal) {
             showMsg(msgError, false);
+            return;
+        }
+
+        if (!privacyConsent || !privacyConsent.checked) {
+            showMsg(msgPrivacyError, false);
             return;
         }
 

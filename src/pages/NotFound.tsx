@@ -123,7 +123,7 @@ export default function NotFound({ lang, assetPrefix = "/" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

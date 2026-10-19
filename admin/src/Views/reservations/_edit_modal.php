@@ -69,12 +69,8 @@ if (isset($occupants)) {
     $occupantsList = $occupants;
 } elseif ($registry !== null) {
     $rawPayload = $registry['guests_payload'] ?? [];
-    if (is_string($rawPayload)) {
-        $decoded = json_decode($rawPayload, true);
-        $rawPayload = is_array($decoded) ? $decoded : [];
-    }
-    if (is_array($rawPayload)) {
-        $occupantsList = array_values($rawPayload);
+    if (is_string($rawPayload) || is_array($rawPayload)) {
+        $occupantsList = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt($rawPayload);
     }
 }
 
