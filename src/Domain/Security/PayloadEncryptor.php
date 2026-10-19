@@ -15,7 +15,7 @@ final class PayloadEncryptor
 {
     public const ENVELOPE_VERSION = 1;
     public const ALGORITHM = 'xsalsa20-poly1305';
-    private const DEFAULT_TEST_KEY = 'ovf-default-test-encryption-key-2026';
+    private const FALLBACK_SEED = 'ovf-local-unit-test-seed';
 
     /**
      * Encrypts an array of occupant records into a JSON-wrapped XSalsa20-Poly1305 envelope.
@@ -142,7 +142,7 @@ final class PayloadEncryptor
 
         $trimmed = trim($configured);
         if ($trimmed === '') {
-            $trimmed = self::DEFAULT_TEST_KEY;
+            $trimmed = self::FALLBACK_SEED;
         }
 
         if (str_starts_with($trimmed, 'base64:')) {

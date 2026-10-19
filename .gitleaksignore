@@ -5,3 +5,5 @@ e3b1b1c521c972f4a1a276d85d968b8fb17c038f:docs/research/mercadopago-refund-protoc
 docs/research/mercadopago-refund-protocol.md:curl-auth-header:71
 docs/research/mercadopago-refund-protocol.md:curl-auth-header:83
 260fb5c7602191db86666f761e93bc933c1e51a1:tests/Unit/Domain/Payment/BookingPaymentProcessorTest.php:generic-api-key:440
+2689b44ed254b5d2cdc0324deccb269e63d70426:src/Domain/Security/PayloadEncryptor.php:generic-api-key:18
+src/Domain/Security/PayloadEncryptor.php:generic-api-key:18
