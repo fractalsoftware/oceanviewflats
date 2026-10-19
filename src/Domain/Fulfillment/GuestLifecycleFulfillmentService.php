@@ -13,6 +13,7 @@ use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 use OceanViewFlats\Domain\Security\PayloadEncryptor;
 use OceanViewFlats\Domain\Security\PiiMasker;
+use OceanViewFlats\Domain\Support\PathResolver;
 use OceanViewFlats\Domain\Support\PublicUrlBuilder;
 use PDO;
 use Throwable;
@@ -161,6 +162,27 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             return RegistryFulfillmentResult::validationFailure($validationErrors);
         }
 
+        // 4b. Enforce Personal Data Authorization (Ley 1581 of 2012) & Minor Guardian Attestation (Art. 7 / Ley 679)
+        if (!$submission->privacyConsent) {
+            return RegistryFulfillmentResult::validationFailure([
+                $this->translateRegistryError(
+                    $submission->lang,
+                    'err_privacy_consent',
+                    'Personal data processing authorization is required.'
+                ),
+            ]);
+        }
+
+        if ($submission->hasMinorOccupant() && !$submission->minorGuardianConsent) {
+            return RegistryFulfillmentResult::validationFailure([
+                $this->translateRegistryError(
+                    $submission->lang,
+                    'err_minor_guardian_consent',
+                    'Parental authority or legal guardian attestation is required when registering minors under 18.'
+                ),
+            ]);
+        }
+
         if ($reservation === null) {
             return RegistryFulfillmentResult::notFound(
                 $submission->reservationCode,
@@ -219,6 +241,10 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
                 }
             }
 
+            $consentTimestamp = ($submission->privacyConsentAt ?? new DateTimeImmutable())->format('Y-m-d H:i:s');
+            $consentIp = $submission->ipAddress ?? '127.0.0.1';
+            $policyVersion = $submission->privacyPolicyVersion !== '' ? $submission->privacyPolicyVersion : '2026-10';
+
             $this->insertGuestRegistry(
                 reservationUid: $reservation->reservationUid,
                 propertyId: $reservation->propertyId,
@@ -227,7 +253,11 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
                 occupants: $submission->occupants,
                 carPlates: $submission->carPlates,
                 carModel: $submission->carModel,
-                ipAddress: $submission->ipAddress
+                ipAddress: $submission->ipAddress,
+                privacyPolicyVersion: $policyVersion,
+                privacyConsentAt: $consentTimestamp,
+                privacyConsentIp: $consentIp,
+                minorGuardianConsent: $submission->minorGuardianConsent
             );
 
             $maskedAuditSubmission = PiiMasker::maskSubmissionArray($submission->toArray());
@@ -355,6 +385,7 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             );
 
             if ($submission !== null) {
+                $adminIp = $admin !== null ? $admin->ipAddress : null;
                 $this->insertGuestRegistry(
                     reservationUid: $reservationUid,
                     propertyId: $submission->propertyId !== '' ? $submission->propertyId : $reservation->propertyId,
@@ -363,7 +394,11 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
                     occupants: $submission->occupants,
                     carPlates: $submission->carPlates,
                     carModel: $submission->carModel,
-                    ipAddress: $submission->ipAddress ?? $admin?->ipAddress
+                    ipAddress: $submission->ipAddress ?? $adminIp,
+                    privacyPolicyVersion: $submission->privacyConsent ? ($submission->privacyPolicyVersion !== '' ? $submission->privacyPolicyVersion : '2026-10') : null,
+                    privacyConsentAt: $submission->privacyConsent ? ($submission->privacyConsentAt ?? new DateTimeImmutable())->format('Y-m-d H:i:s') : null,
+                    privacyConsentIp: $submission->privacyConsent ? ($submission->ipAddress ?? $adminIp ?? '127.0.0.1') : null,
+                    minorGuardianConsent: $submission->minorGuardianConsent
                 );
             }
 
@@ -541,10 +576,35 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
         array $occupants,
         ?string $carPlates,
         ?string $carModel,
-        ?string $ipAddress
+        ?string $ipAddress,
+        ?string $privacyPolicyVersion = null,
+        ?string $privacyConsentAt = null,
+        ?string $privacyConsentIp = null,
+        bool $minorGuardianConsent = false
     ): void {
         $occupantsArray = array_map(fn (OccupantDetails $o): array => $o->toArray(), $occupants);
         $guestsPayloadJson = PayloadEncryptor::encrypt($occupantsArray);
+
+        $hasConsentCols = true;
+        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlite') {
+            try {
+                $colsStmt = $this->pdo->query("PRAGMA table_info(`guest_registries`)");
+                if ($colsStmt !== false) {
+                    $existingCols = [];
+                    foreach ($colsStmt->fetchAll(PDO::FETCH_ASSOC) as $colInfo) {
+                        $existingCols[(string) $colInfo['name']] = true;
+                    }
+                    $hasConsentCols = isset(
+                        $existingCols['privacy_policy_version'],
+                        $existingCols['privacy_consent_at'],
+                        $existingCols['privacy_consent_ip'],
+                        $existingCols['minor_guardian_consent']
+                    );
+                }
+            } catch (Throwable) {
+            }
+        }
 
         $stmtCheck = $this->pdo->prepare('SELECT id, car_plates, car_model FROM `guest_registries` WHERE `reservation_uid` = :uid ORDER BY `id` DESC LIMIT 1');
         $stmtCheck->execute([':uid' => $reservationUid]);
@@ -558,6 +618,41 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             $effectiveModel = ($carModel !== null && trim($carModel) !== '')
                 ? $carModel
                 : (isset($existing['car_model']) && trim((string) $existing['car_model']) !== '' ? (string) $existing['car_model'] : null);
+
+            if ($hasConsentCols) {
+                $stmtUpdate = $this->pdo->prepare("
+                    UPDATE `guest_registries`
+                    SET `property_id` = :property_id,
+                        `check_in` = :check_in,
+                        `check_out` = :check_out,
+                        `guest_count` = :guest_count,
+                        `guests_payload` = :guests_payload,
+                        `car_plates` = :car_plates,
+                        `car_model` = :car_model,
+                        `ip_address` = :ip_address,
+                        `privacy_policy_version` = :privacy_policy_version,
+                        `privacy_consent_at` = :privacy_consent_at,
+                        `privacy_consent_ip` = :privacy_consent_ip,
+                        `minor_guardian_consent` = :minor_guardian_consent
+                    WHERE `id` = :id
+                ");
+                $stmtUpdate->execute([
+                    ':property_id' => $propertyId,
+                    ':check_in' => $checkIn,
+                    ':check_out' => $checkOut,
+                    ':guest_count' => count($occupants),
+                    ':guests_payload' => $guestsPayloadJson,
+                    ':car_plates' => $effectivePlates,
+                    ':car_model' => $effectiveModel,
+                    ':ip_address' => $ipAddress,
+                    ':privacy_policy_version' => $privacyPolicyVersion,
+                    ':privacy_consent_at' => $privacyConsentAt,
+                    ':privacy_consent_ip' => $privacyConsentIp,
+                    ':minor_guardian_consent' => $minorGuardianConsent ? 1 : 0,
+                    ':id' => (int) $existing['id'],
+                ]);
+                return;
+            }
 
             $stmtUpdate = $this->pdo->prepare("
                 UPDATE `guest_registries`
@@ -585,6 +680,38 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             return;
         }
 
+        if ($hasConsentCols) {
+            $stmtReg = $this->pdo->prepare("
+                INSERT INTO `guest_registries` (
+                    `reservation_uid`, `property_id`, `check_in`, `check_out`,
+                    `guest_count`, `guests_payload`, `car_plates`, `car_model`,
+                    `ip_address`, `privacy_policy_version`, `privacy_consent_at`,
+                    `privacy_consent_ip`, `minor_guardian_consent`, `created_at`
+                ) VALUES (
+                    :reservation_uid, :property_id, :check_in, :check_out,
+                    :guest_count, :guests_payload, :car_plates, :car_model,
+                    :ip_address, :privacy_policy_version, :privacy_consent_at,
+                    :privacy_consent_ip, :minor_guardian_consent, CURRENT_TIMESTAMP
+                )
+            ");
+            $stmtReg->execute([
+                ':reservation_uid' => $reservationUid,
+                ':property_id' => $propertyId,
+                ':check_in' => $checkIn,
+                ':check_out' => $checkOut,
+                ':guest_count' => count($occupants),
+                ':guests_payload' => $guestsPayloadJson,
+                ':car_plates' => $carPlates,
+                ':car_model' => $carModel,
+                ':ip_address' => $ipAddress,
+                ':privacy_policy_version' => $privacyPolicyVersion,
+                ':privacy_consent_at' => $privacyConsentAt,
+                ':privacy_consent_ip' => $privacyConsentIp,
+                ':minor_guardian_consent' => $minorGuardianConsent ? 1 : 0,
+            ]);
+            return;
+        }
+
         $stmtReg = $this->pdo->prepare("
             INSERT INTO `guest_registries` (
                 `reservation_uid`, `property_id`, `check_in`, `check_out`,
@@ -607,6 +734,23 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             ':car_model' => $carModel,
             ':ip_address' => $ipAddress,
         ]);
+    }
+
+    private function translateRegistryError(string $lang, string $key, string $fallback): string
+    {
+        try {
+            $translations = PathResolver::loadTranslations();
+            $normalizedLang = strtolower(trim($lang));
+            if (isset($translations[$normalizedLang]['registry'][$key]) && is_string($translations[$normalizedLang]['registry'][$key])) {
+                return $translations[$normalizedLang]['registry'][$key];
+            }
+            if (isset($translations['en']['registry'][$key]) && is_string($translations['en']['registry'][$key])) {
+                return $translations['en']['registry'][$key];
+            }
+        } catch (Throwable) {
+        }
+
+        return $fallback;
     }
 
     /**

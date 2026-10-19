@@ -279,6 +279,8 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
             'guest_doc_num_2' => 'US123456789',
             'car_plates' => 'XYZ-789',
             'car_model' => 'Toyota RAV4',
+            'privacy_consent' => '1',
+            'privacy_policy_version' => '2026-10',
             'lang' => 'en',
         ], $captcha);
 

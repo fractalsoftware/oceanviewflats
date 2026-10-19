@@ -84,6 +84,8 @@ export const getClientDictionaryForPage = (
 			registryErrPhoneRequired: t.registryErrPhoneRequired || "",
 			registryErrPrivacyConsent: t.registryErrPrivacyConsent || "",
 			registryErrMinorConsent: t.registryErrMinorConsent || "",
+			regErrPrivacyConsent: t.registryErrPrivacyConsent || "",
+			regErrMinorGuardianConsent: t.registryErrMinorConsent || "",
 			registrySuccess: t.registrySuccess || "",
 			registryWarmMsg: t.registryWarmMsg || "",
 			registrySubmit: t.registrySubmit || "",

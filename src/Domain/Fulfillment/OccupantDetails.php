@@ -22,6 +22,11 @@ final class OccupantDetails
         'Cédula de Extranjería',
     ];
 
+    public const MINOR_DOC_TYPES = [
+        'Tarjeta de Identidad',
+        'Registro Civil',
+    ];
+
     /**
      * Official Condominium Reception Portal (Huésped Manager) Document Code Translations.
      */
@@ -173,6 +178,14 @@ final class OccupantDetails
     public function getPortalDocType(): string
     {
         return self::mapDocTypeToPortalCode($this->docType);
+    }
+
+    /**
+     * Determines whether the occupant is a minor under Colombian Law 1581 (Art. 7) / Law 679 of 2001.
+     */
+    public function isMinor(): bool
+    {
+        return $this->age < 18 || in_array($this->docType, self::MINOR_DOC_TYPES, true);
     }
 
     /**

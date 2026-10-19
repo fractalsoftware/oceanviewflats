@@ -61,6 +61,10 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 notes TEXT,
                 refunded_amount REAL DEFAULT 0.0,
                 max_guests INTEGER NOT NULL DEFAULT 6,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -76,6 +80,11 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 car_plates TEXT,
                 car_model TEXT,
                 ip_address TEXT,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                minor_guardian_consent INTEGER NOT NULL DEFAULT 0,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -189,7 +198,10 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             carPlates: $carPlates,
             carModel: $carModel,
             ipAddress: '190.24.15.2',
-            lang: 'en'
+            lang: 'en',
+            privacyConsent: true,
+            privacyPolicyVersion: '2026-10',
+            minorGuardianConsent: true
         );
     }
 
@@ -237,6 +249,10 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->assertSame('XYZ-123', $regRow['car_plates']);
         $this->assertSame('Mazda CX-5', $regRow['car_model']);
         $this->assertSame('190.24.15.2', $regRow['ip_address']);
+        $this->assertSame('2026-10', $regRow['privacy_policy_version']);
+        $this->assertNotEmpty($regRow['privacy_consent_at']);
+        $this->assertSame('190.24.15.2', $regRow['privacy_consent_ip']);
+        $this->assertSame(1, (int) $regRow['minor_guardian_consent']);
 
         $rawStoredPayload = (string) $regRow['guests_payload'];
         $this->assertTrue(PayloadEncryptor::isEncryptedEnvelope($rawStoredPayload));
@@ -1226,5 +1242,157 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $dispatchEmail = $this->emailSender->getSentMessages()[1];
         $this->assertStringContainsString('Assigned Parking', $dispatchEmail['htmlBody']);
         $this->assertStringContainsString('#95', $dispatchEmail['htmlBody']);
+    }
+
+    public function testSubmitRegistryRejectsMissingPrivacyConsentWithLocalizedError(): void
+    {
+        $this->createSampleReservation('ovf_no_privacy_consent');
+
+        $adultOccupant = new OccupantDetails(
+            index: 1,
+            name: 'Jane Smith',
+            age: 35,
+            docType: 'Passport',
+            docNum: 'US12345678'
+        );
+
+        $submissionEn = new GuestRegistrySubmission(
+            reservationCode: 'ovf_no_privacy_consent',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [$adultOccupant],
+            primaryGuestEmail: 'jane.smith@example.com',
+            lang: 'en',
+            privacyConsent: false
+        );
+
+        $resultEn = $this->service->submitRegistry($submissionEn);
+        $this->assertFalse($resultEn->success);
+        $this->assertContains('Personal data processing authorization is required.', $resultEn->errors);
+
+        $submissionEs = new GuestRegistrySubmission(
+            reservationCode: 'ovf_no_privacy_consent',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [$adultOccupant],
+            primaryGuestEmail: 'jane.smith@example.com',
+            lang: 'es',
+            privacyConsent: false
+        );
+
+        $resultEs = $this->service->submitRegistry($submissionEs);
+        $this->assertFalse($resultEs->success);
+        $this->assertContains('Se requiere la autorización para el tratamiento de datos personales.', $resultEs->errors);
+    }
+
+    public function testSubmitRegistryRejectsMinorOccupantWhenMinorGuardianConsentIsFalse(): void
+    {
+        $this->createSampleReservation('ovf_minor_no_guardian');
+
+        // 1. Minor by age (< 18 with Passport)
+        $minorByAgeSub = new GuestRegistrySubmission(
+            reservationCode: 'ovf_minor_no_guardian',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [
+                new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
+                new OccupantDetails(2, 'Tommy Smith', 14, 'Passport', 'US87654321'),
+            ],
+            primaryGuestEmail: 'jane.smith@example.com',
+            lang: 'en',
+            privacyConsent: true,
+            minorGuardianConsent: false
+        );
+
+        $resAge = $this->service->submitRegistry($minorByAgeSub);
+        $this->assertFalse($resAge->success);
+        $this->assertContains(
+            'Parental authority or legal guardian attestation is required when registering minors under 18.',
+            $resAge->errors
+        );
+
+        // 2. Minor by document type (Tarjeta de Identidad, even with age 18)
+        $minorByDocSub = new GuestRegistrySubmission(
+            reservationCode: 'ovf_minor_no_guardian',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [
+                new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
+                new OccupantDetails(2, 'Camila Smith', 18, 'Tarjeta de Identidad', 'TI99887766'),
+            ],
+            primaryGuestEmail: 'jane.smith@example.com',
+            lang: 'es',
+            privacyConsent: true,
+            minorGuardianConsent: false
+        );
+
+        $resDoc = $this->service->submitRegistry($minorByDocSub);
+        $this->assertFalse($resDoc->success);
+        $this->assertContains(
+            'Se requiere la declaración de patria potestad o representación legal cuando se registran menores de 18 años.',
+            $resDoc->errors
+        );
+    }
+
+    public function testSubmitRegistryAcceptsAdultOnlyWithoutMinorGuardianConsentAndPersistsZero(): void
+    {
+        $this->createSampleReservation('ovf_adults_only');
+
+        $adultSub = new GuestRegistrySubmission(
+            reservationCode: 'ovf_adults_only',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [
+                new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
+                new OccupantDetails(2, 'John Smith', 38, 'Passport', 'US87654321'),
+            ],
+            primaryGuestEmail: 'jane.smith@example.com',
+            ipAddress: '181.55.10.9',
+            lang: 'en',
+            privacyConsent: true,
+            privacyPolicyVersion: '2026-10',
+            minorGuardianConsent: false
+        );
+
+        $result = $this->service->submitRegistry($adultSub);
+        $this->assertTrue($result->success);
+
+        $stmt = $this->pdo->prepare('SELECT * FROM guest_registries WHERE reservation_uid = :uid');
+        $stmt->execute([':uid' => 'ovf_adults_only']);
+        $regRow = $stmt->fetch();
+        $this->assertNotEmpty($regRow);
+        $this->assertSame('2026-10', $regRow['privacy_policy_version']);
+        $this->assertNotEmpty($regRow['privacy_consent_at']);
+        $this->assertSame('181.55.10.9', $regRow['privacy_consent_ip']);
+        $this->assertSame(0, (int) $regRow['minor_guardian_consent']);
+    }
+
+    public function testCompleteRegistryManuallySucceedsWithoutRequiringPublicConsentCheckboxes(): void
+    {
+        $this->createSampleReservation('ovf_admin_manual_exempt');
+        $admin = new AdminContext(adminUserId: 1, ipAddress: '10.0.0.5', userAgent: 'AdminConsole');
+
+        $unconsentedMinorSub = new GuestRegistrySubmission(
+            reservationCode: 'ovf_admin_manual_exempt',
+            propertyId: '1606',
+            checkIn: '2026-11-15',
+            checkOut: '2026-11-20',
+            occupants: [
+                new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
+                new OccupantDetails(2, 'Minor Child', 8, 'Registro Civil', 'RC112233'),
+            ],
+            primaryGuestEmail: 'jane.smith@example.com',
+            privacyConsent: false,
+            minorGuardianConsent: false
+        );
+
+        $result = $this->service->completeRegistryManually('ovf_admin_manual_exempt', $admin, $unconsentedMinorSub);
+        $this->assertTrue($result->success);
+        $this->assertTrue($result->reservation?->registryCompleted);
     }
 }

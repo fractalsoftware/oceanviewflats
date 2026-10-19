@@ -452,3 +452,292 @@ test("Contact and Direct Booking forms render unchecked-by-default required priv
 		"Root Spanish home page footer must link to ./privacy/es.html",
 	);
 });
+
+test("Guest Registry pages render Personal Data Authorization and hidden disabled Minor Guardian Attestation across all 6 locales", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			file: "registry/index.html",
+			lang: "en",
+			privacyHref: "../privacy/index.html",
+		},
+		{ file: "registry/es.html", lang: "es", privacyHref: "../privacy/es.html" },
+		{ file: "registry/fr.html", lang: "fr", privacyHref: "../privacy/fr.html" },
+		{ file: "registry/it.html", lang: "it", privacyHref: "../privacy/it.html" },
+		{ file: "registry/de.html", lang: "de", privacyHref: "../privacy/de.html" },
+		{ file: "registry/ja.html", lang: "ja", privacyHref: "../privacy/ja.html" },
+	];
+
+	for (const item of locales) {
+		const content = fs.readFileSync(path.join(distDir, item.file), "utf-8");
+
+		// 1. Personal Data Authorization checkbox
+		assert.ok(
+			content.includes('id="privacy-consent"') &&
+				content.includes('name="privacy_consent"') &&
+				content.includes('name="privacy_policy_version" value="2026-10"'),
+			`${item.file} must render #privacy-consent checkbox and privacy_policy_version=2026-10`,
+		);
+		assert.ok(
+			!content.includes('id="privacy-consent" checked'),
+			`${item.file} #privacy-consent must be unchecked by default`,
+		);
+		assert.ok(
+			content.includes(`href="${item.privacyHref}"`),
+			`${item.file} must link to localized privacy policy ${item.privacyHref}`,
+		);
+
+		// 2. Minor Guardian Attestation container (hidden by default, checkbox disabled while hidden)
+		assert.ok(
+			content.includes('id="minor-attestation-container"') &&
+				content.includes('id="minor-guardian-consent"') &&
+				content.includes('name="minor_guardian_consent"'),
+			`${item.file} must render #minor-attestation-container and #minor-guardian-consent`,
+		);
+		const minorInputMatch = content.match(
+			/<input[^>]*id="minor-guardian-consent"[^>]*>/,
+		);
+		assert.ok(
+			minorInputMatch,
+			`${item.file} must contain #minor-guardian-consent input tag`,
+		);
+		assert.ok(
+			minorInputMatch[0].includes("disabled"),
+			`${item.file} #minor-guardian-consent must be disabled while hidden`,
+		);
+		assert.ok(
+			!minorInputMatch[0].includes("required"),
+			`${item.file} #minor-guardian-consent must not be required while hidden`,
+		);
+
+		// 3. Page config includes localized consent validation keys
+		const match = content.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(match, `${item.file} must include #ovf-page-config`);
+		const parsed = JSON.parse(match[1]);
+		assert.ok(
+			parsed.i18n.registryErrPrivacyConsent,
+			`${item.file} i18n must include registryErrPrivacyConsent`,
+		);
+		assert.ok(
+			parsed.i18n.registryErrMinorConsent,
+			`${item.file} i18n must include registryErrMinorConsent`,
+		);
+	}
+});
+
+test("registry.js dynamically toggles Minor Guardian Attestation when any active guest is under 18 or holds a minor ID document", () => {
+	const registryJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public/js/registry.js"),
+		"utf-8",
+	);
+
+	type Listener = (e?: any) => void;
+	const createMockElement = (
+		id: string,
+		tagName = "INPUT",
+		initialClasses: string[] = [],
+	) => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>();
+		const listeners: Record<string, Listener[]> = {};
+		const el: any = {
+			id,
+			tagName,
+			type: "text",
+			name: id,
+			value: "",
+			checked: false,
+			disabled: false,
+			required: false,
+			textContent: "",
+			className: initialClasses.join(" "),
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+				if (k === "disabled") el.disabled = true;
+				if (k === "required") el.required = true;
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+				if (k === "disabled") el.disabled = false;
+				if (k === "required") el.required = false;
+			},
+			getAttribute: (k: string) => attrs.get(k) || null,
+			hasAttribute: (k: string) => attrs.has(k),
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			removeEventListener: () => {},
+			dispatchEvent: (evt: string, payload: any = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({ target: el, preventDefault: () => {}, ...payload });
+				}
+			},
+			querySelectorAll: () => [],
+			scrollIntoView: () => {},
+			closest: () => null,
+		};
+		return el;
+	};
+
+	const elements = new Map<string, any>();
+	const register = (el: any) => {
+		elements.set(el.id, el);
+		return el;
+	};
+
+	const form = register(createMockElement("registry-form", "FORM"));
+	form.setAttribute("action", "../api/registry-processor.php");
+	register(createMockElement("submit-button", "BUTTON"));
+	register(createMockElement("submit-text", "SPAN"));
+	register(createMockElement("form-message", "DIV", ["hidden"]));
+	register(createMockElement("success-overlay", "DIV", ["hidden"]));
+	register(createMockElement("display-property", "SPAN"));
+	register(createMockElement("display-check-in", "SPAN"));
+	register(createMockElement("display-check-out", "SPAN"));
+	register(createMockElement("hidden-property", "INPUT"));
+	register(createMockElement("hidden-check-in", "INPUT"));
+	register(createMockElement("hidden-check-out", "INPUT"));
+	register(createMockElement("hidden-reservation-code", "INPUT"));
+	register(createMockElement("btn-unlocked-guide", "A"));
+	register(createMockElement("success-title", "H2"));
+	register(createMockElement("success-desc", "P"));
+	const addGuestBtn = register(createMockElement("add-guest-button", "BUTTON"));
+	register(createMockElement("guest-count-input", "INPUT"));
+	register(createMockElement("captcha-label", "SPAN"));
+	register(createMockElement("captcha-challenge", "INPUT"));
+	register(createMockElement("captcha-response", "INPUT"));
+
+	const privacyConsent = register(
+		createMockElement("privacy-consent", "INPUT"),
+	);
+	privacyConsent.type = "checkbox";
+	privacyConsent.name = "privacy_consent";
+	privacyConsent.value = "1";
+	privacyConsent.setAttribute("required", "required");
+
+	const minorContainer = register(
+		createMockElement("minor-attestation-container", "DIV", ["hidden"]),
+	);
+	const minorCheckbox = register(
+		createMockElement("minor-guardian-consent", "INPUT"),
+	);
+	minorCheckbox.type = "checkbox";
+	minorCheckbox.name = "minor_guardian_consent";
+	minorCheckbox.value = "1";
+	minorCheckbox.setAttribute("disabled", "disabled");
+
+	for (let num = 1; num <= 12; num++) {
+		const card = register(
+			createMockElement(
+				`guest-card-${num}`,
+				"DIV",
+				num === 1 ? [] : ["hidden"],
+			),
+		);
+		const age = register(createMockElement(`guest-age-${num}`, "INPUT"));
+		age.value = num === 1 ? "30" : "";
+		const docType = register(
+			createMockElement(`guest-doc-type-${num}`, "SELECT"),
+		);
+		docType.value = "Passport";
+		card.querySelectorAll = () => [age, docType];
+	}
+
+	let domReadyCallback: Listener | null = null;
+	const sandbox = {
+		document: {
+			documentElement: { lang: "en" },
+			addEventListener: (evt: string, fn: Listener) => {
+				if (evt === "DOMContentLoaded") domReadyCallback = fn;
+			},
+			getElementById: (id: string) => elements.get(id) || null,
+		},
+		window: {
+			location: {
+				search: "?property=1606&check_in=2027-01-10&check_out=2027-01-15",
+				origin: "https://oceanviewflats.com",
+			},
+			getPageConfig: () => ({
+				lang: "en",
+				assetPrefix: "../",
+				apiBase: "../api/",
+			}),
+			t: (key: string, _params?: any, fallback?: string) => fallback || key,
+			scrollTo: () => {},
+		},
+		URLSearchParams,
+		URL,
+		Intl,
+		Date,
+		FormData: class {},
+		fetch: async () => ({
+			ok: true,
+			json: async () => ({ challenge: "2 + 3", signature: "sig" }),
+		}),
+		console: { error: () => {} },
+		setTimeout,
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(registryJsCode, sandbox);
+	assert.ok(
+		domReadyCallback,
+		"registry.js must register DOMContentLoaded listener",
+	);
+	(domReadyCallback as Listener)();
+
+	// 1. Initially Guest 1 is age 30 with Passport -> minor container is hidden & checkbox disabled
+	assert.equal(minorContainer.classList.contains("hidden"), true);
+	assert.equal(minorCheckbox.disabled, true);
+	assert.equal(minorCheckbox.required, false);
+
+	// 2. Guest 1 age changed to 14 -> reveals container and enables/requires checkbox
+	const age1 = elements.get("guest-age-1");
+	age1.value = "14";
+	form.dispatchEvent("input", { target: age1 });
+	assert.equal(minorContainer.classList.contains("hidden"), false);
+	assert.equal(minorCheckbox.disabled, false);
+	assert.equal(minorCheckbox.required, true);
+
+	// 3. Guest 1 age changed back to 30 -> hides container and resets checkbox
+	minorCheckbox.checked = true;
+	age1.value = "30";
+	form.dispatchEvent("input", { target: age1 });
+	assert.equal(minorContainer.classList.contains("hidden"), true);
+	assert.equal(minorCheckbox.disabled, true);
+	assert.equal(minorCheckbox.required, false);
+	assert.equal(minorCheckbox.checked, false);
+
+	// 4. Guest 1 doc_type changed to 'Tarjeta de Identidad' (even at age 30) -> reveals container
+	const docType1 = elements.get("guest-doc-type-1");
+	docType1.value = "Tarjeta de Identidad";
+	form.dispatchEvent("change", { target: docType1 });
+	assert.equal(minorContainer.classList.contains("hidden"), false);
+	assert.equal(minorCheckbox.disabled, false);
+	assert.equal(minorCheckbox.required, true);
+
+	// 5. Guest 1 doc_type back to 'Passport', add Guest 2 with 'Registro Civil' -> reveals container
+	docType1.value = "Passport";
+	form.dispatchEvent("change", { target: docType1 });
+	assert.equal(minorContainer.classList.contains("hidden"), true);
+
+	addGuestBtn.dispatchEvent("click");
+	const docType2 = elements.get("guest-doc-type-2");
+	docType2.value = "Registro Civil";
+	form.dispatchEvent("change", { target: docType2 });
+	assert.equal(minorContainer.classList.contains("hidden"), false);
+	assert.equal(minorCheckbox.disabled, false);
+	assert.equal(minorCheckbox.required, true);
+});

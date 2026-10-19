@@ -15,6 +15,10 @@ import {
 import React, { useEffect, useState } from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
+import {
+	getPrivacyPolicyPath,
+	PRIVACY_POLICY_VERSION,
+} from "../constants/config";
 import { CONDOMINIUM_PORTAL_COUNTRIES } from "../constants/countries";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
@@ -22,6 +26,7 @@ import type { AppProps } from "../types";
 export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 	const t = dict[lang];
 	const [isScrolled, setIsScrolled] = useState(false);
+	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -556,6 +561,76 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 								/>
 							</div>
 
+							{/* Reactive Minor Guardian Attestation (Ley 1581 Art. 7 & Ley 679 of 2001) */}
+							<div
+								id="minor-attestation-container"
+								className="hidden p-5 bg-amber-50/80 rounded-2xl border border-amber-200 space-y-3 transition-all duration-300"
+							>
+								<div className="flex items-center space-x-2 text-amber-800">
+									<ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+									<div className="flex flex-wrap items-center gap-2">
+										<span className="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-200/70 text-amber-900">
+											{t.registryMinorConsentBadge}
+										</span>
+										<h4 className="text-sm font-bold text-amber-950">
+											{t.registryMinorConsentTitle}
+										</h4>
+									</div>
+								</div>
+								<div className="flex items-start space-x-3 pt-1">
+									<input
+										type="checkbox"
+										id="minor-guardian-consent"
+										name="minor_guardian_consent"
+										value="1"
+										disabled
+										className="mt-1 h-4 w-4 rounded border-amber-400 text-[#FF5A5F] focus:ring-[#FF5A5F] cursor-pointer shrink-0"
+									/>
+									<label
+										htmlFor="minor-guardian-consent"
+										className="text-xs text-amber-900 leading-relaxed cursor-pointer"
+									>
+										{t.registryMinorConsentText}
+									</label>
+								</div>
+							</div>
+
+							{/* Personal Data Authorization (Ley 1581 of 2012) */}
+							<div
+								id="privacy-consent-container"
+								className="flex items-start space-x-3 p-5 bg-slate-50 rounded-2xl border border-slate-100"
+							>
+								<input
+									type="checkbox"
+									id="privacy-consent"
+									name="privacy_consent"
+									value="1"
+									required
+									className="mt-1 h-4 w-4 rounded border-slate-300 text-[#FF5A5F] focus:ring-[#FF5A5F] cursor-pointer shrink-0"
+								/>
+								<input
+									type="hidden"
+									id="privacy-policy-version"
+									name="privacy_policy_version"
+									value={PRIVACY_POLICY_VERSION}
+								/>
+								<label
+									htmlFor="privacy-consent"
+									className="text-xs text-slate-600 leading-relaxed cursor-pointer"
+								>
+									{t.registryPrivacyConsentPrefix}{" "}
+									<a
+										href={privacyHref}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="font-semibold text-[#FF5A5F] hover:text-[#FF424D] underline"
+									>
+										{t.registryPrivacyConsentLink}
+									</a>{" "}
+									{t.registryPrivacyConsentSuffix}
+								</label>
+							</div>
+
 							{/* Submit Button */}
 							<button
 								type="submit"
@@ -570,7 +645,7 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

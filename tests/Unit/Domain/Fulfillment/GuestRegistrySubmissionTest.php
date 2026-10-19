@@ -456,4 +456,46 @@ final class GuestRegistrySubmissionTest extends TestCase
         $this->assertSame('+1 415 555 2671', $g1->phone);
         $this->assertSame('ESTADOS UNIDOS', $g1->country);
     }
+
+    public function testOccupantIsMinorAndSubmissionHasMinorOccupant(): void
+    {
+        $adult = new OccupantDetails(1, 'Adult Guest', 25, 'Passport', 'PA123456');
+        $minorByAge = new OccupantDetails(2, 'Child Guest', 12, 'Passport', 'PA654321');
+        $minorByTi = new OccupantDetails(3, 'Teen Guest', 18, 'Tarjeta de Identidad', 'TI112233');
+        $minorByRc = new OccupantDetails(4, 'Infant Guest', 19, 'Registro Civil', 'RC445566');
+
+        $this->assertFalse($adult->isMinor());
+        $this->assertTrue($minorByAge->isMinor());
+        $this->assertTrue($minorByTi->isMinor());
+        $this->assertTrue($minorByRc->isMinor());
+
+        $adultOnlySub = GuestRegistrySubmission::fromArray([
+            'reservation_code' => 'res_adult',
+            'property_id' => '1606',
+            'check_in' => '2026-10-01',
+            'check_out' => '2026-10-05',
+            'primary_guest_email' => 'adult@example.com',
+            'occupants' => [$adult],
+        ]);
+        $this->assertFalse($adultOnlySub->hasMinorOccupant());
+        $this->assertFalse($adultOnlySub->privacyConsent);
+        $this->assertFalse($adultOnlySub->minorGuardianConsent);
+        $this->assertSame('2026-10', $adultOnlySub->privacyPolicyVersion);
+
+        $minorSub = GuestRegistrySubmission::fromArray([
+            'reservation_code' => 'res_minor',
+            'property_id' => '1606',
+            'check_in' => '2026-10-01',
+            'check_out' => '2026-10-05',
+            'primary_guest_email' => 'adult@example.com',
+            'occupants' => [$adult, $minorByAge],
+            'privacy_consent' => '1',
+            'minor_guardian_consent' => '1',
+            'privacy_policy_version' => '2026-10',
+        ]);
+        $this->assertTrue($minorSub->hasMinorOccupant());
+        $this->assertTrue($minorSub->privacyConsent);
+        $this->assertTrue($minorSub->minorGuardianConsent);
+        $this->assertSame('2026-10', $minorSub->privacyPolicyVersion);
+    }
 }

@@ -30,12 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgConcluded = t('registryConcluded', {}, 'This reservation has concluded. Access to guest registration is no longer active.');
     const msgErrEmail = t('registryErrEmail', {}, '');
     const msgErrPhone = t('registryErrPhoneRequired', {}, '');
+    const msgErrPrivacyConsent = t('registryErrPrivacyConsent', {}, t('regErrPrivacyConsent', {}, ''));
+    const msgErrMinorConsent = t('registryErrMinorConsent', {}, t('regErrMinorGuardianConsent', {}, ''));
 
     const addGuestBtn = document.getElementById('add-guest-button');
     const guestCountInput = document.getElementById('guest-count-input');
     const captchaLabel = document.getElementById('captcha-label');
     const captchaChallenge = document.getElementById('captcha-challenge');
     const captchaResponse = document.getElementById('captcha-response');
+    const privacyConsentCheckbox = document.getElementById('privacy-consent') || document.getElementById('registry-privacy-consent');
+    const minorAttestationContainer = document.getElementById('minor-attestation-container');
+    const minorGuardianCheckbox = document.getElementById('minor-guardian-consent');
 
     // Safely sanitize URLs before assigning to href
     function sanitizeUrl(url) {
@@ -252,9 +257,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Manage Dynamic Guest Cards (up to maxGuests guests; default 6, max 12)
     const ABSOLUTE_MAX_GUESTS = 12;
+    const MINOR_DOC_TYPES = ['Tarjeta de Identidad', 'Registro Civil'];
     let maxGuests = 6;
     let currentGuestCount = 1;
     let isRegistryCompleted = false;
+
+    function isGuestCardMinor(num) {
+        const ageInput = document.getElementById(`guest-age-${num}`);
+        const docTypeSelect = document.getElementById(`guest-doc-type-${num}`);
+
+        if (ageInput) {
+            const rawAge = String(ageInput.value || '').trim();
+            if (rawAge !== '') {
+                const parsedAge = parseInt(rawAge, 10);
+                if (!isNaN(parsedAge) && parsedAge >= 0 && parsedAge < 18) {
+                    return true;
+                }
+            }
+        }
+
+        if (docTypeSelect) {
+            const docType = String(docTypeSelect.value || '').trim();
+            if (MINOR_DOC_TYPES.includes(docType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function evaluateMinorPresence() {
+        let hasMinor = false;
+        for (let num = 1; num <= currentGuestCount; num++) {
+            if (isGuestCardMinor(num)) {
+                hasMinor = true;
+                break;
+            }
+        }
+
+        if (minorAttestationContainer && minorGuardianCheckbox) {
+            if (hasMinor) {
+                minorAttestationContainer.classList.remove('hidden');
+                minorGuardianCheckbox.disabled = false;
+                minorGuardianCheckbox.required = true;
+                minorGuardianCheckbox.removeAttribute('disabled');
+                minorGuardianCheckbox.setAttribute('required', 'required');
+            } else {
+                minorAttestationContainer.classList.add('hidden');
+                minorGuardianCheckbox.checked = false;
+                minorGuardianCheckbox.disabled = true;
+                minorGuardianCheckbox.required = false;
+                minorGuardianCheckbox.setAttribute('disabled', 'disabled');
+                minorGuardianCheckbox.removeAttribute('required');
+            }
+        }
+
+        return hasMinor;
+    }
 
     // Helper to update dynamic guest card input states (enable/disable for submission correctness)
     function updateGuestCards() {
@@ -298,6 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             addGuestBtn.classList.remove('hidden');
         }
+
+        evaluateMinorPresence();
     }
 
     // Add guest button handler
@@ -358,6 +419,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the guest cards correct disabled states
     updateGuestCards();
 
+    // Re-evaluate minor attestation whenever age or document type changes on any active guest card
+    form.addEventListener('input', (e) => {
+        const target = e.target;
+        if (target && target.id && (target.id.startsWith('guest-age-') || target.id.startsWith('guest-doc-type-'))) {
+            evaluateMinorPresence();
+        }
+    });
+    form.addEventListener('change', (e) => {
+        const target = e.target;
+        if (target && target.id && (target.id.startsWith('guest-age-') || target.id.startsWith('guest-doc-type-'))) {
+            evaluateMinorPresence();
+        }
+    });
+
     // 3. Dynamic Math Captcha fetch
     let captchaSignature = '';
     async function loadCaptcha() {
@@ -407,16 +482,31 @@ document.addEventListener('DOMContentLoaded', () => {
         msgBox.className = 'hidden';
         msgBox.textContent = '';
 
+        // Re-evaluate minor presence before validation
+        const hasMinorOccupant = evaluateMinorPresence();
+
         // Front-end Validation (check visible inputs)
         const visibleInputs = form.querySelectorAll('input:not([disabled]):not([type="hidden"]), select:not([disabled])');
         let isValid = true;
+        let missingPrivacyConsent = false;
+        let missingMinorConsent = false;
         visibleInputs.forEach(input => {
-            if (input.hasAttribute('required') && !input.value.trim()) {
-                isValid = false;
+            const isInvalid = input.type === 'checkbox'
+                ? (input.hasAttribute('required') && !input.checked)
+                : (input.hasAttribute('required') && !input.value.trim());
+            if (isInvalid) {
+                if (input.id === 'privacy-consent' || input.id === 'registry-privacy-consent' || input.name === 'privacy_consent') {
+                    missingPrivacyConsent = true;
+                } else if (input.id === 'minor-guardian-consent' || input.name === 'minor_guardian_consent') {
+                    missingMinorConsent = true;
+                } else {
+                    isValid = false;
+                }
                 input.classList.add('border-red-400');
-                input.addEventListener('input', function removeRed() {
+                const evtName = input.type === 'checkbox' ? 'change' : 'input';
+                input.addEventListener(evtName, function removeRed() {
                     input.classList.remove('border-red-400');
-                    input.removeEventListener('input', removeRed);
+                    input.removeEventListener(evtName, removeRed);
                 });
             }
         });
@@ -467,6 +557,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 showMsg(msgErrPhone || defaultErrorMsg, false);
                 return;
             }
+        }
+
+        // Validate Personal Data Authorization (Ley 1581 of 2012)
+        if (missingPrivacyConsent || !privacyConsentCheckbox || !privacyConsentCheckbox.checked) {
+            showMsg(msgErrPrivacyConsent || defaultErrorMsg, false);
+            return;
+        }
+
+        // Validate Minor Guardian Attestation when any active occupant is a minor (Ley 1581 Art. 7 & Ley 679 of 2001)
+        if (missingMinorConsent || (hasMinorOccupant && (!minorGuardianCheckbox || !minorGuardianCheckbox.checked))) {
+            showMsg(msgErrMinorConsent || defaultErrorMsg, false);
+            return;
         }
 
         // Backwards compatibility: populate hidden guest_name_${num}

@@ -29,7 +29,11 @@ final class GuestRegistrySubmission
         public readonly ?string $carPlates = null,
         public readonly ?string $carModel = null,
         public readonly ?string $ipAddress = null,
-        public readonly string $lang = 'es'
+        public readonly string $lang = 'es',
+        public readonly bool $privacyConsent = true,
+        public readonly string $privacyPolicyVersion = '2026-10',
+        public readonly bool $minorGuardianConsent = false,
+        public readonly ?\DateTimeImmutable $privacyConsentAt = null
     ) {
         $trimmedEmail = trim($this->primaryGuestEmail);
         if ($trimmedEmail === '' || !filter_var($trimmedEmail, FILTER_VALIDATE_EMAIL) || strlen($this->primaryGuestEmail) > 100) {
@@ -126,6 +130,17 @@ final class GuestRegistrySubmission
             || ($this->carModel !== null && trim($this->carModel) !== '');
     }
 
+    public function hasMinorOccupant(): bool
+    {
+        foreach ($this->occupants as $occupant) {
+            if ($occupant->isMinor()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -143,6 +158,9 @@ final class GuestRegistrySubmission
             'car_model' => $this->carModel,
             'ip_address' => $this->ipAddress,
             'lang' => $this->lang,
+            'privacy_consent' => $this->privacyConsent,
+            'privacy_policy_version' => $this->privacyPolicyVersion,
+            'minor_guardian_consent' => $this->minorGuardianConsent,
         ];
     }
 
@@ -267,6 +285,21 @@ final class GuestRegistrySubmission
             $lang = 'es';
         }
 
+        $rawPrivacyConsent = $data['privacy_consent'] ?? $data['privacyConsent'] ?? false;
+        $privacyConsent = in_array(strtolower(trim((string) $rawPrivacyConsent)), ['1', 'true', 'on', 'yes'], true)
+            || $rawPrivacyConsent === true
+            || $rawPrivacyConsent === 1;
+
+        $rawMinorConsent = $data['minor_guardian_consent'] ?? $data['minorGuardianConsent'] ?? false;
+        $minorGuardianConsent = in_array(strtolower(trim((string) $rawMinorConsent)), ['1', 'true', 'on', 'yes'], true)
+            || $rawMinorConsent === true
+            || $rawMinorConsent === 1;
+
+        $privacyPolicyVersion = trim((string) ($data['privacy_policy_version'] ?? $data['privacyPolicyVersion'] ?? '2026-10'));
+        if ($privacyPolicyVersion === '') {
+            $privacyPolicyVersion = '2026-10';
+        }
+
         return new self(
             reservationCode: $reservationCode,
             propertyId: $propertyId,
@@ -277,7 +310,10 @@ final class GuestRegistrySubmission
             carPlates: $carPlates,
             carModel: $carModel,
             ipAddress: $ipAddress,
-            lang: $lang
+            lang: $lang,
+            privacyConsent: $privacyConsent,
+            privacyPolicyVersion: $privacyPolicyVersion,
+            minorGuardianConsent: $minorGuardianConsent
         );
     }
 }
