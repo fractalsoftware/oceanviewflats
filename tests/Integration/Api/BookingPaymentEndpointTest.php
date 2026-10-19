@@ -71,6 +71,10 @@ final class BookingPaymentEndpointTest extends TestCase
                 registry_completed INTEGER DEFAULT 0,
                 registry_completed_at TEXT,
                 door_code TEXT,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -126,6 +130,8 @@ final class BookingPaymentEndpointTest extends TestCase
             'lang' => 'en',
             'client_ip' => '190.24.12.34',
             'idempotency_key' => 'idem_' . bin2hex(random_bytes(6)),
+            'privacy_consent' => true,
+            'privacy_policy_version' => '2026-10',
         ], $overrides);
 
         return BookingPaymentRequest::fromArray($data);
@@ -180,6 +186,9 @@ final class BookingPaymentEndpointTest extends TestCase
         $this->assertSame('pay_card_approved_101', $row['mercadopago_payment_id']);
         $this->assertSame('1606', $row['property_id']);
         $this->assertSame('Carlos Rodriguez', $row['guest_name']);
+        $this->assertSame('2026-10', $row['privacy_policy_version']);
+        $this->assertNotEmpty($row['privacy_consent_at']);
+        $this->assertSame('190.24.12.34', $row['privacy_consent_ip']);
 
         // Verify idempotency was saved
         $stmt = $this->pdo->prepare('SELECT payment_id FROM payment_idempotency WHERE idempotency_key = :k');
@@ -364,6 +373,14 @@ final class BookingPaymentEndpointTest extends TestCase
         );
         $this->assertFalse($resPastDate->success);
         $this->assertSame(400, $resPastDate->httpStatusCode);
+
+        // 7. Missing privacy consent (Ley 1581 of 2012)
+        $resMissingConsent = $this->processor->processBookingPayment(
+            $this->createValidRequest(['privacy_consent' => false])
+        );
+        $this->assertFalse($resMissingConsent->success);
+        $this->assertSame(400, $resMissingConsent->httpStatusCode);
+        $this->assertStringContainsString('personal data processing policy', strtolower($resMissingConsent->message));
     }
 
     /**

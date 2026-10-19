@@ -43,6 +43,10 @@ CREATE TABLE IF NOT EXISTS `reservations` (
   `door_code` VARCHAR(20) DEFAULT NULL,
   `notes` TEXT DEFAULT NULL,
   `max_guests` TINYINT UNSIGNED NOT NULL DEFAULT 6,
+  `privacy_policy_version` VARCHAR(16) DEFAULT NULL,
+  `privacy_consent_at` DATETIME DEFAULT NULL,
+  `privacy_consent_ip` VARCHAR(45) DEFAULT NULL,
+  `pii_redacted_at` DATETIME DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
@@ -75,6 +79,11 @@ CREATE TABLE IF NOT EXISTS `guest_registries` (
   `car_plates` VARCHAR(20) DEFAULT NULL,
   `car_model` VARCHAR(100) DEFAULT NULL,
   `ip_address` VARCHAR(45) DEFAULT NULL,
+  `privacy_policy_version` VARCHAR(16) DEFAULT NULL,
+  `privacy_consent_at` DATETIME DEFAULT NULL,
+  `privacy_consent_ip` VARCHAR(45) DEFAULT NULL,
+  `minor_guardian_consent` TINYINT(1) NOT NULL DEFAULT 0,
+  `pii_redacted_at` DATETIME DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_reg_reservation` (`reservation_uid`),
   INDEX `idx_reg_property_dates` (`property_id`, `check_in`, `check_out`)

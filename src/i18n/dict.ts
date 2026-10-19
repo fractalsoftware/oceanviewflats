@@ -434,6 +434,122 @@ export const dict = {
 		dbPendingSubtitle:
 			"Your payment is currently pending or undergoing bank authorization. We have logged your reservation details under a temporary hold. We will confirm your booking as soon as the transaction clears.",
 		dbPendingHomeBtn: "Back to Home",
+		footerPrivacyLink: "Data Processing Policy (Ley 1581)",
+		contactPrivacyConsentPrefix: "I have read and accept the",
+		contactPrivacyConsentLink:
+			"Personal Data Processing Policy (Law 1581 of 2012)",
+		contactPrivacyConsentSuffix:
+			"and authorize OceanViewFlats to process my personal data to respond to this inquiry.",
+		contactErrPrivacyConsent:
+			"Please accept the Personal Data Processing Policy before sending your inquiry.",
+		dbPrivacyConsentPrefix: "I have read and accept the",
+		dbPrivacyConsentLink: "Personal Data Processing Policy (Law 1581 of 2012)",
+		dbPrivacyConsentSuffix:
+			"and authorize the processing and transmission of my personal data for reservation management, payment processing (Mercado Pago), and statutory hospitality compliance.",
+		dbErrPrivacyConsent:
+			"Please accept the Personal Data Processing Policy before proceeding with your booking.",
+		registryPrivacyConsentPrefix: "I have read and accept the",
+		registryPrivacyConsentLink:
+			"Personal Data Processing Policy (Law 1581 of 2012)",
+		registryPrivacyConsentSuffix:
+			"and authorize the collection and transmission of occupant identification and vehicle records for Colombian hospitality regulations (Law 1558 / Decree 2590) and Edificio Salguero Sunset security clearance.",
+		registryErrPrivacyConsent:
+			"Please accept the Personal Data Processing Policy before submitting the guest registry.",
+		registryMinorConsentBadge: "Law 1581 Art. 7 & Law 679 of 2001",
+		registryMinorConsentTitle:
+			"Parental Authority / Legal Guardian Attestation (Minors Under 18)",
+		registryMinorConsentText:
+			"I declare under penalty of perjury that I hold parental authority (patria potestad) or express written legal guardianship for every minor under 18 registered in this stay, in compliance with Colombian Law 1581 of 2012 (Art. 7) and Law 679 of 2001 / Law 1336 of 2009 (ESCNNA prevention).",
+		registryErrMinorConsent:
+			"Parental authority or legal guardian attestation is required when registering minors under 18.",
+		privacySeoTitle:
+			"Personal Data Processing Policy (Ley 1581) | OceanViewFlats Santa Marta",
+		privacySeoDescription:
+			"Official Personal Data Processing Policy (Política de Tratamiento de Datos Personales - PTDP) of OceanViewFlats under Colombian Statutory Law 1581 of 2012 and Decree 1377 of 2013.",
+		privacyBadge: "Colombian Statutory Law 1581 of 2012 • Habeas Data",
+		privacyTitle: "Personal Data Processing Policy",
+		privacySubtitle:
+			"Política de Tratamiento de Datos Personales (PTDP) — Statutory Notice, Processing Purposes, and ARCO Rights",
+		privacyVersionLabel: "Policy Version",
+		privacyEffectiveDate: "Effective October 2026",
+		privacyControllerTitle:
+			"1. Identification of the Data Controller (Responsable del Tratamiento)",
+		privacyControllerIntro:
+			"In compliance with Colombian Statutory Law 1581 of 2012 and Decree 1377 of 2013 (incorporated into Decree 1074 of 2015), the Data Controller responsible for the collection, storage, use, circulation, and suppression of your personal data is:",
+		privacyControllerNameLabel: "Data Controller",
+		privacyControllerRntLabel: "National Tourism Registry (RNT)",
+		privacyControllerAddressLabel: "Physical Domicile",
+		privacyControllerEmailLabel: "Habeas Data Email",
+		privacyControllerPhoneLabel: "Telephone / WhatsApp",
+		privacyLegalTitle: "2. Applicable Legal & Regulatory Framework",
+		privacyLegalIntro:
+			"Personal data processing at OceanViewFlats is governed by the following Colombian statutes:",
+		privacyLegalLaw1581:
+			"Statutory Law 1581 of 2012 & Decree 1377 of 2013 (Decree 1074 of 2015): General regime for the protection of personal data and prior, express, and informed authorization.",
+		privacyLegalLaw2068:
+			"Law 1558 of 2012, Law 2068 of 2020 & Decree 2590 of 2009: Mandatory hospitality guest registration (Tarjeta de Registro de Alojamiento - TRA / SIRE) and building security identification.",
+		privacyLegalLaw679:
+			"Law 679 of 2001 & Law 1336 of 2009: Prevention of sexual exploitation and commercial abuse of children and adolescents (ESCNNA) in tourism and hospitality.",
+		privacyPurposesTitle: "3. Purposes of Personal Data Processing",
+		privacyPurposesIntro:
+			"Your personal data is collected and processed strictly for the following authorized purposes:",
+		privacyPurpose1Title: "Inquiries & Guest Communication",
+		privacyPurpose1Desc:
+			"Responding to availability inquiries, quotes, pre-arrival coordination, and customer support requests submitted via our Contact channel.",
+		privacyPurpose2Title: "Direct Reservations & Financial Settlement",
+		privacyPurpose2Desc:
+			"Processing direct bookings, payment transactions, refunds, and maintaining accounting and tax records required under Colombian law.",
+		privacyPurpose3Title: "Mandatory Hospitality Guest Registry",
+		privacyPurpose3Desc:
+			"Recording identification, ages, nationalities, and contact details of the Primary Guest and accompanying Guests prior to check-in per Colombian tourism regulations.",
+		privacyPurpose4Title: "Condominium Clearance & Smart-Lock Access",
+		privacyPurpose4Desc:
+			"Registering authorized occupants and vehicles with Edificio Salguero Sunset front-desk security and issuing temporary random smart-lock entry PINs.",
+		privacyMinorsTitle:
+			"4. Special Protection of Children and Adolescents (Minors Under 18)",
+		privacyMinorsDesc1:
+			"Pursuant to Article 7 of Law 1581 of 2012 and Law 679 of 2001, the processing of personal data of children and adolescents is strictly limited to statutory hospitality registration and building safety, always respecting their prevailing fundamental rights.",
+		privacyMinorsDesc2:
+			"Whenever a minor under 18 (or holder of a Tarjeta de Identidad or Registro Civil) is included in the Guest Registry, the Primary Guest must explicitly attest to holding parental authority (patria potestad) or written legal representation from the minor's parents.",
+		privacyTransmissionsTitle: "5. Third-Party Transmissions & Recipients",
+		privacyTransmissionsIntro:
+			"OceanViewFlats never sells or rents personal data. Data is transmitted exclusively to the following operational and statutory recipients:",
+		privacyTransMercadoPagoTitle: "Mercado Pago Colombia (Payment Gateway)",
+		privacyTransMercadoPagoDesc:
+			"Processes credit/debit card, PSE bank transfer, and Efecty cash voucher payments during Direct Reservation checkout under PCI-DSS security standards.",
+		privacyTransCondoTitle:
+			"Condominium Administration Portal (Edificio Salguero Sunset / Huésped Manager)",
+		privacyTransCondoDesc:
+			"Receives occupant identification and vehicle plate details strictly to issue front-desk building clearance, wristbands, and parking authorization.",
+		privacyTransAuthoritiesTitle: "Colombian Statutory Authorities",
+		privacyTransAuthoritiesDesc:
+			"Ministry of Commerce, Industry and Tourism (MinCIT), Migración Colombia, and DIAN when required by applicable hospitality and tax mandates.",
+		privacyArcoTitle:
+			"6. Habeas Data (ARCO) Rights, Consultations & Claims Procedure",
+		privacyArcoIntro:
+			"As the Data Subject (Titular), you have the constitutional right to Know, Update, Rectify, and Suppress your personal data, request proof of authorization, and revoke consent whenever no legal or contractual duty requires retention.",
+		privacyArcoRightsList:
+			"You may exercise your rights free of charge at any time by submitting a written request to rentals@oceanviewflats.com including your full name, identification number, contact details, and description of your request.",
+		privacyArcoConsultasTitle: "Consultations (Consultas — Art. 14 Law 1581)",
+		privacyArcoConsultasSla:
+			"Maximum response time: 10 business days (10 días hábiles)",
+		privacyArcoConsultasDesc:
+			"Requests to inspect or obtain a copy of the personal data held by OceanViewFlats are answered within ten (10) business days from receipt. If an extension is required, we will notify you before expiration and respond within five (5) additional business days.",
+		privacyArcoReclamosTitle:
+			"Claims (Reclamos — Correction, Update, or Suppression — Art. 15 Law 1581)",
+		privacyArcoReclamosSla:
+			"Maximum response time: 15 business days (15 días hábiles)",
+		privacyArcoReclamosDesc:
+			"Requests to correct, update, or suppress personal data (or report an alleged breach) are resolved within fifteen (15) business days from the day following receipt. Incomplete claims will be notified within five (5) business days, and if an extension is required, it will not exceed eight (8) additional business days.",
+		privacyArcoChannelDesc: "Dedicated Data Protection Channel:",
+		privacySecurityTitle:
+			"7. Information Security, Cryptographic Protection & Retention Window",
+		privacySecurityDesc1:
+			"Guest Registry occupant payloads are encrypted at rest using authenticated symmetric cryptography (XSalsa20-Poly1305), and identification numbers are masked across secondary logs and email notifications.",
+		privacySecurityDesc2:
+			"Smart-lock door codes are generated using cryptographically random digits and never encode personal identification numbers.",
+		privacyRetentionDesc:
+			"In accordance with the Principle of Temporality (Decree 1377 Art. 11), personal identification and guest registry records of concluded stays are automatically redacted 90 days after check-out (or immediately upon an approved ARCO suppression claim), while preserving anonymized financial and occupancy aggregates required for tax compliance.",
 	},
 	es: {
 		seoHomeTitle:
@@ -886,6 +1002,122 @@ export const dict = {
 		dbPendingSubtitle:
 			"Su pago se encuentra actualmente pendiente o en proceso de autorización bancaria. Hemos registrado su reserva bajo un bloqueo temporal. Confirmaremos su reserva tan pronto como se apruebe la transacción.",
 		dbPendingHomeBtn: "Volver al Inicio",
+		footerPrivacyLink: "Política de Tratamiento de Datos Personales (Ley 1581)",
+		contactPrivacyConsentPrefix: "He leído y acepto la",
+		contactPrivacyConsentLink:
+			"Política de Tratamiento de Datos Personales (Ley 1581 de 2012)",
+		contactPrivacyConsentSuffix:
+			"y autorizo de manera previa, expresa e informada a OceanViewFlats para tratar mis datos personales con el fin de atender esta consulta.",
+		contactErrPrivacyConsent:
+			"Por favor acepte la Política de Tratamiento de Datos Personales antes de enviar su consulta.",
+		dbPrivacyConsentPrefix: "He leído y acepto la",
+		dbPrivacyConsentLink:
+			"Política de Tratamiento de Datos Personales (Ley 1581 de 2012)",
+		dbPrivacyConsentSuffix:
+			"y autorizo el tratamiento y transmisión de mis datos personales para la gestión de la reserva, procesamiento de pagos (Mercado Pago) y cumplimiento normativo hotelero.",
+		dbErrPrivacyConsent:
+			"Por favor acepte la Política de Tratamiento de Datos Personales antes de continuar con su reserva.",
+		registryPrivacyConsentPrefix: "He leído y acepto la",
+		registryPrivacyConsentLink:
+			"Política de Tratamiento de Datos Personales (Ley 1581 de 2012)",
+		registryPrivacyConsentSuffix:
+			"y autorizo la recolección y transmisión de los datos de identificación y vehículo de los huéspedes para el cumplimiento de las normas de turismo de Colombia (Ley 1558 / Decreto 2590) y el registro de seguridad del Edificio Salguero Sunset.",
+		registryErrPrivacyConsent:
+			"Por favor acepte la Política de Tratamiento de Datos Personales antes de enviar el registro de huéspedes.",
+		registryMinorConsentBadge: "Ley 1581 Art. 7 y Ley 679 de 2001",
+		registryMinorConsentTitle:
+			"Declaración de Patria Potestad / Representación Legal de Menores de Edad",
+		registryMinorConsentText:
+			"Declaro bajo la gravedad de juramento que ejerzo la patria potestad o cuento con autorización escrita de representación legal respecto de cada menor de 18 años incluido en este registro, en cumplimiento del artículo 7 de la Ley 1581 de 2012 y la Ley 679 de 2001 / Ley 1336 de 2009 (prevención de ESCNNA).",
+		registryErrMinorConsent:
+			"Se requiere la declaración de patria potestad o representación legal cuando se registran menores de 18 años.",
+		privacySeoTitle:
+			"Política de Tratamiento de Datos Personales (Ley 1581) | OceanViewFlats Santa Marta",
+		privacySeoDescription:
+			"Política oficial de Tratamiento de Datos Personales (PTDP) de OceanViewFlats en cumplimiento de la Ley Estatutaria 1581 de 2012 y el Decreto 1377 de 2013 en Colombia.",
+		privacyBadge: "Ley Estatutaria 1581 de 2012 • Habeas Data Colombia",
+		privacyTitle: "Política de Tratamiento de Datos Personales",
+		privacySubtitle:
+			"Aviso de Privacidad, Finalidades del Tratamiento y Procedimiento para el Ejercicio de Derechos ARCO",
+		privacyVersionLabel: "Versión de la Política",
+		privacyEffectiveDate: "Vigente desde Octubre de 2026",
+		privacyControllerTitle: "1. Identificación del Responsable del Tratamiento",
+		privacyControllerIntro:
+			"En cumplimiento de la Ley Estatutaria 1581 de 2012 y el Decreto Reglamentario 1377 de 2013 (compilado en el Decreto Único 1074 de 2015), se informa a los Titulares que el Responsable del Tratamiento de los datos personales recolectados es:",
+		privacyControllerNameLabel: "Responsable del Tratamiento",
+		privacyControllerRntLabel: "Registro Nacional de Turismo (RNT)",
+		privacyControllerAddressLabel: "Domicilio Físico",
+		privacyControllerEmailLabel: "Correo de Habeas Data",
+		privacyControllerPhoneLabel: "Teléfono / WhatsApp",
+		privacyLegalTitle: "2. Marco Normativo Aplicable",
+		privacyLegalIntro:
+			"El tratamiento de datos personales en OceanViewFlats se rige por las siguientes disposiciones legales colombianas:",
+		privacyLegalLaw1581:
+			"Ley Estatutaria 1581 de 2012 y Decreto 1377 de 2013 (Decreto 1074 de 2015): Régimen General de Protección de Datos Personales y requisito de autorización previa, expresa e informada.",
+		privacyLegalLaw2068:
+			"Ley 1558 de 2012, Ley 2068 de 2020 y Decreto 2590 de 2009: Obligación de diligenciamiento del registro de huéspedes (TRA / SIRE) y control de seguridad en propiedad horizontal.",
+		privacyLegalLaw679:
+			"Ley 679 de 2001 y Ley 1336 de 2009: Prevención de la explotación sexual comercial de niños, niñas y adolescentes (ESCNNA) en la actividad turística y hotelera.",
+		privacyPurposesTitle: "3. Finalidades del Tratamiento de Datos Personales",
+		privacyPurposesIntro:
+			"Los datos personales suministrados por los visitantes y huéspedes son tratados exclusivamente para las siguientes finalidades autorizadas:",
+		privacyPurpose1Title: "Atención de Consultas y Cotizaciones",
+		privacyPurpose1Desc:
+			"Responder solicitudes de disponibilidad, cotizaciones, coordinación previa a la llegada y soporte al huésped a través de nuestro formulario de contacto.",
+		privacyPurpose2Title: "Gestión de Reservas Directas y Pagos",
+		privacyPurpose2Desc:
+			"Procesar reservas directas, pagos en línea, reembolsos y conservar los soportes contables y tributarios exigidos por la ley colombiana.",
+		privacyPurpose3Title: "Registro Obligatorio de Huéspedes",
+		privacyPurpose3Desc:
+			"Registrar la identificación, edades, nacionalidades y datos de contacto del Huésped Principal y sus acompañantes antes del check-in conforme a la normativa turística.",
+		privacyPurpose4Title:
+			"Autorización de Ingreso al Condominio y Acceso Digital",
+		privacyPurpose4Desc:
+			"Tramitar la autorización de ingreso peatonal y vehicular ante la administración del Edificio Salguero Sunset y generar claves temporales aleatorias para la cerradura inteligente.",
+		privacyMinorsTitle:
+			"4. Tratamiento de Datos de Niños, Niñas y Adolescentes (Menores de 18 Años)",
+		privacyMinorsDesc1:
+			"De conformidad con el artículo 7 de la Ley 1581 de 2012 y la Ley 679 de 2001, el tratamiento de datos de menores de edad se limita estrictamente al cumplimiento del registro hotelero legal y la seguridad del edificio, asegurando siempre el respeto de sus derechos fundamentales prevalentes.",
+		privacyMinorsDesc2:
+			"Cuando se incluya un menor de 18 años (o documento Tarjeta de Identidad / Registro Civil) en el Registro de Huéspedes, el Huésped Principal deberá declarar expresamente que ejerce la patria potestad o cuenta con autorización escrita de los padres o representantes legales del menor.",
+		privacyTransmissionsTitle: "5. Transmisión de Datos a Terceros",
+		privacyTransmissionsIntro:
+			"OceanViewFlats no comercializa ni vende datos personales. Sus datos únicamente se transmiten a las siguientes entidades operativas y legales:",
+		privacyTransMercadoPagoTitle: "Mercado Pago Colombia (Pasarela de Pagos)",
+		privacyTransMercadoPagoDesc:
+			"Procesa los pagos con tarjeta de crédito/débito, transferencias PSE y cupones Efecty durante el checkout de Reserva Directa bajo estándares de seguridad PCI-DSS.",
+		privacyTransCondoTitle:
+			"Portal de Administración del Condominio (Edificio Salguero Sunset / Huésped Manager)",
+		privacyTransCondoDesc:
+			"Recibe los datos de identificación de los ocupantes y placas vehiculares exclusivamente para expedir la autorización de ingreso en recepción, manillas y parqueadero.",
+		privacyTransAuthoritiesTitle: "Autoridades Competentes Colombianas",
+		privacyTransAuthoritiesDesc:
+			"Ministerio de Comercio, Industria y Turismo (MinCIT), Migración Colombia y DIAN cuando sea exigible por mandato legal.",
+		privacyArcoTitle:
+			"6. Derechos de los Titulares (ARCO) y Procedimiento de Consultas y Reclamos",
+		privacyArcoIntro:
+			"Como Titular de los datos personales, usted tiene derecho a Conocer, Actualizar, Rectificar y Suprimir sus datos, solicitar prueba de la autorización otorgada y revocarla cuando no exista un deber legal o contractual de permanecer en la base de datos.",
+		privacyArcoRightsList:
+			"Puede ejercer sus derechos de forma gratuita enviando una solicitud escrita a rentals@oceanviewflats.com indicando su nombre completo, número de documento, datos de contacto y la descripción precisa de su petición.",
+		privacyArcoConsultasTitle:
+			"Procedimiento de Consultas (Artículo 14 — Ley 1581 de 2012)",
+		privacyArcoConsultasSla: "Plazo máximo de respuesta: 10 días hábiles",
+		privacyArcoConsultasDesc:
+			"Las consultas para conocer la información personal del Titular que repose en nuestras bases de datos serán atendidas en un término máximo de diez (10) días hábiles contados a partir de la fecha de recibo. Si no fuere posible atenderla dentro de dicho término, se informará al interesado antes del vencimiento y se responderá en un máximo de cinco (5) días hábiles adicionales.",
+		privacyArcoReclamosTitle:
+			"Procedimiento de Reclamos — Corrección, Actualización o Supresión (Artículo 15 — Ley 1581 de 2012)",
+		privacyArcoReclamosSla: "Plazo máximo de respuesta: 15 días hábiles",
+		privacyArcoReclamosDesc:
+			"Los reclamos para corregir, actualizar o suprimir datos personales serán atendidos en un término máximo de quince (15) días hábiles contados a partir del día siguiente a la fecha de su recibo. Si el reclamo resulta incompleto, se requerirá al interesado dentro de los cinco (5) días hábiles siguientes; y de requerirse prórroga, esta no superará ocho (8) días hábiles adicionales.",
+		privacyArcoChannelDesc: "Canal Oficial de Protección de Datos:",
+		privacySecurityTitle:
+			"7. Seguridad de la Información, Cifrado y Temporalidad (Retención)",
+		privacySecurityDesc1:
+			"Los registros de ocupantes en la base de datos se almacenan cifrados en reposo mediante criptografía autenticada (XSalsa20-Poly1305) y los números de documento se enmascaran en registros secundarios y notificaciones por correo electrónico.",
+		privacySecurityDesc2:
+			"Los códigos PIN de cerraduras inteligentes se generan de forma criptográficamente aleatoria y nunca contienen dígitos del documento de identidad del huésped.",
+		privacyRetentionDesc:
+			"En cumplimiento del Principio de Temporalidad (Decreto 1377 Art. 11), los datos de identificación personal de las reservas concluidas son objeto de supresión y anonimización automática a los 90 días posteriores a la fecha de check-out (o de inmediato ante un reclamo de supresión procedente), conservando únicamente los registros contables y financieros agregados exigidos por la ley.",
 	},
 	fr: {
 		seoHomeTitle:
@@ -1343,6 +1575,125 @@ export const dict = {
 		dbPendingSubtitle:
 			"Votre paiement est actuellement en attente ou en cours d'autorisation bancaire. Nous avons enregistré votre réservation sous un blocage temporaire. Nous confirmerons votre séjour dès que la transaction sera approuvée.",
 		dbPendingHomeBtn: "Retour à l'Accueil",
+		footerPrivacyLink: "Politique de Traitement des Données (Loi 1581)",
+		contactPrivacyConsentPrefix: "J'ai lu et j'accepte la",
+		contactPrivacyConsentLink:
+			"Politique de Traitement des Données Personnelles (Loi 1581 de 2012)",
+		contactPrivacyConsentSuffix:
+			"et j'autorise OceanViewFlats à traiter mes données personnelles pour répondre à cette demande.",
+		contactErrPrivacyConsent:
+			"Veuillez accepter la Politique de Traitement des Données Personnelles avant d'envoyer votre demande.",
+		dbPrivacyConsentPrefix: "J'ai lu et j'accepte la",
+		dbPrivacyConsentLink:
+			"Politique de Traitement des Données Personnelles (Loi 1581 de 2012)",
+		dbPrivacyConsentSuffix:
+			"et j'autorise le traitement et la transmission de mes données personnelles pour la gestion de la réservation, le traitement du paiement (Mercado Pago) et la conformité hôtelière légale.",
+		dbErrPrivacyConsent:
+			"Veuillez accepter la Politique de Traitement des Données Personnelles avant de poursuivre votre réservation.",
+		registryPrivacyConsentPrefix: "J'ai lu et j'accepte la",
+		registryPrivacyConsentLink:
+			"Politique de Traitement des Données Personnelles (Loi 1581 de 2012)",
+		registryPrivacyConsentSuffix:
+			"et j'autorise la collecte et la transmission des pièces d'identité des occupants et des informations sur le véhicule conformément aux réglementations hôtelières colombiennes (Loi 1558 / Décret 2590) et à la sécurité de l'immeuble Salguero Sunset.",
+		registryErrPrivacyConsent:
+			"Veuillez accepter la Politique de Traitement des Données Personnelles avant de soumettre le registre des voyageurs.",
+		registryMinorConsentBadge: "Loi 1581 Art. 7 & Loi 679 de 2001",
+		registryMinorConsentTitle:
+			"Attestation d'Autorité Parentale / Tutelle Légale (Mineurs de moins de 18 ans)",
+		registryMinorConsentText:
+			"Je déclare sur l'honneur détenir l'autorité parentale (patria potestad) ou une autorisation écrite de représentation légale pour chaque mineur de moins de 18 ans enregistré pour ce séjour, conformément à la Loi colombienne 1581 de 2012 (Art. 7) et à la Loi 679 de 2001 / Loi 1336 de 2009 (prévention ESCNNA).",
+		registryErrMinorConsent:
+			"L'attestation d'autorité parentale ou de tutelle légale est requise lors de l'enregistrement de mineurs de moins de 18 ans.",
+		privacySeoTitle:
+			"Politique de Traitement des Données Personnelles (Loi 1581) | OceanViewFlats Santa Marta",
+		privacySeoDescription:
+			"Politique officielle de Traitement des Données Personnelles (PTDP) d'OceanViewFlats conformément à la Loi colombienne 1581 de 2012 et au Décret 1377 de 2013.",
+		privacyBadge: "Loi Statutaire Colombienne 1581 de 2012 • Habeas Data",
+		privacyTitle: "Politique de Traitement des Données Personnelles",
+		privacySubtitle:
+			"Política de Tratamiento de Datos Personales (PTDP) — Avis Légal, Finalités et Droits ARCO",
+		privacyVersionLabel: "Version de la Politique",
+		privacyEffectiveDate: "En vigueur depuis octobre 2026",
+		privacyControllerTitle:
+			"1. Identification du Responsable du Traitement (Responsable del Tratamiento)",
+		privacyControllerIntro:
+			"Conformément à la Loi Statutaire colombienne 1581 de 2012 et au Décret 1377 de 2013 (Décret 1074 de 2015), le Responsable du Traitement de vos données personnelles est :",
+		privacyControllerNameLabel: "Responsable du Traitement",
+		privacyControllerRntLabel: "Registre National du Tourisme (RNT)",
+		privacyControllerAddressLabel: "Domicile Physique",
+		privacyControllerEmailLabel: "E-mail Habeas Data",
+		privacyControllerPhoneLabel: "Téléphone / WhatsApp",
+		privacyLegalTitle: "2. Cadre Juridique et Réglementaire Applicable",
+		privacyLegalIntro:
+			"Le traitement des données personnelles chez OceanViewFlats est régi par les lois colombiennes suivantes :",
+		privacyLegalLaw1581:
+			"Loi Statutaire 1581 de 2012 et Décret 1377 de 2013 (Décret 1074 de 2015) : Régime général de protection des données personnelles et consentement préalable, exprès et éclairé.",
+		privacyLegalLaw2068:
+			"Loi 1558 de 2012, Loi 2068 de 2020 et Décret 2590 de 2009 : Enregistrement obligatoire des voyageurs (TRA / SIRE) et contrôle de sécurité de la copropriété.",
+		privacyLegalLaw679:
+			"Loi 679 de 2001 et Loi 1336 de 2009 : Prévention de l'exploitation sexuelle commerciale des enfants et des adolescents (ESCNNA) dans le secteur touristique.",
+		privacyPurposesTitle: "3. Finalités du Traitement des Données Personnelles",
+		privacyPurposesIntro:
+			"Vos données personnelles sont collectées et traitées exclusivement pour les finalités autorisées suivantes :",
+		privacyPurpose1Title: "Demandes d'Information et Assistance",
+		privacyPurpose1Desc:
+			"Répondre aux demandes de disponibilité, devis, coordination avant l'arrivée et service client via notre formulaire de contact.",
+		privacyPurpose2Title: "Réservations Directes et Règlement Financier",
+		privacyPurpose2Desc:
+			"Traiter les réservations directes, les paiements en ligne, les remboursements et la tenue des registres comptables et fiscaux requis par la loi colombienne.",
+		privacyPurpose3Title: "Registre Hôtelier Obligatoire des Voyageurs",
+		privacyPurpose3Desc:
+			"Enregistrer l'identité, l'âge, la nationalité et les coordonnées du Voyageur Principal et des accompagnants avant l'arrivée conformément aux lois touristiques.",
+		privacyPurpose4Title:
+			"Autorisation d'Accès à la Copropriété et Serrure Connectée",
+		privacyPurpose4Desc:
+			"Enregistrer les occupants et véhicules autorisés auprès de la réception de l'immeuble Salguero Sunset et émettre des codes PIN aléatoires temporaires.",
+		privacyMinorsTitle:
+			"4. Protection Spéciale des Enfants et Adolescents (Mineurs de moins de 18 ans)",
+		privacyMinorsDesc1:
+			"Conformément à l'article 7 de la Loi 1581 de 2012 et à la Loi 679 de 2001, le traitement des données des mineurs est strictement limité à l'enregistrement hôtelier légal et à la sécurité du bâtiment, dans le respect de leurs droits fondamentaux.",
+		privacyMinorsDesc2:
+			"Lorsqu'un mineur de moins de 18 ans (ou titulaire d'une Tarjeta de Identidad / Registro Civil) figure dans le Registre des Voyageurs, le Voyageur Principal doit attester détenir l'autorité parentale (patria potestad) ou une autorisation écrite des représentants légaux.",
+		privacyTransmissionsTitle: "5. Transmission de Données à des Tiers",
+		privacyTransmissionsIntro:
+			"OceanViewFlats ne vend ni ne loue jamais de données personnelles. Les données sont transmises uniquement aux destinataires opérationnels et légaux suivants :",
+		privacyTransMercadoPagoTitle:
+			"Mercado Pago Colombia (Passerelle de Paiement)",
+		privacyTransMercadoPagoDesc:
+			"Traite les paiements par carte bancaire, virement PSE et espèces Efecty lors du paiement d'une Réservation Directe selon les normes PCI-DSS.",
+		privacyTransCondoTitle:
+			"Portail d'Administration de la Copropriété (Edificio Salguero Sunset / Huésped Manager)",
+		privacyTransCondoDesc:
+			"Reçoit l'identité des occupants et l'immatriculation du véhicule uniquement pour délivrer l'autorisation d'entrée à l'accueil, les bracelets et le parking.",
+		privacyTransAuthoritiesTitle: "Autorités Légales Colombiennes",
+		privacyTransAuthoritiesDesc:
+			"Ministère du Commerce, de l'Industrie et du Tourisme (MinCIT), Migración Colombia et DIAN lorsque la loi l'exige.",
+		privacyArcoTitle:
+			"6. Droits Habeas Data (ARCO), Consultations et Réclamations",
+		privacyArcoIntro:
+			"En tant que Titulaire des données, vous avez le droit de Connaître, Mettre à jour, Rectifier et Supprimer vos données personnelles, de demander une preuve d'autorisation et de révoquer votre consentement.",
+		privacyArcoRightsList:
+			"Vous pouvez exercer vos droits gratuitement en envoyant une demande écrite à rentals@oceanviewflats.com indiquant votre nom complet, numéro d'identification, coordonnées et l'objet de votre demande.",
+		privacyArcoConsultasTitle: "Consultations (Consultas — Art. 14 Loi 1581)",
+		privacyArcoConsultasSla:
+			"Délai maximal de réponse : 10 jours ouvrés (10 días hábiles)",
+		privacyArcoConsultasDesc:
+			"Les demandes de consultation de vos données personnelles sont traitées dans un délai maximal de dix (10) jours ouvrés à compter de leur réception (prolongeable de 5 jours ouvrés maximum après notification).",
+		privacyArcoReclamosTitle:
+			"Réclamations — Correction, Mise à jour ou Suppression (Reclamos — Art. 15 Loi 1581)",
+		privacyArcoReclamosSla:
+			"Délai maximal de réponse : 15 jours ouvrés (15 días hábiles)",
+		privacyArcoReclamosDesc:
+			"Les demandes de correction, mise à jour ou suppression de données personnelles sont résolues dans un délai maximal de quinze (15) jours ouvrés à compter du lendemain de leur réception (prolongeable de 8 jours ouvrés maximum après notification).",
+		privacyArcoChannelDesc: "Canal officiel de protection des données :",
+		privacySecurityTitle:
+			"7. Sécurité de l'Information, Chiffrement et Durée de Conservation",
+		privacySecurityDesc1:
+			"Les données des occupants du Registre des Voyageurs sont chiffrées au repos par cryptographie authentifiée (XSalsa20-Poly1305) et les numéros de document sont masqués dans les journaux secondaires et les e-mails.",
+		privacySecurityDesc2:
+			"Les codes PIN de serrure connectée sont générés de manière aléatoire et ne contiennent jamais de chiffres issus des pièces d'identité.",
+		privacyRetentionDesc:
+			"Conformément au Principe de Temporalité (Décret 1377 Art. 11), les données d'identification personnelle des séjours terminés sont automatiquement anonymisées et purgées 90 jours après la date de départ (ou immédiatement sur demande ARCO de suppression), tout en conservant les données comptables et financières agrégées requises par la loi.",
 	},
 	it: {
 		seoHomeTitle:
@@ -1792,6 +2143,123 @@ export const dict = {
 		dbPendingSubtitle:
 			"Il tuo pagamento è attualmente in sospeso o in fase di autorizzazione bancaria. Abbiamo registrato la tua prenotazione con un blocco temporaneo. Confermeremo il tuo soggiorno non appena la transazione sarà approvata.",
 		dbPendingHomeBtn: "Torna alla Home",
+		footerPrivacyLink: "Informativa sul Trattamento dei Dati (Legge 1581)",
+		contactPrivacyConsentPrefix: "Ho letto e accetto l'",
+		contactPrivacyConsentLink:
+			"Informativa sul Trattamento dei Dati Personali (Legge 1581 del 2012)",
+		contactPrivacyConsentSuffix:
+			"e autorizzo OceanViewFlats a trattare i miei dati personali per rispondere a questa richiesta.",
+		contactErrPrivacyConsent:
+			"Si prega di accettare l'Informativa sul Trattamento dei Dati Personali prima di inviare la richiesta.",
+		dbPrivacyConsentPrefix: "Ho letto e accetto l'",
+		dbPrivacyConsentLink:
+			"Informativa sul Trattamento dei Dati Personali (Legge 1581 del 2012)",
+		dbPrivacyConsentSuffix:
+			"e autorizzo il trattamento e la trasmissione dei miei dati personali per la gestione della prenotazione, l'elaborazione del pagamento (Mercado Pago) e la conformità normativa alberghiera.",
+		dbErrPrivacyConsent:
+			"Si prega di accettare l'Informativa sul Trattamento dei Dati Personali prima di procedere con la prenotazione.",
+		registryPrivacyConsentPrefix: "Ho letto e accetto l'",
+		registryPrivacyConsentLink:
+			"Informativa sul Trattamento dei Dati Personali (Legge 1581 del 2012)",
+		registryPrivacyConsentSuffix:
+			"e autorizzo la raccolta e la trasmissione dei documenti di identità degli occupanti e dei dati del veicolo per le normative alberghiere colombiane (Legge 1558 / Decreto 2590) e la sicurezza dell'Edificio Salguero Sunset.",
+		registryErrPrivacyConsent:
+			"Si prega di accettare l'Informativa sul Trattamento dei Dati Personali prima di inviare il registro degli ospiti.",
+		registryMinorConsentBadge: "Legge 1581 Art. 7 & Legge 679 del 2001",
+		registryMinorConsentTitle:
+			"Attestazione di Responsabilità Genitoriale / Tutela Legale (Minori di 18 anni)",
+		registryMinorConsentText:
+			"Dichiaro sotto la mia responsabilità di esercitare la responsabilità genitoriale (patria potestad) o di disporre di autorizzazione scritta di rappresentanza legale per ogni minore di 18 anni registrato in questo soggiorno, in conformità con la Legge colombiana 1581 del 2012 (Art. 7) e la Legge 679 del 2001 / Legge 1336 del 2009 (prevenzione ESCNNA).",
+		registryErrMinorConsent:
+			"L'attestazione di responsabilità genitoriale o tutela legale è obbligatoria quando si registrano minori di 18 anni.",
+		privacySeoTitle:
+			"Informativa sul Trattamento dei Dati Personali (Legge 1581) | OceanViewFlats Santa Marta",
+		privacySeoDescription:
+			"Politica ufficiale sul Trattamento dei Dati Personali (PTDP) di OceanViewFlats ai sensi della Legge Statutaria colombiana 1581 del 2012 e del Decreto 1377 del 2013.",
+		privacyBadge: "Legge Statutaria Colombiana 1581 del 2012 • Habeas Data",
+		privacyTitle: "Politica sul Trattamento dei Dati Personali",
+		privacySubtitle:
+			"Política de Tratamiento de Datos Personales (PTDP) — Informativa Legale, Finalità e Diritti ARCO",
+		privacyVersionLabel: "Versione della Politica",
+		privacyEffectiveDate: "In vigore da ottobre 2026",
+		privacyControllerTitle:
+			"1. Identificazione del Titolare del Trattamento (Responsable del Tratamiento)",
+		privacyControllerIntro:
+			"In conformità con la Legge Statutaria colombiana 1581 del 2012 e il Decreto 1377 del 2013 (Decreto 1074 del 2015), il Titolare del Trattamento responsabile dei tuoi dati personali è:",
+		privacyControllerNameLabel: "Titolare del Trattamento",
+		privacyControllerRntLabel: "Registro Nazionale del Turismo (RNT)",
+		privacyControllerAddressLabel: "Domicilio Fisico",
+		privacyControllerEmailLabel: "Email Habeas Data",
+		privacyControllerPhoneLabel: "Telefono / WhatsApp",
+		privacyLegalTitle: "2. Quadro Normativo Applicabile",
+		privacyLegalIntro:
+			"Il trattamento dei dati personali presso OceanViewFlats è disciplinato dalle seguenti normative colombiane:",
+		privacyLegalLaw1581:
+			"Legge Statutaria 1581 del 2012 e Decreto 1377 del 2013 (Decreto 1074 del 2015): Regime generale per la protezione dei dati personali e consenso preventivo, espresso e informato.",
+		privacyLegalLaw2068:
+			"Legge 1558 del 2012, Legge 2068 del 2020 e Decreto 2590 del 2009: Registrazione obbligatoria degli ospiti (TRA / SIRE) e controllo di sicurezza condominiale.",
+		privacyLegalLaw679:
+			"Legge 679 del 2001 e Legge 1336 del 2009: Prevenzione dello sfruttamento sessuale commerciale di bambini e adolescenti (ESCNNA) nel settore turistico e alberghiero.",
+		privacyPurposesTitle: "3. Finalità del Trattamento dei Dati Personali",
+		privacyPurposesIntro:
+			"I tuoi dati personali sono raccolti e trattati esclusivamente per le seguenti finalità autorizzate:",
+		privacyPurpose1Title: "Richieste di Informazioni e Assistenza Ospiti",
+		privacyPurpose1Desc:
+			"Rispondere a richieste di disponibilità, preventivi, coordinamento pre-arrivo e supporto clienti tramite il nostro modulo di contatto.",
+		privacyPurpose2Title: "Prenotazioni Dirette e Regolamento Finanziario",
+		privacyPurpose2Desc:
+			"Elaborare prenotazioni dirette, pagamenti online, rimborsi e conservare le scritture contabili e fiscali richieste dalla legge colombiana.",
+		privacyPurpose3Title: "Registro Obbligatorio degli Ospiti",
+		privacyPurpose3Desc:
+			"Registrare documenti d'identità, età, nazionalità e recapiti dell'Ospite Principale e degli accompagnatori prima del check-in secondo le norme turistiche.",
+		privacyPurpose4Title: "Autorizzazione Condominiale e Accesso Smart-Lock",
+		privacyPurpose4Desc:
+			"Registrare gli occupanti e i veicoli autorizzati presso la reception dell'Edificio Salguero Sunset ed emettere codici PIN temporanei casuali.",
+		privacyMinorsTitle:
+			"4. Protezione Speciale di Bambini e Adolescenti (Minori di 18 anni)",
+		privacyMinorsDesc1:
+			"Ai sensi dell'articolo 7 della Legge 1581 del 2012 e della Legge 679 del 2001, il trattamento dei dati dei minori è strettamente limitato alla registrazione alberghiera di legge e alla sicurezza dell'edificio, nel pieno rispetto dei loro diritti fondamentali.",
+		privacyMinorsDesc2:
+			"Quando un minore di 18 anni (o titolare di Tarjeta de Identidad / Registro Civil) è incluso nel Registro degli Ospiti, l'Ospite Principale deve attestare espressamente di esercitare la responsabilità genitoriale (patria potestad) o di disporre di delega scritta dei genitori.",
+		privacyTransmissionsTitle: "5. Trasmissione dei Dati a Terzi",
+		privacyTransmissionsIntro:
+			"OceanViewFlats non vende né cede a terzi i dati personali a fini commerciali. I dati vengono trasmessi esclusivamente ai seguenti destinatari operativi e legali:",
+		privacyTransMercadoPagoTitle:
+			"Mercado Pago Colombia (Gateway di Pagamento)",
+		privacyTransMercadoPagoDesc:
+			"Elabora i pagamenti con carta di credito/debito, bonifico PSE e voucher Efecty durante il checkout di Prenotazione Diretta secondo gli standard PCI-DSS.",
+		privacyTransCondoTitle:
+			"Portale di Amministrazione Condominiale (Edificio Salguero Sunset / Huésped Manager)",
+		privacyTransCondoDesc:
+			"Riceve i dati identificativi degli occupanti e la targa del veicolo esclusivamente per il rilascio dell'autorizzazione di ingresso alla reception, dei braccialetti e del parcheggio.",
+		privacyTransAuthoritiesTitle: "Autorità Competenti Colombiane",
+		privacyTransAuthoritiesDesc:
+			" Ministero del Commercio, dell'Industria e del Turismo (MinCIT), Migración Colombia e DIAN quando richiesto per legge.",
+		privacyArcoTitle: "6. Diritti Habeas Data (ARCO), Consultazioni e Reclami",
+		privacyArcoIntro:
+			"In qualità di Interessato (Titular), hai il diritto di Conoscere, Aggiornare, Rettificare e Cancellare i tuoi dati personali, richiedere prova dell'autorizzazione e revocare il consenso.",
+		privacyArcoRightsList:
+			"Puoi esercitare i tuoi diritti gratuitamente inviando una richiesta scritta a rentals@oceanviewflats.com indicando nome completo, numero di documento, recapiti e descrizione della richiesta.",
+		privacyArcoConsultasTitle: "Consultazioni (Consultas — Art. 14 Legge 1581)",
+		privacyArcoConsultasSla:
+			"Tempo massimo di risposta: 10 giorni lavorativi (10 días hábiles)",
+		privacyArcoConsultasDesc:
+			"Le richieste di consultazione dei dati personali vengono evase entro dieci (10) giorni lavorativi dal ricevimento (prorogabili di massimo 5 giorni lavorativi previa comunicazione).",
+		privacyArcoReclamosTitle:
+			"Reclami — Rettifica, Aggiornamento o Cancellazione (Reclamos — Art. 15 Legge 1581)",
+		privacyArcoReclamosSla:
+			"Tempo massimo di risposta: 15 giorni lavorativi (15 días hábiles)",
+		privacyArcoReclamosDesc:
+			"I reclami per correggere, aggiornare o cancellare i dati personali vengono risolti entro quindici (15) giorni lavorativi dal giorno successivo al ricevimento (prorogabili di massimo 8 giorni lavorativi previa comunicazione).",
+		privacyArcoChannelDesc: "Canale Ufficiale per la Protezione dei Dati:",
+		privacySecurityTitle:
+			"7. Sicurezza delle Informazioni, Crittografia e Conservazione",
+		privacySecurityDesc1:
+			"I dati degli occupanti nel Registro degli Ospiti sono crittografati a riposo mediante crittografia autenticata (XSalsa20-Poly1305) e i numeri di documento sono mascherati nei log secondari e nelle email.",
+		privacySecurityDesc2:
+			"I codici PIN della serratura smart sono generati in modo crittograficamente casuale e non contengono mai cifre del documento d'identità.",
+		privacyRetentionDesc:
+			"In conformità al Principio di Temporalità (Decreto 1377 Art. 11), i dati identificativi personali dei soggiorni conclusi vengono automaticamente oscurati e cancellati 90 giorni dopo la data di check-out (o immediatamente su richiesta ARCO di cancellazione), conservando solo i dati contabili e finanziari aggregati richiesti dalla legge.",
 	},
 	de: {
 		seoHomeTitle:
@@ -2245,6 +2713,124 @@ export const dict = {
 		dbPendingSubtitle:
 			"Ihre Zahlung steht derzeit aus oder befindet sich in der Bankautorisierung. Wir haben Ihre Reservierungsdaten unter einer temporären Sperre erfasst. Wir werden Ihre Buchung bestätigen, sobald die Transaktion freigegeben ist.",
 		dbPendingHomeBtn: "Zurück zur Startseite",
+		footerPrivacyLink: "Datenschutzrichtlinie (Gesetz 1581)",
+		contactPrivacyConsentPrefix: "Ich habe die",
+		contactPrivacyConsentLink:
+			"Richtlinie zur Verarbeitung personenbezogener Daten (Gesetz 1581 von 2012)",
+		contactPrivacyConsentSuffix:
+			"gelesen und akzeptiere sie und ermächtige OceanViewFlats, meine personenbezogenen Daten zur Beantwortung dieser Anfrage zu verarbeiten.",
+		contactErrPrivacyConsent:
+			"Bitte akzeptieren Sie die Richtlinie zur Verarbeitung personenbezogener Daten, bevor Sie Ihre Anfrage senden.",
+		dbPrivacyConsentPrefix: "Ich habe die",
+		dbPrivacyConsentLink:
+			"Richtlinie zur Verarbeitung personenbezogener Daten (Gesetz 1581 von 2012)",
+		dbPrivacyConsentSuffix:
+			"gelesen und akzeptiere sie und autorisiere die Verarbeitung und Übermittlung meiner personenbezogenen Daten für die Reservierungsverwaltung, Zahlungsabwicklung (Mercado Pago) und gesetzliche Gastgewerbe-Compliance.",
+		dbErrPrivacyConsent:
+			"Bitte akzeptieren Sie die Richtlinie zur Verarbeitung personenbezogener Daten, bevor Sie mit Ihrer Buchung fortfahren.",
+		registryPrivacyConsentPrefix: "Ich habe die",
+		registryPrivacyConsentLink:
+			"Richtlinie zur Verarbeitung personenbezogener Daten (Gesetz 1581 von 2012)",
+		registryPrivacyConsentSuffix:
+			"gelesen und akzeptiere sie und autorisiere die Erhebung und Übermittlung der Ausweis- und Fahrzeugdaten der Gäste gemäß den kolumbianischen Tourismusvorschriften (Gesetz 1558 / Dekret 2590) und der Gebäudesicherheit des Edificio Salguero Sunset.",
+		registryErrPrivacyConsent:
+			"Bitte akzeptieren Sie die Richtlinie zur Verarbeitung personenbezogener Daten, bevor Sie die Gästeregistrierung absenden.",
+		registryMinorConsentBadge: "Gesetz 1581 Art. 7 & Gesetz 679 von 2001",
+		registryMinorConsentTitle:
+			"Bestätigung der elterlichen Sorge / gesetzlichen Vertretung (Minderjährige unter 18 Jahren)",
+		registryMinorConsentText:
+			"Ich erkläre an Eides statt, dass ich für alle in diesem Aufenthalt registrierten Minderjährigen unter 18 Jahren die elterliche Sorge (patria potestad) oder eine schriftliche gesetzliche Vertretungsvollmacht besitze, gemäß dem kolumbianischen Gesetz 1581 von 2012 (Art. 7) und Gesetz 679 von 2001 / Gesetz 1336 von 2009 (ESCNNA-Prävention).",
+		registryErrMinorConsent:
+			"Bei der Registrierung von Minderjährigen unter 18 Jahren ist die Bestätigung der elterlichen Sorge oder gesetzlichen Vertretung erforderlich.",
+		privacySeoTitle:
+			"Richtlinie zur Verarbeitung personenbezogener Daten (Gesetz 1581) | OceanViewFlats Santa Marta",
+		privacySeoDescription:
+			"Offizielle Richtlinie zur Verarbeitung personenbezogener Daten (PTDP) von OceanViewFlats gemäß dem kolumbianischen Gesetz 1581 von 2012 und Dekret 1377 von 2013.",
+		privacyBadge: "Kolumbianisches Gesetz 1581 von 2012 • Habeas Data",
+		privacyTitle: "Richtlinie zur Verarbeitung personenbezogener Daten",
+		privacySubtitle:
+			"Política de Tratamiento de Datos Personales (PTDP) — Gesetzlicher Hinweis, Verarbeitungszwecke und ARCO-Rechte",
+		privacyVersionLabel: "Richtlinienversion",
+		privacyEffectiveDate: "Gültig ab Oktober 2026",
+		privacyControllerTitle:
+			"1. Identifizierung des Verantwortlichen (Responsable del Tratamiento)",
+		privacyControllerIntro:
+			"Gemäß dem kolumbianischen Gesetz 1581 von 2012 und dem Dekret 1377 von 2013 (Dekret 1074 von 2015) ist der Verantwortliche für die Verarbeitung Ihrer personenbezogenen Daten:",
+		privacyControllerNameLabel: "Verantwortlicher",
+		privacyControllerRntLabel: "Nationales Tourismusregister (RNT)",
+		privacyControllerAddressLabel: "Physische Adresse",
+		privacyControllerEmailLabel: "Habeas-Data-E-Mail",
+		privacyControllerPhoneLabel: "Telefon / WhatsApp",
+		privacyLegalTitle: "2. Anwendbarer Rechtsrahmen",
+		privacyLegalIntro:
+			"Die Verarbeitung personenbezogener Daten bei OceanViewFlats unterliegt den folgenden kolumbianischen Gesetzen:",
+		privacyLegalLaw1581:
+			"Gesetz 1581 von 2012 & Dekret 1377 von 2013 (Dekret 1074 von 2015): Allgemeines Datenschutzregime und Erfordernis einer vorherigen, ausdrücklichen und informierten Einwilligung.",
+		privacyLegalLaw2068:
+			"Gesetz 1558 von 2012, Gesetz 2068 von 2020 & Dekret 2590 von 2009: Verpflichtende Gästeregistrierung (TRA / SIRE) und Sicherheitskontrolle der Wohnanlage.",
+		privacyLegalLaw679:
+			"Gesetz 679 von 2001 & Gesetz 1336 von 2009: Prävention kommerzieller sexueller Ausbeutung von Kindern und Jugendlichen (ESCNNA) im Tourismus.",
+		privacyPurposesTitle: "3. Zwecke der Datenverarbeitung",
+		privacyPurposesIntro:
+			"Ihre personenbezogenen Daten werden ausschließlich für die folgenden autorisierten Zwecke erhoben und verarbeitet:",
+		privacyPurpose1Title: "Anfragen & Gästekommunikation",
+		privacyPurpose1Desc:
+			"Beantwortung von Verfügbarkeitsanfragen, Angeboten, Abstimmung vor der Anreise und Kundensupport über unser Kontaktformular.",
+		privacyPurpose2Title: "Direktbuchungen & Zahlungsabwicklung",
+		privacyPurpose2Desc:
+			"Abwicklung von Direktbuchungen, Online-Zahlungen, Rückerstattungen sowie Führung der gesetzlich vorgeschriebenen Buchhaltungs- und Steuerunterlagen.",
+		privacyPurpose3Title: "Gesetzlich vorgeschriebenes Gästeregister",
+		privacyPurpose3Desc:
+			"Erfassung von Ausweisdaten, Alter, Staatsangehörigkeit und Kontaktdaten des Hauptgastes und aller Begleitpersonen vor dem Check-in gemäß den kolumbianischen Tourismusgesetzen.",
+		privacyPurpose4Title: "Zutrittsfreigabe der Wohnanlage & Smart-Lock-Zugang",
+		privacyPurpose4Desc:
+			"Anmeldung autorisierter Gäste und Fahrzeuge beim Empfang des Edificio Salguero Sunset sowie Erstellung temporärer zufälliger Tür-PIN-Codes.",
+		privacyMinorsTitle:
+			"4. Besonderer Schutz von Kindern und Jugendlichen (Minderjährige unter 18 Jahren)",
+		privacyMinorsDesc1:
+			"Gemäß Artikel 7 des Gesetzes 1581 von 2012 und Gesetz 679 von 2001 beschränkt sich die Verarbeitung von Daten Minderjähriger streng auf die gesetzliche Hotelregistrierung und Gebäudesicherheit unter Wahrung ihrer vorrangigen Grundrechte.",
+		privacyMinorsDesc2:
+			"Wird ein Minderjähriger unter 18 Jahren (oder Inhaber einer Tarjeta de Identidad / Registro Civil) im Gästeregister eingetragen, muss der Hauptgast ausdrücklich bestätigen, dass er die elterliche Sorge (patria potestad) oder eine schriftliche Vollmacht der Eltern besitzt.",
+		privacyTransmissionsTitle: "5. Datenübermittlung an Dritte",
+		privacyTransmissionsIntro:
+			"OceanViewFlats verkauft oder vermietet niemals personenbezogene Daten. Daten werden ausschließlich an folgende operative und gesetzliche Empfänger übermittelt:",
+		privacyTransMercadoPagoTitle: "Mercado Pago Colombia (Zahlungsgateway)",
+		privacyTransMercadoPagoDesc:
+			"Verarbeitet Kredit-/Debitkarten-, PSE-Überweisungs- und Efecty-Barzahlungen beim Direktbuchungs-Checkout nach PCI-DSS-Sicherheitsstandards.",
+		privacyTransCondoTitle:
+			"Verwaltungsportal der Wohnanlage (Edificio Salguero Sunset / Huésped Manager)",
+		privacyTransCondoDesc:
+			"Erhält Ausweisdaten der Gäste und Kfz-Kennzeichen ausschließlich zur Erteilung der Zutrittsberechtigung an der Rezeption, für Armbänder und den Parkplatz.",
+		privacyTransAuthoritiesTitle: "Zuständige kolumbianische Behörden",
+		privacyTransAuthoritiesDesc:
+			"Ministerium für Handel, Industrie und Tourismus (MinCIT), Migración Colombia und DIAN, soweit gesetzlich vorgeschrieben.",
+		privacyArcoTitle:
+			"6. Habeas-Data-Rechte (ARCO), Auskünfte (Consultas) und Beschwerden (Reclamos)",
+		privacyArcoIntro:
+			"Als betroffene Person (Titular) haben Sie das Recht auf Auskunft, Aktualisierung, Berichtigung und Löschung Ihrer personenbezogenen Daten sowie auf Widerruf Ihrer Einwilligung.",
+		privacyArcoRightsList:
+			"Sie können Ihre Rechte jederzeit kostenlos ausüben, indem Sie eine schriftliche Anfrage an rentals@oceanviewflats.com mit Ihrem vollständigen Namen, Ihrer Ausweisnummer, Ihren Kontaktdaten und Ihrem Anliegen senden.",
+		privacyArcoConsultasTitle:
+			"Auskunftsanfragen (Consultas — Art. 14 Gesetz 1581)",
+		privacyArcoConsultasSla:
+			"Maximale Antwortfrist: 10 Werktage (10 días hábiles)",
+		privacyArcoConsultasDesc:
+			"Auskunftsanfragen zu Ihren gespeicherten personenbezogenen Daten werden innerhalb von maximal zehn (10) Werktagen nach Eingang beantwortet (bei begründeter Verlängerung maximal 5 weitere Werktage).",
+		privacyArcoReclamosTitle:
+			"Ansprüche auf Berichtigung, Aktualisierung oder Löschung (Reclamos — Art. 15 Gesetz 1581)",
+		privacyArcoReclamosSla:
+			"Maximale Antwortfrist: 15 Werktage (15 días hábiles)",
+		privacyArcoReclamosDesc:
+			"Anträge auf Berichtigung, Aktualisierung oder Löschung personenbezogener Daten werden innerhalb von maximal fünfzehn (15) Werktagen ab dem Folgetag des Eingangs bearbeitet (bei Verlängerung maximal 8 weitere Werktage).",
+		privacyArcoChannelDesc: "Offizieller Datenschutzkanal:",
+		privacySecurityTitle:
+			"7. Informationssicherheit, Verschlüsselung & Aufbewahrungsfrist",
+		privacySecurityDesc1:
+			"Die Gästedaten im Gästeregister werden im Ruhezustand mit authentifizierter symmetrischer Kryptografie (XSalsa20-Poly1305) verschlüsselt, und Ausweisnummern werden in sekundären Protokollen und E-Mails maskiert.",
+		privacySecurityDesc2:
+			"Smart-Lock-Türcodes werden kryptografisch zufällig generiert und enthalten niemals Ziffern Ihrer Ausweisnummer.",
+		privacyRetentionDesc:
+			"Gemäß dem Grundsatz der zeitlichen Begrenzung (Dekret 1377 Art. 11) werden personenbezogene Identifikationsdaten abgeschlossener Aufenthalte 90 Tage nach dem Check-out automatisch anonymisiert und gelöscht (oder sofort nach einem berechtigten ARCO-Löschungsantrag), wobei die gesetzlich vorgeschriebenen Finanz- und Buchhaltungsdaten erhalten bleiben.",
 	},
 	ja: {
 		seoHomeTitle:
@@ -2694,6 +3280,118 @@ export const dict = {
 		dbPendingSubtitle:
 			"お支払いは現在保留中、または銀行による承認手続き中です。お客様のご予約は現在仮押さえ状態となっております。決済が承認され次第、ご予約を確定いたします。",
 		dbPendingHomeBtn: "ホームに戻る",
+		footerPrivacyLink: "個人情報処理方針（コロンビア法第1581号）",
+		contactPrivacyConsentPrefix: "私は",
+		contactPrivacyConsentLink: "個人情報処理方針（2012年コロンビア法第1581号）",
+		contactPrivacyConsentSuffix:
+			"を読み、これに同意し、本お問い合わせへの対応のためにOceanViewFlatsが私の個人情報を処理することを承認します。",
+		contactErrPrivacyConsent:
+			"お問い合わせを送信する前に、個人情報処理方針に同意してください。",
+		dbPrivacyConsentPrefix: "私は",
+		dbPrivacyConsentLink: "個人情報処理方針（2012年コロンビア法第1581号）",
+		dbPrivacyConsentSuffix:
+			"を読み、これに同意し、予約管理、決済処理（Mercado Pago）、および法定の宿泊施設規則遵守のために個人情報の処理および送信を承認します。",
+		dbErrPrivacyConsent:
+			"予約手続きを進める前に、個人情報処理方針に同意してください。",
+		registryPrivacyConsentPrefix: "私は",
+		registryPrivacyConsentLink:
+			"個人情報処理方針（2012年コロンビア法第1581号）",
+		registryPrivacyConsentSuffix:
+			"を読み、これに同意し、コロンビアの観光・宿泊法規（法第1558号／政令第2590号）およびSalguero Sunsetマンション保安登録のために宿泊者の本人確認情報および車両情報の収集・送信を承認します。",
+		registryErrPrivacyConsent:
+			"宿泊者名簿を送信する前に、個人情報処理方針に同意してください。",
+		registryMinorConsentBadge: "法第1581号第7条および2001年法第679号",
+		registryMinorConsentTitle:
+			"親権／法定代理人権限の宣誓（18歳未満の未成年者）",
+		registryMinorConsentText:
+			"私は、2012年コロンビア法第1581号（第7条）および2001年法第679号／2009年法第1336号（ESCNNA防止法）に従い、本滞在に登録された18歳未満のすべての未成年者について、親権（patria potestad）または書面による法定代理権を有していることを宣誓します。",
+		registryErrMinorConsent:
+			"18歳未満の未成年者を登録する場合は、親権または法定代理権の宣誓が必要です。",
+		privacySeoTitle:
+			"個人情報処理方針（法第1581号） | OceanViewFlats サンタマルタ",
+		privacySeoDescription:
+			"2012年コロンビア法定法第1581号および2013年政令第1377号に基づくOceanViewFlatsの公式個人情報処理方針（PTDP）。",
+		privacyBadge: "2012年コロンビア法定法第1581号 • Habeas Data",
+		privacyTitle: "個人情報処理方針（プライバシーポリシー）",
+		privacySubtitle:
+			"Política de Tratamiento de Datos Personales (PTDP) — 法定通知、処理目的、およびARCO権利手続き",
+		privacyVersionLabel: "ポリシーバージョン",
+		privacyEffectiveDate: "2026年10月発効",
+		privacyControllerTitle:
+			"1. データ管理者（Responsable del Tratamiento）の特定",
+		privacyControllerIntro:
+			"2012年コロンビア法定法第1581号および2013年政令第1377号（2015年政令第1074号）に基づき、お客様の個人情報の収集、保管、利用、提供、および削除に責任を負うデータ管理者は以下の通りです：",
+		privacyControllerNameLabel: "データ管理者",
+		privacyControllerRntLabel: "コロンビア国家観光登録（RNT）",
+		privacyControllerAddressLabel: "所在地",
+		privacyControllerEmailLabel: "Habeas Data 連絡先メール",
+		privacyControllerPhoneLabel: "電話番号 / WhatsApp",
+		privacyLegalTitle: "2. 適用される法令および規制の枠組み",
+		privacyLegalIntro:
+			"OceanViewFlatsにおける個人情報の処理は、以下のコロンビア法令に準拠しています：",
+		privacyLegalLaw1581:
+			"2012年法定法第1581号および2013年政令第1377号（2015年政令第1074号）：個人情報保護の一般制度および事前の明示的かつ十分な説明に基づく同意要件。",
+		privacyLegalLaw2068:
+			"2012年法第1558号、2020年法第2068号および2009年政令第2590号：宿泊者名簿（TRA / SIRE）の義務的登録およびマンションの保安管理。",
+		privacyLegalLaw679:
+			"2001年法第679号および2009年法第1336号：観光・宿泊業における児童および青少年の商業的性的搾取（ESCNNA）の防止。",
+		privacyPurposesTitle: "3. 個人情報の処理目的",
+		privacyPurposesIntro:
+			"お客様の個人情報は、以下の承認された目的に限定して収集および処理されます：",
+		privacyPurpose1Title: "お問い合わせ対応およびゲスト連絡",
+		privacyPurpose1Desc:
+			"お問い合わせフォームから送信された空室確認、お見積り、到着前の調整、およびカスタマーサポートへの対応。",
+		privacyPurpose2Title: "直接予約および決済処理",
+		privacyPurpose2Desc:
+			"直接予約、オンライン決済、返金処理、およびコロンビア法で義務付けられた会計・税務記録の保持。",
+		privacyPurpose3Title: "法定の宿泊者名簿登録",
+		privacyPurpose3Desc:
+			"コロンビアの観光規制に基づき、チェックイン前に代表宿泊者および同伴宿泊者の本人確認書類、年齢、国籍、連絡先を記録すること。",
+		privacyPurpose4Title:
+			"マンション入館許可およびスマートロック暗証番号の発行",
+		privacyPurpose4Desc:
+			"Edificio Salguero Sunsetのフロント警備への宿泊者および車両の登録、ならびに一時的なランダム暗証番号（PIN）の発行。",
+		privacyMinorsTitle: "4. 児童および青少年（18歳未満の未成年者）の特別保護",
+		privacyMinorsDesc1:
+			"2012年法第1581号第7条および2001年法第679号に基づき、未成年者の個人情報の処理は、基本的権利を最優先しつつ、法定の宿泊登録および建物の安全確保に厳格に限定されます。",
+		privacyMinorsDesc2:
+			"宿泊者名簿に18歳未満の未成年者（またはTarjeta de Identidad／Registro Civilの保持者）が含まれる場合、代表宿泊者は親権（patria potestad）または書面による法定代理権を有していることを明示的に宣誓する必要があります。",
+		privacyTransmissionsTitle: "5. 第三者へのデータ送信および提供先",
+		privacyTransmissionsIntro:
+			"OceanViewFlatsは個人情報を販売または貸与することは一切ありません。個人情報は、以下の業務上および法定の提供先にのみ送信されます：",
+		privacyTransMercadoPagoTitle: "Mercado Pago Colombia（決済ゲートウェイ）",
+		privacyTransMercadoPagoDesc:
+			"PCI-DSSセキュリティ基準に基づき、直接予約チェックアウト時のクレジットカード／デビットカード、PSE銀行振込、Efecty現金バウチャー決済を処理します。",
+		privacyTransCondoTitle:
+			"マンション管理ポータル（Edificio Salguero Sunset / Huésped Manager）",
+		privacyTransCondoDesc:
+			"フロントでの入館許可、リストバンド発行、および駐車場許可のためにのみ、宿泊者の本人確認情報と車両ナンバーを受信します。",
+		privacyTransAuthoritiesTitle: "コロンビアの法定管轄当局",
+		privacyTransAuthoritiesDesc:
+			"商工観光省（MinCIT）、コロンビア出入国管理局（Migración Colombia）、および国税・関税局（DIAN）（法令により義務付けられる場合）。",
+		privacyArcoTitle:
+			"6. Habeas Data（ARCO）の権利、照会（Consultas）および請求（Reclamos）の手続き",
+		privacyArcoIntro:
+			"データ主体（Titular）として、お客様はご自身の個人情報の確認（照会）、更新、訂正、削除を請求する権利、ならびに同意の証明を求め、同意を撤回する権利を有します。",
+		privacyArcoRightsList:
+			"氏名、身分証明書番号、連絡先、および請求内容を明記した書面を rentals@oceanviewflats.com 宛に送信することで、いつでも無料で権利を行使できます。",
+		privacyArcoConsultasTitle: "照会手続き（Consultas — 法第1581号第14条）",
+		privacyArcoConsultasSla: "最大回答期限：10営業日（10 días hábiles）",
+		privacyArcoConsultasDesc:
+			"保有する個人情報の照会請求には、受領日から最大10営業日以内に回答いたします（延長が必要な場合は期限前に通知し、最大5営業日以内に回答します）。",
+		privacyArcoReclamosTitle:
+			"訂正・更新・削除の請求手続き（Reclamos — 法第1581号第15条）",
+		privacyArcoReclamosSla: "最大回答期限：15営業日（15 días hábiles）",
+		privacyArcoReclamosDesc:
+			"個人情報の訂正、更新、または削除の請求は、受領日の翌日から起算して最大15営業日以内に処理されます（延長が必要な場合は最大8営業日以内）。",
+		privacyArcoChannelDesc: "個人情報保護専用窓口：",
+		privacySecurityTitle: "7. 情報セキュリティ、暗号化保護および保存期間",
+		privacySecurityDesc1:
+			"宿泊者名簿のデータは認証付き対称暗号（XSalsa20-Poly1305）により保存時に暗号化され、身分証明書番号は二次ログおよびメール通知においてマスク処理（****）されます。",
+		privacySecurityDesc2:
+			"スマートロックの暗証番号は暗号論的乱数により生成され、身分証明書番号の数字が含まれることはありません。",
+		privacyRetentionDesc:
+			"一時性の原則（政令第1377号第11条）に従い、終了した宿泊の個人識別データはチェックアウト日から90日後に自動的に匿名化・消去されます（またはARCO削除請求の承認時に即時消去されます）。なお、税務・会計法規で求められる集計財務記録は保持されます。",
 	},
 };
 

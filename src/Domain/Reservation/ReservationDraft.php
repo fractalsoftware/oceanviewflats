@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Reservation;
 
+use DateTimeImmutable;
+
 /**
  * Intention-revealing parameter DTO encapsulating parameters for creating
  * or confirming direct, manual, and external platform reservations.
@@ -25,7 +27,10 @@ final class ReservationDraft
         public readonly ?string $reservationUid = null,
         public readonly ?ActorContext $actor = null,
         public readonly bool $sendConfirmationEmail = true,
-        public readonly int $maxGuests = Reservation::DEFAULT_MAX_GUESTS
+        public readonly int $maxGuests = Reservation::DEFAULT_MAX_GUESTS,
+        public readonly ?string $privacyPolicyVersion = null,
+        public readonly ?DateTimeImmutable $privacyConsentAt = null,
+        public readonly ?string $privacyConsentIp = null
     ) {
         if ($this->maxGuests < Reservation::MIN_MAX_GUESTS || $this->maxGuests > Reservation::MAX_MAX_GUESTS) {
             throw ReservationValidationException::withViolations([
@@ -49,7 +54,10 @@ final class ReservationDraft
         ?ActorContext $actor = null,
         bool $preMarkRegistry = false,
         bool $sendConfirmationEmail = true,
-        int $maxGuests = Reservation::DEFAULT_MAX_GUESTS
+        int $maxGuests = Reservation::DEFAULT_MAX_GUESTS,
+        ?string $privacyPolicyVersion = null,
+        ?DateTimeImmutable $privacyConsentAt = null,
+        ?string $privacyConsentIp = null
     ): self {
         return new self(
             propertyId: $propertyId,
@@ -66,7 +74,10 @@ final class ReservationDraft
             reservationUid: $reservationUid,
             actor: $actor ?? ActorContext::guest(),
             sendConfirmationEmail: $sendConfirmationEmail,
-            maxGuests: $maxGuests
+            maxGuests: $maxGuests,
+            privacyPolicyVersion: $privacyPolicyVersion,
+            privacyConsentAt: $privacyConsentAt,
+            privacyConsentIp: $privacyConsentIp
         );
     }
 

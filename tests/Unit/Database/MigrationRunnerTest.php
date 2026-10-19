@@ -99,6 +99,19 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('external_confirmation_code', $cols);
         $this->assertContains('channel_block_uid', $cols);
         $this->assertContains('max_guests', $cols);
+        $this->assertContains('privacy_policy_version', $cols);
+        $this->assertContains('privacy_consent_at', $cols);
+        $this->assertContains('privacy_consent_ip', $cols);
+        $this->assertContains('pii_redacted_at', $cols);
+
+        // Verify newly added columns in guest_registries table
+        $regColsStmt = $pdo->query("PRAGMA table_info(guest_registries)");
+        $regCols = $regColsStmt !== false ? array_column($regColsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('privacy_policy_version', $regCols);
+        $this->assertContains('privacy_consent_at', $regCols);
+        $this->assertContains('privacy_consent_ip', $regCols);
+        $this->assertContains('minor_guardian_consent', $regCols);
+        $this->assertContains('pii_redacted_at', $regCols);
     }
 
     public function testMigrationsAreIdempotent(): void
@@ -123,7 +136,7 @@ final class MigrationRunnerTest extends TestCase
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
 
-        // Pre-create reservations table without external_confirmation_code and channel_block_uid
+        // Pre-create reservations and guest_registries tables without new columns
         $pdo->exec('
             CREATE TABLE reservations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,6 +150,15 @@ final class MigrationRunnerTest extends TestCase
                 total_price NUMERIC NOT NULL,
                 status TEXT NOT NULL DEFAULT "pending_payment"
             );
+            CREATE TABLE guest_registries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                reservation_uid TEXT NOT NULL,
+                property_id TEXT NOT NULL,
+                check_in TEXT NOT NULL,
+                check_out TEXT NOT NULL,
+                guest_count INTEGER NOT NULL DEFAULT 1,
+                guests_payload TEXT NOT NULL
+            );
         ');
 
         $logs = MigrationRunner::run($pdo, 'memory_db');
@@ -144,12 +166,33 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('Upgrading SQLite reservations: Added column `external_confirmation_code`.', $logs);
         $this->assertContains('Upgrading SQLite reservations: Added column `channel_block_uid`.', $logs);
         $this->assertContains('Upgrading SQLite reservations: Added column `max_guests`.', $logs);
+        $this->assertContains('Upgrading SQLite reservations: Added column `privacy_policy_version`.', $logs);
+        $this->assertContains('Upgrading SQLite reservations: Added column `privacy_consent_at`.', $logs);
+        $this->assertContains('Upgrading SQLite reservations: Added column `privacy_consent_ip`.', $logs);
+        $this->assertContains('Upgrading SQLite reservations: Added column `pii_redacted_at`.', $logs);
+        $this->assertContains('Upgrading SQLite guest_registries: Added column `privacy_policy_version`.', $logs);
+        $this->assertContains('Upgrading SQLite guest_registries: Added column `privacy_consent_at`.', $logs);
+        $this->assertContains('Upgrading SQLite guest_registries: Added column `privacy_consent_ip`.', $logs);
+        $this->assertContains('Upgrading SQLite guest_registries: Added column `minor_guardian_consent`.', $logs);
+        $this->assertContains('Upgrading SQLite guest_registries: Added column `pii_redacted_at`.', $logs);
 
         $colsStmt = $pdo->query("PRAGMA table_info(reservations)");
         $cols = $colsStmt !== false ? array_column($colsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
         $this->assertContains('external_confirmation_code', $cols);
         $this->assertContains('channel_block_uid', $cols);
         $this->assertContains('max_guests', $cols);
+        $this->assertContains('privacy_policy_version', $cols);
+        $this->assertContains('privacy_consent_at', $cols);
+        $this->assertContains('privacy_consent_ip', $cols);
+        $this->assertContains('pii_redacted_at', $cols);
+
+        $regColsStmt = $pdo->query("PRAGMA table_info(guest_registries)");
+        $regCols = $regColsStmt !== false ? array_column($regColsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('privacy_policy_version', $regCols);
+        $this->assertContains('privacy_consent_at', $regCols);
+        $this->assertContains('privacy_consent_ip', $regCols);
+        $this->assertContains('minor_guardian_consent', $regCols);
+        $this->assertContains('pii_redacted_at', $regCols);
     }
 
     public function testConnectThrowsExpectedPdoExceptionForInvalidHost(): void

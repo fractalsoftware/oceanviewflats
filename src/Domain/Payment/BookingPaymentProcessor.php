@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Domain\Payment;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use InvalidArgumentException;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
@@ -196,6 +197,18 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
             );
         }
 
+        if (!$request->privacyConsent) {
+            return BookingPaymentResult::error(
+                $this->trans(
+                    $lang,
+                    'booking',
+                    'err_privacy_consent',
+                    'Please accept the Personal Data Processing Policy to proceed with your booking.'
+                ),
+                400
+            );
+        }
+
         // 2. Idempotency double-charge shield check
         // Must precede availability checks so idempotency retries do not collide with their own booked dates
         if ($request->idempotencyKey !== null && trim($request->idempotencyKey) !== '') {
@@ -347,6 +360,14 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
             );
         }
 
+        $consentAt = new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
+        $consentPolicyVersion = ($request->privacyPolicyVersion !== null && trim($request->privacyPolicyVersion) !== '')
+            ? trim($request->privacyPolicyVersion)
+            : Reservation::DEFAULT_PRIVACY_POLICY_VERSION;
+        $consentIp = ($request->clientIp !== null && trim($request->clientIp) !== '')
+            ? trim($request->clientIp)
+            : '127.0.0.1';
+
         // 8. Gateway approval handling
         if ($gatewayResult->isApproved()) {
             $draft = ReservationDraft::direct(
@@ -367,7 +388,10 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
                     paymentDetail: $gatewayResult->statusDetail
                 ),
                 reservationUid: $uid,
-                actor: ActorContext::guest(ipAddress: $request->clientIp)
+                actor: ActorContext::guest(ipAddress: $consentIp),
+                privacyPolicyVersion: $consentPolicyVersion,
+                privacyConsentAt: $consentAt,
+                privacyConsentIp: $consentIp
             );
 
             $this->lifecycleEngine->confirmOrRecord($draft);
@@ -402,14 +426,17 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
                     lang: $lang
                 ),
                 paymentMethodId: $gatewayResult->paymentMethodId ?? $paymentMethodId,
-                actor: ActorContext::guest(ipAddress: $request->clientIp),
+                actor: ActorContext::guest(ipAddress: $consentIp),
                 reservationUid: $uid,
                 payment: DraftPaymentDetails::direct(
                     paymentMethodId: $gatewayResult->paymentMethodId ?? $paymentMethodId,
                     mercadopagoPaymentId: (string) $gatewayResult->paymentId,
                     paymentStatus: $gatewayResult->status,
                     paymentDetail: $gatewayResult->statusDetail
-                )
+                ),
+                privacyPolicyVersion: $consentPolicyVersion,
+                privacyConsentAt: $consentAt,
+                privacyConsentIp: $consentIp
             );
 
             $holdResult = $this->lifecycleEngine->holdDirect($holdRequest);

@@ -42,6 +42,9 @@ export interface PropertyTheme {
 	bookingBtn: string;
 	bookingFormInput: string;
 	bookingCaptchaBoxBg: string;
+	bookingConsentBoxBg: string;
+	bookingConsentText: string;
+	bookingConsentLink: string;
 
 	// CalendarWidget centralized styles
 	calendarDayText: string;
@@ -100,6 +103,9 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		bookingBtn: "bg-[#FF5A5F] hover:bg-[#FF424D]",
 		bookingFormInput: "border-slate-200 text-slate-800 focus:border-[#FF5A5F]",
 		bookingCaptchaBoxBg: "bg-slate-50 border border-slate-200",
+		bookingConsentBoxBg: "bg-slate-50 border border-slate-200",
+		bookingConsentText: "text-slate-600",
+		bookingConsentLink: "text-[#FF5A5F] hover:text-[#FF424D]",
 
 		// CalendarWidget
 		calendarDayText: "text-slate-700",
@@ -157,6 +163,9 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		bookingBtn: "bg-rose-600 hover:bg-rose-700",
 		bookingFormInput: "border-stone-200 text-stone-800 focus:border-rose-600",
 		bookingCaptchaBoxBg: "bg-stone-50 border border-stone-200",
+		bookingConsentBoxBg: "bg-stone-50 border border-stone-200",
+		bookingConsentText: "text-stone-600",
+		bookingConsentLink: "text-rose-600 hover:text-rose-700",
 
 		// CalendarWidget
 		calendarDayText: "text-stone-700",

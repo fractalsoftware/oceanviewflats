@@ -523,7 +523,7 @@ export default function Guide({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 
 			{/* Global Copy Alert Overlay (rendered dynamically by guide.js) */}
 			<div

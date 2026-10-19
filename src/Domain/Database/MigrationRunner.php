@@ -113,6 +113,10 @@ final class MigrationRunner
               `door_code` VARCHAR(20) DEFAULT NULL,
               `notes` TEXT DEFAULT NULL,
               `max_guests` TINYINT UNSIGNED NOT NULL DEFAULT 6,
+              `privacy_policy_version` VARCHAR(16) DEFAULT NULL,
+              `privacy_consent_at` DATETIME DEFAULT NULL,
+              `privacy_consent_ip` VARCHAR(45) DEFAULT NULL,
+              `pii_redacted_at` DATETIME DEFAULT NULL,
               `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
               INDEX `idx_property_dates` (`property_id`, `check_in`, `check_out`),
@@ -140,7 +144,11 @@ final class MigrationRunner
             'external_confirmation_code' => "VARCHAR(64) DEFAULT NULL",
             'channel_block_uid' => "VARCHAR(128) DEFAULT NULL",
             'notes' => "TEXT DEFAULT NULL",
-            'max_guests' => "TINYINT UNSIGNED NOT NULL DEFAULT 6"
+            'max_guests' => "TINYINT UNSIGNED NOT NULL DEFAULT 6",
+            'privacy_policy_version' => 'VARCHAR(16) DEFAULT NULL',
+            'privacy_consent_at' => 'DATETIME DEFAULT NULL',
+            'privacy_consent_ip' => 'VARCHAR(45) DEFAULT NULL',
+            'pii_redacted_at' => 'DATETIME DEFAULT NULL',
         ];
 
         foreach ($reservationColumns as $col => $type) {
@@ -206,12 +214,42 @@ final class MigrationRunner
               `car_plates` VARCHAR(20) DEFAULT NULL,
               `car_model` VARCHAR(100) DEFAULT NULL,
               `ip_address` VARCHAR(45) DEFAULT NULL,
+              `privacy_policy_version` VARCHAR(16) DEFAULT NULL,
+              `privacy_consent_at` DATETIME DEFAULT NULL,
+              `privacy_consent_ip` VARCHAR(45) DEFAULT NULL,
+              `minor_guardian_consent` TINYINT(1) NOT NULL DEFAULT 0,
+              `pii_redacted_at` DATETIME DEFAULT NULL,
               `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               INDEX `idx_reg_reservation` (`reservation_uid`),
               INDEX `idx_reg_property_dates` (`property_id`, `check_in`, `check_out`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
         $logs[] = "Table `guest_registries` verified/created.";
+
+        $guestRegistryColumns = [
+            'privacy_policy_version' => 'VARCHAR(16) DEFAULT NULL',
+            'privacy_consent_at' => 'DATETIME DEFAULT NULL',
+            'privacy_consent_ip' => 'VARCHAR(45) DEFAULT NULL',
+            'minor_guardian_consent' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'pii_redacted_at' => 'DATETIME DEFAULT NULL',
+        ];
+
+        foreach ($guestRegistryColumns as $col => $type) {
+            $stmt = $pdo->prepare("
+                SELECT COLUMN_NAME 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = :dbname 
+                  AND TABLE_NAME = 'guest_registries' 
+                  AND COLUMN_NAME = :col
+            ");
+            $stmt->execute(['dbname' => $dbName, 'col' => $col]);
+            $exists = $stmt->fetch();
+
+            if (!$exists) {
+                $pdo->exec("ALTER TABLE `guest_registries` ADD COLUMN `{$col}` {$type}");
+                $logs[] = "Upgrading guest_registries schema: Added column `{$col}`.";
+            }
+        }
 
         // 4. admin_users table
         $pdo->exec("
@@ -415,6 +453,10 @@ final class MigrationRunner
                 door_code TEXT DEFAULT NULL,
                 notes TEXT DEFAULT NULL,
                 max_guests INTEGER NOT NULL DEFAULT 6,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
@@ -426,6 +468,10 @@ final class MigrationRunner
             'external_confirmation_code' => 'TEXT DEFAULT NULL',
             'channel_block_uid' => 'TEXT DEFAULT NULL',
             'max_guests' => 'INTEGER NOT NULL DEFAULT 6',
+            'privacy_policy_version' => 'TEXT DEFAULT NULL',
+            'privacy_consent_at' => 'TEXT DEFAULT NULL',
+            'privacy_consent_ip' => 'TEXT DEFAULT NULL',
+            'pii_redacted_at' => 'TEXT DEFAULT NULL',
         ];
         $existingCols = [];
         $colsStmt = $pdo->query("PRAGMA table_info(reservations)");
@@ -462,10 +508,37 @@ final class MigrationRunner
                 car_plates TEXT DEFAULT NULL,
                 car_model TEXT DEFAULT NULL,
                 ip_address TEXT DEFAULT NULL,
+                privacy_policy_version TEXT DEFAULT NULL,
+                privacy_consent_at TEXT DEFAULT NULL,
+                privacy_consent_ip TEXT DEFAULT NULL,
+                minor_guardian_consent INTEGER NOT NULL DEFAULT 0,
+                pii_redacted_at TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
         ');
         $logs[] = "Table `guest_registries` verified/created.";
+
+        // Self-healing columns for SQLite guest_registries
+        $sqliteGuestRegistryColumns = [
+            'privacy_policy_version' => 'TEXT DEFAULT NULL',
+            'privacy_consent_at' => 'TEXT DEFAULT NULL',
+            'privacy_consent_ip' => 'TEXT DEFAULT NULL',
+            'minor_guardian_consent' => 'INTEGER NOT NULL DEFAULT 0',
+            'pii_redacted_at' => 'TEXT DEFAULT NULL',
+        ];
+        $existingRegCols = [];
+        $regColsStmt = $pdo->query("PRAGMA table_info(guest_registries)");
+        if ($regColsStmt !== false) {
+            while ($regColRow = $regColsStmt->fetch(PDO::FETCH_ASSOC)) {
+                $existingRegCols[] = (string) ($regColRow['name'] ?? '');
+            }
+        }
+        foreach ($sqliteGuestRegistryColumns as $col => $colDef) {
+            if (!in_array($col, $existingRegCols, true)) {
+                $pdo->exec("ALTER TABLE guest_registries ADD COLUMN `{$col}` {$colDef}");
+                $logs[] = "Upgrading SQLite guest_registries: Added column `{$col}`.";
+            }
+        }
 
         $pdo->exec('
             CREATE TABLE IF NOT EXISTS admin_users (

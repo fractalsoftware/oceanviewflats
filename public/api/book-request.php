@@ -94,6 +94,22 @@ $guestName = clean_input($_POST['guest_name'] ?? '');
 $guestEmail = clean_input($_POST['guest_email'] ?? '');
 $guestPhone = clean_input($_POST['guest_phone'] ?? '');
 $clientPriceCop = (float)($_POST['total_price_cop'] ?? 0);
+$privacyConsentRaw = $_POST['privacy_consent'] ?? '';
+$privacyPolicyVersionRaw = clean_input((string) ($_POST['privacy_policy_version'] ?? PRIVACY_POLICY_VERSION));
+
+$hasPrivacyConsent = $privacyConsentRaw === true
+    || $privacyConsentRaw === 1
+    || in_array(strtolower(trim((string) $privacyConsentRaw)), ['1', 'true', 'on', 'yes'], true);
+if (!$hasPrivacyConsent) {
+    http_response_code(400);
+    send_json_response(false, $t['err_privacy_consent']);
+}
+$privacyPolicyVersion = $privacyPolicyVersionRaw !== '' ? $privacyPolicyVersionRaw : PRIVACY_POLICY_VERSION;
+$privacyConsentAt = new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
+$privacyConsentIp = clean_input((string) ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));
+if ($privacyConsentIp === '') {
+    $privacyConsentIp = '127.0.0.1';
+}
 
 if ($propertyId !== '1606' && $propertyId !== '1707') {
     send_json_response(false, $t['err_property']);
@@ -144,7 +160,10 @@ $holdRequest = DirectHoldRequest::create(
         phone: $guestPhone,
         lang: $lang
     ),
-    actor: ActorContext::guest()
+    actor: ActorContext::guest(ipAddress: $privacyConsentIp),
+    privacyPolicyVersion: $privacyPolicyVersion,
+    privacyConsentAt: $privacyConsentAt,
+    privacyConsentIp: $privacyConsentIp
 );
 
 try {

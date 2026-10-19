@@ -111,7 +111,10 @@ final class ReservationLifecycleEngine implements ReservationLifecycleEngineInte
             registryCompleted: false,
             doorCode: $doorCode,
             source: 'web',
-            notes: $request->notes
+            notes: $request->notes,
+            privacyPolicyVersion: $request->privacyPolicyVersion,
+            privacyConsentAt: $request->privacyConsentAt,
+            privacyConsentIp: $request->privacyConsentIp ?? ($request->privacyPolicyVersion !== null ? $request->actor?->ipAddress : null)
         );
 
         // 4. Concurrency-safe atomic hold persistence
@@ -308,7 +311,11 @@ final class ReservationLifecycleEngine implements ReservationLifecycleEngineInte
             refundedAmount: $existing->refundedAmount ?? 0.0,
             externalConfirmationCode: $draft->externalConfirmationCode ?? $existing?->externalConfirmationCode,
             channelBlockUid: $absorbedChannelBlockUid ?? $draft->channelBlockUid ?? $existing?->channelBlockUid,
-            maxGuests: $maxGuests
+            maxGuests: $maxGuests,
+            privacyPolicyVersion: $draft->privacyPolicyVersion ?? $existing?->privacyPolicyVersion,
+            privacyConsentAt: $draft->privacyConsentAt ?? $existing?->privacyConsentAt,
+            privacyConsentIp: $draft->privacyConsentIp ?? $existing?->privacyConsentIp,
+            piiRedactedAt: $existing?->piiRedactedAt
         );
 
         // 5. Transactional Persistence and Audit Logging

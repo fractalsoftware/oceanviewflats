@@ -132,7 +132,7 @@ export default function BookingSuccess({ lang, assetPrefix = "/" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
 	);
 }

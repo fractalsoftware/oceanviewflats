@@ -329,3 +329,126 @@ test("Registry page pre-renders 12 guest cards and registry.js honors max_guests
 		"registry.js must support up to 12 guest cards",
 	);
 });
+
+test("Multilingual Data Processing Policy (/privacy) pages are generated across all 6 locales with canonical Data Controller and ARCO SLAs", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const privacyFiles = [
+		{ file: "privacy/index.html", lang: "en" },
+		{ file: "privacy/es.html", lang: "es" },
+		{ file: "privacy/fr.html", lang: "fr" },
+		{ file: "privacy/it.html", lang: "it" },
+		{ file: "privacy/de.html", lang: "de" },
+		{ file: "privacy/ja.html", lang: "ja" },
+	];
+
+	for (const item of privacyFiles) {
+		const fullPath = path.join(distDir, item.file);
+		assert.ok(
+			fs.existsSync(fullPath),
+			`Privacy policy file must exist: ${item.file}`,
+		);
+		const content = fs.readFileSync(fullPath, "utf-8");
+
+		assert.ok(
+			content.includes(`lang="${item.lang}"`),
+			`${item.file} must have html lang="${item.lang}"`,
+		);
+		assert.ok(
+			content.includes("OceanViewFlats — Manuel Enrique Herrera"),
+			`${item.file} must display canonical Data Controller name`,
+		);
+		assert.ok(
+			content.includes("RNT #268781") && content.includes("RNT #270413"),
+			`${item.file} must display both RNT registration numbers`,
+		);
+		assert.ok(
+			content.includes("Calle 26 # 2-80, Playa Salguero, Santa Marta"),
+			`${item.file} must display physical domicile address`,
+		);
+		assert.ok(
+			content.includes("rentals@oceanviewflats.com"),
+			`${item.file} must display Habeas Data email`,
+		);
+		assert.ok(
+			content.includes("+57 (310) 815-5234"),
+			`${item.file} must display contact phone`,
+		);
+		assert.ok(
+			content.includes("2026-10"),
+			`${item.file} must display PRIVACY_POLICY_VERSION 2026-10`,
+		);
+		assert.ok(
+			content.includes("Mercado Pago") &&
+				content.includes("Edificio Salguero Sunset"),
+			`${item.file} must disclose third-party recipients`,
+		);
+		assert.ok(
+			content.includes("10") && content.includes("15"),
+			`${item.file} must display 10 and 15 business day ARCO SLAs`,
+		);
+		assert.ok(
+			content.includes('id="footer-privacy-link"'),
+			`${item.file} must contain the global footer privacy link`,
+		);
+	}
+});
+
+test("Contact and Direct Booking forms render unchecked-by-default required privacy_consent checkboxes linking to localized /privacy", () => {
+	const distDir = path.join(process.cwd(), "dist");
+
+	const contactEn = fs.readFileSync(
+		path.join(distDir, "contact", "index.html"),
+		"utf-8",
+	);
+	assert.ok(
+		contactEn.includes('id="privacy-consent"') &&
+			contactEn.includes('name="privacy_consent"') &&
+			contactEn.includes('name="privacy_policy_version" value="2026-10"'),
+		"Contact page must render #privacy-consent checkbox and privacy_policy_version=2026-10",
+	);
+	assert.ok(
+		!contactEn.includes('id="privacy-consent" checked'),
+		"Contact #privacy-consent must be unchecked by default",
+	);
+	assert.ok(
+		contactEn.includes('href="../privacy/index.html"'),
+		"English Contact page must link to ../privacy/index.html",
+	);
+
+	const contactEs = fs.readFileSync(
+		path.join(distDir, "contact", "es.html"),
+		"utf-8",
+	);
+	assert.ok(
+		contactEs.includes('href="../privacy/es.html"'),
+		"Spanish Contact page must link to ../privacy/es.html",
+	);
+
+	for (const prop of ["Oceanview1707", "Oceanview1606"]) {
+		const propEn = fs.readFileSync(
+			path.join(distDir, prop, "index.html"),
+			"utf-8",
+		);
+		assert.ok(
+			propEn.includes('id="booking-privacy-consent"') &&
+				propEn.includes('name="privacy_consent"') &&
+				propEn.includes('name="privacy_policy_version" value="2026-10"'),
+			`${prop} must render #booking-privacy-consent checkbox and privacy_policy_version=2026-10`,
+		);
+		assert.ok(
+			!propEn.includes('id="booking-privacy-consent" checked'),
+			`${prop} #booking-privacy-consent must be unchecked by default`,
+		);
+		assert.ok(
+			propEn.includes('href="../privacy/index.html"'),
+			`${prop} English page must link to ../privacy/index.html`,
+		);
+	}
+
+	const homeEs = fs.readFileSync(path.join(distDir, "es.html"), "utf-8");
+	assert.ok(
+		homeEs.includes('id="footer-privacy-link"') &&
+			homeEs.includes('href="./privacy/es.html"'),
+		"Root Spanish home page footer must link to ./privacy/es.html",
+	);
+});
