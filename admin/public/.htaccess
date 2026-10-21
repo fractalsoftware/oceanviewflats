@@ -33,14 +33,43 @@ Options -Indexes
     AddType image/x-icon .ico
 </IfModule>
 
-# 5. Front-Controller URL Rewriting
+# 5. Front-Controller URL Rewriting & Request Hardening (CVE-2026-109618 & CVE-2026-109619)
+LimitRequestBody 65536
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Reject multipart/form-data payloads before PHP startup (Admin Console uses URL-encoded forms)
+    RewriteCond %{CONTENT_TYPE} ^multipart/form-data [NC]
+    RewriteRule ^ - [F,L]
 
     # Route all non-file and non-directory requests to the front-controller
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# 6. Guarded PHP Engine Directives for mod_php / LiteSpeed SAPIs
+<IfModule mod_php.c>
+    php_flag file_uploads Off
+    php_flag session.upload_progress.enabled Off
+    php_value post_max_size 64K
+    php_value max_input_nesting_level 16
+    php_value max_input_vars 200
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag file_uploads Off
+    php_flag session.upload_progress.enabled Off
+    php_value post_max_size 64K
+    php_value max_input_nesting_level 16
+    php_value max_input_vars 200
+</IfModule>
+<IfModule lsapi_module>
+    php_flag file_uploads Off
+    php_flag session.upload_progress.enabled Off
+    php_value post_max_size 64K
+    php_value max_input_nesting_level 16
+    php_value max_input_vars 200
 </IfModule>
 
 # =============================================================================

@@ -83,42 +83,42 @@ if ($reservationUid === '') {
 }
 
 // 6. Database Connection & Service Resolution
-if (isset($GLOBALS['TEST_PDO']) && $GLOBALS['TEST_PDO'] instanceof PDO) {
-    $pdo = $GLOBALS['TEST_PDO'];
-} else {
-    $config = require __DIR__ . '/config.php';
-    $pdo = get_db_connection($config['db']);
-}
-
-$clearanceRepo = (isset($GLOBALS['TEST_CLEARANCE_REPO']) && $GLOBALS['TEST_CLEARANCE_REPO'] instanceof CondominiumClearanceRepositoryInterface)
-    ? $GLOBALS['TEST_CLEARANCE_REPO']
-    : new PdoCondominiumClearanceRepository($pdo);
-
-if (isset($GLOBALS['TEST_CLEARANCE_SYNC']) && $GLOBALS['TEST_CLEARANCE_SYNC'] instanceof CondominiumClearanceSyncInterface) {
-    $clearanceSync = $GLOBALS['TEST_CLEARANCE_SYNC'];
-} else {
-    /** @var HttpTransportInterface $clearanceTransport */
-    $clearanceTransport = (isset($GLOBALS['TEST_CLEARANCE_TRANSPORT']) && $GLOBALS['TEST_CLEARANCE_TRANSPORT'] instanceof HttpTransportInterface)
-        ? $GLOBALS['TEST_CLEARANCE_TRANSPORT']
-        : new CurlHttpTransport();
-    $clearanceSync = new HuespedManagerClearanceSync(
-        repository: $clearanceRepo,
-        reservationRepository: new PdoReservationRepository($pdo),
-        searchAdapter: new PdoReservationSearchAdapter($pdo),
-        transport: $clearanceTransport,
-        auditLogger: new AuditLogger($pdo)
-    );
-}
-
-// 7. Execute Condominium Clearance Synchronization
-$currentUser = ['id' => (int) $adminUserId];
-$adminContext = new AdminContext(
-    adminUserId: $currentUser['id'],
-    ipAddress: (string) ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'),
-    userAgent: (string) ($_SERVER['HTTP_USER_AGENT'] ?? '')
-);
-
 try {
+    if (isset($GLOBALS['TEST_PDO']) && $GLOBALS['TEST_PDO'] instanceof PDO) {
+        $pdo = $GLOBALS['TEST_PDO'];
+    } else {
+        $config = require __DIR__ . '/config.php';
+        $pdo = get_db_connection($config['db']);
+    }
+
+    $clearanceRepo = (isset($GLOBALS['TEST_CLEARANCE_REPO']) && $GLOBALS['TEST_CLEARANCE_REPO'] instanceof CondominiumClearanceRepositoryInterface)
+        ? $GLOBALS['TEST_CLEARANCE_REPO']
+        : new PdoCondominiumClearanceRepository($pdo);
+
+    if (isset($GLOBALS['TEST_CLEARANCE_SYNC']) && $GLOBALS['TEST_CLEARANCE_SYNC'] instanceof CondominiumClearanceSyncInterface) {
+        $clearanceSync = $GLOBALS['TEST_CLEARANCE_SYNC'];
+    } else {
+        /** @var HttpTransportInterface $clearanceTransport */
+        $clearanceTransport = (isset($GLOBALS['TEST_CLEARANCE_TRANSPORT']) && $GLOBALS['TEST_CLEARANCE_TRANSPORT'] instanceof HttpTransportInterface)
+            ? $GLOBALS['TEST_CLEARANCE_TRANSPORT']
+            : new CurlHttpTransport();
+        $clearanceSync = new HuespedManagerClearanceSync(
+            repository: $clearanceRepo,
+            reservationRepository: new PdoReservationRepository($pdo),
+            searchAdapter: new PdoReservationSearchAdapter($pdo),
+            transport: $clearanceTransport,
+            auditLogger: new AuditLogger($pdo)
+        );
+    }
+
+    // 7. Execute Condominium Clearance Synchronization
+    $currentUser = ['id' => (int) $adminUserId];
+    $adminContext = new AdminContext(
+        adminUserId: $currentUser['id'],
+        ipAddress: (string) ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'),
+        userAgent: (string) ($_SERVER['HTTP_USER_AGENT'] ?? '')
+    );
+
     $clearance = $clearanceSync->syncForReservation($reservationUid, $adminContext);
 } catch (ReservationNotFoundException) {
     http_response_code(404);
@@ -126,6 +126,10 @@ try {
 } catch (GuestRegistryRequiredException) {
     http_response_code(400);
     send_json_response(false, 'Guest registry must be submitted before condominium clearance can be synced.');
+} catch (Throwable $e) {
+    error_log('[Admin Clearance Retry Error] ' . $e->getMessage());
+    http_response_code(500);
+    send_json_response(false, 'Internal server error synchronizing condominium clearance.');
 }
 
 // 8. Return JSON Response

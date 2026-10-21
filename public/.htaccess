@@ -3,3 +3,17 @@
 # RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]
 
 ErrorDocument 404 /404.html
+
+# =============================================================================
+# Security Hardening (CVE-2026-109618 & CVE-2026-109619 Mitigations)
+# =============================================================================
+
+# 1. Cap HTTP request body size at Apache layer (64 KB max)
+LimitRequestBody 65536
+
+# 2. Reject multipart/form-data requests before PHP startup
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{CONTENT_TYPE} ^multipart/form-data [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>

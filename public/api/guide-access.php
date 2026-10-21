@@ -83,17 +83,26 @@ if ($pdo === null) {
     ]);
 }
 
-$repository = new PdoReservationRepository($pdo);
-$credentialsProvider = new ConfigPropertyCredentialsProvider($config['credentials'] ?? []);
-$guideTranslations = [];
-foreach (['en', 'es', 'fr', 'it', 'de', 'ja'] as $loc) {
-    if (isset($all_translations[$loc]['guide'])) {
-        $guideTranslations[$loc] = $all_translations[$loc]['guide'];
+try {
+    $repository = new PdoReservationRepository($pdo);
+    $credentialsProvider = new ConfigPropertyCredentialsProvider($config['credentials'] ?? []);
+    $guideTranslations = [];
+    foreach (['en', 'es', 'fr', 'it', 'de', 'ja'] as $loc) {
+        if (isset($all_translations[$loc]['guide'])) {
+            $guideTranslations[$loc] = $all_translations[$loc]['guide'];
+        }
     }
-}
-$guideAccessService = new GuideAccessService($repository, $credentialsProvider, '', $guideTranslations);
+    $guideAccessService = new GuideAccessService($repository, $credentialsProvider, '', $guideTranslations);
 
-$result = $guideAccessService->verifyAccess($code, $lang);
+    $result = $guideAccessService->verifyAccess($code, $lang);
+} catch (Throwable $e) {
+    error_log('[Guide Access Error] ' . $e->getMessage());
+    http_response_code(500);
+    send_json_response(false, 'Internal server error verifying access credentials.', [
+        'verified' => false,
+        'status' => 'error'
+    ]);
+}
 
 switch ($result->status) {
     case 'not_found':

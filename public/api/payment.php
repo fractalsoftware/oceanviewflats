@@ -65,11 +65,17 @@ if ($captchaCheck !== true) {
 }
 
 // Connect to database and delegate to domain processor
-$pdo = get_db_connection($config['db']);
+try {
+    $pdo = get_db_connection($config['db']);
 
-$request = BookingPaymentRequest::fromArray($data, $lang, $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
-$processor = BookingPaymentProcessor::createDefault($pdo);
-$result = $processor->processBookingPayment($request);
+    $request = BookingPaymentRequest::fromArray($data, $lang, $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    $processor = BookingPaymentProcessor::createDefault($pdo);
+    $result = $processor->processBookingPayment($request);
 
-http_response_code($result->httpStatusCode);
-send_json_response($result->success, $result->message, $result->extra);
+    http_response_code($result->httpStatusCode);
+    send_json_response($result->success, $result->message, $result->extra);
+} catch (Throwable $e) {
+    error_log('[Payment API Error] ' . $e->getMessage());
+    http_response_code(500);
+    send_json_response(false, 'Internal server error processing payment.');
+}
