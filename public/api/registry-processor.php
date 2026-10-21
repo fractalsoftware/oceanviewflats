@@ -163,32 +163,32 @@ for ($i = 2; $i <= $guestCount; $i++) {
 }
 
 // Database & Service Resolution
-if (isset($GLOBALS['TEST_LIFECYCLE_SERVICE']) && $GLOBALS['TEST_LIFECYCLE_SERVICE'] instanceof GuestLifecycleFulfillmentServiceInterface) {
-    $service = $GLOBALS['TEST_LIFECYCLE_SERVICE'];
-} else {
-    if (isset($GLOBALS['TEST_PDO']) && $GLOBALS['TEST_PDO'] instanceof PDO) {
-        $pdo = $GLOBALS['TEST_PDO'];
+try {
+    if (isset($GLOBALS['TEST_LIFECYCLE_SERVICE']) && $GLOBALS['TEST_LIFECYCLE_SERVICE'] instanceof GuestLifecycleFulfillmentServiceInterface) {
+        $service = $GLOBALS['TEST_LIFECYCLE_SERVICE'];
     } else {
-        $config = require __DIR__ . '/config.php';
-        $pdo = get_db_connection($config['db']);
+        if (isset($GLOBALS['TEST_PDO']) && $GLOBALS['TEST_PDO'] instanceof PDO) {
+            $pdo = $GLOBALS['TEST_PDO'];
+        } else {
+            $config = require __DIR__ . '/config.php';
+            $pdo = get_db_connection($config['db']);
+        }
+
+        $clearanceRepo = new PdoCondominiumClearanceRepository($pdo);
+        /** @var HttpTransportInterface $clearanceTransport */
+        $clearanceTransport = (isset($GLOBALS['TEST_CLEARANCE_TRANSPORT']) && $GLOBALS['TEST_CLEARANCE_TRANSPORT'] instanceof HttpTransportInterface)
+            ? $GLOBALS['TEST_CLEARANCE_TRANSPORT']
+            : new CurlHttpTransport();
+        $clearanceSync = new HuespedManagerClearanceSync(
+            repository: $clearanceRepo,
+            transport: $clearanceTransport
+        );
+
+        $service = GuestLifecycleFulfillmentService::createDefault($pdo, [
+            'condominium_clearance_sync' => $clearanceSync,
+        ]);
     }
 
-    $clearanceRepo = new PdoCondominiumClearanceRepository($pdo);
-    /** @var HttpTransportInterface $clearanceTransport */
-    $clearanceTransport = (isset($GLOBALS['TEST_CLEARANCE_TRANSPORT']) && $GLOBALS['TEST_CLEARANCE_TRANSPORT'] instanceof HttpTransportInterface)
-        ? $GLOBALS['TEST_CLEARANCE_TRANSPORT']
-        : new CurlHttpTransport();
-    $clearanceSync = new HuespedManagerClearanceSync(
-        repository: $clearanceRepo,
-        transport: $clearanceTransport
-    );
-
-    $service = GuestLifecycleFulfillmentService::createDefault($pdo, [
-        'condominium_clearance_sync' => $clearanceSync,
-    ]);
-}
-
-try {
     $submission = GuestRegistrySubmission::fromArray($data);
     $result = $service->submitRegistry($submission);
 } catch (InvalidArgumentException $e) {
@@ -196,6 +196,10 @@ try {
     send_json_response(false, $e->getMessage(), [
         'errors' => [$e->getMessage()],
     ]);
+} catch (Throwable $e) {
+    error_log('[Registry Processor Error] ' . $e->getMessage());
+    http_response_code(500);
+    send_json_response(false, 'Internal server error processing guest registration.');
 }
 
 if (!$result->success) {

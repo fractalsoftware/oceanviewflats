@@ -69,8 +69,16 @@ if ($pdo === null) {
     ]);
 }
 
-$repository = new PdoReservationRepository($pdo);
-$reservation = $repository->findByUid($code);
+try {
+    $repository = new PdoReservationRepository($pdo);
+    $reservation = $repository->findByUid($code);
+} catch (Throwable $e) {
+    error_log('[Registry Lookup Error] ' . $e->getMessage());
+    http_response_code(500);
+    send_json_response(false, 'Internal server error looking up reservation.', [
+        'status' => 'error'
+    ]);
+}
 
 if ($reservation === null) {
     http_response_code(404);

@@ -176,6 +176,10 @@ try {
         send_json_response(false, sprintf($t['err_overlap_airbnb'], $conflictDate));
     }
     send_json_response(false, $t['err_overlap_db']);
+} catch (Throwable $e) {
+    error_log('[Book Request Error] ' . $e->getMessage());
+    http_response_code(500);
+    send_json_response(false, 'Internal server error processing booking request.');
 }
 
 $reservation = $holdResult->reservation;

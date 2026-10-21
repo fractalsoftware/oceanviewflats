@@ -1165,6 +1165,29 @@ PHP;
         $this->assertSame(1, (int) $reg['minor_guardian_consent']);
     }
 
+    public function testRegistryEndpointCatchesUnexpectedThrowableAndReturnsClean500Json(): void
+    {
+        $payload = $this->createValidRegistryData();
+        $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
+
+        $prependCode = <<<PHP
+            require_once {$autoloadPath};
+            \$GLOBALS['TEST_PDO'] = new class('sqlite::memory:') extends \\PDO {
+                public function prepare(string \$query, array \$options = []): \\PDOStatement|false {
+                    throw new \\RuntimeException('Simulated unexpected fatal storage failure');
+                }
+            };
+PHP;
+
+        $res = $this->callRegistryEndpoint($payload, 'POST', [], $prependCode);
+
+        $this->assertSame(0, $res['exitCode'], 'Endpoint must catch Throwable and exit cleanly without fatal worker crash');
+        $this->assertSame(500, $res['statusCode']);
+        $this->assertIsArray($res['json']);
+        $this->assertFalse($res['json']['success']);
+        $this->assertSame('Internal server error processing guest registration.', $res['json']['error']);
+    }
+
     /**
      * Executes public/api/registry-processor.php via a sub-process to test HTTP guards in complete isolation.
      *

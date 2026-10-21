@@ -176,10 +176,15 @@ $headers = [
 ];
 
 // Send email
-if (isset($GLOBALS['__ovf_contact_mail_callback']) && is_callable($GLOBALS['__ovf_contact_mail_callback'])) {
-    $success = (bool) ($GLOBALS['__ovf_contact_mail_callback'])(RECIPIENT_EMAIL, $subject, $email_body, $headers);
-} else {
-    $success = mail(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+try {
+    if (isset($GLOBALS['__ovf_contact_mail_callback']) && is_callable($GLOBALS['__ovf_contact_mail_callback'])) {
+        $success = (bool) ($GLOBALS['__ovf_contact_mail_callback'])(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+    } else {
+        $success = mail(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+    }
+} catch (Throwable $e) {
+    error_log('[Contact Processor Error] ' . $e->getMessage());
+    $success = false;
 }
 
 if ($success) {

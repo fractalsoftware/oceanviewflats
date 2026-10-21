@@ -757,3 +757,27 @@ test("registry.js dynamically toggles Minor Guardian Attestation when any active
 	assert.equal(minorCheckbox.disabled, false);
 	assert.equal(minorCheckbox.required, true);
 });
+
+test("registry.js and main.js encode form submissions via URLSearchParams to avoid multipart/form-data (CVE-2026-109618)", () => {
+	const registryJs = fs.readFileSync(
+		path.join(process.cwd(), "public/js/registry.js"),
+		"utf-8",
+	);
+	const mainJs = fs.readFileSync(
+		path.join(process.cwd(), "public/js/main.js"),
+		"utf-8",
+	);
+
+	assert.ok(
+		registryJs.includes("new URLSearchParams(new FormData(form))"),
+		"registry.js must wrap FormData in URLSearchParams so fetch sends application/x-www-form-urlencoded",
+	);
+	assert.ok(
+		mainJs.includes("new URLSearchParams(new FormData(directFormElement))"),
+		"main.js direct booking form must wrap FormData in URLSearchParams",
+	);
+	assert.ok(
+		mainJs.includes("new URLSearchParams(new FormData(form))"),
+		"main.js contact form must wrap FormData in URLSearchParams",
+	);
+});

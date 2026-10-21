@@ -43,7 +43,7 @@ if (!in_array($propertyId, ['1606', '1707'])) {
 // 4. Initialize PDO Connection using shared library
 try {
     $pdo = $GLOBALS['TEST_PDO'] ?? get_db_connection($config['db']);
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     http_response_code(500);
     exit("Internal Server Error: Database offline.");
 }
@@ -54,7 +54,7 @@ try {
     $activeReservations = $repository->findActiveByProperty($propertyId);
     $maintenanceBlockSource = new PdoMaintenanceBlockSource($pdo);
     $maintenanceBlocks = $maintenanceBlockSource->getBlocks($propertyId);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     http_response_code(500);
     exit("Internal Server Error: Failed to fetch calendar records.");
 }

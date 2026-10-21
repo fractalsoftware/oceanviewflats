@@ -35,12 +35,20 @@ if (empty($paymentId)) {
     exit;
 }
 
-$pdo = get_db_connection($config['db']);
+try {
+    $pdo = get_db_connection($config['db']);
 
-$processor = WebhookSettlementProcessor::createDefault($pdo);
-$result = $processor->settlePayment((string) $paymentId);
+    $processor = WebhookSettlementProcessor::createDefault($pdo);
+    $result = $processor->settlePayment((string) $paymentId);
 
-http_response_code($result->httpStatusCode);
-header('Content-Type: application/json; charset=UTF-8');
-echo json_encode($result->toArray(), JSON_UNESCAPED_SLASHES);
-exit;
+    http_response_code($result->httpStatusCode);
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode($result->toArray(), JSON_UNESCAPED_SLASHES);
+    exit;
+} catch (Throwable $e) {
+    error_log('[MercadoPago Webhook Error] ' . $e->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode(['success' => false, 'error' => 'Internal server error processing webhook.'], JSON_UNESCAPED_SLASHES);
+    exit;
+}

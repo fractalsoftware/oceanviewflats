@@ -44,39 +44,47 @@ if (!file_exists($cacheDir)) {
     mkdir($cacheDir, 0755, true);
 }
 
-/** @var InboundChannelSyncServiceInterface $syncService */
-$syncService = $GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] ?? new InboundChannelSyncService($icalFeeds, $cacheDir);
-$cacheLifetime = 15 * 60; // 15 minutes (in seconds)
+try {
+    /** @var InboundChannelSyncServiceInterface $syncService */
+    $syncService = $GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] ?? new InboundChannelSyncService($icalFeeds, $cacheDir);
+    $cacheLifetime = 15 * 60; // 15 minutes (in seconds)
 
-if ($syncService->isCacheStale($propertyId, $cacheLifetime)) {
-    $syncResult = $syncService->sync($propertyId, force: false, initiatedBy: 'public_traffic');
+    if ($syncService->isCacheStale($propertyId, $cacheLifetime)) {
+        $syncResult = $syncService->sync($propertyId, force: false, initiatedBy: 'public_traffic');
 
-    // Fallback logic if feed fetch fails and no cached calendar exists
-    if ($syncResult->getStatus()->isError() && !$syncService->hasCacheFile($propertyId)) {
-        http_response_code(502);
-        echo json_encode([
-            "error" => "Failed to retrieve calendar feed from Airbnb.",
-            "status_code" => $syncResult->getStatus()->getHttpCode() ?? 502,
-        ]);
-        exit();
+        // Fallback logic if feed fetch fails and no cached calendar exists
+        if ($syncResult->getStatus()->isError() && !$syncService->hasCacheFile($propertyId)) {
+            http_response_code(502);
+            echo json_encode([
+                "error" => "Failed to retrieve calendar feed from Airbnb.",
+                "status_code" => $syncResult->getStatus()->getHttpCode() ?? 502,
+            ]);
+            exit();
+        }
+        // Stale cache will be read by FileCacheChannelBlockSource and ReservationLedger
     }
-    // Stale cache will be read by FileCacheChannelBlockSource and ReservationLedger
-}
 
-// Establish database connection to evaluate active direct reservations (ADR 0003)
-$pdo = $GLOBALS['TEST_PDO'] ?? null;
-if ($pdo === null && !empty($config['db']['host']) && !empty($config['db']['dbname'])) {
-    try {
-        $pdo = get_db_connection($config['db']);
-    } catch (PDOException $e) {
-        error_log("Database connection failed in availability.php: " . $e->getMessage());
+    // Establish database connection to evaluate active direct reservations (ADR 0003)
+    $pdo = $GLOBALS['TEST_PDO'] ?? null;
+    if ($pdo === null && !empty($config['db']['host']) && !empty($config['db']['dbname'])) {
+        try {
+            $pdo = get_db_connection($config['db']);
+        } catch (PDOException $e) {
+            error_log("Database connection failed in availability.php: " . $e->getMessage());
+        }
     }
+
+    // Query Authoritative Reservation Ledger: merges ephemeral channel blocks & active direct reservations
+    $ledger = ReservationLedger::createDefault($pdo, $cacheDir);
+    $allBlocked = $ledger->getBlockedNights($propertyId);
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($allBlocked);
+} catch (Throwable $e) {
+    error_log('[Availability API Error] ' . $e->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(["error" => "Internal server error checking availability."]);
+    exit();
 }
-
-// Query Authoritative Reservation Ledger: merges ephemeral channel blocks & active direct reservations
-$ledger = ReservationLedger::createDefault($pdo, $cacheDir);
-$allBlocked = $ledger->getBlockedNights($propertyId);
-
-header('Content-Type: application/json; charset=utf-8');
-echo json_encode($allBlocked);
 

@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnSubmitText) btnSubmitText.textContent = msgVerifying;
 
             try {
-                const formData = new FormData(directFormElement);
+                const formData = new URLSearchParams(new FormData(directFormElement));
                 formData.append('lang', lang || document.documentElement.lang || 'en');
                 formData.append('captcha_signature', bookingCaptchaSignature);
                 formData.append('captcha_response', captchaVal);
@@ -907,8 +907,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Prepare Form Data
-        const formData = new FormData(form);
+        // Prepare Form Data (encoded as application/x-www-form-urlencoded to avoid multipart/form-data)
+        const formData = new URLSearchParams(new FormData(form));
         formData.append('lang', document.documentElement.lang || 'en');
         formData.append('captcha_signature', captchaSignature);
 

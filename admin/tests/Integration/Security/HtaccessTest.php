@@ -163,4 +163,54 @@ final class HtaccessTest extends TestCase
         $closeFilesMatch = substr_count($this->htaccessContent, '</FilesMatch>');
         $this->assertSame($openFilesMatch, $closeFilesMatch, 'All <FilesMatch> tags must be properly closed.');
     }
+
+    public function testCve2026109618And109619MitigationsAreEnforcedAcrossAllHtaccessFiles(): void
+    {
+        $rootDir = dirname(__DIR__, 4);
+        $htaccessFiles = [
+            'admin/public/.htaccess' => $this->htaccessContent,
+            'public/api/.htaccess' => (string) file_get_contents($rootDir . '/public/api/.htaccess'),
+            'public/.htaccess' => (string) file_get_contents($rootDir . '/public/.htaccess'),
+        ];
+
+        foreach ($htaccessFiles as $relativePath => $content) {
+            $this->assertNotEmpty($content, "{$relativePath} must not be empty.");
+
+            // 1. LimitRequestBody cap enforced at Apache level prior to PHP initialization
+            $this->assertMatchesRegularExpression(
+                '/^\s*LimitRequestBody\s+65536\b/m',
+                $content,
+                "{$relativePath} must enforce LimitRequestBody 65536 (64 KB) to prevent OOM corruption (CVE-2026-109618)."
+            );
+
+            // 2. Reject multipart/form-data requests before PHP startup via mod_rewrite
+            $this->assertMatchesRegularExpression(
+                '/RewriteCond\s+%\{CONTENT_TYPE\}\s+\^multipart\/form-data\s+\[NC\]/i',
+                $content,
+                "{$relativePath} must match multipart/form-data Content-Type via mod_rewrite."
+            );
+            $this->assertMatchesRegularExpression(
+                '/RewriteRule\s+\^\s+-\s+\[F,L\]/i',
+                $content,
+                "{$relativePath} must reject multipart/form-data requests with HTTP 403 [F,L]."
+            );
+
+            // 3. Balanced <IfModule> blocks
+            $this->assertSame(
+                substr_count($content, '<IfModule'),
+                substr_count($content, '</IfModule>'),
+                "{$relativePath} must have balanced <IfModule> tags."
+            );
+        }
+
+        // Verify guarded PHP engine flags in API and Admin .htaccess files
+        foreach (['admin/public/.htaccess', 'public/api/.htaccess'] as $phpHtaccess) {
+            $content = $htaccessFiles[$phpHtaccess];
+            $this->assertStringContainsString('php_flag file_uploads Off', $content);
+            $this->assertStringContainsString('php_flag session.upload_progress.enabled Off', $content);
+            $this->assertStringContainsString('php_value post_max_size 64K', $content);
+            $this->assertStringContainsString('php_value max_input_nesting_level 16', $content);
+            $this->assertStringContainsString('php_value max_input_vars 200', $content);
+        }
+    }
 }

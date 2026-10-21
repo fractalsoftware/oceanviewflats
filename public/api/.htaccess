@@ -45,3 +45,38 @@ Options -Indexes
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
+
+# 5. Mitigate PHP Request Startup & Stale State Vulnerabilities (CVE-2026-109618 & CVE-2026-109619)
+# Cap HTTP request body size at 64 KB at the Apache layer before PHP initializes
+LimitRequestBody 65536
+
+# Reject multipart/form-data requests outright (API exclusively accepts JSON and URL-encoded bodies)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{CONTENT_TYPE} ^multipart/form-data [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# Guarded PHP engine directives for mod_php / LiteSpeed SAPIs
+<IfModule mod_php.c>
+    php_flag file_uploads Off
+    php_flag session.upload_progress.enabled Off
+    php_value post_max_size 64K
+    php_value max_input_nesting_level 16
+    php_value max_input_vars 200
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag file_uploads Off
+    php_flag session.upload_progress.enabled Off
+    php_value post_max_size 64K
+    php_value max_input_nesting_level 16
+    php_value max_input_vars 200
+</IfModule>
+<IfModule lsapi_module>
+    php_flag file_uploads Off
+    php_flag session.upload_progress.enabled Off
+    php_value post_max_size 64K
+    php_value max_input_nesting_level 16
+    php_value max_input_vars 200
+</IfModule>
+
