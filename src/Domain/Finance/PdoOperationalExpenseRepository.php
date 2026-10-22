@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanViewFlats\Domain\Finance;
 
 use DateTimeImmutable;
+use OceanViewFlats\Domain\Database\MigrationRunner;
 use PDO;
 use PDOException;
 
@@ -143,6 +144,19 @@ final class PdoOperationalExpenseRepository implements OperationalExpenseReposit
 
     public function save(OperationalExpense $expense): OperationalExpense
     {
+        try {
+            return $this->executeSave($expense);
+        } catch (PDOException $e) {
+            if (str_contains($e->getMessage(), 'no such table') || str_contains($e->getMessage(), "doesn't exist")) {
+                MigrationRunner::run($this->pdo, $this->resolveDatabaseName());
+                return $this->executeSave($expense);
+            }
+            throw $e;
+        }
+    }
+
+    private function executeSave(OperationalExpense $expense): OperationalExpense
+    {
         if ($expense->id === null) {
             $stmt = $this->pdo->prepare('
                 INSERT INTO operational_expenses (
@@ -237,6 +251,22 @@ final class PdoOperationalExpenseRepository implements OperationalExpenseReposit
         ]);
 
         return $this->findById($expense->id) ?? $expense;
+    }
+
+    private function resolveDatabaseName(): string
+    {
+        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver !== 'mysql') {
+            return 'sqlite';
+        }
+
+        try {
+            $stmt = $this->pdo->query('SELECT DATABASE()');
+            $dbName = $stmt !== false ? $stmt->fetchColumn() : false;
+            return is_string($dbName) && $dbName !== '' ? $dbName : 'oceanviewflats_db';
+        } catch (PDOException) {
+            return 'oceanviewflats_db';
+        }
     }
 
     public function delete(int $id): bool

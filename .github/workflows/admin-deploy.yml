@@ -105,3 +105,14 @@ jobs:
           local_path: './staging/*'
           remote_path: ${{ env.REMOTE_DESTINATION }}
           sftpArgs: '-o ConnectTimeout=5'
+
+      - name: Run Database Migrations (CLI)
+        continue-on-error: true
+        env:
+          SSHPASS: ${{ secrets.FTP_PASSWORD }}
+          SSH_USER: ${{ secrets.FTP_USERNAME }}
+          SSH_HOST: ${{ secrets.FTP_SERVER }}
+          REMOTE_DIR: ${{ env.REMOTE_DESTINATION }}
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y sshpass
+          sshpass -e ssh -p 2223 -o StrictHostKeyChecking=no -o ConnectTimeout=10 "${SSH_USER}@${SSH_HOST}" "cd \"${REMOTE_DIR}\" && php scripts/migrate.php"

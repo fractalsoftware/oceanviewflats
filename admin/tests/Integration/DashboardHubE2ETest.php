@@ -323,9 +323,9 @@ final class DashboardHubE2ETest extends TestCase
 
     public function testMultiUnitTurnoversOnSameDayAreAggregatedCorrectly(): void
     {
-        $today = date('Y-m-d');
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $inTwoDays = date('Y-m-d', strtotime('+2 days'));
+        $today = $this->bogotaDate('today');
+        $yesterday = $this->bogotaDate('-1 day');
+        $inTwoDays = $this->bogotaDate('+2 days');
 
         // Seed simultaneous turnovers on Apt 1606 AND Apt 1707 on $today
         $stmt = $this->pdo->prepare('
@@ -542,14 +542,14 @@ final class DashboardHubE2ETest extends TestCase
         $this->assertStringNotContainsString('Guest registry incomplete (Bob Arriving)', $body1606Clear);
 
         // Day Summary Drawer for today on 1606 now has zero operational warnings
-        $today = date('Y-m-d');
+        $today = $this->bogotaDate('today');
         $dayResp = $app->handle(new Request('GET', '/dashboard/day', ['date' => $today, 'property_id' => '1606']), $session);
         $this->assertSame(200, $dayResp->getStatusCode());
         $this->assertStringNotContainsString('<span>Operational Warnings</span>', $dayResp->getBody());
 
         // 5. Dismiss un-onboarded Channel Block alert on 1707 and verify it stays suppressed across subsequent hub refreshes
-        $tomorrow = date('Y-m-d', strtotime('+1 day'));
-        $inThreeDays = date('Y-m-d', strtotime('+3 days'));
+        $tomorrow = $this->bogotaDate('+1 day');
+        $inThreeDays = $this->bogotaDate('+3 days');
         $blockHash = md5("1707_{$tomorrow}_{$inThreeDays}_airbnb");
         $channelAlertId = 'channel_block_' . $blockHash;
 
@@ -595,9 +595,9 @@ final class DashboardHubE2ETest extends TestCase
     {
         $this->seedOperationalDatabase();
 
-        $today = date('Y-m-d');
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $inThreeDays = date('Y-m-d', strtotime('+3 days'));
+        $today = $this->bogotaDate('today');
+        $yesterday = $this->bogotaDate('-1 day');
+        $inThreeDays = $this->bogotaDate('+3 days');
 
         // Seed guest_registries for res_inhouse_1606 and res_arr_bob
         $stmtReg = $this->pdo->prepare('
@@ -806,7 +806,7 @@ final class DashboardHubE2ETest extends TestCase
         $hubWithBobDismissed = $app->handle(new Request('GET', '/dashboard/hub', ['property_id' => '1606'], [], ['HTTP_HX_REQUEST' => 'true']), $session);
         $this->assertStringNotContainsString('Check-in Today: Missing Guest Registry (Bob Arriving)', $hubWithBobDismissed->getBody());
 
-        $inTwoDays = date('Y-m-d', strtotime('+2 days'));
+        $inTwoDays = $this->bogotaDate('+2 days');
         $editorResetResp = $app->handle(
             new Request(
                 method: 'POST',
@@ -837,17 +837,24 @@ final class DashboardHubE2ETest extends TestCase
         $this->assertStringContainsString('Guest registry incomplete (Bob Arriving)', $hubAfterEditorReset->getBody());
     }
 
+    private function bogotaDate(string $modifier = 'today'): string
+    {
+        $cot = new DateTimeZone('America/Bogota');
+        $today = new DateTimeImmutable('today', $cot);
+        return ($modifier === 'today' ? $today : $today->modify($modifier))->format('Y-m-d');
+    }
+
     private function seedOperationalDatabase(): void
     {
-        $today = date('Y-m-d');
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $tomorrow = date('Y-m-d', strtotime('+1 day'));
-        $inTwoDays = date('Y-m-d', strtotime('+2 days'));
-        $inThreeDays = date('Y-m-d', strtotime('+3 days'));
-        $inFourDays = date('Y-m-d', strtotime('+4 days'));
-        $inFiveDays = date('Y-m-d', strtotime('+5 days'));
-        $inEightDays = date('Y-m-d', strtotime('+8 days'));
-        $inTenDays = date('Y-m-d', strtotime('+10 days'));
+        $today = $this->bogotaDate('today');
+        $yesterday = $this->bogotaDate('-1 day');
+        $tomorrow = $this->bogotaDate('+1 day');
+        $inTwoDays = $this->bogotaDate('+2 days');
+        $inThreeDays = $this->bogotaDate('+3 days');
+        $inFourDays = $this->bogotaDate('+4 days');
+        $inFiveDays = $this->bogotaDate('+5 days');
+        $inEightDays = $this->bogotaDate('+8 days');
+        $inTenDays = $this->bogotaDate('+10 days');
 
         // 1. Reservations
         $stmt = $this->pdo->prepare('
@@ -896,8 +903,8 @@ final class DashboardHubE2ETest extends TestCase
 
     private function createConfiguredApp(): AdminApp
     {
-        $tomorrow = date('Y-m-d', strtotime('+1 day'));
-        $inThreeDays = date('Y-m-d', strtotime('+3 days'));
+        $tomorrow = $this->bogotaDate('+1 day');
+        $inThreeDays = $this->bogotaDate('+3 days');
 
         // Mock ChannelSyncStatus
         $syncStatus1606 = new ChannelSyncStatus(
