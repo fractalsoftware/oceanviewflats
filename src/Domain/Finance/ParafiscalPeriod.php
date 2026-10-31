@@ -138,7 +138,7 @@ final class ParafiscalPeriod implements ArrayAccess
             $daysOverdue = abs($this->daysUntilDue);
             $dayWord = $daysOverdue === 1 ? 'day' : 'days';
             $title = sprintf(
-                'FONTUR Parafiscal Overdue: %s (Apt %s · RNT #%s)',
+                'FONTUR Parafiscal Overdue: %s (Property %s · RNT #%s)',
                 $this->periodKey,
                 $this->propertyId,
                 $this->rntNumber
@@ -159,7 +159,7 @@ final class ParafiscalPeriod implements ArrayAccess
                 ? 'due today'
                 : sprintf('due in %d %s', $this->daysUntilDue, $this->daysUntilDue === 1 ? 'day' : 'days');
             $title = sprintf(
-                'FONTUR Parafiscal Due Soon: %s (Apt %s · RNT #%s)',
+                'FONTUR Parafiscal Due Soon: %s (Property %s · RNT #%s)',
                 $this->periodKey,
                 $this->propertyId,
                 $this->rntNumber
@@ -176,7 +176,7 @@ final class ParafiscalPeriod implements ArrayAccess
             );
         } else {
             $title = sprintf(
-                'Pending FONTUR Parafiscal Declaration: %s (Apt %s · RNT #%s)',
+                'Pending FONTUR Parafiscal Declaration: %s (Property %s · RNT #%s)',
                 $this->periodKey,
                 $this->propertyId,
                 $this->rntNumber

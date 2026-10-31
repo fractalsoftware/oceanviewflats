@@ -8,6 +8,7 @@ use ArrayAccess;
 use BadMethodCallException;
 use DateTimeImmutable;
 use InvalidArgumentException;
+use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 
 /**
  * Immutable domain entity representing a persisted FONTUR Parafiscal Settlement record
@@ -21,10 +22,7 @@ final class ParafiscalSettlement implements ArrayAccess
     public const STATUS_PENDING = 'pending';
     public const STATUS_SETTLED = 'settled';
 
-    public const DEFAULT_RNT_MAP = [
-        '1606' => '270413',
-        '1707' => '268781',
-    ];
+    public const DEFAULT_RNT_MAP = PropertyRatesConfig::DEFAULT_RNT_NUMBERS;
 
     public readonly ?int $id;
     public readonly string $settlementUid;
@@ -98,7 +96,7 @@ final class ParafiscalSettlement implements ArrayAccess
 
         $resolvedRnt = $rntNumber !== null && trim($rntNumber) !== ''
             ? trim($rntNumber)
-            : self::DEFAULT_RNT_MAP[$normalizedProperty];
+            : PropertyRatesConfig::DEFAULT_RNT_NUMBERS[$normalizedProperty];
 
         $this->id = $id;
         $this->settlementUid = $settlementUid !== null && trim($settlementUid) !== ''

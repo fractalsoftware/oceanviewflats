@@ -25,6 +25,8 @@ use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Reservation\InMemoryMaintenanceBlockSource;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlockSourceInterface;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
+use PDO;
+use Throwable;
 
 /**
  * Administrative controller for the Financial Report workspace and Operational Expense Ledger CRUD.
@@ -47,7 +49,8 @@ final class FinancialReportController
         ?FinancialReportEngineInterface $reportEngine = null,
         ?MaintenanceBlockSourceInterface $maintenanceBlockSource = null,
         ?PropertyRatesConfig $ratesConfig = null,
-        ?ParafiscalSettlementRepositoryInterface $parafiscalRepository = null
+        ?ParafiscalSettlementRepositoryInterface $parafiscalRepository = null,
+        private readonly ?PDO $pdo = null
     ) {
         $this->parafiscalRepository = $parafiscalRepository ?? new InMemoryParafiscalSettlementRepository();
         $this->reportEngine = $reportEngine ?? new FinancialReportEngine(
@@ -323,7 +326,32 @@ final class FinancialReportController
         $form = $this->extractExpenseForm($request);
         $filters = $this->resolveFiltersFromMutationRequest($request);
 
+        $linkedSettlement = $existing->id !== null
+            ? $this->parafiscalRepository->findByOperationalExpenseId($existing->id)
+            : null;
+
         $validation = $this->validateExpenseForm($form);
+        if ($linkedSettlement !== null) {
+            if (trim($form['property_id']) !== $linkedSettlement->propertyId) {
+                $msg = sprintf(
+                    'FONTUR-linked operational expense must remain assigned to Property %s (%s).',
+                    $linkedSettlement->propertyId,
+                    $linkedSettlement->periodKey
+                );
+                $validation['errors'][] = $msg;
+                $validation['fieldErrors']['property_id'] = $msg;
+            }
+            if (trim($form['category']) !== ExpenseCategory::TAXES_INSURANCE->value) {
+                $msg = sprintf(
+                    'FONTUR-linked operational expense must retain the "%s" (%s) category.',
+                    ExpenseCategory::TAXES_INSURANCE->label(),
+                    ExpenseCategory::TAXES_INSURANCE->value
+                );
+                $validation['errors'][] = $msg;
+                $validation['fieldErrors']['category'] = $msg;
+            }
+        }
+
         if (!empty($validation['errors'])) {
             return $this->renderModalValidationError(
                 isEdit: true,
@@ -338,10 +366,11 @@ final class FinancialReportController
         }
 
         $beforePayload = $existing->toArray();
+        $adminUserId = (int) $session['admin_user_id'];
 
         $updated = new OperationalExpense(
-            propertyId: $form['property_id'],
-            category: $form['category'],
+            propertyId: $linkedSettlement !== null ? $linkedSettlement->propertyId : $form['property_id'],
+            category: $linkedSettlement !== null ? ExpenseCategory::TAXES_INSURANCE : $form['category'],
             title: $form['title'],
             amount: (float) $form['amount'],
             expenseDate: $form['expense_date'],
@@ -356,23 +385,28 @@ final class FinancialReportController
             createdAt: $existing->createdAt
         );
 
-        $saved = $this->expenseRepository->save($updated);
-        $adminUserId = (int) $session['admin_user_id'];
+        /** @var OperationalExpense $saved */
+        $saved = $this->runInTransaction(function () use (
+            $updated,
+            $beforePayload,
+            $linkedSettlement,
+            $adminUserId,
+            $request
+        ): OperationalExpense {
+            $savedExpense = $this->expenseRepository->save($updated);
 
-        $this->auditLogger->record(
-            action: 'operational_expense_updated',
-            entityType: 'operational_expense',
-            entityId: $saved->expenseUid,
-            before: $beforePayload,
-            after: $saved->toArray(),
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
+            $this->auditLogger->record(
+                action: 'operational_expense_updated',
+                entityType: 'operational_expense',
+                entityId: $savedExpense->expenseUid,
+                before: $beforePayload,
+                after: $savedExpense->toArray(),
+                adminUserId: $adminUserId,
+                ipAddress: $request->getClientIp(),
+                userAgent: (string) $request->getHeader('User-Agent', '')
+            );
 
-        // Two-way synchronization: if this OperationalExpense is linked to a ParafiscalSettlement, keep it synchronized
-        if ($existing->id !== null) {
-            $linkedSettlement = $this->parafiscalRepository->findByOperationalExpenseId($existing->id);
+            // Two-way synchronization: if this OperationalExpense is linked to a ParafiscalSettlement, keep it synchronized
             if ($linkedSettlement !== null) {
                 $beforeSettlementPayload = $linkedSettlement->toArray();
                 $syncedSettlement = new ParafiscalSettlement(
@@ -385,11 +419,11 @@ final class FinancialReportController
                     status: $linkedSettlement->status,
                     settledTaxableBase: $linkedSettlement->settledTaxableBase,
                     settledCalculatedAmount: $linkedSettlement->settledCalculatedAmount,
-                    settledAmount: round($saved->amount, 0),
-                    paymentDate: $saved->expenseDate,
-                    referenceCode: $saved->referenceCode,
-                    notes: $saved->notes,
-                    operationalExpenseId: $saved->id,
+                    settledAmount: round($savedExpense->amount, 0),
+                    paymentDate: $savedExpense->expenseDate,
+                    referenceCode: $savedExpense->referenceCode,
+                    notes: $savedExpense->notes,
+                    operationalExpenseId: $savedExpense->id,
                     settledBy: $linkedSettlement->settledBy ?? $adminUserId,
                     settledByName: $linkedSettlement->settledByName,
                     settledAt: $linkedSettlement->settledAt ?? ($this->now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota'))),
@@ -410,7 +444,9 @@ final class FinancialReportController
                     userAgent: (string) $request->getHeader('User-Agent', '')
                 );
             }
-        }
+
+            return $savedExpense;
+        });
 
         $flashMessage = sprintf(
             'Operational expense "%s" (%s) updated successfully.',
@@ -449,59 +485,35 @@ final class FinancialReportController
 
         $linkedSettlement = $this->parafiscalRepository->findByOperationalExpenseId($existing->id);
         $beforePayload = $existing->toArray();
-        $this->expenseRepository->delete($existing->id);
-
         $adminUserId = (int) $session['admin_user_id'];
+        $existingId = $existing->id;
 
-        $this->auditLogger->record(
-            action: 'operational_expense_deleted',
-            entityType: 'operational_expense',
-            entityId: $existing->expenseUid,
-            before: $beforePayload,
-            after: null,
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
-
-        // Two-way synchronization: deleting a FONTUR-linked OperationalExpense reverts its ParafiscalSettlement to pending
-        if ($linkedSettlement !== null) {
-            $beforeSettlementPayload = $linkedSettlement->toArray();
-            $revertedSettlement = new ParafiscalSettlement(
-                propertyId: $linkedSettlement->propertyId,
-                periodKey: $linkedSettlement->periodKey,
-                periodStart: $linkedSettlement->periodStart,
-                periodEnd: $linkedSettlement->periodEnd,
-                dueDate: $linkedSettlement->dueDate,
-                rntNumber: $linkedSettlement->rntNumber,
-                status: ParafiscalSettlement::STATUS_PENDING,
-                settledTaxableBase: null,
-                settledCalculatedAmount: null,
-                settledAmount: null,
-                paymentDate: null,
-                referenceCode: null,
-                notes: null,
-                operationalExpenseId: null,
-                settledBy: null,
-                settledByName: null,
-                settledAt: null,
-                settlementUid: $linkedSettlement->settlementUid,
-                id: $linkedSettlement->id,
-                createdAt: $linkedSettlement->createdAt
-            );
-            $savedReverted = $this->parafiscalRepository->save($revertedSettlement);
+        $this->runInTransaction(function () use (
+            $existing,
+            $existingId,
+            $beforePayload,
+            $linkedSettlement,
+            $adminUserId,
+            $request
+        ): void {
+            $this->expenseRepository->delete($existingId);
 
             $this->auditLogger->record(
-                action: 'parafiscal_reverted',
-                entityType: 'parafiscal_settlement',
-                entityId: $savedReverted->settlementUid,
-                before: $beforeSettlementPayload,
-                after: $savedReverted->toArray(),
+                action: 'operational_expense_deleted',
+                entityType: 'operational_expense',
+                entityId: $existing->expenseUid,
+                before: $beforePayload,
+                after: null,
                 adminUserId: $adminUserId,
                 ipAddress: $request->getClientIp(),
                 userAgent: (string) $request->getHeader('User-Agent', '')
             );
-        }
+
+            // Two-way synchronization: deleting a FONTUR-linked OperationalExpense reverts its ParafiscalSettlement to pending
+            if ($linkedSettlement !== null) {
+                $this->revertSettlementAndRecordAudit($linkedSettlement, $adminUserId, $request);
+            }
+        });
 
         $filters = $this->resolveFiltersFromMutationRequest($request);
         $flashMessage = sprintf(
@@ -651,137 +663,157 @@ final class FinancialReportController
             ? $this->expenseRepository->findById($linkedExpenseId)
             : null;
 
-        if ($settledAmount >= 1.0) {
-            if ($existingLinkedExpense !== null) {
-                $beforeExpensePayload = $existingLinkedExpense->toArray();
-                $updatedExpense = new OperationalExpense(
-                    propertyId: $propertyId,
-                    category: ExpenseCategory::TAXES_INSURANCE,
-                    title: $expenseTitle,
-                    amount: $settledAmount,
-                    expenseDate: $paymentDate,
-                    expenseUid: $existingLinkedExpense->expenseUid,
-                    id: $existingLinkedExpense->id,
-                    vendorName: 'FONTUR',
-                    referenceCode: $referenceCode !== '' ? $referenceCode : null,
-                    reservationUid: null,
-                    notes: $notes !== '' ? $notes : null,
-                    createdBy: $existingLinkedExpense->createdBy,
-                    createdByName: $existingLinkedExpense->createdByName,
-                    createdAt: $existingLinkedExpense->createdAt
-                );
-                $savedExpense = $this->expenseRepository->save($updatedExpense);
-                $linkedExpenseId = $savedExpense->id;
+        $this->runInTransaction(function () use (
+            $settledAmount,
+            $existingLinkedExpense,
+            $propertyId,
+            $periodKey,
+            $expenseTitle,
+            $paymentDate,
+            $referenceCode,
+            $notes,
+            $adminUserId,
+            $adminUserName,
+            $existingSettlement,
+            $parafiscalPeriod,
+            $rntNumber,
+            $isEdit,
+            $request
+        ): void {
+            $linkedExpenseId = $existingSettlement?->operationalExpenseId;
 
-                $this->auditLogger->record(
-                    action: 'operational_expense_updated',
-                    entityType: 'operational_expense',
-                    entityId: $savedExpense->expenseUid,
-                    before: $beforeExpensePayload,
-                    after: $savedExpense->toArray(),
-                    adminUserId: $adminUserId,
-                    ipAddress: $request->getClientIp(),
-                    userAgent: (string) $request->getHeader('User-Agent', '')
-                );
+            if ($settledAmount >= 1.0) {
+                if ($existingLinkedExpense !== null) {
+                    $beforeExpensePayload = $existingLinkedExpense->toArray();
+                    $updatedExpense = new OperationalExpense(
+                        propertyId: $propertyId,
+                        category: ExpenseCategory::TAXES_INSURANCE,
+                        title: $expenseTitle,
+                        amount: $settledAmount,
+                        expenseDate: $paymentDate,
+                        expenseUid: $existingLinkedExpense->expenseUid,
+                        id: $existingLinkedExpense->id,
+                        vendorName: 'FONTUR',
+                        referenceCode: $referenceCode !== '' ? $referenceCode : null,
+                        reservationUid: null,
+                        notes: $notes !== '' ? $notes : null,
+                        createdBy: $existingLinkedExpense->createdBy,
+                        createdByName: $existingLinkedExpense->createdByName,
+                        createdAt: $existingLinkedExpense->createdAt
+                    );
+                    $savedExpense = $this->expenseRepository->save($updatedExpense);
+                    $linkedExpenseId = $savedExpense->id;
+
+                    $this->auditLogger->record(
+                        action: 'operational_expense_updated',
+                        entityType: 'operational_expense',
+                        entityId: $savedExpense->expenseUid,
+                        before: $beforeExpensePayload,
+                        after: $savedExpense->toArray(),
+                        adminUserId: $adminUserId,
+                        ipAddress: $request->getClientIp(),
+                        userAgent: (string) $request->getHeader('User-Agent', '')
+                    );
+                } else {
+                    $newExpense = new OperationalExpense(
+                        propertyId: $propertyId,
+                        category: ExpenseCategory::TAXES_INSURANCE,
+                        title: $expenseTitle,
+                        amount: $settledAmount,
+                        expenseDate: $paymentDate,
+                        vendorName: 'FONTUR',
+                        referenceCode: $referenceCode !== '' ? $referenceCode : null,
+                        reservationUid: null,
+                        notes: $notes !== '' ? $notes : null,
+                        createdBy: $adminUserId,
+                        createdByName: $adminUserName
+                    );
+                    $savedExpense = $this->expenseRepository->save($newExpense);
+                    $linkedExpenseId = $savedExpense->id;
+
+                    $this->auditLogger->record(
+                        action: 'operational_expense_created',
+                        entityType: 'operational_expense',
+                        entityId: $savedExpense->expenseUid,
+                        before: null,
+                        after: $savedExpense->toArray(),
+                        adminUserId: $adminUserId,
+                        ipAddress: $request->getClientIp(),
+                        userAgent: (string) $request->getHeader('User-Agent', '')
+                    );
+                }
             } else {
-                $newExpense = new OperationalExpense(
-                    propertyId: $propertyId,
-                    category: ExpenseCategory::TAXES_INSURANCE,
-                    title: $expenseTitle,
-                    amount: $settledAmount,
-                    expenseDate: $paymentDate,
-                    vendorName: 'FONTUR',
-                    referenceCode: $referenceCode !== '' ? $referenceCode : null,
-                    reservationUid: null,
-                    notes: $notes !== '' ? $notes : null,
-                    createdBy: $adminUserId,
-                    createdByName: $adminUserName
-                );
-                $savedExpense = $this->expenseRepository->save($newExpense);
-                $linkedExpenseId = $savedExpense->id;
+                // $0 COP declaración en cero: delete any previously linked OperationalExpense
+                if ($existingLinkedExpense !== null && $existingLinkedExpense->id !== null) {
+                    $beforeExpensePayload = $existingLinkedExpense->toArray();
+                    $this->expenseRepository->delete($existingLinkedExpense->id);
 
-                $this->auditLogger->record(
-                    action: 'operational_expense_created',
-                    entityType: 'operational_expense',
-                    entityId: $savedExpense->expenseUid,
-                    before: null,
-                    after: $savedExpense->toArray(),
-                    adminUserId: $adminUserId,
-                    ipAddress: $request->getClientIp(),
-                    userAgent: (string) $request->getHeader('User-Agent', '')
-                );
+                    $this->auditLogger->record(
+                        action: 'operational_expense_deleted',
+                        entityType: 'operational_expense',
+                        entityId: $existingLinkedExpense->expenseUid,
+                        before: $beforeExpensePayload,
+                        after: null,
+                        adminUserId: $adminUserId,
+                        ipAddress: $request->getClientIp(),
+                        userAgent: (string) $request->getHeader('User-Agent', '')
+                    );
+                }
+                $linkedExpenseId = null;
             }
-        } else {
-            // $0 COP declaración en cero: delete any previously linked OperationalExpense
-            if ($existingLinkedExpense !== null && $existingLinkedExpense->id !== null) {
-                $beforeExpensePayload = $existingLinkedExpense->toArray();
-                $this->expenseRepository->delete($existingLinkedExpense->id);
 
-                $this->auditLogger->record(
-                    action: 'operational_expense_deleted',
-                    entityType: 'operational_expense',
-                    entityId: $existingLinkedExpense->expenseUid,
-                    before: $beforeExpensePayload,
-                    after: null,
-                    adminUserId: $adminUserId,
-                    ipAddress: $request->getClientIp(),
-                    userAgent: (string) $request->getHeader('User-Agent', '')
-                );
-            }
-            $linkedExpenseId = null;
-        }
+            // Preserve original snapshot of settledTaxableBase & settledCalculatedAmount if already settled,
+            // or capture current live calculation on initial settlement
+            $snapshotTaxableBase = ($existingSettlement !== null && $existingSettlement->isSettled() && $existingSettlement->settledTaxableBase !== null)
+                ? $existingSettlement->settledTaxableBase
+                : $parafiscalPeriod->taxableBase;
 
-        // Preserve original snapshot of settledTaxableBase & settledCalculatedAmount if already settled,
-        // or capture current live calculation on initial settlement
-        $snapshotTaxableBase = ($existingSettlement !== null && $existingSettlement->isSettled() && $existingSettlement->settledTaxableBase !== null)
-            ? $existingSettlement->settledTaxableBase
-            : $parafiscalPeriod->taxableBase;
+            $snapshotCalculatedAmount = ($existingSettlement !== null && $existingSettlement->isSettled() && $existingSettlement->settledCalculatedAmount !== null)
+                ? $existingSettlement->settledCalculatedAmount
+                : $parafiscalPeriod->calculatedContribution;
 
-        $snapshotCalculatedAmount = ($existingSettlement !== null && $existingSettlement->isSettled() && $existingSettlement->settledCalculatedAmount !== null)
-            ? $existingSettlement->settledCalculatedAmount
-            : $parafiscalPeriod->calculatedContribution;
+            $settledAt = ($this->now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota')))
+                ->setTimezone(new DateTimeZone('America/Bogota'));
 
-        $settledAt = ($this->now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota')))
-            ->setTimezone(new DateTimeZone('America/Bogota'));
+            $beforeSettlementPayload = $existingSettlement?->toArray();
 
-        $beforeSettlementPayload = $existingSettlement?->toArray();
+            $settlementEntity = new ParafiscalSettlement(
+                propertyId: $propertyId,
+                periodKey: $periodKey,
+                periodStart: $parafiscalPeriod->periodStart,
+                periodEnd: $parafiscalPeriod->periodEnd,
+                dueDate: $parafiscalPeriod->dueDate,
+                rntNumber: $rntNumber,
+                status: ParafiscalSettlement::STATUS_SETTLED,
+                settledTaxableBase: $snapshotTaxableBase,
+                settledCalculatedAmount: $snapshotCalculatedAmount,
+                settledAmount: $settledAmount,
+                paymentDate: $paymentDate,
+                referenceCode: $referenceCode !== '' ? $referenceCode : null,
+                notes: $notes !== '' ? $notes : null,
+                operationalExpenseId: $linkedExpenseId,
+                settledBy: $adminUserId,
+                settledByName: $adminUserName,
+                settledAt: $settledAt,
+                settlementUid: $existingSettlement?->settlementUid,
+                id: $existingSettlement?->id,
+                createdAt: $existingSettlement?->createdAt
+            );
 
-        $settlementEntity = new ParafiscalSettlement(
-            propertyId: $propertyId,
-            periodKey: $periodKey,
-            periodStart: $parafiscalPeriod->periodStart,
-            periodEnd: $parafiscalPeriod->periodEnd,
-            dueDate: $parafiscalPeriod->dueDate,
-            rntNumber: $rntNumber,
-            status: ParafiscalSettlement::STATUS_SETTLED,
-            settledTaxableBase: $snapshotTaxableBase,
-            settledCalculatedAmount: $snapshotCalculatedAmount,
-            settledAmount: $settledAmount,
-            paymentDate: $paymentDate,
-            referenceCode: $referenceCode !== '' ? $referenceCode : null,
-            notes: $notes !== '' ? $notes : null,
-            operationalExpenseId: $linkedExpenseId,
-            settledBy: $adminUserId,
-            settledByName: $adminUserName,
-            settledAt: $settledAt,
-            settlementUid: $existingSettlement?->settlementUid,
-            id: $existingSettlement?->id,
-            createdAt: $existingSettlement?->createdAt
-        );
+            $savedSettlement = $this->parafiscalRepository->save($settlementEntity);
 
-        $savedSettlement = $this->parafiscalRepository->save($settlementEntity);
-
-        $auditAction = $isEdit ? 'parafiscal_updated' : 'parafiscal_settled';
-        $this->auditLogger->record(
-            action: $auditAction,
-            entityType: 'parafiscal_settlement',
-            entityId: $savedSettlement->settlementUid,
-            before: $beforeSettlementPayload,
-            after: $savedSettlement->toArray(),
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
+            $auditAction = $isEdit ? 'parafiscal_updated' : 'parafiscal_settled';
+            $this->auditLogger->record(
+                action: $auditAction,
+                entityType: 'parafiscal_settlement',
+                entityId: $savedSettlement->settlementUid,
+                before: $beforeSettlementPayload,
+                after: $savedSettlement->toArray(),
+                adminUserId: $adminUserId,
+                ipAddress: $request->getClientIp(),
+                userAgent: (string) $request->getHeader('User-Agent', '')
+            );
+        });
 
         $flashMessage = $settledAmount >= 1.0
             ? sprintf(
@@ -838,62 +870,33 @@ final class FinancialReportController
         }
 
         $adminUserId = (int) $session['admin_user_id'];
-        $beforeSettlementPayload = $existingSettlement->toArray();
 
-        if ($existingSettlement->operationalExpenseId !== null) {
-            $linkedExpense = $this->expenseRepository->findById($existingSettlement->operationalExpenseId);
-            if ($linkedExpense !== null && $linkedExpense->id !== null) {
-                $beforeExpensePayload = $linkedExpense->toArray();
-                $this->expenseRepository->delete($linkedExpense->id);
+        $this->runInTransaction(function () use (
+            $existingSettlement,
+            $adminUserId,
+            $request
+        ): void {
+            if ($existingSettlement->operationalExpenseId !== null) {
+                $linkedExpense = $this->expenseRepository->findById($existingSettlement->operationalExpenseId);
+                if ($linkedExpense !== null && $linkedExpense->id !== null) {
+                    $beforeExpensePayload = $linkedExpense->toArray();
+                    $this->expenseRepository->delete($linkedExpense->id);
 
-                $this->auditLogger->record(
-                    action: 'operational_expense_deleted',
-                    entityType: 'operational_expense',
-                    entityId: $linkedExpense->expenseUid,
-                    before: $beforeExpensePayload,
-                    after: null,
-                    adminUserId: $adminUserId,
-                    ipAddress: $request->getClientIp(),
-                    userAgent: (string) $request->getHeader('User-Agent', '')
-                );
+                    $this->auditLogger->record(
+                        action: 'operational_expense_deleted',
+                        entityType: 'operational_expense',
+                        entityId: $linkedExpense->expenseUid,
+                        before: $beforeExpensePayload,
+                        after: null,
+                        adminUserId: $adminUserId,
+                        ipAddress: $request->getClientIp(),
+                        userAgent: (string) $request->getHeader('User-Agent', '')
+                    );
+                }
             }
-        }
 
-        $revertedSettlement = new ParafiscalSettlement(
-            propertyId: $existingSettlement->propertyId,
-            periodKey: $existingSettlement->periodKey,
-            periodStart: $existingSettlement->periodStart,
-            periodEnd: $existingSettlement->periodEnd,
-            dueDate: $existingSettlement->dueDate,
-            rntNumber: $existingSettlement->rntNumber,
-            status: ParafiscalSettlement::STATUS_PENDING,
-            settledTaxableBase: null,
-            settledCalculatedAmount: null,
-            settledAmount: null,
-            paymentDate: null,
-            referenceCode: null,
-            notes: null,
-            operationalExpenseId: null,
-            settledBy: null,
-            settledByName: null,
-            settledAt: null,
-            settlementUid: $existingSettlement->settlementUid,
-            id: $existingSettlement->id,
-            createdAt: $existingSettlement->createdAt
-        );
-
-        $savedReverted = $this->parafiscalRepository->save($revertedSettlement);
-
-        $this->auditLogger->record(
-            action: 'parafiscal_reverted',
-            entityType: 'parafiscal_settlement',
-            entityId: $savedReverted->settlementUid,
-            before: $beforeSettlementPayload,
-            after: $savedReverted->toArray(),
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
+            $this->revertSettlementAndRecordAudit($existingSettlement, $adminUserId, $request);
+        });
 
         $filters = $this->resolveFiltersFromMutationRequest($request);
         $flashMessage = sprintf(
@@ -903,32 +906,7 @@ final class FinancialReportController
             $existingSettlement->rntNumber
         );
 
-        $reportContentHtml = $this->renderReportContentHtml($filters, $session, oob: false, flashMessage: $flashMessage);
-        $headerActionsHtml = $this->renderHeaderActionsHtml($filters, oob: true);
-        $clearModalHtml = '<div id="modal-container" hx-swap-oob="innerHTML"></div>';
-
-        if ($request->isHtmx()) {
-            return new Response(
-                statusCode: 200,
-                headers: [
-                    'Content-Type' => 'text/html; charset=UTF-8',
-                    'HX-Trigger' => 'parafiscalReverted',
-                ],
-                body: $reportContentHtml . "\n" . $headerActionsHtml . "\n" . $clearModalHtml
-            );
-        }
-
-        return Response::redirect('/financial-report?' . http_build_query([
-            'property_id' => $filters['property_id'],
-            'period' => $filters['period'],
-            'date_from' => $filters['date_from'],
-            'date_to' => $filters['date_to'],
-            'compare' => $filters['compare'],
-            'source' => $filters['source'],
-            'category' => $filters['category'],
-            'tab' => $filters['tab'] ?? 'expenses',
-            'search' => $filters['search'],
-        ]));
+        return $this->buildMutationSuccessResponse($request, $filters, $session, $flashMessage, 'parafiscalReverted');
     }
 
     /**
@@ -1288,6 +1266,79 @@ final class FinancialReportController
             ],
             body: $modalHtml
         );
+    }
+
+    /**
+     * Reverts a ParafiscalSettlement back to pending status, persists it, and records the parafiscal_reverted audit log.
+     */
+    private function revertSettlementAndRecordAudit(
+        ParafiscalSettlement $settlement,
+        int $adminUserId,
+        Request $request
+    ): ParafiscalSettlement {
+        $beforeSettlementPayload = $settlement->toArray();
+        $revertedSettlement = new ParafiscalSettlement(
+            propertyId: $settlement->propertyId,
+            periodKey: $settlement->periodKey,
+            periodStart: $settlement->periodStart,
+            periodEnd: $settlement->periodEnd,
+            dueDate: $settlement->dueDate,
+            rntNumber: $settlement->rntNumber,
+            status: ParafiscalSettlement::STATUS_PENDING,
+            settledTaxableBase: null,
+            settledCalculatedAmount: null,
+            settledAmount: null,
+            paymentDate: null,
+            referenceCode: null,
+            notes: null,
+            operationalExpenseId: null,
+            settledBy: null,
+            settledByName: null,
+            settledAt: null,
+            settlementUid: $settlement->settlementUid,
+            id: $settlement->id,
+            createdAt: $settlement->createdAt
+        );
+        $savedReverted = $this->parafiscalRepository->save($revertedSettlement);
+
+        $this->auditLogger->record(
+            action: 'parafiscal_reverted',
+            entityType: 'parafiscal_settlement',
+            entityId: $savedReverted->settlementUid,
+            before: $beforeSettlementPayload,
+            after: $savedReverted->toArray(),
+            adminUserId: $adminUserId,
+            ipAddress: $request->getClientIp(),
+            userAgent: (string) $request->getHeader('User-Agent', '')
+        );
+
+        return $savedReverted;
+    }
+
+    /**
+     * Executes a cross-table mutation inside a PDO transaction when backed by PDO,
+     * rolling back on any thrown exception so `operational_expenses` and `parafiscal_settlements`
+     * never drift out of sync.
+     *
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    private function runInTransaction(callable $operation): mixed
+    {
+        if ($this->pdo === null || $this->pdo->inTransaction()) {
+            return $operation();
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $result = $operation();
+            $this->pdo->commit();
+            return $result;
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     /**

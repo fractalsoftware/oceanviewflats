@@ -1303,7 +1303,7 @@ final class DashboardControllerTest extends TestCase
             type: AlertType::PENDING_PARAFISCAL_SETTLEMENT,
             severity: AlertSeverity::WARNING,
             propertyId: '1606',
-            title: 'Pending FONTUR Parafiscal Declaration: 2026-Q3 (Apt 1606 · RNT #270413)',
+            title: 'Pending FONTUR Parafiscal Declaration: 2026-Q3 (Property 1606 · RNT #270413)',
             description: 'Quarter 2026-Q3 has closed for Property 1606 (RNT #270413). Statutory payment deadline is 2026-10-29.',
             dueDate: '2026-10-29',
             actionPayload: [
@@ -1361,7 +1361,7 @@ final class DashboardControllerTest extends TestCase
         $getResp = $controller->index(new Request('GET', '/', query: ['property_id' => '1606']), $session);
         $this->assertSame(200, $getResp->getStatusCode());
         $body = $getResp->getBody();
-        $this->assertStringContainsString('Pending FONTUR Parafiscal Declaration: 2026-Q3 (Apt 1606 · RNT #270413)', $body);
+        $this->assertStringContainsString('Pending FONTUR Parafiscal Declaration: 2026-Q3 (Property 1606 · RNT #270413)', $body);
         $this->assertStringContainsString('href="/financial-report#fontur-parafiscal-section"', $body);
         $this->assertStringContainsString('Review &amp; Settle in Financial Report &rarr;', $body);
         $this->assertStringContainsString('name="alert_id" value="parafiscal_2026-Q3_1606"', $body);

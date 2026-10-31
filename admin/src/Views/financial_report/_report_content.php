@@ -762,7 +762,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                     <div class="flex flex-wrap items-center gap-2 text-[11px] shrink-0">
                         <?php foreach ($inProgressPeriods as $ipRow): ?>
                             <span class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium tabular-nums">
-                                Apt <?= htmlspecialchars($ipRow->propertyId, ENT_QUOTES, 'UTF-8') ?> (RNT #<?= htmlspecialchars($ipRow->rntNumber, ENT_QUOTES, 'UTF-8') ?>):
+                                Property <?= htmlspecialchars($ipRow->propertyId, ENT_QUOTES, 'UTF-8') ?> (RNT #<?= htmlspecialchars($ipRow->rntNumber, ENT_QUOTES, 'UTF-8') ?>):
                                 <strong class="text-gray-900"><?= formatCopCurrency($ipRow->calculatedContribution) ?></strong>
                             </span>
                         <?php endforeach; ?>

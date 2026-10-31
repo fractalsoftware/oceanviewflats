@@ -372,7 +372,8 @@ final class AdminApp
             auditLogger: $auditLogger,
             now: $financialReportNow,
             reportEngine: $financialReportEngine,
-            parafiscalRepository: $parafiscalRepository
+            parafiscalRepository: $parafiscalRepository,
+            pdo: $pdo
         );
 
         // 10. Security Middlewares & Router (immutable internal security pipeline)

@@ -23,10 +23,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
 {
     public const PARAFISCAL_RATE = 0.0025;
 
-    public const PROPERTY_RNT_MAP = [
-        '1606' => '270413',
-        '1707' => '268781',
-    ];
+    public const PROPERTY_RNT_MAP = PropertyRatesConfig::DEFAULT_RNT_NUMBERS;
 
     private readonly PropertyRatesConfig $ratesConfig;
     private readonly ParafiscalSettlementRepositoryInterface $parafiscalRepository;
@@ -282,63 +279,17 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
             $daysUntilDue = (int) $todayDt->diff($dueDt)->format('%r%a');
 
             foreach ($targetProperties as $propId) {
-                $rntNumber = $this->ratesConfig->isValidProperty($propId)
-                    ? $this->ratesConfig->getRntNumber($propId)
-                    : self::PROPERTY_RNT_MAP[$propId];
-
-                $metrics = $this->computeQuarterParafiscalMetrics(
-                    propertyId: $propId,
-                    periodStart: $qStart,
-                    periodEnd: $qEnd,
-                    reservations: $allReservations
-                );
-
-                $stored = $settlementMap[$propId . ':' . $periodKey] ?? null;
-                $linkedExpense = null;
-                if ($stored !== null && $stored->operationalExpenseId !== null) {
-                    $linkedExpense = $this->expenseRepository->findById($stored->operationalExpenseId);
-                }
-
-                if ($stored !== null && $stored->isSettled()) {
-                    $status = ParafiscalPeriod::STATUS_SETTLED;
-                } elseif ($todayStr < $qEnd) {
-                    $status = ParafiscalPeriod::STATUS_IN_PROGRESS;
-                } elseif ($todayStr <= $dueDate) {
-                    $status = ParafiscalPeriod::STATUS_PENDING;
-                } else {
-                    $status = ParafiscalPeriod::STATUS_OVERDUE;
-                }
-
-                $hasVariance = false;
-                $varianceDelta = 0.0;
-                if ($stored !== null && $stored->isSettled()) {
-                    $snapshotCalculated = $stored->settledCalculatedAmount ?? $stored->settledAmount ?? 0.0;
-                    $liveCalculated = $metrics['calculated_contribution'];
-                    if (round($liveCalculated, 0) !== round($snapshotCalculated, 0)) {
-                        $hasVariance = true;
-                        $varianceDelta = round($liveCalculated - $snapshotCalculated, 0);
-                    }
-                }
-
-                $periods[] = new ParafiscalPeriod(
+                $periods[] = $this->buildParafiscalPeriod(
                     periodKey: $periodKey,
                     periodLabel: $qLabel,
                     periodStart: $qStart,
                     periodEnd: $qEnd,
                     dueDate: $dueDate,
                     propertyId: $propId,
-                    rntNumber: $rntNumber,
-                    activeStayRevenue: $metrics['active_stay_revenue'],
-                    deductedDirectFees: $metrics['deducted_direct_fees'],
-                    excludedPolicyRetention: $metrics['excluded_policy_retention'],
-                    taxableBase: $metrics['taxable_base'],
-                    calculatedContribution: $metrics['calculated_contribution'],
-                    status: $status,
+                    todayStr: $todayStr,
                     daysUntilDue: $daysUntilDue,
-                    settlement: $stored,
-                    linkedExpense: $linkedExpense,
-                    hasRecalculationVariance: $hasVariance,
-                    recalculationVarianceDelta: $varianceDelta
+                    reservations: $allReservations,
+                    stored: $settlementMap[$propId . ':' . $periodKey] ?? null
                 );
             }
         }
@@ -374,24 +325,54 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $dueDt = new DateTimeImmutable($dueDate, new DateTimeZone('America/Bogota'));
         $daysUntilDue = (int) $todayDt->diff($dueDt)->format('%r%a');
 
-        $rntNumber = $this->ratesConfig->isValidProperty($normalizedProperty)
-            ? $this->ratesConfig->getRntNumber($normalizedProperty)
-            : self::PROPERTY_RNT_MAP[$normalizedProperty];
-
         $overlappingReservations = $this->reservationRepository->findOverlappingRange(
             startDate: $qStart,
             endDate: $qEnd,
             propertyId: $normalizedProperty
         );
 
-        $metrics = $this->computeQuarterParafiscalMetrics(
-            propertyId: $normalizedProperty,
+        $stored = $this->parafiscalRepository->findByPropertyAndPeriod($normalizedProperty, $normalizedPeriodKey);
+
+        return $this->buildParafiscalPeriod(
+            periodKey: $normalizedPeriodKey,
+            periodLabel: $qLabel,
             periodStart: $qStart,
             periodEnd: $qEnd,
-            reservations: $overlappingReservations
+            dueDate: $dueDate,
+            propertyId: $normalizedProperty,
+            todayStr: $todayStr,
+            daysUntilDue: $daysUntilDue,
+            reservations: $overlappingReservations,
+            stored: $stored
+        );
+    }
+
+    /**
+     * Constructs a ParafiscalPeriod value object from quarter metadata, reservations, and any stored settlement.
+     *
+     * @param list<Reservation> $reservations
+     */
+    private function buildParafiscalPeriod(
+        string $periodKey,
+        string $periodLabel,
+        string $periodStart,
+        string $periodEnd,
+        string $dueDate,
+        string $propertyId,
+        string $todayStr,
+        int $daysUntilDue,
+        array $reservations,
+        ?ParafiscalSettlement $stored
+    ): ParafiscalPeriod {
+        $rntNumber = $this->resolvePropertyRntNumber($propertyId) ?? '';
+
+        $metrics = $this->computeQuarterParafiscalMetrics(
+            propertyId: $propertyId,
+            periodStart: $periodStart,
+            periodEnd: $periodEnd,
+            reservations: $reservations
         );
 
-        $stored = $this->parafiscalRepository->findByPropertyAndPeriod($normalizedProperty, $normalizedPeriodKey);
         $linkedExpense = null;
         if ($stored !== null && $stored->operationalExpenseId !== null) {
             $linkedExpense = $this->expenseRepository->findById($stored->operationalExpenseId);
@@ -399,7 +380,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
 
         if ($stored !== null && $stored->isSettled()) {
             $status = ParafiscalPeriod::STATUS_SETTLED;
-        } elseif ($todayStr < $qEnd) {
+        } elseif ($todayStr < $periodEnd) {
             $status = ParafiscalPeriod::STATUS_IN_PROGRESS;
         } elseif ($todayStr <= $dueDate) {
             $status = ParafiscalPeriod::STATUS_PENDING;
@@ -419,12 +400,12 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         }
 
         return new ParafiscalPeriod(
-            periodKey: $normalizedPeriodKey,
-            periodLabel: $qLabel,
-            periodStart: $qStart,
-            periodEnd: $qEnd,
+            periodKey: $periodKey,
+            periodLabel: $periodLabel,
+            periodStart: $periodStart,
+            periodEnd: $periodEnd,
             dueDate: $dueDate,
-            propertyId: $normalizedProperty,
+            propertyId: $propertyId,
             rntNumber: $rntNumber,
             activeStayRevenue: $metrics['active_stay_revenue'],
             deductedDirectFees: $metrics['deducted_direct_fees'],
@@ -438,6 +419,15 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
             hasRecalculationVariance: $hasVariance,
             recalculationVarianceDelta: $varianceDelta
         );
+    }
+
+    private function resolvePropertyRntNumber(string $propertyId): ?string
+    {
+        if ($this->ratesConfig->isValidProperty($propertyId)) {
+            return $this->ratesConfig->getRntNumber($propertyId);
+        }
+
+        return PropertyRatesConfig::DEFAULT_RNT_NUMBERS[$propertyId] ?? null;
     }
 
     /**
@@ -818,9 +808,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $parafiscalTaxableBase = round($parafiscalTaxableBase, 2);
         $parafiscalDeductedFees = max(0.0, round($activeStayRevenue - $parafiscalTaxableBase, 2));
         $parafiscalContribution = round($parafiscalTaxableBase * self::PARAFISCAL_RATE, 0);
-        $rntNumber = $this->ratesConfig->isValidProperty($propertyFilter)
-            ? $this->ratesConfig->getRntNumber($propertyFilter)
-            : (self::PROPERTY_RNT_MAP[$propertyFilter] ?? null);
+        $rntNumber = $this->resolvePropertyRntNumber($propertyFilter);
 
         $occupancyPct = $availableNights > 0
             ? round(($occupiedNights / $availableNights) * 100.0, 2)

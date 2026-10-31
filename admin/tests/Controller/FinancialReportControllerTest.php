@@ -1509,6 +1509,40 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertSame('FNT-SYNC-FROM-EXP', $syncedPfs1606->referenceCode);
         $this->assertSame('Edited from Expense Ledger', $syncedPfs1606->notes);
 
+        // 8a-ii. Attempting to mutate property_id or category on a FONTUR-linked OperationalExpense
+        //        is rejected with HTTP 422 validation errors and preserves the linked settlement's propertyId & taxes_insurance category
+        $invalidLinkedEditResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: "/financial-report/expenses/{$restoredExpenseId}",
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'property_id' => 'shared',
+                    'category' => 'cleaning',
+                    'title' => 'Contribución Parafiscal FONTUR 2026-Q3 (RNT #270413)',
+                    'amount' => '11200',
+                    'expense_date' => '2026-10-19',
+                    'vendor_name' => 'FONTUR',
+                    'reference_code' => 'FNT-SYNC-FROM-EXP',
+                    'reservation_uid' => '',
+                    'notes' => 'Attempted invalid property/category change',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(422, $invalidLinkedEditResp->getStatusCode());
+        $this->assertSame('#modal-container', $invalidLinkedEditResp->getHeader('HX-Retarget'));
+        $this->assertSame('innerHTML', $invalidLinkedEditResp->getHeader('HX-Reswap'));
+        $invalidLinkedEditBody = $invalidLinkedEditResp->getBody();
+        $this->assertStringContainsString('FONTUR-linked operational expense must remain assigned to Property 1606 (2026-Q3).', $invalidLinkedEditBody);
+        $this->assertStringContainsString('FONTUR-linked operational expense must retain the &quot;Taxes, Insurance &amp; Statutory&quot; (taxes_insurance) category.', $invalidLinkedEditBody);
+
+        $stillIntactExp = $this->expenseRepo->findById($restoredExpenseId);
+        $this->assertNotNull($stillIntactExp);
+        $this->assertSame('1606', $stillIntactExp->propertyId);
+        $this->assertSame(ExpenseCategory::TAXES_INSURANCE, $stillIntactExp->category);
+
         // 8b. Retroactive change to Reservations in an already-settled quarter (2026-Q3 on 1606):
         //     Add a new commercial reservation in 2026-Q3 on 1606:
         //     Settled snapshot (settledCalculatedAmount = 10,000, settledAmount = 11,200) and linked expense remain untouched,
@@ -1618,5 +1652,44 @@ final class FinancialReportControllerTest extends TestCase
         );
         $this->assertSame(200, $auditResp->getStatusCode());
         $this->assertStringContainsString('/financial-report#fontur-parafiscal-section', $auditResp->getBody());
+    }
+
+    public function testAtomicTransactionRollbackPreventsDriftWhenParafiscalSaveFails(): void
+    {
+        $this->pdo->exec('DELETE FROM operational_expenses');
+        $this->pdo->exec('DELETE FROM parafiscal_settlements');
+
+        $failingPfsRepo = $this->createMock(\OceanViewFlats\Domain\Finance\ParafiscalSettlementRepositoryInterface::class);
+        $failingPfsRepo->method('findByPropertyAndPeriod')->willReturn(null);
+        $failingPfsRepo->method('save')->willThrowException(new \RuntimeException('Simulated DB failure on parafiscal_settlements'));
+
+        $appWithFailingPfs = AdminApp::createDefault($this->pdo, [
+            'financial_report_now' => new DateTimeImmutable('2026-10-17 12:00:00', new \DateTimeZone('America/Bogota')),
+            'parafiscal_settlement_repository' => $failingPfsRepo,
+        ]);
+
+        try {
+            $appWithFailingPfs->handle(
+                new Request(
+                    method: 'POST',
+                    uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                    post: [
+                        'csrf_token' => 'valid-csrf-token',
+                        'settled_amount' => '10000',
+                        'payment_date' => '2026-10-17',
+                        'reference_code' => 'FNT-ROLLBACK-TEST',
+                    ],
+                    server: ['HTTP_HX_REQUEST' => 'true']
+                ),
+                $this->adminSession
+            );
+            $this->fail('Expected RuntimeException to bubble up after transaction rollback.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Simulated DB failure on parafiscal_settlements', $e->getMessage());
+        }
+
+        // Because the transaction rolled back, the operational_expenses insert must NOT have persisted
+        $this->assertFalse($this->pdo->inTransaction());
+        $this->assertCount(0, $this->expenseRepo->listForPeriod('2026-01-01', '2027-01-01', 'all'));
     }
 }

@@ -49,7 +49,7 @@ if (!function_exists('formatModalCopCurrency')) {
                 </p>
             </div>
             <button type="button"
-                    onclick="document.getElementById('modal-container').innerHTML = '';"
+                    onclick="var m = document.getElementById('modal-container'); if (m) { m.innerHTML = ''; }"
                     class="text-gray-400 hover:text-gray-600 p-1 rounded-md cursor-pointer"
                     aria-label="Close modal">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,7 +191,7 @@ if (!function_exists('formatModalCopCurrency')) {
                 </div>
                 <div class="flex items-center space-x-2">
                     <button type="button"
-                            onclick="document.getElementById('modal-container').innerHTML = '';"
+                            onclick="var m = document.getElementById('modal-container'); if (m) { m.innerHTML = ''; }"
                             class="px-4 py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
                         Cancel
                     </button>
