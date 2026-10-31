@@ -348,7 +348,8 @@ final class AdminApp
             ?? new FinancialReportEngine(
                 reservationRepository: $reservationRepository,
                 maintenanceBlockSource: $calendarBlockRepo,
-                expenseRepository: $expenseRepository
+                expenseRepository: $expenseRepository,
+                ratesConfig: $ratesConfig
             );
         $financialReportNow = isset($options['financial_report_now']) && $options['financial_report_now'] instanceof \DateTimeImmutable
             ? $options['financial_report_now']

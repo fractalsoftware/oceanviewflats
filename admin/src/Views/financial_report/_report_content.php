@@ -608,6 +608,118 @@ if (!function_exists('formatCopCompactCurrency')) {
         </div>
     <?php endif; ?>
 
+    <!-- COLOMBIAN LEGAL CONTRIBUTIONS — FONTUR PARAFISCAL (0.25%) -->
+    <?php
+    $parafiscalCards = [];
+    if ($propertyFilter === '1606' || $propertyFilter === 'all') {
+        $parafiscalCards[] = [
+            'id' => 'parafiscal-card-1606',
+            'scope' => '1606',
+            'title' => 'Property 1606 (RNT #' . ($report->property1606Slice->rntNumber ?? '270413') . ')',
+            'badge' => 'RNT #' . ($report->property1606Slice->rntNumber ?? '270413'),
+            'surchargeNote' => 'Direct Flat Surcharge: $ 100.000 COP / stay',
+            'slice' => $report->property1606Slice,
+            'isPortfolio' => false,
+        ];
+    }
+    if ($propertyFilter === '1707' || $propertyFilter === 'all') {
+        $parafiscalCards[] = [
+            'id' => 'parafiscal-card-1707',
+            'scope' => '1707',
+            'title' => 'Property 1707 (RNT #' . ($report->property1707Slice->rntNumber ?? '268781') . ')',
+            'badge' => 'RNT #' . ($report->property1707Slice->rntNumber ?? '268781'),
+            'surchargeNote' => 'Direct Flat Surcharge: $ 120.000 COP / stay',
+            'slice' => $report->property1707Slice,
+            'isPortfolio' => false,
+        ];
+    }
+    if ($propertyFilter === 'all') {
+        $parafiscalCards[] = [
+            'id' => 'parafiscal-card-portfolio',
+            'scope' => 'all',
+            'title' => 'Portfolio Total (1606 + 1707)',
+            'badge' => 'RNT #270413 & RNT #268781',
+            'surchargeNote' => 'Combined 1606 + 1707 RNT Declarations',
+            'slice' => $report->portfolioSlice,
+            'isPortfolio' => true,
+        ];
+    }
+    ?>
+    <div id="fontur-parafiscal-section" class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h2 class="text-sm font-bold text-gray-900">
+                    Colombian Legal Contributions &mdash; FONTUR Parafiscal (0.25%)
+                </h2>
+                <p class="text-xs text-gray-500">
+                    <em>Contribuci&oacute;n Parafiscal para la Promoci&oacute;n del Turismo</em> (Law 1101 of 2006 &amp; Law 2068 of 2020) for <?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?> &mdash; assessed at 2.5 per thousand (0.25%) of Parafiscal Taxable Base, rounded to nearest 1 COP.
+                </p>
+            </div>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                Rate: 0.25% (2.5&permil;) &middot; Rounded to 1 COP
+            </span>
+        </div>
+
+        <div class="p-5 grid grid-cols-1 <?= count($parafiscalCards) > 1 ? 'lg:grid-cols-3' : 'max-w-xl' ?> gap-4">
+            <?php foreach ($parafiscalCards as $pCard):
+                /** @var \OceanViewFlats\Domain\Finance\FinancialReportSlice $pSlice */
+                $pSlice = $pCard['slice'];
+                $isPortfolioCard = (bool) $pCard['isPortfolio'];
+            ?>
+                <div id="<?= htmlspecialchars($pCard['id'], ENT_QUOTES, 'UTF-8') ?>"
+                     data-parafiscal-card="<?= htmlspecialchars($pCard['scope'], ENT_QUOTES, 'UTF-8') ?>"
+                     class="rounded-xl border <?= $isPortfolioCard ? 'border-indigo-200 bg-indigo-50/30' : 'border-gray-200 bg-white' ?> p-4 flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider <?= $isPortfolioCard ? 'text-indigo-900' : 'text-gray-800' ?>">
+                                <?= htmlspecialchars($pCard['title'], ENT_QUOTES, 'UTF-8') ?>
+                            </h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold <?= $isPortfolioCard ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700' ?>">
+                                <?= htmlspecialchars($pCard['badge'], ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-0.5">
+                            <?= htmlspecialchars($pCard['surchargeNote'], ENT_QUOTES, 'UTF-8') ?>
+                        </p>
+
+                        <dl class="mt-3 pt-3 border-t border-gray-100 space-y-2 text-xs tabular-nums">
+                            <div class="flex items-center justify-between gap-2" data-parafiscal-line="active-stay-revenue">
+                                <dt class="text-gray-600">Commercial Stay Revenue</dt>
+                                <dd class="font-semibold text-gray-900"><?= formatCopCurrency($pSlice->activeStayRevenue) ?></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2" data-parafiscal-line="deducted-direct-fees">
+                                <dt class="text-gray-600">Prorated Direct Cleaning &amp; Resort Fees Deducted</dt>
+                                <dd class="font-medium text-rose-700">- <?= formatCopCurrency($pSlice->parafiscalDeductedFees) ?></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 text-[11px]" data-parafiscal-line="excluded-policy-retention">
+                                <dt class="text-amber-800">Policy Retention Excluded (Cancelled Stays)</dt>
+                                <dd class="font-medium text-amber-800"><?= formatCopCurrency($pSlice->policyRetention) ?> (Excluded)</dd>
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 flex items-center justify-between gap-2 font-bold text-gray-900" data-parafiscal-line="taxable-base">
+                                <dt>Parafiscal Taxable Base</dt>
+                                <dd><?= formatCopCurrency($pSlice->parafiscalTaxableBase) ?></dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="pt-3 border-t <?= $isPortfolioCard ? 'border-indigo-200' : 'border-gray-200' ?> flex items-center justify-between gap-2" data-parafiscal-line="assessed-contribution">
+                        <div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider <?= $isPortfolioCard ? 'text-indigo-900' : 'text-gray-700' ?> block">
+                                Assessed Parafiscal Contribution (0.25%)
+                            </span>
+                            <span class="text-[10px] text-gray-500">
+                                <?= $pSlice->activeStaysCount ?> commercial <?= $pSlice->activeStaysCount === 1 ? 'stay' : 'stays' ?> &middot; <?= $pSlice->occupiedNights ?> occupied <?= $pSlice->occupiedNights === 1 ? 'night' : 'nights' ?>
+                            </span>
+                        </div>
+                        <span class="text-lg font-extrabold <?= $isPortfolioCard ? 'text-indigo-700' : 'text-emerald-700' ?> tabular-nums">
+                            <?= formatCopCurrency($pSlice->parafiscalContribution) ?>
+                        </span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
     <!-- ROW 4: TABBED BOTTOM DETAIL LEDGERS -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/60">

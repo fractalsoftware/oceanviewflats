@@ -1029,4 +1029,99 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertSame(200, $updatePastAbnbResp->getStatusCode());
         $this->assertSame('reservationUpdated', $updatePastAbnbResp->getHeader('HX-Trigger'));
     }
+
+    public function testFonturParafiscalActivePeriodBreakdownCardsRespectPropertyFilterAndItemizeDeductions(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations');
+        $this->pdo->exec('DELETE FROM calendar_blocks');
+        $this->pdo->exec('DELETE FROM operational_expenses');
+
+        // Seed multi-source, straddling, refunded, owner_stay, and cancelled Policy Retention stays in Oct 2026:
+        // Property 1606 (RNT #270413, flat surcharge = 100,000 COP):
+        // - Direct Online (web): Oct 05 -> Oct 10 (5 nights), 2,600,000 COP -> Deducted: 100,000, Taxable Base: 2,500,000
+        // - External OTA (airbnb): Oct 12 -> Oct 15 (3 nights), 1,500,000 COP -> Deducted: 0, Taxable Base: 1,500,000
+        // - Owner stay (owner_stay): Oct 20 -> Oct 22 (2 nights), 0 COP -> Excluded
+        // => 1606 Commercial Stay Revenue = 4,100,000, Deducted = 100,000, Taxable Base = 4,000,000, Contribution = 10,000 COP
+        //
+        // Property 1707 (RNT #268781, flat surcharge = 120,000 COP):
+        // - Cross-period Direct Manual (bank_transfer): Sep 29 -> Oct 03 (4 nights: 2 in Sep, 2 in Oct = 50% proration)
+        //   Total: 2,120,000 COP -> Deduct 120,000 before proration = 2,000,000 eligible contract
+        //   In Oct (50%): Commercial Stay Revenue = 1,060,000, Deducted = 60,000, Taxable Base = 1,000,000
+        // - Heavily refunded Direct Online (web): Oct 08 -> Oct 10 (2 nights), Total: 800,000, Refunded: 750,000 => Net: 50,000
+        //   Deduct 120,000 floored at 0 => Commercial Stay Revenue = 50,000, Deducted = 50,000, Taxable Base = 0
+        // - Settled Cancelled Policy Retention (web): Oct 16 -> Oct 19 (3 nights), Total: 1,200,000, Refunded: 700,000 => Retained: 500,000 (Excluded)
+        // => 1707 Commercial Stay Revenue = 1,110,000, Deducted = 110,000, Excluded Retention = 500,000, Taxable Base = 1,000,000, Contribution = 2,500 COP
+        //
+        // Portfolio Total (1606 + 1707):
+        // => Commercial Stay Revenue = 5,210,000, Deducted = 210,000, Excluded Retention = 500,000, Taxable Base = 5,000,000, Contribution = 12,500 COP
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES
+                ('ovf_pf_1606_web', '1606', 'Markus Vance', 'markus@example.com', '+573001112233', '2026-10-05', '2026-10-10', 2600000, 0, 'confirmed', 'approved', 'web'),
+                ('res-abnb-pf-1606', '1606', 'Sophie Laurent', 'sophie@guest.oceanviewflats.com', '+33612345678', '2026-10-12', '2026-10-15', 1500000, 0, 'confirmed', 'approved', 'airbnb'),
+                ('res-owner-pf-1606', '1606', 'Owner Personal', 'owner@oceanviewflats.com', '+573000000000', '2026-10-20', '2026-10-22', 0, 0, 'confirmed', 'approved', 'owner_stay'),
+                ('res-man-pf-1707-cross', '1707', 'Lucia Fernandez', 'lucia@example.com', '+573004445566', '2026-09-29', '2026-10-03', 2120000, 0, 'confirmed', 'approved', 'bank_transfer'),
+                ('ovf_pf_1707_refunded', '1707', 'Refunded Guest', 'refund@example.com', '+573007778899', '2026-10-08', '2026-10-10', 800000, 750000, 'confirmed', 'partially_refunded', 'web'),
+                ('ovf_pf_1707_retention', '1707', 'Carlos Mendoza', 'carlos@example.com', '+573009990011', '2026-10-16', '2026-10-19', 1200000, 700000, 'cancelled', 'partially_refunded', 'web');
+        ");
+
+        // 1. Portfolio View (property_id = all) renders all 3 cards (1606, 1707, Portfolio Total)
+        $respAll = $this->app->handle(new Request('GET', '/financial-report', query: ['property_id' => 'all']), $this->adminSession);
+        $this->assertSame(200, $respAll->getStatusCode());
+        $bodyAll = $respAll->getBody();
+
+        $this->assertStringContainsString('id="fontur-parafiscal-section"', $bodyAll);
+        $this->assertStringContainsString('Colombian Legal Contributions &mdash; FONTUR Parafiscal (0.25%)', $bodyAll);
+        $this->assertStringContainsString('id="parafiscal-card-1606"', $bodyAll);
+        $this->assertStringContainsString('Property 1606 (RNT #270413)', $bodyAll);
+        $this->assertStringContainsString('id="parafiscal-card-1707"', $bodyAll);
+        $this->assertStringContainsString('Property 1707 (RNT #268781)', $bodyAll);
+        $this->assertStringContainsString('id="parafiscal-card-portfolio"', $bodyAll);
+        $this->assertStringContainsString('Portfolio Total (1606 + 1707)', $bodyAll);
+
+        // Verify itemized amounts on 1606, 1707, and Portfolio cards
+        $this->assertStringContainsString('$ 4.100.000 COP', $bodyAll); // 1606 Commercial Stay Revenue
+        $this->assertStringContainsString('- $ 100.000 COP', $bodyAll); // 1606 Deducted Fees
+        $this->assertStringContainsString('$ 4.000.000 COP', $bodyAll); // 1606 Taxable Base
+        $this->assertStringContainsString('$ 10.000 COP', $bodyAll);    // 1606 Contribution (0.25%)
+
+        $this->assertStringContainsString('$ 1.110.000 COP', $bodyAll); // 1707 Commercial Stay Revenue
+        $this->assertStringContainsString('- $ 110.000 COP', $bodyAll); // 1707 Deducted Fees (60k + 50k)
+        $this->assertStringContainsString('$ 500.000 COP (Excluded)', $bodyAll); // 1707 Policy Retention Excluded
+        $this->assertStringContainsString('$ 1.000.000 COP', $bodyAll); // 1707 Taxable Base
+        $this->assertStringContainsString('$ 2.500 COP', $bodyAll);     // 1707 Contribution (0.25%)
+
+        $this->assertStringContainsString('$ 5.210.000 COP', $bodyAll); // Portfolio Commercial Stay Revenue
+        $this->assertStringContainsString('- $ 210.000 COP', $bodyAll); // Portfolio Deducted Fees
+        $this->assertStringContainsString('$ 5.000.000 COP', $bodyAll); // Portfolio Taxable Base
+        $this->assertStringContainsString('$ 12.500 COP', $bodyAll);    // Portfolio Contribution (0.25%)
+
+        // 2. Single Property Filter: Property 1606 renders ONLY Property 1606 card
+        $resp1606 = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['property_id' => '1606'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resp1606->getStatusCode());
+        $body1606 = $resp1606->getBody();
+        $this->assertStringContainsString('id="fontur-parafiscal-section"', $body1606);
+        $this->assertStringContainsString('id="parafiscal-card-1606"', $body1606);
+        $this->assertStringContainsString('Property 1606 (RNT #270413)', $body1606);
+        $this->assertStringNotContainsString('id="parafiscal-card-1707"', $body1606);
+        $this->assertStringNotContainsString('id="parafiscal-card-portfolio"', $body1606);
+
+        // 3. Single Property Filter: Property 1707 renders ONLY Property 1707 card
+        $resp1707 = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['property_id' => '1707'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resp1707->getStatusCode());
+        $body1707 = $resp1707->getBody();
+        $this->assertStringContainsString('id="fontur-parafiscal-section"', $body1707);
+        $this->assertStringContainsString('id="parafiscal-card-1707"', $body1707);
+        $this->assertStringContainsString('Property 1707 (RNT #268781)', $body1707);
+        $this->assertStringNotContainsString('id="parafiscal-card-1606"', $body1707);
+        $this->assertStringNotContainsString('id="parafiscal-card-portfolio"', $body1707);
+    }
 }

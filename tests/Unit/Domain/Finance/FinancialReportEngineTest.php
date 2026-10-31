@@ -840,4 +840,217 @@ final class FinancialReportEngineTest extends TestCase
         $this->assertSame($sAll->totalExpenses, $sumExpenses);
         $this->assertSame($sAll->noi, $sumNoi);
     }
+
+    #[DataProvider('adapterModeProvider')]
+    public function testParafiscalTaxableBaseAndContributionAcrossMultiSourceStraddlingRefundedAndExcludedStays(string $mode): void
+    {
+        $harness = $this->createEngineHarness($mode);
+        $resRepo = $harness['resRepo'];
+        $engine = $harness['engine'];
+        $refClock = new DateTimeImmutable('2026-10-17 12:00:00', new DateTimeZone('America/Bogota'));
+
+        // 1. Property 1606 (RNT #270413, flat surcharge = 100,000 COP):
+        // 1a. Full in-period Direct Online ('web'): Oct 02 -> Oct 06 (4 nights), total 2,100,000 COP
+        //     netContract = 2,100,000, surcharge = 100,000 => taxableBase = 2,000,000 COP
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_pf_1606_web_full',
+            propertyId: '1606',
+            guestName: 'Direct Web 1606',
+            guestEmail: 'web1606@example.com',
+            guestPhone: '+573001110001',
+            checkIn: '2026-10-02',
+            checkOut: '2026-10-06',
+            totalPrice: 2100000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'web'
+        ));
+
+        // 1b. Cross-period straddling Direct Manual ('bank_transfer') on 1606:
+        //     Sep 28 -> Oct 03 (5 nights total: 3 in Sep [60%], 2 in Oct [40%])
+        //     Total: 1,850,000 COP, Refunded: 250,000 COP => netContract = 1,600,000 COP
+        //     Deduct 100,000 surcharge before proration => eligibleContractBase = 1,500,000 COP
+        //     In Oct (2/5 = 0.4):
+        //       activeStayRevenue = 1,600,000 * 0.4 = 640,000 COP
+        //       deductedDirectFees = 100,000 * 0.4 = 40,000 COP
+        //       taxableBase = 1,500,000 * 0.4 = 600,000 COP
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-man-pf-1606-cross',
+            propertyId: '1606',
+            guestName: 'Cross Manual 1606',
+            guestEmail: 'cross1606@example.com',
+            guestPhone: '+573001110002',
+            checkIn: '2026-09-28',
+            checkOut: '2026-10-03',
+            totalPrice: 1850000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'partially_refunded',
+            source: 'bank_transfer',
+            refundedAmount: 250000.0
+        ));
+
+        // 1c. External OTA ('airbnb') on 1606: Oct 12 -> Oct 15 (3 nights), 1,400,200 COP
+        //     100% of prorated net host payout included without deducting Direct surcharges!
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-abnb-pf-1606',
+            propertyId: '1606',
+            guestName: 'Airbnb Guest 1606',
+            guestEmail: 'abnb1606@guest.oceanviewflats.com',
+            guestPhone: '+13055550101',
+            checkIn: '2026-10-12',
+            checkOut: '2026-10-15',
+            totalPrice: 1400200.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'airbnb'
+        ));
+
+        // 1d. Non-commercial owner_stay on 1606: Oct 20 -> Oct 23 (3 nights) -> excluded!
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-owner-pf-1606',
+            propertyId: '1606',
+            guestName: 'Owner Stay 1606',
+            guestEmail: 'owner@oceanviewflats.com',
+            guestPhone: '+573000000000',
+            checkIn: '2026-10-20',
+            checkOut: '2026-10-23',
+            totalPrice: 0.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'owner_stay'
+        ));
+
+        // 2. Property 1707 (RNT #268781, flat surcharge = 120,000 COP):
+        // 2a. Full in-period Direct Manual ('cash'): Oct 04 -> Oct 08 (4 nights), total 2,520,000 COP
+        //     netContract = 2,520,000, surcharge = 120,000 => taxableBase = 2,400,000 COP
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-man-pf-1707-full',
+            propertyId: '1707',
+            guestName: 'Direct Cash 1707',
+            guestEmail: 'cash1707@example.com',
+            guestPhone: '+573002220001',
+            checkIn: '2026-10-04',
+            checkOut: '2026-10-08',
+            totalPrice: 2520000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'cash'
+        ));
+
+        // 2b. Heavily refunded Direct Online ('web') on 1707 where netContract < 120,000 surcharge:
+        //     Oct 10 -> Oct 12 (2 nights), totalPrice = 900,000, refundedAmount = 850,000 => netContract = 50,000 COP
+        //     max(0, 50,000 - 120,000) = 0 COP taxable base (floored at 0 COP; deductedDirectFees = 50,000 COP)
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_pf_1707_heavy_refund',
+            propertyId: '1707',
+            guestName: 'Heavily Refunded 1707',
+            guestEmail: 'refund1707@example.com',
+            guestPhone: '+573002220002',
+            checkIn: '2026-10-10',
+            checkOut: '2026-10-12',
+            totalPrice: 900000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'partially_refunded',
+            source: 'web',
+            refundedAmount: 850000.0
+        ));
+
+        // 2c. External OTA ('airbnb') cross-period on 1707:
+        //     Oct 30 -> Nov 03 (4 nights total: 2 in Oct [50%], 2 in Nov [50%]), totalPrice = 1,800,000 COP
+        //     In Oct: 900,000 COP (0 surcharge deducted)
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-abnb-pf-1707-cross',
+            propertyId: '1707',
+            guestName: 'Airbnb Cross 1707',
+            guestEmail: 'abnb1707@guest.oceanviewflats.com',
+            guestPhone: '+13055550202',
+            checkIn: '2026-10-30',
+            checkOut: '2026-11-03',
+            totalPrice: 1800000.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'airbnb'
+        ));
+
+        // 2d. Settled Cancelled Reservation with Policy Retention on 1707:
+        //     Oct 15 -> Oct 18 (3 nights), totalPrice = 1,500,000, refundedAmount = 900,000 => retained = 600,000 COP
+        //     Strictly excluded from Parafiscal Taxable Base!
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_pf_1707_cancelled_ret',
+            propertyId: '1707',
+            guestName: 'Cancelled Retention 1707',
+            guestEmail: 'cancel1707@example.com',
+            guestPhone: '+573002220003',
+            checkIn: '2026-10-15',
+            checkOut: '2026-10-18',
+            totalPrice: 1500000.0,
+            status: ReservationStatus::CANCELLED,
+            paymentStatus: 'partially_refunded',
+            source: 'web',
+            refundedAmount: 900000.0
+        ));
+
+        $octReport = $engine->generate(new FinancialReportFilter(propertyId: 'all', period: 'this_month'), $refClock);
+        $s1606 = $octReport->property1606Slice;
+        $s1707 = $octReport->property1707Slice;
+        $sAll = $octReport->portfolioSlice;
+
+        // Property 1606 in Oct:
+        // activeStayRevenue = 2,100,000 + 640,000 + 1,400,200 = 4,140,200 COP
+        // parafiscalDeductedFees = 100,000 + 40,000 + 0 = 140,000 COP
+        // policyRetention (excluded) = 0 COP
+        // parafiscalTaxableBase = 2,000,000 + 600,000 + 1,400,200 = 4,000,200 COP
+        // parafiscalContribution = round(4,000,200 * 0.0025, 0) = round(10000.5, 0) = 10,001 COP
+        $this->assertSame('270413', $s1606->rntNumber);
+        $this->assertSame(4140200.0, $s1606->activeStayRevenue);
+        $this->assertSame(140000.0, $s1606->parafiscalDeductedFees);
+        $this->assertSame(140000.0, $s1606->deductedDirectFees);
+        $this->assertSame(0.0, $s1606->policyRetention);
+        $this->assertSame(0.0, $s1606->excludedPolicyRetention);
+        $this->assertSame(4000200.0, $s1606->parafiscalTaxableBase);
+        $this->assertSame(10001.0, $s1606->parafiscalContribution);
+
+        // Property 1707 in Oct:
+        // activeStayRevenue = 2,520,000 + 50,000 + 900,000 = 3,470,000 COP
+        // parafiscalDeductedFees = 120,000 + 50,000 (floored at 0 base) + 0 = 170,000 COP
+        // policyRetention (excluded) = 600,000 COP
+        // parafiscalTaxableBase = 2,400,000 + 0 + 900,000 = 3,300,000 COP
+        // parafiscalContribution = round(3,300,000 * 0.0025, 0) = 8,250 COP
+        $this->assertSame('268781', $s1707->rntNumber);
+        $this->assertSame(3470000.0, $s1707->activeStayRevenue);
+        $this->assertSame(170000.0, $s1707->parafiscalDeductedFees);
+        $this->assertSame(600000.0, $s1707->policyRetention);
+        $this->assertSame(600000.0, $s1707->excludedPolicyRetention);
+        $this->assertSame(3300000.0, $s1707->parafiscalTaxableBase);
+        $this->assertSame(8250.0, $s1707->parafiscalContribution);
+
+        // Portfolio Total in Oct:
+        // activeStayRevenue = 4,140,200 + 3,470,000 = 7,610,200 COP
+        // parafiscalDeductedFees = 140,000 + 170,000 = 310,000 COP
+        // policyRetention (excluded) = 600,000 COP
+        // parafiscalTaxableBase = 4,000,200 + 3,300,000 = 7,300,200 COP
+        // parafiscalContribution = round(7,300,200 * 0.0025, 0) = round(18250.5, 0) = 18,251 COP
+        $this->assertNull($sAll->rntNumber);
+        $this->assertSame(7610200.0, $sAll->activeStayRevenue);
+        $this->assertSame(310000.0, $sAll->parafiscalDeductedFees);
+        $this->assertSame(600000.0, $sAll->policyRetention);
+        $this->assertSame(7300200.0, $sAll->parafiscalTaxableBase);
+        $this->assertSame(18251.0, $sAll->parafiscalContribution);
+
+        // Verify cross-period straddling reconciliation with September 2026 ('last_month'):
+        // In Sep (3/5 = 0.6 of res-man-pf-1606-cross):
+        // activeStayRevenue = 1,600,000 * 0.6 = 960,000 COP
+        // parafiscalDeductedFees = 100,000 * 0.6 = 60,000 COP
+        // parafiscalTaxableBase = 1,500,000 * 0.6 = 900,000 COP
+        // parafiscalContribution = round(900,000 * 0.0025, 0) = 2,250 COP
+        $sepReport = $engine->generate(new FinancialReportFilter(propertyId: '1606', period: 'last_month'), $refClock);
+        $sep1606 = $sepReport->current;
+        $this->assertSame(960000.0, $sep1606->activeStayRevenue);
+        $this->assertSame(60000.0, $sep1606->parafiscalDeductedFees);
+        $this->assertSame(900000.0, $sep1606->parafiscalTaxableBase);
+        $this->assertSame(2250.0, $sep1606->parafiscalContribution);
+
+        // Sep (60,000) + Oct (40,000 from cross stay) = 100,000 full flat surcharge for res-man-pf-1606-cross
+        $this->assertSame(100000.0, $sep1606->parafiscalDeductedFees + ($s1606->parafiscalDeductedFees - 100000.0));
+    }
 }

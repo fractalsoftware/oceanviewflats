@@ -7,21 +7,34 @@ namespace OceanViewFlats\Domain\Finance;
 use DateInterval;
 use DatePeriod;
 use DateTimeImmutable;
+use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlockSourceInterface;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 
 /**
  * Authoritative domain engine for accrual-prorated P&L, verified-settlement Policy Retention,
- * per-night capacity deduplication, and 50/50 shared Operational Expense allocation.
+ * per-night capacity deduplication, 50/50 shared Operational Expense allocation, and
+ * FONTUR Parafiscal Contribution (0.25%) assessment.
  */
 final class FinancialReportEngine implements FinancialReportEngineInterface
 {
+    public const PARAFISCAL_RATE = 0.0025;
+
+    public const PROPERTY_RNT_MAP = [
+        '1606' => '270413',
+        '1707' => '268781',
+    ];
+
+    private readonly PropertyRatesConfig $ratesConfig;
+
     public function __construct(
         private readonly ReservationRepositoryInterface $reservationRepository,
         private readonly MaintenanceBlockSourceInterface $maintenanceBlockSource,
-        private readonly OperationalExpenseRepositoryInterface $expenseRepository
+        private readonly OperationalExpenseRepositoryInterface $expenseRepository,
+        ?PropertyRatesConfig $ratesConfig = null
     ) {
+        $this->ratesConfig = $ratesConfig ?? PropertyRatesConfig::createDefault();
     }
 
     public function generate(
@@ -221,6 +234,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $refundedAmount = 0.0;
         $grossCharged = 0.0;
         $allSourcesGrossRevenue = 0.0;
+        $parafiscalTaxableBase = 0.0;
 
         $unpricedAirbnbCount = 0;
         $unpricedAirbnbUids = [];
@@ -310,6 +324,21 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                 $refundedAmount += $proratedRefunded;
                 $activeStaysCount++;
                 $totalActiveStayNights += $totalNights;
+
+                if (
+                    $channelGroup === BookingSourceGroup::DIRECT_ONLINE
+                    || $channelGroup === BookingSourceGroup::DIRECT_MANUAL
+                ) {
+                    $flatSurcharges = $this->ratesConfig->isValidProperty($reservation->propertyId)
+                        ? $this->ratesConfig->getFlatSurcharges($reservation->propertyId)
+                        : 0.0;
+                    $eligibleContractBase = max(0.0, $netContract - $flatSurcharges);
+                    $eligibleStayBase = $eligibleContractBase * $factor;
+                } else {
+                    $eligibleStayBase = $proratedNet;
+                }
+
+                $parafiscalTaxableBase += $eligibleStayBase;
 
                 $isUnpricedAirbnb = ($channelGroup === BookingSourceGroup::AIRBNB && $netContract <= 0.0);
                 if ($isUnpricedAirbnb) {
@@ -407,6 +436,13 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $grossCharged = round($grossCharged, 2);
         $grossRevenue = round($activeStayRevenue + $policyRetention, 2);
         $allSourcesGrossRevenue = round($allSourcesGrossRevenue, 2);
+
+        $parafiscalTaxableBase = round($parafiscalTaxableBase, 2);
+        $parafiscalDeductedFees = max(0.0, round($activeStayRevenue - $parafiscalTaxableBase, 2));
+        $parafiscalContribution = round($parafiscalTaxableBase * self::PARAFISCAL_RATE, 0);
+        $rntNumber = $this->ratesConfig->isValidProperty($propertyFilter)
+            ? $this->ratesConfig->getRntNumber($propertyFilter)
+            : (self::PROPERTY_RNT_MAP[$propertyFilter] ?? null);
 
         $occupancyPct = $availableNights > 0
             ? round(($occupiedNights / $availableNights) * 100.0, 2)
@@ -528,7 +564,13 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
             byCategory: $byCategory,
             attributedReservations: $attributedReservations,
             allocatedExpenses: $allocatedExpenses,
-            expenses: $filteredExpenseEntities
+            expenses: $filteredExpenseEntities,
+            parafiscalDeductedFees: $parafiscalDeductedFees,
+            parafiscalTaxableBase: $parafiscalTaxableBase,
+            parafiscalContribution: $parafiscalContribution,
+            rntNumber: $rntNumber,
+            deductedDirectFees: $parafiscalDeductedFees,
+            excludedPolicyRetention: $policyRetention
         );
     }
 
