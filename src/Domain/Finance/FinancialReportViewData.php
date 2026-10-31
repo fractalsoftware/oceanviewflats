@@ -12,6 +12,7 @@ final class FinancialReportViewData
     /**
      * @param array<string, FinancialMetricComparison> $deltas
      * @param list<FinancialReportSlice> $monthlyTrends
+     * @param list<ParafiscalPeriod> $parafiscalPeriods
      */
     public function __construct(
         public readonly FinancialReportFilter $filter,
@@ -27,8 +28,53 @@ final class FinancialReportViewData
         public readonly FinancialReportSlice $portfolioSlice,
         public readonly FinancialReportSlice $property1606Slice,
         public readonly FinancialReportSlice $property1707Slice,
-        public readonly array $monthlyTrends = []
+        public readonly array $monthlyTrends = [],
+        public readonly array $parafiscalPeriods = []
     ) {
+    }
+
+    /**
+     * Returns evaluated ParafiscalPeriod rows filtered by the given property filter ('all', '1606', '1707').
+     *
+     * @return list<ParafiscalPeriod>
+     */
+    public function getParafiscalPeriodsForProperty(?string $propertyFilter = null): array
+    {
+        $scope = $propertyFilter ?? $this->filter->propertyId;
+        if (!in_array($scope, ['1606', '1707'], true)) {
+            return $this->parafiscalPeriods;
+        }
+
+        return array_values(array_filter(
+            $this->parafiscalPeriods,
+            static fn (ParafiscalPeriod $p): bool => $p->propertyId === $scope
+        ));
+    }
+
+    /**
+     * Returns current in-progress ParafiscalPeriod rows scoped to the active property filter.
+     *
+     * @return list<ParafiscalPeriod>
+     */
+    public function getInProgressParafiscalPeriods(?string $propertyFilter = null): array
+    {
+        return array_values(array_filter(
+            $this->getParafiscalPeriodsForProperty($propertyFilter),
+            static fn (ParafiscalPeriod $p): bool => $p->isInProgress()
+        ));
+    }
+
+    /**
+     * Returns closed unsettled ('pending' or 'overdue') ParafiscalPeriod rows scoped to the active property filter.
+     *
+     * @return list<ParafiscalPeriod>
+     */
+    public function getUnsettledClosedParafiscalPeriods(?string $propertyFilter = null): array
+    {
+        return array_values(array_filter(
+            $this->getParafiscalPeriodsForProperty($propertyFilter),
+            static fn (ParafiscalPeriod $p): bool => $p->isClosedUnsettled()
+        ));
     }
 
     public function isMultiMonth(): bool

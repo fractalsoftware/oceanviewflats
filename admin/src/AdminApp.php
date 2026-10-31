@@ -34,7 +34,9 @@ use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Finance\FinancialReportEngine;
 use OceanViewFlats\Domain\Finance\FinancialReportEngineInterface;
 use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
+use OceanViewFlats\Domain\Finance\ParafiscalSettlementRepositoryInterface;
 use OceanViewFlats\Domain\Finance\PdoOperationalExpenseRepository;
+use OceanViewFlats\Domain\Finance\PdoParafiscalSettlementRepository;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillment;
 use OceanViewFlats\Domain\Fulfillment\BookingFulfillmentInterface;
 use OceanViewFlats\Domain\Fulfillment\CancellationEmailRenderer;
@@ -309,6 +311,13 @@ final class AdminApp
         $adminRateRepo = $options['admin_rate_repository']
             ?? new AdminRateRepository($pdo, $ratesConfig, $rateRepo);
 
+        /** @var OperationalExpenseRepositoryInterface $expenseRepository */
+        $expenseRepository = $options['operational_expense_repository']
+            ?? new PdoOperationalExpenseRepository($pdo);
+        /** @var ParafiscalSettlementRepositoryInterface $parafiscalRepository */
+        $parafiscalRepository = $options['parafiscal_settlement_repository']
+            ?? new PdoParafiscalSettlementRepository($pdo);
+
         /** @var DashboardQueryServiceInterface $dashboardQueryService */
         $dashboardQueryService = $options['dashboard_query_service'] ?? new DashboardQueryService(
             reservationRepo: $adminReservationRepo,
@@ -317,7 +326,11 @@ final class AdminApp
             channelSyncService: $channelSyncService,
             ledger: $ledger,
             clearanceRepo: $clearanceRepo,
-            dismissalRepo: $dismissalRepo
+            dismissalRepo: $dismissalRepo,
+            parafiscalRepo: $parafiscalRepository,
+            expenseRepo: $expenseRepository,
+            domainReservationRepo: $reservationRepository,
+            ratesConfig: $ratesConfig
         );
 
         $dashboardController = new DashboardController(
@@ -340,16 +353,14 @@ final class AdminApp
             viewRenderer: $viewRenderer
         );
 
-        /** @var OperationalExpenseRepositoryInterface $expenseRepository */
-        $expenseRepository = $options['operational_expense_repository']
-            ?? new PdoOperationalExpenseRepository($pdo);
         /** @var FinancialReportEngineInterface $financialReportEngine */
         $financialReportEngine = $options['financial_report_engine']
             ?? new FinancialReportEngine(
                 reservationRepository: $reservationRepository,
                 maintenanceBlockSource: $calendarBlockRepo,
                 expenseRepository: $expenseRepository,
-                ratesConfig: $ratesConfig
+                ratesConfig: $ratesConfig,
+                parafiscalRepository: $parafiscalRepository
             );
         $financialReportNow = isset($options['financial_report_now']) && $options['financial_report_now'] instanceof \DateTimeImmutable
             ? $options['financial_report_now']
@@ -360,7 +371,8 @@ final class AdminApp
             viewRenderer: $viewRenderer,
             auditLogger: $auditLogger,
             now: $financialReportNow,
-            reportEngine: $financialReportEngine
+            reportEngine: $financialReportEngine,
+            parafiscalRepository: $parafiscalRepository
         );
 
         // 10. Security Middlewares & Router (immutable internal security pipeline)

@@ -9,10 +9,12 @@ enum AlertType: string
     case INCOMPLETE_GUEST_REGISTRY = 'incomplete_guest_registry';
     case UNONBOARDED_CHANNEL_BLOCK = 'unonboarded_channel_block';
     case FAILED_CONDOMINIUM_CLEARANCE = 'failed_condominium_clearance';
+    case PENDING_PARAFISCAL_SETTLEMENT = 'pending_parafiscal_settlement';
 
     public const CLEARANCE_PREFIX = 'clearance_';
     public const REGISTRY_PREFIX = 'registry_';
     public const CHANNEL_BLOCK_PREFIX = 'channel_block_';
+    public const PARAFISCAL_PREFIX = 'parafiscal_';
 
     public static function clearanceAlertId(string $reservationUid): string
     {
@@ -29,12 +31,18 @@ enum AlertType: string
         return self::CHANNEL_BLOCK_PREFIX . $blockHash;
     }
 
+    public static function parafiscalAlertId(string $periodKey, string $propertyId): string
+    {
+        return self::PARAFISCAL_PREFIX . strtoupper(trim($periodKey)) . '_' . trim($propertyId);
+    }
+
     public function idPrefix(): string
     {
         return match ($this) {
             self::FAILED_CONDOMINIUM_CLEARANCE => self::CLEARANCE_PREFIX,
             self::INCOMPLETE_GUEST_REGISTRY => self::REGISTRY_PREFIX,
             self::UNONBOARDED_CHANNEL_BLOCK => self::CHANNEL_BLOCK_PREFIX,
+            self::PENDING_PARAFISCAL_SETTLEMENT => self::PARAFISCAL_PREFIX,
         };
     }
 
@@ -49,7 +57,7 @@ enum AlertType: string
             self::FAILED_CONDOMINIUM_CLEARANCE, self::INCOMPLETE_GUEST_REGISTRY => $this->matchesAlertId($alertId)
                 ? substr($alertId, strlen($this->idPrefix()))
                 : null,
-            self::UNONBOARDED_CHANNEL_BLOCK => null,
+            self::UNONBOARDED_CHANNEL_BLOCK, self::PENDING_PARAFISCAL_SETTLEMENT => null,
         };
     }
 }

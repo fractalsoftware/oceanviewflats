@@ -718,6 +718,209 @@ if (!function_exists('formatCopCompactCurrency')) {
                 </div>
             <?php endforeach; ?>
         </div>
+
+        <?php
+        $scopedParafiscalPeriods = $report->getParafiscalPeriodsForProperty($propertyFilter);
+        $inProgressPeriods = $report->getInProgressParafiscalPeriods($propertyFilter);
+        $unsettledClosedPeriods = $report->getUnsettledClosedParafiscalPeriods($propertyFilter);
+        $inProgressAccruedTotal = 0.0;
+        foreach ($inProgressPeriods as $ipPeriod) {
+            $inProgressAccruedTotal += $ipPeriod->calculatedContribution;
+        }
+        $primaryInProgress = $inProgressPeriods[0] ?? null;
+        ?>
+
+        <!-- NEXT PAYMENT & PENDING DECLARATIONS BANNER -->
+        <div id="parafiscal-next-payment-banner" class="px-5 py-4 border-t border-gray-200 bg-slate-50/70 space-y-3">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex items-start space-x-3">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                            Next Payment &amp; Pending Declarations Banner
+                        </h3>
+                        <?php if ($primaryInProgress !== null): ?>
+                            <p class="text-xs text-gray-700 mt-0.5">
+                                <strong>Current In-Progress Quarter (<?= htmlspecialchars($primaryInProgress->periodKey, ENT_QUOTES, 'UTF-8') ?>):</strong>
+                                Accrued Contribution <span class="font-bold text-indigo-700 tabular-nums"><?= formatCopCurrency($inProgressAccruedTotal) ?></span>
+                                &middot; Next Statutory Deadline:
+                                <span class="font-mono font-semibold text-gray-900"><?= htmlspecialchars($primaryInProgress->dueDate, ENT_QUOTES, 'UTF-8') ?></span>
+                                <span class="text-indigo-700 font-semibold">(<?= $primaryInProgress->daysUntilDue ?> <?= $primaryInProgress->daysUntilDue === 1 ? 'day' : 'days' ?> remaining &mdash; 20th Colombian business day)</span>
+                            </p>
+                        <?php else: ?>
+                            <p class="text-xs text-gray-600 mt-0.5">
+                                All current quarterly Parafiscal declarations have been settled.
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php if ($primaryInProgress !== null && count($inProgressPeriods) > 1): ?>
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] shrink-0">
+                        <?php foreach ($inProgressPeriods as $ipRow): ?>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium tabular-nums">
+                                Apt <?= htmlspecialchars($ipRow->propertyId, ENT_QUOTES, 'UTF-8') ?> (RNT #<?= htmlspecialchars($ipRow->rntNumber, ENT_QUOTES, 'UTF-8') ?>):
+                                <strong class="text-gray-900"><?= formatCopCurrency($ipRow->calculatedContribution) ?></strong>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($unsettledClosedPeriods)): ?>
+                <div id="parafiscal-pending-declarations-callouts" class="space-y-2 pt-1">
+                    <?php foreach ($unsettledClosedPeriods as $pendingRow):
+                        $isCriticalRow = $pendingRow->isOverdue() || $pendingRow->daysUntilDue <= 7;
+                        $calloutBg = $isCriticalRow ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-amber-50 border-amber-200 text-amber-900';
+                        $badgeBg = $isCriticalRow ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white';
+                        $badgeText = $pendingRow->isOverdue()
+                            ? 'OVERDUE (' . abs($pendingRow->daysUntilDue) . 'd past due)'
+                            : ($pendingRow->daysUntilDue <= 7
+                                ? 'CRITICAL (Due in ' . $pendingRow->daysUntilDue . 'd)'
+                                : 'PENDING (Due in ' . $pendingRow->daysUntilDue . 'd)');
+                    ?>
+                        <div data-pending-parafiscal-callout="<?= htmlspecialchars($pendingRow->periodKey . '_' . $pendingRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                             class="p-3 rounded-xl border <?= $calloutBg ?> flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <div class="flex items-start sm:items-center gap-2 flex-wrap">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase <?= $badgeBg ?> shrink-0">
+                                    <?= htmlspecialchars($badgeText, ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                                <span class="font-bold">
+                                    <?= htmlspecialchars($pendingRow->periodKey, ENT_QUOTES, 'UTF-8') ?> &mdash; Property <?= htmlspecialchars($pendingRow->propertyId, ENT_QUOTES, 'UTF-8') ?> (RNT #<?= htmlspecialchars($pendingRow->rntNumber, ENT_QUOTES, 'UTF-8') ?>)
+                                </span>
+                                <span class="text-gray-700 tabular-nums">
+                                    Taxable Base: <strong><?= formatCopCurrency($pendingRow->taxableBase) ?></strong> &middot;
+                                    Assessed Contribution (0.25%): <strong><?= formatCopCurrency($pendingRow->calculatedContribution) ?></strong> &middot;
+                                    Due Date: <strong class="font-mono"><?= htmlspecialchars($pendingRow->dueDate, ENT_QUOTES, 'UTF-8') ?></strong>
+                                </span>
+                            </div>
+                            <span class="text-[11px] font-semibold shrink-0 <?= $isCriticalRow ? 'text-rose-800' : 'text-amber-800' ?>">
+                                Action Required: File RNT #<?= htmlspecialchars($pendingRow->rntNumber, ENT_QUOTES, 'UTF-8') ?> Declaration
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- HISTORICAL QUARTERLY PARAFISCAL SETTLEMENTS TABLE -->
+        <div id="parafiscal-historical-settlements-panel" class="border-t border-gray-200">
+            <div class="px-5 py-3.5 bg-gray-50/80 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-800">
+                        Historical Quarterly Parafiscal Settlements
+                    </h3>
+                    <p class="text-[11px] text-gray-500">
+                        Per-RNT quarterly FONTUR Parafiscal timeline from earliest commercial Reservation quarter through current quarter (statutory deadline: 20th Colombian business day of Apr, Jul, Oct, Jan).
+                    </p>
+                </div>
+                <span class="text-[11px] text-gray-500 font-medium">
+                    <?= count($scopedParafiscalPeriods) ?> quarterly <?= count($scopedParafiscalPeriods) === 1 ? 'record' : 'records' ?>
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="parafiscal-settlements-table" class="min-w-full divide-y divide-gray-200 text-xs tabular-nums">
+                    <thead class="bg-gray-100/70 text-[11px] font-bold uppercase text-gray-600">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left">Quarter</th>
+                            <th scope="col" class="px-4 py-3 text-left">Property &amp; RNT</th>
+                            <th scope="col" class="px-4 py-3 text-right">Parafiscal Taxable Base</th>
+                            <th scope="col" class="px-4 py-3 text-right">Calculated (0.25%)</th>
+                            <th scope="col" class="px-4 py-3 text-left">Statutory Due Date</th>
+                            <th scope="col" class="px-4 py-3 text-left">Status</th>
+                            <th scope="col" class="px-4 py-3 text-left">Settled Details</th>
+                            <th scope="col" class="px-4 py-3 text-left">Linked Expense</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        <?php foreach ($scopedParafiscalPeriods as $pRow): ?>
+                            <tr data-parafiscal-row="<?= htmlspecialchars($pRow->periodKey . '_' . $pRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                                data-parafiscal-property="<?= htmlspecialchars($pRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                                data-parafiscal-status="<?= htmlspecialchars($pRow->status, ENT_QUOTES, 'UTF-8') ?>"
+                                class="hover:bg-gray-50/80">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-mono font-bold text-gray-900"><?= htmlspecialchars($pRow->periodKey, ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="text-[10px] text-gray-500"><?= htmlspecialchars($pRow->periodStart, ENT_QUOTES, 'UTF-8') ?> &rarr; <?= htmlspecialchars($pRow->periodEnd, ENT_QUOTES, 'UTF-8') ?></div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-semibold text-gray-900">Property <?= htmlspecialchars($pRow->propertyId, ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="text-[11px] font-mono text-indigo-700 font-semibold">RNT #<?= htmlspecialchars($pRow->rntNumber, ENT_QUOTES, 'UTF-8') ?></div>
+                                </td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <div class="font-semibold text-gray-900"><?= formatCopCurrency($pRow->taxableBase) ?></div>
+                                    <?php if ($pRow->deductedDirectFees > 0.0): ?>
+                                        <div class="text-[10px] text-rose-600">- <?= formatCopCompactCurrency($pRow->deductedDirectFees) ?> direct fees</div>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <div class="font-bold text-emerald-700"><?= formatCopCurrency($pRow->calculatedContribution) ?></div>
+                                    <?php if ($pRow->hasRecalculationVariance && $pRow->settlement !== null): ?>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 mt-0.5"
+                                              data-parafiscal-variance="true">
+                                            Recalculated Variance (Snapshot: <?= formatCopCompactCurrency($pRow->settlement->settledCalculatedAmount ?? 0.0) ?>)
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-mono font-medium text-gray-900"><?= htmlspecialchars($pRow->dueDate, ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="text-[10px] <?= $pRow->isOverdue() ? 'text-rose-600 font-semibold' : ($pRow->isPending() && $pRow->daysUntilDue <= 7 ? 'text-amber-700 font-semibold' : 'text-gray-500') ?>">
+                                        <?php if ($pRow->isSettled()): ?>
+                                            Filed &amp; Settled
+                                        <?php elseif ($pRow->isOverdue()): ?>
+                                            <?= abs($pRow->daysUntilDue) ?> <?= abs($pRow->daysUntilDue) === 1 ? 'day' : 'days' ?> overdue
+                                        <?php elseif ($pRow->daysUntilDue === 0): ?>
+                                            Due today
+                                        <?php else: ?>
+                                            In <?= $pRow->daysUntilDue ?> <?= $pRow->daysUntilDue === 1 ? 'day' : 'days' ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold <?= htmlspecialchars($pRow->statusBadgeClass(), ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= htmlspecialchars($pRow->statusBadgeLabel(), ENT_QUOTES, 'UTF-8') ?>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <?php if ($pRow->isSettled() && $pRow->settlement !== null): ?>
+                                        <div class="font-bold text-gray-900">
+                                            <?= formatCopCurrency($pRow->settlement->settledAmount ?? 0.0) ?>
+                                            <?php if ($pRow->isZeroDeclaration()): ?>
+                                                <span class="ml-1 px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 text-[10px] font-semibold">Declaraci&oacute;n en Cero</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500">
+                                            Paid: <?= htmlspecialchars((string) ($pRow->settlement->paymentDate ?? '—'), ENT_QUOTES, 'UTF-8') ?>
+                                            <?php if ($pRow->settlement->referenceCode !== null): ?>
+                                                &middot; Ref: <span class="font-mono font-semibold text-gray-700"><?= htmlspecialchars($pRow->settlement->referenceCode, ENT_QUOTES, 'UTF-8') ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 italic">Not settled</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <?php if ($pRow->linkedExpense !== null): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                            Synced (<?= htmlspecialchars($pRow->linkedExpense->expenseUid, ENT_QUOTES, 'UTF-8') ?>)
+                                        </span>
+                                    <?php elseif ($pRow->isZeroDeclaration()): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-600">
+                                            $0 Declaration (No Expense)
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 text-[11px]">&mdash;</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- ROW 4: TABBED BOTTOM DETAIL LEDGERS -->

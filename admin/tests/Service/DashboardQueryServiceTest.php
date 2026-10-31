@@ -1133,5 +1133,95 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertCount(1, $hubRearmed->alerts);
         $this->assertSame('clearance_res-dismiss-test', $hubRearmed->alerts[0]->id);
     }
+
+    public function testParafiscalSettlementAlertsSurfaceOnDashboardHubEscalateSeverityRespectPropertyFilterAndSupportDismissal(): void
+    {
+        \OceanViewFlats\Domain\Database\MigrationRunner::run($this->pdo, 'memory_db');
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM condominium_clearances; DELETE FROM operational_alert_dismissals; DELETE FROM parafiscal_settlements;');
+
+        // Seed a commercial reservation in 2026-Q3 on Property 1606
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, registry_completed
+            ) VALUES (
+                'res-q3-1606', '1606', 'Q3 Guest 1606', 'q3@test.com', '+573001112222',
+                '2026-08-10', '2026-08-14', 4100000, 'confirmed', 'web', 1
+            );
+        ");
+
+        // Mark 2026-Q1 and 2026-Q2 as settled for both 1606 and 1707 so only 2026-Q3 is closed and unsettled
+        $pfsRepo = new \OceanViewFlats\Domain\Finance\PdoParafiscalSettlementRepository($this->pdo);
+        foreach (['2026-Q1' => '2026-04-30', '2026-Q2' => '2026-07-29'] as $qKey => $due) {
+            foreach (['1606', '1707'] as $pid) {
+                $pfsRepo->save(new \OceanViewFlats\Domain\Finance\ParafiscalSettlement(
+                    propertyId: $pid,
+                    periodKey: $qKey,
+                    periodStart: $qKey === '2026-Q1' ? '2026-01-01' : '2026-04-01',
+                    periodEnd: $qKey === '2026-Q1' ? '2026-04-01' : '2026-07-01',
+                    dueDate: $due,
+                    status: 'settled',
+                    settledAmount: 0.0,
+                    paymentDate: $due
+                ));
+            }
+        }
+
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($this->pdo);
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            dismissalRepo: $dismissalRepo,
+            parafiscalRepo: $pfsRepo
+        );
+
+        // 1. On 2026-10-15 (> 7 calendar days before 2026-Q3 due date 2026-10-29):
+        //    Both 1606 and 1707 emit WARNING alerts for 2026-Q3
+        $nowOct15 = new DateTimeImmutable('2026-10-15', new \DateTimeZone('America/Bogota'));
+        $hubOct15 = $service->getDashboardHubData('all', $nowOct15);
+        $pfsAlertsOct15 = array_values(array_filter(
+            $hubOct15->alerts,
+            static fn(OperationalAlert $a): bool => $a->type === AlertType::PENDING_PARAFISCAL_SETTLEMENT
+        ));
+        $this->assertCount(2, $pfsAlertsOct15);
+        $this->assertSame('parafiscal_2026-Q3_1606', $pfsAlertsOct15[0]->id);
+        $this->assertSame(AlertSeverity::WARNING, $pfsAlertsOct15[0]->severity);
+        $this->assertSame('/financial-report#fontur-parafiscal-section', $pfsAlertsOct15[0]->actionPayload['target_url']);
+        $this->assertSame(10000.0, $pfsAlertsOct15[0]->actionPayload['calculated_amount']);
+        $this->assertSame('parafiscal_2026-Q3_1707', $pfsAlertsOct15[1]->id);
+        $this->assertSame(AlertSeverity::WARNING, $pfsAlertsOct15[1]->severity);
+
+        // 2. Property Filter scoping ('1606' vs '1707')
+        $hub1606 = $service->getDashboardHubData('1606', $nowOct15);
+        $this->assertCount(1, $hub1606->alerts);
+        $this->assertSame('parafiscal_2026-Q3_1606', $hub1606->alerts[0]->id);
+
+        $hub1707 = $service->getDashboardHubData('1707', $nowOct15);
+        $this->assertCount(1, $hub1707->alerts);
+        $this->assertSame('parafiscal_2026-Q3_1707', $hub1707->alerts[0]->id);
+
+        // 3. On 2026-10-23 (6 calendar days before 2026-10-29 due date -> <= 7 days): escalates to CRITICAL
+        $nowOct23 = new DateTimeImmutable('2026-10-23', new \DateTimeZone('America/Bogota'));
+        $hubOct23 = $service->getDashboardHubData('1606', $nowOct23);
+        $this->assertCount(1, $hubOct23->alerts);
+        $this->assertSame(AlertSeverity::CRITICAL, $hubOct23->alerts[0]->severity);
+
+        // 4. On 2026-11-02 (past 2026-10-29 due date -> overdue): remains CRITICAL
+        $nowNov02 = new DateTimeImmutable('2026-11-02', new \DateTimeZone('America/Bogota'));
+        $hubNov02 = $service->getDashboardHubData('1606', $nowNov02);
+        $this->assertCount(1, $hubNov02->alerts);
+        $this->assertSame(AlertSeverity::CRITICAL, $hubNov02->alerts[0]->severity);
+        $this->assertStringContainsString('Overdue', $hubNov02->alerts[0]->title);
+
+        // 5. Dismissing parafiscal_2026-Q3_1606 hides it from Dashboard Hub
+        $dismissalRepo->dismiss('parafiscal_2026-Q3_1606', AlertType::PENDING_PARAFISCAL_SETTLEMENT->value, '1606', null, 1);
+        $hubAfterDismiss = $service->getDashboardHubData('1606', $nowNov02);
+        $this->assertEmpty($hubAfterDismiss->alerts);
+    }
 }
 

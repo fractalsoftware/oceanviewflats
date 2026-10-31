@@ -211,6 +211,37 @@ final class AdminDatabaseTestHelper
             CREATE INDEX IF NOT EXISTS idx_oe_category ON operational_expenses (category);
             CREATE INDEX IF NOT EXISTS idx_oe_reservation_uid ON operational_expenses (reservation_uid);
             CREATE INDEX IF NOT EXISTS idx_oe_created_by ON operational_expenses (created_by);
+
+            CREATE TABLE IF NOT EXISTS parafiscal_settlements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                settlement_uid TEXT NOT NULL UNIQUE,
+                property_id TEXT NOT NULL,
+                rnt_number TEXT NOT NULL,
+                period_key TEXT NOT NULL,
+                period_start TEXT NOT NULL,
+                period_end TEXT NOT NULL,
+                due_date TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT "pending",
+                settled_taxable_base NUMERIC DEFAULT NULL,
+                settled_calculated_amount NUMERIC DEFAULT NULL,
+                settled_amount NUMERIC DEFAULT NULL,
+                payment_date TEXT DEFAULT NULL,
+                reference_code TEXT DEFAULT NULL,
+                notes TEXT DEFAULT NULL,
+                operational_expense_id INTEGER DEFAULT NULL,
+                settled_by INTEGER DEFAULT NULL,
+                settled_at TEXT DEFAULT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (property_id, period_key),
+                FOREIGN KEY (operational_expense_id) REFERENCES operational_expenses (id) ON DELETE SET NULL,
+                FOREIGN KEY (settled_by) REFERENCES admin_users (id) ON DELETE SET NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uniq_pfs_property_period ON parafiscal_settlements (property_id, period_key);
+            CREATE INDEX IF NOT EXISTS idx_pfs_status ON parafiscal_settlements (status);
+            CREATE INDEX IF NOT EXISTS idx_pfs_due_date ON parafiscal_settlements (due_date);
+            CREATE INDEX IF NOT EXISTS idx_pfs_expense_id ON parafiscal_settlements (operational_expense_id);
+            CREATE INDEX IF NOT EXISTS idx_pfs_settled_by ON parafiscal_settlements (settled_by);
         ');
     }
 

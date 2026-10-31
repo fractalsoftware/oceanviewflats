@@ -1124,4 +1124,90 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertStringNotContainsString('id="parafiscal-card-1606"', $body1707);
         $this->assertStringNotContainsString('id="parafiscal-card-portfolio"', $body1707);
     }
+
+    public function testFinancialReportRendersNextPaymentBannerAndHistoricalQuarterlyParafiscalSettlementsTableScopedByProperty(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations');
+        $this->pdo->exec('DELETE FROM calendar_blocks');
+        $this->pdo->exec('DELETE FROM operational_expenses');
+        $this->pdo->exec('DELETE FROM parafiscal_settlements');
+
+        // Reference clock in setUp is 2026-10-17 12:00:00 COT (inside 2026-Q4).
+        // Seed reservations across 2026-Q1, 2026-Q3, and 2026-Q4:
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES
+                ('ovf_q1_1606', '1606', 'Q1 Guest 1606', 'q1_1606@example.com', '+573001110001', '2026-02-10', '2026-02-15', 4100000, 0, 'confirmed', 'approved', 'web'),
+                ('ovf_q3_1707', '1707', 'Q3 Guest 1707', 'q3_1707@example.com', '+573001110002', '2026-08-12', '2026-08-16', 2120000, 0, 'confirmed', 'approved', 'web'),
+                ('ovf_q4_1606', '1606', 'Q4 Guest 1606', 'q4_1606@example.com', '+573001110003', '2026-10-05', '2026-10-10', 2600000, 0, 'confirmed', 'approved', 'web');
+        ");
+
+        // Seed a linked operational expense and settled parafiscal_settlements row for 2026-Q1 on Property 1606,
+        // plus a $0 COP zero declaration (declaración en cero) for 2026-Q1 on Property 1707:
+        $this->pdo->exec("
+            INSERT INTO operational_expenses (
+                id, expense_uid, property_id, category, title, amount, expense_date, vendor_name, reference_code, created_by
+            ) VALUES (
+                77, 'exp_fontur_q1_1606', '1606', 'taxes_insurance', 'Contribución Parafiscal FONTUR 2026-Q1 (RNT #270413)', 10000.00, '2026-04-20', 'FONTUR', 'FNT-Q1-1606', 1
+            );
+
+            INSERT INTO parafiscal_settlements (
+                settlement_uid, property_id, rnt_number, period_key, period_start, period_end, due_date,
+                status, settled_taxable_base, settled_calculated_amount, settled_amount, payment_date,
+                reference_code, operational_expense_id, settled_by, settled_at
+            ) VALUES
+                ('pfs_q1_1606', '1606', '270413', '2026-Q1', '2026-01-01', '2026-04-01', '2026-04-30',
+                 'settled', 4000000.00, 10000.00, 10000.00, '2026-04-20', 'FNT-Q1-1606', 77, 1, '2026-04-20 15:00:00'),
+                ('pfs_q1_1707', '1707', '268781', '2026-Q1', '2026-01-01', '2026-04-01', '2026-04-30',
+                 'settled', 0.00, 0.00, 0.00, '2026-04-20', 'FNT-Q1-1707-ZERO', NULL, 1, '2026-04-20 15:05:00');
+        ");
+
+        // 1. Portfolio view (property_id = all)
+        $respAll = $this->app->handle(new Request('GET', '/financial-report', query: ['property_id' => 'all']), $this->adminSession);
+        $this->assertSame(200, $respAll->getStatusCode());
+        $bodyAll = $respAll->getBody();
+
+        // Next Payment & Pending Declarations Banner
+        $this->assertStringContainsString('id="parafiscal-next-payment-banner"', $bodyAll);
+        $this->assertStringContainsString('Current In-Progress Quarter (2026-Q4):', $bodyAll);
+        $this->assertStringContainsString('2027-02-01', $bodyAll); // 20th Colombian business day of Jan/Feb 2027 for 2026-Q4
+        $this->assertStringContainsString('id="parafiscal-pending-declarations-callouts"', $bodyAll);
+        $this->assertStringContainsString('data-pending-parafiscal-callout="2026-Q3_1707"', $bodyAll);
+        $this->assertStringContainsString('data-pending-parafiscal-callout="2026-Q2_1606"', $bodyAll);
+
+        // Historical Quarterly Parafiscal Settlements Table
+        $this->assertStringContainsString('id="parafiscal-settlements-table"', $bodyAll);
+        $this->assertStringContainsString('Historical Quarterly Parafiscal Settlements', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q4_1606"', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q4_1707"', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q3_1606"', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q3_1707"', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q2_1606"', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q1_1606"', $bodyAll);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q1_1707"', $bodyAll);
+
+        // Status badges & settled details
+        $this->assertStringContainsString('In Progress', $bodyAll);
+        $this->assertStringContainsString('Pending', $bodyAll);
+        $this->assertStringContainsString('Overdue', $bodyAll);
+        $this->assertStringContainsString('Settled', $bodyAll);
+        $this->assertStringContainsString('FNT-Q1-1606', $bodyAll);
+        $this->assertStringContainsString('Synced (exp_fontur_q1_1606)', $bodyAll);
+        $this->assertStringContainsString('Declaraci&oacute;n en Cero', $bodyAll);
+        $this->assertStringContainsString('$0 Declaration (No Expense)', $bodyAll);
+
+        // 2. Scoped to Property 1606: only 1606 rows rendered
+        $resp1606 = $this->app->handle(
+            new Request('GET', '/financial-report', query: ['property_id' => '1606'], server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $resp1606->getStatusCode());
+        $body1606 = $resp1606->getBody();
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q4_1606"', $body1606);
+        $this->assertStringContainsString('data-parafiscal-row="2026-Q1_1606"', $body1606);
+        $this->assertStringNotContainsString('data-parafiscal-row="2026-Q4_1707"', $body1606);
+        $this->assertStringNotContainsString('data-parafiscal-row="2026-Q1_1707"', $body1606);
+    }
 }

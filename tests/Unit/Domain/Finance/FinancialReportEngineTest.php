@@ -11,9 +11,16 @@ use OceanViewFlats\Domain\Finance\ExpenseCategory;
 use OceanViewFlats\Domain\Finance\FinancialReportEngine;
 use OceanViewFlats\Domain\Finance\FinancialReportFilter;
 use OceanViewFlats\Domain\Finance\InMemoryOperationalExpenseRepository;
+use OceanViewFlats\Domain\Finance\InMemoryParafiscalSettlementRepository;
 use OceanViewFlats\Domain\Finance\OperationalExpense;
 use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
+use OceanViewFlats\Domain\Finance\ParafiscalPeriod;
+use OceanViewFlats\Domain\Finance\ParafiscalSettlement;
+use OceanViewFlats\Domain\Finance\ParafiscalSettlementRepositoryInterface;
 use OceanViewFlats\Domain\Finance\PdoOperationalExpenseRepository;
+use OceanViewFlats\Domain\Finance\PdoParafiscalSettlementRepository;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
+use OceanViewFlats\Domain\Reservation\Dashboard\AlertType;
 use OceanViewFlats\Domain\Reservation\InMemoryMaintenanceBlockSource;
 use OceanViewFlats\Domain\Reservation\InMemoryReservationRepository;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
@@ -45,6 +52,7 @@ final class FinancialReportEngineTest extends TestCase
      *   resRepo: ReservationRepositoryInterface,
      *   blockSource: MaintenanceBlockSourceInterface,
      *   expRepo: OperationalExpenseRepositoryInterface,
+     *   pfsRepo: ParafiscalSettlementRepositoryInterface,
      *   engine: FinancialReportEngine,
      *   addBlock: callable(MaintenanceBlock): void
      * }
@@ -61,12 +69,14 @@ final class FinancialReportEngineTest extends TestCase
             $resRepo = new PdoReservationRepository($pdo);
             $blockRepo = new PdoMaintenanceBlockRepository($pdo);
             $expRepo = new PdoOperationalExpenseRepository($pdo);
+            $pfsRepo = new PdoParafiscalSettlementRepository($pdo);
 
             return [
                 'resRepo' => $resRepo,
                 'blockSource' => $blockRepo,
                 'expRepo' => $expRepo,
-                'engine' => new FinancialReportEngine($resRepo, $blockRepo, $expRepo),
+                'pfsRepo' => $pfsRepo,
+                'engine' => new FinancialReportEngine($resRepo, $blockRepo, $expRepo, null, $pfsRepo),
                 'addBlock' => static function (MaintenanceBlock $block) use ($blockRepo): void {
                     $blockRepo->save($block);
                 },
@@ -76,12 +86,14 @@ final class FinancialReportEngineTest extends TestCase
         $resRepo = new InMemoryReservationRepository();
         $blockSource = new InMemoryMaintenanceBlockSource();
         $expRepo = new InMemoryOperationalExpenseRepository();
+        $pfsRepo = new InMemoryParafiscalSettlementRepository();
 
         return [
             'resRepo' => $resRepo,
             'blockSource' => $blockSource,
             'expRepo' => $expRepo,
-            'engine' => new FinancialReportEngine($resRepo, $blockSource, $expRepo),
+            'pfsRepo' => $pfsRepo,
+            'engine' => new FinancialReportEngine($resRepo, $blockSource, $expRepo, null, $pfsRepo),
             'addBlock' => static function (MaintenanceBlock $block) use ($blockSource): void {
                 $blockSource->addBlock($block);
             },
@@ -1052,5 +1064,156 @@ final class FinancialReportEngineTest extends TestCase
 
         // Sep (60,000) + Oct (40,000 from cross stay) = 100,000 full flat surcharge for res-man-pf-1606-cross
         $this->assertSame(100000.0, $sep1606->parafiscalDeductedFees + ($s1606->parafiscalDeductedFees - 100000.0));
+    }
+
+    #[DataProvider('adapterModeProvider')]
+    public function testParafiscalQuarterlyTimelineHorizonLifecycleStatesAndAlertEscalation(string $mode): void
+    {
+        $harness = $this->createEngineHarness($mode);
+        $resRepo = $harness['resRepo'];
+        $expRepo = $harness['expRepo'];
+        $pfsRepo = $harness['pfsRepo'];
+        $engine = $harness['engine'];
+
+        // 1. When no commercial reservations exist (only owner_stay / cancelled), defaults to Q1 of current year (2026-Q1 -> 2026-Q4)
+        $resRepo->save(Reservation::create(
+            reservationUid: 'res-owner-2025',
+            propertyId: '1606',
+            guestName: 'Owner 2025',
+            guestEmail: 'owner@oceanviewflats.com',
+            guestPhone: '+573000000000',
+            checkIn: '2025-05-01',
+            checkOut: '2025-05-05',
+            totalPrice: 0.0,
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'owner_stay'
+        ));
+
+        $refOct17 = new DateTimeImmutable('2026-10-17 12:00:00', new DateTimeZone('America/Bogota'));
+        $periodsDefault = $engine->evaluateParafiscalPeriods('all', $refOct17);
+
+        // 4 quarters in 2026 (Q4, Q3, Q2, Q1) * 2 properties (1606, 1707) = 8 rows
+        $this->assertCount(8, $periodsDefault);
+        $this->assertSame('2026-Q4', $periodsDefault[0]->periodKey);
+        $this->assertSame('1606', $periodsDefault[0]->propertyId);
+        $this->assertSame(ParafiscalPeriod::STATUS_IN_PROGRESS, $periodsDefault[0]->status);
+        $this->assertSame('2026-Q1', $periodsDefault[7]->periodKey);
+        $this->assertSame('1707', $periodsDefault[7]->propertyId);
+
+        // 2. Seed an earlier commercial reservation in 2025-Q4: horizon expands to 2025-Q4 through 2026-Q4 (5 quarters * 2 = 10 rows)
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_2025_q4_1606',
+            propertyId: '1606',
+            guestName: 'Guest Q4 2025',
+            guestEmail: 'q4_2025@example.com',
+            guestPhone: '+573001112222',
+            checkIn: '2025-11-10',
+            checkOut: '2025-11-15',
+            totalPrice: 2100000.0, // 2,100,000 - 100,000 = 2,000,000 base => 5,000 COP contribution
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'web'
+        ));
+
+        // Seed a commercial reservation in 2026-Q3 on 1707:
+        $resRepo->save(Reservation::create(
+            reservationUid: 'ovf_2026_q3_1707',
+            propertyId: '1707',
+            guestName: 'Guest Q3 2026',
+            guestEmail: 'q3_2026@example.com',
+            guestPhone: '+573003334444',
+            checkIn: '2026-08-10',
+            checkOut: '2026-08-14',
+            totalPrice: 4120000.0, // 4,120,000 - 120,000 = 4,000,000 base => 10,000 COP contribution
+            status: ReservationStatus::CONFIRMED,
+            paymentStatus: 'approved',
+            source: 'web'
+        ));
+
+        // Mark 2025-Q4 on 1606 as settled (with snapshot 4,000 COP so retroactive change to 5,000 COP triggers variance!)
+        $linkedExp = $expRepo->save(new OperationalExpense(
+            propertyId: '1606',
+            category: ExpenseCategory::TAXES_INSURANCE,
+            title: 'Contribución Parafiscal FONTUR 2025-Q4 (RNT #270413)',
+            amount: 4000.0,
+            expenseDate: '2026-01-20',
+            vendorName: 'FONTUR',
+            referenceCode: 'FNT-2025Q4'
+        ));
+        $pfsRepo->save(new ParafiscalSettlement(
+            propertyId: '1606',
+            periodKey: '2025-Q4',
+            periodStart: '2025-10-01',
+            periodEnd: '2026-01-01',
+            dueDate: '2026-01-30',
+            rntNumber: '270413',
+            status: ParafiscalSettlement::STATUS_SETTLED,
+            settledTaxableBase: 1600000.0,
+            settledCalculatedAmount: 4000.0,
+            settledAmount: 4000.0,
+            paymentDate: '2026-01-20',
+            referenceCode: 'FNT-2025Q4',
+            operationalExpenseId: $linkedExp->id
+        ));
+
+        // Evaluate on 2026-10-17:
+        // - 2026-Q4 (due 2027-02-01): in_progress
+        // - 2026-Q3 (due 2026-10-29): pending, 12 days until due (> 7 days => WARNING alert)
+        // - 2026-Q2 (due 2026-07-29): overdue (< 2026-10-17 => CRITICAL alert)
+        // - 2026-Q1 (due 2026-04-30): overdue (CRITICAL alert)
+        // - 2025-Q4 on 1606: settled (no alert, hasRecalculationVariance = true, delta = +1000 COP)
+        $periods = $engine->evaluateParafiscalPeriods('all', $refOct17);
+        $this->assertCount(10, $periods);
+
+        $byKey = [];
+        foreach ($periods as $p) {
+            $byKey[$p->periodKey . '_' . $p->propertyId] = $p;
+        }
+
+        // Check 2026-Q4 (in_progress)
+        $this->assertTrue($byKey['2026-Q4_1606']->isInProgress());
+        $this->assertNull($byKey['2026-Q4_1606']->toOperationalAlert());
+
+        // Check 2026-Q3 on 1707 on 2026-10-17 (12 days before 2026-10-29 due date -> WARNING)
+        $q3_1707 = $byKey['2026-Q3_1707'];
+        $this->assertTrue($q3_1707->isPending());
+        $this->assertSame('2026-10-29', $q3_1707->dueDate);
+        $this->assertSame(12, $q3_1707->daysUntilDue);
+        $this->assertSame(4000000.0, $q3_1707->taxableBase);
+        $this->assertSame(10000.0, $q3_1707->calculatedContribution);
+        $alertWarning = $q3_1707->toOperationalAlert();
+        $this->assertNotNull($alertWarning);
+        $this->assertSame('parafiscal_2026-Q3_1707', $alertWarning->id);
+        $this->assertSame(AlertType::PENDING_PARAFISCAL_SETTLEMENT, $alertWarning->type);
+        $this->assertSame(AlertSeverity::WARNING, $alertWarning->severity);
+
+        // Escalation within 7 calendar days of due date (on 2026-10-22, 7 days before 2026-10-29 -> CRITICAL)
+        $refOct22 = new DateTimeImmutable('2026-10-22 12:00:00', new DateTimeZone('America/Bogota'));
+        $periodsOct22 = $engine->evaluateParafiscalPeriods('1707', $refOct22);
+        $q3_1707_oct22 = null;
+        foreach ($periodsOct22 as $p) {
+            if ($p->periodKey === '2026-Q3') {
+                $q3_1707_oct22 = $p;
+                break;
+            }
+        }
+        $this->assertNotNull($q3_1707_oct22);
+        $this->assertSame(7, $q3_1707_oct22->daysUntilDue);
+        $this->assertSame(AlertSeverity::CRITICAL, $q3_1707_oct22->alertSeverity());
+
+        // Check 2026-Q2 (overdue -> CRITICAL)
+        $q2_1606 = $byKey['2026-Q2_1606'];
+        $this->assertTrue($q2_1606->isOverdue());
+        $this->assertSame(AlertSeverity::CRITICAL, $q2_1606->alertSeverity());
+
+        // Check 2025-Q4 on 1606 (settled with variance)
+        $q4_2025_1606 = $byKey['2025-Q4_1606'];
+        $this->assertTrue($q4_2025_1606->isSettled());
+        $this->assertNull($q4_2025_1606->toOperationalAlert());
+        $this->assertTrue($q4_2025_1606->hasRecalculationVariance);
+        $this->assertSame(1000.0, $q4_2025_1606->recalculationVarianceDelta);
+        $this->assertNotNull($q4_2025_1606->linkedExpense);
+        $this->assertSame($linkedExp->expenseUid, $q4_2025_1606->linkedExpense->expenseUid);
     }
 }

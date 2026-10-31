@@ -16,6 +16,7 @@ use OceanViewFlats\Domain\Finance\FinancialReportEngineInterface;
 use OceanViewFlats\Domain\Finance\FinancialReportFilter;
 use OceanViewFlats\Domain\Finance\OperationalExpense;
 use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
+use OceanViewFlats\Domain\Finance\ParafiscalSettlementRepositoryInterface;
 use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Reservation\InMemoryMaintenanceBlockSource;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlockSourceInterface;
@@ -40,13 +41,15 @@ final class FinancialReportController
         private readonly ?DateTimeImmutable $now = null,
         ?FinancialReportEngineInterface $reportEngine = null,
         ?MaintenanceBlockSourceInterface $maintenanceBlockSource = null,
-        ?PropertyRatesConfig $ratesConfig = null
+        ?PropertyRatesConfig $ratesConfig = null,
+        ?ParafiscalSettlementRepositoryInterface $parafiscalRepository = null
     ) {
         $this->reportEngine = $reportEngine ?? new FinancialReportEngine(
             reservationRepository: $this->reservationRepository,
             maintenanceBlockSource: $maintenanceBlockSource ?? new InMemoryMaintenanceBlockSource(),
             expenseRepository: $this->expenseRepository,
-            ratesConfig: $ratesConfig
+            ratesConfig: $ratesConfig,
+            parafiscalRepository: $parafiscalRepository
         );
     }
 

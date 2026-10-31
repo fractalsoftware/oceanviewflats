@@ -119,7 +119,7 @@ final class DashboardController
         if (
             $alertId === ''
             || strlen($alertId) > 160
-            || !preg_match('/^(clearance|registry|channel_block)_[A-Za-z0-9_-]+$/', $alertId)
+            || !preg_match('/^(clearance|registry|channel_block|parafiscal)_[A-Za-z0-9_-]+$/', $alertId)
             || $resolvedType === null
             || !in_array($alertPropertyId, ['1606', '1707'], true)
             || !$resolvedType->matchesAlertId($alertId)
@@ -143,9 +143,13 @@ final class DashboardController
             dismissedBy: $adminUserId
         );
 
+        $auditEntityType = $reservationUid !== null
+            ? 'reservation'
+            : ($resolvedType === AlertType::PENDING_PARAFISCAL_SETTLEMENT ? 'parafiscal_settlement' : 'channel_block');
+
         $this->auditLogger?->record(
             action: 'alert_dismissed',
-            entityType: $reservationUid !== null ? 'reservation' : 'channel_block',
+            entityType: $auditEntityType,
             entityId: $reservationUid ?? $alertId,
             before: null,
             after: [
