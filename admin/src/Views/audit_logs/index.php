@@ -79,10 +79,13 @@ $dateTo = (string) ($filters['date_to'] ?? '');
                             <option value="cat:system" <?= $selectedAction === 'cat:system' ? 'selected' : '' ?>>All System & Webhooks</option>
                         </optgroup>
 
-                        <optgroup label="Operational Expenses">
+                        <optgroup label="Operational Expenses & Parafiscal">
                             <option value="operational_expense_created" <?= $selectedAction === 'operational_expense_created' ? 'selected' : '' ?>>Operational Expense Created</option>
                             <option value="operational_expense_updated" <?= $selectedAction === 'operational_expense_updated' ? 'selected' : '' ?>>Operational Expense Updated</option>
                             <option value="operational_expense_deleted" <?= $selectedAction === 'operational_expense_deleted' ? 'selected' : '' ?>>Operational Expense Deleted</option>
+                            <option value="parafiscal_settled" <?= $selectedAction === 'parafiscal_settled' ? 'selected' : '' ?>>Parafiscal Settlement Recorded</option>
+                            <option value="parafiscal_updated" <?= $selectedAction === 'parafiscal_updated' ? 'selected' : '' ?>>Parafiscal Settlement Updated</option>
+                            <option value="parafiscal_reverted" <?= $selectedAction === 'parafiscal_reverted' ? 'selected' : '' ?>>Parafiscal Settlement Reverted</option>
                         </optgroup>
 
                         <optgroup label="Reservations & Access">

@@ -608,6 +608,377 @@ if (!function_exists('formatCopCompactCurrency')) {
         </div>
     <?php endif; ?>
 
+    <!-- COLOMBIAN LEGAL CONTRIBUTIONS — FONTUR PARAFISCAL (0.25%) -->
+    <?php
+    $parafiscalCards = [];
+    if ($propertyFilter === '1606' || $propertyFilter === 'all') {
+        $parafiscalCards[] = [
+            'id' => 'parafiscal-card-1606',
+            'scope' => '1606',
+            'title' => 'Property 1606 (RNT #' . ($report->property1606Slice->rntNumber ?? '270413') . ')',
+            'badge' => 'RNT #' . ($report->property1606Slice->rntNumber ?? '270413'),
+            'surchargeNote' => 'Direct Flat Surcharge: $ 100.000 COP / stay',
+            'slice' => $report->property1606Slice,
+            'isPortfolio' => false,
+        ];
+    }
+    if ($propertyFilter === '1707' || $propertyFilter === 'all') {
+        $parafiscalCards[] = [
+            'id' => 'parafiscal-card-1707',
+            'scope' => '1707',
+            'title' => 'Property 1707 (RNT #' . ($report->property1707Slice->rntNumber ?? '268781') . ')',
+            'badge' => 'RNT #' . ($report->property1707Slice->rntNumber ?? '268781'),
+            'surchargeNote' => 'Direct Flat Surcharge: $ 120.000 COP / stay',
+            'slice' => $report->property1707Slice,
+            'isPortfolio' => false,
+        ];
+    }
+    if ($propertyFilter === 'all') {
+        $parafiscalCards[] = [
+            'id' => 'parafiscal-card-portfolio',
+            'scope' => 'all',
+            'title' => 'Portfolio Total (1606 + 1707)',
+            'badge' => 'RNT #270413 & RNT #268781',
+            'surchargeNote' => 'Combined 1606 + 1707 RNT Declarations',
+            'slice' => $report->portfolioSlice,
+            'isPortfolio' => true,
+        ];
+    }
+    ?>
+    <div id="fontur-parafiscal-section" class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h2 class="text-sm font-bold text-gray-900">
+                    Colombian Legal Contributions &mdash; FONTUR Parafiscal (0.25%)
+                </h2>
+                <p class="text-xs text-gray-500">
+                    <em>Contribuci&oacute;n Parafiscal para la Promoci&oacute;n del Turismo</em> (Law 1101 of 2006 &amp; Law 2068 of 2020) for <?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?> &mdash; assessed at 2.5 per thousand (0.25%) of Parafiscal Taxable Base, rounded to nearest 1 COP.
+                </p>
+            </div>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                Rate: 0.25% (2.5&permil;) &middot; Rounded to 1 COP
+            </span>
+        </div>
+
+        <div class="p-5 grid grid-cols-1 <?= count($parafiscalCards) > 1 ? 'lg:grid-cols-3' : 'max-w-xl' ?> gap-4">
+            <?php foreach ($parafiscalCards as $pCard):
+                /** @var \OceanViewFlats\Domain\Finance\FinancialReportSlice $pSlice */
+                $pSlice = $pCard['slice'];
+                $isPortfolioCard = (bool) $pCard['isPortfolio'];
+            ?>
+                <div id="<?= htmlspecialchars($pCard['id'], ENT_QUOTES, 'UTF-8') ?>"
+                     data-parafiscal-card="<?= htmlspecialchars($pCard['scope'], ENT_QUOTES, 'UTF-8') ?>"
+                     class="rounded-xl border <?= $isPortfolioCard ? 'border-indigo-200 bg-indigo-50/30' : 'border-gray-200 bg-white' ?> p-4 flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider <?= $isPortfolioCard ? 'text-indigo-900' : 'text-gray-800' ?>">
+                                <?= htmlspecialchars($pCard['title'], ENT_QUOTES, 'UTF-8') ?>
+                            </h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold <?= $isPortfolioCard ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700' ?>">
+                                <?= htmlspecialchars($pCard['badge'], ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-0.5">
+                            <?= htmlspecialchars($pCard['surchargeNote'], ENT_QUOTES, 'UTF-8') ?>
+                        </p>
+
+                        <dl class="mt-3 pt-3 border-t border-gray-100 space-y-2 text-xs tabular-nums">
+                            <div class="flex items-center justify-between gap-2" data-parafiscal-line="active-stay-revenue">
+                                <dt class="text-gray-600">Commercial Stay Revenue</dt>
+                                <dd class="font-semibold text-gray-900"><?= formatCopCurrency($pSlice->activeStayRevenue) ?></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2" data-parafiscal-line="deducted-direct-fees">
+                                <dt class="text-gray-600">Prorated Direct Cleaning &amp; Resort Fees Deducted</dt>
+                                <dd class="font-medium text-rose-700">- <?= formatCopCurrency($pSlice->parafiscalDeductedFees) ?></dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 text-[11px]" data-parafiscal-line="excluded-policy-retention">
+                                <dt class="text-amber-800">Policy Retention Excluded (Cancelled Stays)</dt>
+                                <dd class="font-medium text-amber-800"><?= formatCopCurrency($pSlice->policyRetention) ?> (Excluded)</dd>
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 flex items-center justify-between gap-2 font-bold text-gray-900" data-parafiscal-line="taxable-base">
+                                <dt>Parafiscal Taxable Base</dt>
+                                <dd><?= formatCopCurrency($pSlice->parafiscalTaxableBase) ?></dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="pt-3 border-t <?= $isPortfolioCard ? 'border-indigo-200' : 'border-gray-200' ?> flex items-center justify-between gap-2" data-parafiscal-line="assessed-contribution">
+                        <div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider <?= $isPortfolioCard ? 'text-indigo-900' : 'text-gray-700' ?> block">
+                                Assessed Parafiscal Contribution (0.25%)
+                            </span>
+                            <span class="text-[10px] text-gray-500">
+                                <?= $pSlice->activeStaysCount ?> commercial <?= $pSlice->activeStaysCount === 1 ? 'stay' : 'stays' ?> &middot; <?= $pSlice->occupiedNights ?> occupied <?= $pSlice->occupiedNights === 1 ? 'night' : 'nights' ?>
+                            </span>
+                        </div>
+                        <span class="text-lg font-extrabold <?= $isPortfolioCard ? 'text-indigo-700' : 'text-emerald-700' ?> tabular-nums">
+                            <?= formatCopCurrency($pSlice->parafiscalContribution) ?>
+                        </span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php
+        $scopedParafiscalPeriods = $report->getParafiscalPeriodsForProperty($propertyFilter);
+        $inProgressPeriods = $report->getInProgressParafiscalPeriods($propertyFilter);
+        $unsettledClosedPeriods = $report->getUnsettledClosedParafiscalPeriods($propertyFilter);
+        $inProgressAccruedTotal = 0.0;
+        foreach ($inProgressPeriods as $ipPeriod) {
+            $inProgressAccruedTotal += $ipPeriod->calculatedContribution;
+        }
+        $primaryInProgress = $inProgressPeriods[0] ?? null;
+        ?>
+
+        <!-- NEXT PAYMENT & PENDING DECLARATIONS BANNER -->
+        <div id="parafiscal-next-payment-banner" class="px-5 py-4 border-t border-gray-200 bg-slate-50/70 space-y-3">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex items-start space-x-3">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                            Next Payment &amp; Pending Declarations Banner
+                        </h3>
+                        <?php if ($primaryInProgress !== null): ?>
+                            <p class="text-xs text-gray-700 mt-0.5">
+                                <strong>Current In-Progress Quarter (<?= htmlspecialchars($primaryInProgress->periodKey, ENT_QUOTES, 'UTF-8') ?>):</strong>
+                                Accrued Contribution <span class="font-bold text-indigo-700 tabular-nums"><?= formatCopCurrency($inProgressAccruedTotal) ?></span>
+                                &middot; Next Statutory Deadline:
+                                <span class="font-mono font-semibold text-gray-900"><?= htmlspecialchars($primaryInProgress->dueDate, ENT_QUOTES, 'UTF-8') ?></span>
+                                <span class="text-indigo-700 font-semibold">(<?= $primaryInProgress->daysUntilDue ?> <?= $primaryInProgress->daysUntilDue === 1 ? 'day' : 'days' ?> remaining &mdash; 20th Colombian business day)</span>
+                            </p>
+                        <?php else: ?>
+                            <p class="text-xs text-gray-600 mt-0.5">
+                                All current quarterly Parafiscal declarations have been settled.
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php if ($primaryInProgress !== null && count($inProgressPeriods) > 1): ?>
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] shrink-0">
+                        <?php foreach ($inProgressPeriods as $ipRow): ?>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium tabular-nums">
+                                Property <?= htmlspecialchars($ipRow->propertyId, ENT_QUOTES, 'UTF-8') ?> (RNT #<?= htmlspecialchars($ipRow->rntNumber, ENT_QUOTES, 'UTF-8') ?>):
+                                <strong class="text-gray-900"><?= formatCopCurrency($ipRow->calculatedContribution) ?></strong>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($unsettledClosedPeriods)): ?>
+                <div id="parafiscal-pending-declarations-callouts" class="space-y-2 pt-1">
+                    <?php foreach ($unsettledClosedPeriods as $pendingRow):
+                        $isCriticalRow = $pendingRow->isOverdue() || $pendingRow->daysUntilDue <= 7;
+                        $calloutBg = $isCriticalRow ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-amber-50 border-amber-200 text-amber-900';
+                        $badgeBg = $isCriticalRow ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white';
+                        $badgeText = $pendingRow->isOverdue()
+                            ? 'OVERDUE (' . abs($pendingRow->daysUntilDue) . 'd past due)'
+                            : ($pendingRow->daysUntilDue <= 7
+                                ? 'CRITICAL (Due in ' . $pendingRow->daysUntilDue . 'd)'
+                                : 'PENDING (Due in ' . $pendingRow->daysUntilDue . 'd)');
+                        $pendingModalQuery = http_build_query($activeQueryParams);
+                    ?>
+                        <div data-pending-parafiscal-callout="<?= htmlspecialchars($pendingRow->periodKey . '_' . $pendingRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                             class="p-3 rounded-xl border <?= $calloutBg ?> flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <div class="flex items-start sm:items-center gap-2 flex-wrap">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase <?= $badgeBg ?> shrink-0">
+                                    <?= htmlspecialchars($badgeText, ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                                <span class="font-bold">
+                                    <?= htmlspecialchars($pendingRow->periodKey, ENT_QUOTES, 'UTF-8') ?> &mdash; Property <?= htmlspecialchars($pendingRow->propertyId, ENT_QUOTES, 'UTF-8') ?> (RNT #<?= htmlspecialchars($pendingRow->rntNumber, ENT_QUOTES, 'UTF-8') ?>)
+                                </span>
+                                <span class="text-gray-700 tabular-nums">
+                                    Taxable Base: <strong><?= formatCopCurrency($pendingRow->taxableBase) ?></strong> &middot;
+                                    Assessed Contribution (0.25%): <strong><?= formatCopCurrency($pendingRow->calculatedContribution) ?></strong> &middot;
+                                    Due Date: <strong class="font-mono"><?= htmlspecialchars($pendingRow->dueDate, ENT_QUOTES, 'UTF-8') ?></strong>
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2.5 shrink-0">
+                                <span class="text-[11px] font-semibold <?= $isCriticalRow ? 'text-rose-800' : 'text-amber-800' ?>">
+                                    Action Required: File RNT #<?= htmlspecialchars($pendingRow->rntNumber, ENT_QUOTES, 'UTF-8') ?> Declaration
+                                </span>
+                                <button type="button"
+                                        hx-get="/financial-report/parafiscal/<?= urlencode($pendingRow->periodKey) ?>/<?= urlencode($pendingRow->propertyId) ?>/modal<?= $pendingModalQuery !== '' ? '?' . htmlspecialchars($pendingModalQuery, ENT_QUOTES, 'UTF-8') : '' ?>"
+                                        hx-target="#modal-container"
+                                        hx-swap="innerHTML"
+                                        class="px-3 py-1 rounded-lg <?= $isCriticalRow ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700' ?> text-white text-[11px] font-semibold shadow-2xs cursor-pointer">
+                                    Mark as Paid
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- HISTORICAL QUARTERLY PARAFISCAL SETTLEMENTS TABLE -->
+        <div id="parafiscal-historical-settlements-panel" class="border-t border-gray-200">
+            <div class="px-5 py-3.5 bg-gray-50/80 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-800">
+                        Historical Quarterly Parafiscal Settlements
+                    </h3>
+                    <p class="text-[11px] text-gray-500">
+                        Per-RNT quarterly FONTUR Parafiscal timeline from earliest commercial Reservation quarter through current quarter (statutory deadline: 20th Colombian business day of Apr, Jul, Oct, Jan).
+                    </p>
+                </div>
+                <span class="text-[11px] text-gray-500 font-medium">
+                    <?= count($scopedParafiscalPeriods) ?> quarterly <?= count($scopedParafiscalPeriods) === 1 ? 'record' : 'records' ?>
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="parafiscal-settlements-table" class="min-w-full divide-y divide-gray-200 text-xs tabular-nums">
+                    <thead class="bg-gray-100/70 text-[11px] font-bold uppercase text-gray-600">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left">Quarter</th>
+                            <th scope="col" class="px-4 py-3 text-left">Property &amp; RNT</th>
+                            <th scope="col" class="px-4 py-3 text-right">Parafiscal Taxable Base</th>
+                            <th scope="col" class="px-4 py-3 text-right">Calculated (0.25%)</th>
+                            <th scope="col" class="px-4 py-3 text-left">Statutory Due Date</th>
+                            <th scope="col" class="px-4 py-3 text-left">Status</th>
+                            <th scope="col" class="px-4 py-3 text-left">Settled Details</th>
+                            <th scope="col" class="px-4 py-3 text-left">Linked Expense</th>
+                            <th scope="col" class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        <?php
+                        $parafiscalModalQuery = http_build_query($activeQueryParams);
+                        foreach ($scopedParafiscalPeriods as $pRow):
+                            $pModalHref = '/financial-report/parafiscal/' . urlencode($pRow->periodKey) . '/' . urlencode($pRow->propertyId) . '/modal'
+                                . ($parafiscalModalQuery !== '' ? '?' . $parafiscalModalQuery : '');
+                            $pRevertHref = '/financial-report/parafiscal/' . urlencode($pRow->periodKey) . '/' . urlencode($pRow->propertyId) . '/revert';
+                        ?>
+                            <tr data-parafiscal-row="<?= htmlspecialchars($pRow->periodKey . '_' . $pRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                                data-parafiscal-property="<?= htmlspecialchars($pRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
+                                data-parafiscal-status="<?= htmlspecialchars($pRow->status, ENT_QUOTES, 'UTF-8') ?>"
+                                class="hover:bg-gray-50/80">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-mono font-bold text-gray-900"><?= htmlspecialchars($pRow->periodKey, ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="text-[10px] text-gray-500"><?= htmlspecialchars($pRow->periodStart, ENT_QUOTES, 'UTF-8') ?> &rarr; <?= htmlspecialchars($pRow->periodEnd, ENT_QUOTES, 'UTF-8') ?></div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-semibold text-gray-900">Property <?= htmlspecialchars($pRow->propertyId, ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="text-[11px] font-mono text-indigo-700 font-semibold">RNT #<?= htmlspecialchars($pRow->rntNumber, ENT_QUOTES, 'UTF-8') ?></div>
+                                </td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <div class="font-semibold text-gray-900"><?= formatCopCurrency($pRow->taxableBase) ?></div>
+                                    <?php if ($pRow->deductedDirectFees > 0.0): ?>
+                                        <div class="text-[10px] text-rose-600">- <?= formatCopCompactCurrency($pRow->deductedDirectFees) ?> direct fees</div>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <div class="font-bold text-emerald-700"><?= formatCopCurrency($pRow->calculatedContribution) ?></div>
+                                    <?php if ($pRow->hasRecalculationVariance && $pRow->settlement !== null): ?>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 mt-0.5"
+                                              data-parafiscal-variance="true">
+                                            Recalculated Variance (Snapshot: <?= formatCopCompactCurrency($pRow->settlement->settledCalculatedAmount ?? 0.0) ?>)
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-mono font-medium text-gray-900"><?= htmlspecialchars($pRow->dueDate, ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="text-[10px] <?= $pRow->isOverdue() ? 'text-rose-600 font-semibold' : ($pRow->isPending() && $pRow->daysUntilDue <= 7 ? 'text-amber-700 font-semibold' : 'text-gray-500') ?>">
+                                        <?php if ($pRow->isSettled()): ?>
+                                            Filed &amp; Settled
+                                        <?php elseif ($pRow->isOverdue()): ?>
+                                            <?= abs($pRow->daysUntilDue) ?> <?= abs($pRow->daysUntilDue) === 1 ? 'day' : 'days' ?> overdue
+                                        <?php elseif ($pRow->daysUntilDue === 0): ?>
+                                            Due today
+                                        <?php else: ?>
+                                            In <?= $pRow->daysUntilDue ?> <?= $pRow->daysUntilDue === 1 ? 'day' : 'days' ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold <?= htmlspecialchars($pRow->statusBadgeClass(), ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= htmlspecialchars($pRow->statusBadgeLabel(), ENT_QUOTES, 'UTF-8') ?>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <?php if ($pRow->isSettled() && $pRow->settlement !== null): ?>
+                                        <div class="font-bold text-gray-900">
+                                            <?= formatCopCurrency($pRow->settlement->settledAmount ?? 0.0) ?>
+                                            <?php if ($pRow->isZeroDeclaration()): ?>
+                                                <span class="ml-1 px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 text-[10px] font-semibold">Declaraci&oacute;n en Cero</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500">
+                                            Paid: <?= htmlspecialchars((string) ($pRow->settlement->paymentDate ?? '—'), ENT_QUOTES, 'UTF-8') ?>
+                                            <?php if ($pRow->settlement->referenceCode !== null): ?>
+                                                &middot; Ref: <span class="font-mono font-semibold text-gray-700"><?= htmlspecialchars($pRow->settlement->referenceCode, ENT_QUOTES, 'UTF-8') ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 italic">Not settled</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <?php if ($pRow->linkedExpense !== null): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                            Synced (<?= htmlspecialchars($pRow->linkedExpense->expenseUid, ENT_QUOTES, 'UTF-8') ?>)
+                                        </span>
+                                    <?php elseif ($pRow->isZeroDeclaration()): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-600">
+                                            $0 Declaration (No Expense)
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 text-[11px]">&mdash;</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right space-x-1.5">
+                                    <?php if ($pRow->isSettled()): ?>
+                                        <button type="button"
+                                                hx-get="<?= htmlspecialchars($pModalHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-[11px] cursor-pointer">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                                hx-post="<?= htmlspecialchars($pRevertHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-vals='<?= htmlspecialchars((string) json_encode([
+                                                    'csrf_token' => $csrfToken,
+                                                    'current_property_id' => $filters['property_id'] ?? 'all',
+                                                    'current_period' => $filters['period'] ?? 'this_month',
+                                                    'current_date_from' => $filters['date_from'] ?? '',
+                                                    'current_date_to' => $filters['date_to'] ?? '',
+                                                    'current_compare' => $filters['compare'] ?? 'prev_period',
+                                                    'current_source' => $filters['source'] ?? 'all',
+                                                    'current_category' => $filters['category'] ?? 'all',
+                                                    'current_tab' => $filters['tab'] ?? 'expenses',
+                                                    'current_search' => $filters['search'] ?? '',
+                                                ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'
+                                                hx-target="#financial-report-content"
+                                                hx-swap="outerHTML"
+                                                hx-confirm="Are you sure you want to revert this Parafiscal Settlement back to Pending? Any linked FONTUR Operational Expense will be deleted."
+                                                class="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium text-[11px] cursor-pointer">
+                                            Revert
+                                        </button>
+                                    <?php else: ?>
+                                        <button type="button"
+                                                hx-get="<?= htmlspecialchars($pModalHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] shadow-2xs cursor-pointer">
+                                            Mark as Paid
+                                        </button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- ROW 4: TABBED BOTTOM DETAIL LEDGERS -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/60">

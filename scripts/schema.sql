@@ -233,6 +233,37 @@ CREATE TABLE IF NOT EXISTS `operational_expenses` (
   CONSTRAINT `fk_oe_created_by` FOREIGN KEY (`created_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 13. Create Parafiscal Settlements Table (ADR 0013 FONTUR Compliance)
+CREATE TABLE IF NOT EXISTS `parafiscal_settlements` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `settlement_uid` VARCHAR(36) NOT NULL UNIQUE,
+  `property_id` VARCHAR(10) NOT NULL,
+  `rnt_number` VARCHAR(20) NOT NULL,
+  `period_key` VARCHAR(10) NOT NULL,
+  `period_start` DATE NOT NULL,
+  `period_end` DATE NOT NULL,
+  `due_date` DATE NOT NULL,
+  `status` VARCHAR(16) NOT NULL DEFAULT 'pending',
+  `settled_taxable_base` DECIMAL(12, 2) DEFAULT NULL,
+  `settled_calculated_amount` DECIMAL(12, 2) DEFAULT NULL,
+  `settled_amount` DECIMAL(12, 2) DEFAULT NULL,
+  `payment_date` DATE DEFAULT NULL,
+  `reference_code` VARCHAR(120) DEFAULT NULL,
+  `notes` TEXT DEFAULT NULL,
+  `operational_expense_id` INT UNSIGNED DEFAULT NULL,
+  `settled_by` INT UNSIGNED DEFAULT NULL,
+  `settled_at` DATETIME DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uniq_pfs_property_period` (`property_id`, `period_key`),
+  INDEX `idx_pfs_status` (`status`),
+  INDEX `idx_pfs_due_date` (`due_date`),
+  INDEX `idx_pfs_expense_id` (`operational_expense_id`),
+  INDEX `idx_pfs_settled_by` (`settled_by`),
+  CONSTRAINT `fk_pfs_expense` FOREIGN KEY (`operational_expense_id`) REFERENCES `operational_expenses` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_pfs_settled_by` FOREIGN KEY (`settled_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =============================================================================
 -- Verification Query: SHOW TABLES;
 -- =============================================================================

@@ -13,7 +13,7 @@ if (!function_exists('getAuditActionBadgeClass')) {
      * Returns Tailwind class string for action pills based on operational risk/domain.
      */
     function getAuditActionBadgeClass(string $action): string {
-        if (str_contains($action, 'failed') || str_contains($action, 'cancelled') || str_contains($action, 'delete')) {
+        if (str_contains($action, 'failed') || str_contains($action, 'cancelled') || str_contains($action, 'delete') || str_contains($action, 'revert')) {
             return 'bg-rose-50 text-rose-700 ring-rose-600/20 border-rose-200';
         }
         if (str_contains($action, 'update') || str_contains($action, 'override') || str_contains($action, 'regenerate')) {
@@ -22,7 +22,7 @@ if (!function_exists('getAuditActionBadgeClass')) {
         if (str_contains($action, 'block') || str_contains($action, 'sync')) {
             return 'bg-purple-50 text-purple-700 ring-purple-600/20 border-purple-200';
         }
-        if (str_contains($action, 'create') || str_contains($action, 'success') || str_contains($action, 'complete') || str_contains($action, 'submitted')) {
+        if (str_contains($action, 'create') || str_contains($action, 'success') || str_contains($action, 'complete') || str_contains($action, 'submitted') || str_contains($action, 'settled')) {
             return 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 border-emerald-200';
         }
         return 'bg-gray-50 text-gray-700 ring-gray-600/20 border-gray-200';
@@ -79,6 +79,7 @@ $endEntry = min($total, $page * $per_page);
                             $entityId = (string) $item['entity_id'];
                             $isReservation = ($entityType === 'reservation');
                             $isOperationalExpense = ($entityType === 'operational_expense');
+                            $isParafiscalSettlement = ($entityType === 'parafiscal_settlement');
                         ?>
                         <tr class="hover:bg-gray-50/75 transition-colors group">
                             
@@ -114,6 +115,12 @@ $endEntry = min($total, $page * $per_page);
                                     <?php elseif ($isOperationalExpense): ?>
                                         <a href="/financial-report?tab=expenses&amp;search=<?= urlencode($entityId) ?>"
                                            title="View operational expense in ledger"
+                                           class="font-mono text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+                                            <?= htmlspecialchars($entityId, ENT_QUOTES, 'UTF-8') ?>
+                                        </a>
+                                    <?php elseif ($isParafiscalSettlement): ?>
+                                        <a href="/financial-report#fontur-parafiscal-section"
+                                           title="View FONTUR Parafiscal settlements in Financial Report"
                                            class="font-mono text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
                                             <?= htmlspecialchars($entityId, ENT_QUOTES, 'UTF-8') ?>
                                         </a>

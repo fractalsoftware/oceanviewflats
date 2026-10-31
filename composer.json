@@ -27,9 +27,9 @@
   },
   "scripts": {
     "test": "phpunit",
-    "phpstan": "phpstan analyse -c phpstan.neon",
+    "phpstan": "phpstan analyse -c phpstan.neon --memory-limit=512M",
     "admin:test": "phpunit -c admin/phpunit.xml",
-    "admin:phpstan": "phpstan analyse -c admin/phpstan.neon",
+    "admin:phpstan": "phpstan analyse -c admin/phpstan.neon --memory-limit=512M",
     "generate-docs": "php scripts/generate-docs.php"
   },
   "config": {

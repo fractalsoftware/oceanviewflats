@@ -27,6 +27,7 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('Table `condominium_clearances` verified/created.', $logs);
         $this->assertContains('Table `operational_alert_dismissals` verified/created.', $logs);
         $this->assertContains('Table `operational_expenses` verified/created.', $logs);
+        $this->assertContains('Table `parafiscal_settlements` verified/created.', $logs);
 
         // Verify tables exist in SQLite master
         $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'");
@@ -43,6 +44,39 @@ final class MigrationRunnerTest extends TestCase
         $this->assertContains('condominium_clearances', $tables);
         $this->assertContains('operational_alert_dismissals', $tables);
         $this->assertContains('operational_expenses', $tables);
+        $this->assertContains('parafiscal_settlements', $tables);
+
+        // Verify columns and indexes in parafiscal_settlements table
+        $pfsColsStmt = $pdo->query("PRAGMA table_info(parafiscal_settlements)");
+        $pfsCols = $pfsColsStmt !== false ? array_column($pfsColsStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('id', $pfsCols);
+        $this->assertContains('settlement_uid', $pfsCols);
+        $this->assertContains('property_id', $pfsCols);
+        $this->assertContains('rnt_number', $pfsCols);
+        $this->assertContains('period_key', $pfsCols);
+        $this->assertContains('period_start', $pfsCols);
+        $this->assertContains('period_end', $pfsCols);
+        $this->assertContains('due_date', $pfsCols);
+        $this->assertContains('status', $pfsCols);
+        $this->assertContains('settled_taxable_base', $pfsCols);
+        $this->assertContains('settled_calculated_amount', $pfsCols);
+        $this->assertContains('settled_amount', $pfsCols);
+        $this->assertContains('payment_date', $pfsCols);
+        $this->assertContains('reference_code', $pfsCols);
+        $this->assertContains('notes', $pfsCols);
+        $this->assertContains('operational_expense_id', $pfsCols);
+        $this->assertContains('settled_by', $pfsCols);
+        $this->assertContains('settled_at', $pfsCols);
+        $this->assertContains('created_at', $pfsCols);
+        $this->assertContains('updated_at', $pfsCols);
+
+        $pfsIdxStmt = $pdo->query("PRAGMA index_list(parafiscal_settlements)");
+        $pfsIndexes = $pfsIdxStmt !== false ? array_column($pfsIdxStmt->fetchAll(PDO::FETCH_ASSOC), 'name') : [];
+        $this->assertContains('uniq_pfs_property_period', $pfsIndexes);
+        $this->assertContains('idx_pfs_status', $pfsIndexes);
+        $this->assertContains('idx_pfs_due_date', $pfsIndexes);
+        $this->assertContains('idx_pfs_expense_id', $pfsIndexes);
+        $this->assertContains('idx_pfs_settled_by', $pfsIndexes);
 
         // Verify columns and indexes in operational_expenses table
         $oeColsStmt = $pdo->query("PRAGMA table_info(operational_expenses)");

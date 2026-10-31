@@ -120,6 +120,15 @@ $csrfTokenValue = $csrfToken ?? '';
                                class="flex-1 text-center px-3 py-1 bg-rose-600 text-white font-semibold rounded-md shadow-2xs hover:bg-rose-700 text-[11px] transition">
                                 Onboard Airbnb Guest &rarr;
                             </a>
+                        <?php elseif ($alert->type === AlertType::PENDING_PARAFISCAL_SETTLEMENT): ?>
+                            <?php
+                            $parafiscalTargetUrl = (string) ($alert->actionPayload['target_url'] ?? '/financial-report#fontur-parafiscal-section');
+                            ?>
+                            <a href="<?= htmlspecialchars($parafiscalTargetUrl, ENT_QUOTES, 'UTF-8') ?>"
+                               role="button"
+                               class="flex-1 text-center px-3 py-1 <?= $isCritical ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white' ?> font-semibold rounded-md shadow-2xs text-[11px] transition">
+                                Review &amp; Settle in Financial Report &rarr;
+                            </a>
                         <?php endif; ?>
                         <form method="POST"
                               action="/dashboard/alerts/dismiss"

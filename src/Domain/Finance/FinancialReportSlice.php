@@ -56,7 +56,13 @@ final class FinancialReportSlice
         public readonly array $byCategory,
         public readonly array $attributedReservations,
         public readonly array $allocatedExpenses,
-        public readonly array $expenses
+        public readonly array $expenses,
+        public readonly float $parafiscalDeductedFees = 0.0,
+        public readonly float $parafiscalTaxableBase = 0.0,
+        public readonly float $parafiscalContribution = 0.0,
+        public readonly ?string $rntNumber = null,
+        public readonly float $deductedDirectFees = 0.0,
+        public readonly float $excludedPolicyRetention = 0.0
     ) {
     }
 }

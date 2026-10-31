@@ -12,8 +12,13 @@ use InvalidArgumentException;
  */
 final class PropertyRatesConfig
 {
+    public const DEFAULT_RNT_NUMBERS = [
+        '1606' => '270413',
+        '1707' => '268781',
+    ];
+
     /**
-     * @param array<array-key, array{default_rate: float, cleaning_fee: float, resort_fee: float, default_min_stay: int}> $properties
+     * @param array<array-key, array{default_rate: float, cleaning_fee: float, resort_fee: float, default_min_stay: int, rnt_number?: string}> $properties
      */
     public function __construct(
         private readonly array $properties
@@ -28,12 +33,14 @@ final class PropertyRatesConfig
                 'cleaning_fee' => 100000.0,
                 'resort_fee' => 20000.0,
                 'default_min_stay' => 2,
+                'rnt_number' => self::DEFAULT_RNT_NUMBERS['1707'],
             ],
             '1606' => [
                 'default_rate' => 350000.0,
                 'cleaning_fee' => 80000.0,
                 'resort_fee' => 20000.0,
                 'default_min_stay' => 2,
+                'rnt_number' => self::DEFAULT_RNT_NUMBERS['1606'],
             ],
         ]);
     }
@@ -65,6 +72,18 @@ final class PropertyRatesConfig
     {
         $this->assertPropertyExists($propertyId);
         return $this->properties[$propertyId]['default_min_stay'];
+    }
+
+    public function getFlatSurcharges(string $propertyId): float
+    {
+        $this->assertPropertyExists($propertyId);
+        return $this->properties[$propertyId]['cleaning_fee'] + $this->properties[$propertyId]['resort_fee'];
+    }
+
+    public function getRntNumber(string $propertyId): string
+    {
+        $this->assertPropertyExists($propertyId);
+        return $this->properties[$propertyId]['rnt_number'] ?? (self::DEFAULT_RNT_NUMBERS[$propertyId] ?? '');
     }
 
     private function assertPropertyExists(string $propertyId): void

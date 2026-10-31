@@ -10,8 +10,14 @@ use InvalidArgumentException;
 use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
 use OceanViewFlats\Admin\Repository\AdminRateRepository;
 use OceanViewFlats\Admin\Repository\AdminReservationRepository;
+use OceanViewFlats\Domain\Finance\FinancialReportEngine;
+use OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface;
+use OceanViewFlats\Domain\Finance\ParafiscalSettlementRepositoryInterface;
+use OceanViewFlats\Domain\Finance\PdoOperationalExpenseRepository;
+use OceanViewFlats\Domain\Finance\PdoParafiscalSettlementRepository;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
 use OceanViewFlats\Domain\Fulfillment\PdoCondominiumClearanceRepository;
+use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Quote\RateTier;
 use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\Dashboard\AlertSeverity;
@@ -30,13 +36,18 @@ use OceanViewFlats\Domain\Reservation\Dashboard\OperationsEvent;
 use OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository;
 use OceanViewFlats\Domain\Reservation\Dashboard\PropertyRateStatus;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
+use OceanViewFlats\Domain\Reservation\InMemoryMaintenanceBlockSource;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
+use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
 use OceanViewFlats\Domain\Reservation\ReservationLedgerInterface;
+use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 
 final class DashboardQueryService implements DashboardQueryServiceInterface
 {
     private readonly CondominiumClearanceRepositoryInterface $clearanceRepo;
     private readonly OperationalAlertDismissalRepositoryInterface $dismissalRepo;
+    private readonly FinancialReportEngine $financialReportEngine;
+    private readonly bool $parafiscalAlertsEnabled;
     /** @var array<string, list<RateTier>> */
     private array $cachedRateTiers = [];
 
@@ -47,10 +58,37 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         private readonly InboundChannelSyncServiceInterface $channelSyncService,
         private readonly ?ReservationLedgerInterface $ledger = null,
         ?CondominiumClearanceRepositoryInterface $clearanceRepo = null,
-        ?OperationalAlertDismissalRepositoryInterface $dismissalRepo = null
+        ?OperationalAlertDismissalRepositoryInterface $dismissalRepo = null,
+        ?ParafiscalSettlementRepositoryInterface $parafiscalRepo = null,
+        ?OperationalExpenseRepositoryInterface $expenseRepo = null,
+        ?ReservationRepositoryInterface $domainReservationRepo = null,
+        ?PropertyRatesConfig $ratesConfig = null
     ) {
-        $this->clearanceRepo = $clearanceRepo ?? new PdoCondominiumClearanceRepository($this->reservationRepo->getPdo());
-        $this->dismissalRepo = $dismissalRepo ?? new PdoOperationalAlertDismissalRepository($this->reservationRepo->getPdo());
+        $pdo = $this->reservationRepo->getPdo();
+        $this->clearanceRepo = $clearanceRepo ?? new PdoCondominiumClearanceRepository($pdo);
+        $this->dismissalRepo = $dismissalRepo ?? new PdoOperationalAlertDismissalRepository($pdo);
+        $this->parafiscalAlertsEnabled = $parafiscalRepo !== null || self::hasParafiscalTable($pdo);
+        $this->financialReportEngine = new FinancialReportEngine(
+            reservationRepository: $domainReservationRepo ?? new PdoReservationRepository($pdo),
+            maintenanceBlockSource: new InMemoryMaintenanceBlockSource(),
+            expenseRepository: $expenseRepo ?? new PdoOperationalExpenseRepository($pdo),
+            ratesConfig: $ratesConfig ?? PropertyRatesConfig::createDefault(),
+            parafiscalRepository: $parafiscalRepo ?? new PdoParafiscalSettlementRepository($pdo)
+        );
+    }
+
+    private static function hasParafiscalTable(\PDO $pdo): bool
+    {
+        try {
+            $driver = (string) $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            if ($driver === 'sqlite') {
+                $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name='parafiscal_settlements' LIMIT 1");
+                return $stmt !== false && $stmt->fetchColumn() !== false;
+            }
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**
@@ -126,7 +164,17 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         }
         $channelAlerts = $this->reservationRepo->getUnonboardedChannelBlockAlerts($channelBlocks, $propertyId, $now);
 
-        $alerts = array_merge($registryAlerts, $clearanceAlerts, $channelAlerts);
+        // Closed, unsettled FONTUR Parafiscal Settlements (ADR 0013)
+        $parafiscalAlerts = [];
+        if ($this->parafiscalAlertsEnabled) {
+            try {
+                $parafiscalAlerts = $this->financialReportEngine->getPendingParafiscalAlerts($propertyId, $now);
+            } catch (\Throwable) {
+                $parafiscalAlerts = [];
+            }
+        }
+
+        $alerts = array_merge($registryAlerts, $clearanceAlerts, $channelAlerts, $parafiscalAlerts);
         $dismissedMap = array_fill_keys($this->dismissalRepo->getDismissedAlertIds($propertyId), true);
         if ($dismissedMap !== []) {
             $alerts = array_values(array_filter(

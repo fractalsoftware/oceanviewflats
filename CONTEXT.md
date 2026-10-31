@@ -183,6 +183,22 @@ _Avoid_: Cost Center, Expense Type, Ledger Account, Spend Tag
 The net financial performance of a Property or portfolio over a period in Settlement Currency (COP), defined as Gross Revenue minus Operational Expenses.
 _Avoid_: Net Profit, Net Earnings, Bottom Line, Take-home Pay
 
+**Parafiscal Taxable Base**:
+The net commercial accommodation revenue for a Property over a period in Settlement Currency (COP) subject to the Parafiscal Contribution, consisting of realized revenue from Confirmed and Concluded commercial Reservations (excluding Policy Retention from Cancelled Reservations) after deducting the Property's prorated Cleaning Fee and Resort Fee surcharges on Direct Reservations (`web` and `direct_manual`) while retaining full net host payouts on External OTA (`airbnb`) Reservations.
+_Avoid_: Taxable Earnings, Net Tourism Income, FONTUR Base
+
+**Parafiscal Contribution**:
+The mandatory Colombian statutory tourism levy (*Contribución Parafiscal para la Promoción del Turismo*) administered by FONTUR and assessed at 2.5 per thousand (0.25%) of the Parafiscal Taxable Base per Property, rounded to the nearest unit in Settlement Currency (COP).
+_Avoid_: Tourism Tax, FONTUR Tax, Parafiscal Fee, Levy
+
+**Parafiscal Period**:
+A calendar quarter (`Q1`: Jan–Mar, `Q2`: Apr–Jun, `Q3`: Jul–Sep, `Q4`: Oct–Dec) over which the Parafiscal Contribution is evaluated and declared per Property, with statutory liquidation due within the first 20 Colombian business days of the month following quarter close.
+_Avoid_: Tax Quarter, Filing Window, Fiscal Trimester
+
+**Parafiscal Settlement**:
+The administrative compliance record for a specific Property (and its RNT registration) and Parafiscal Period, tracking the calculated Parafiscal Taxable Base, assessed Parafiscal Contribution, statutory due date, settlement status (`pending` or `settled`), settled amount, payment date, optional FONTUR filing reference, and the linked `taxes_insurance` Operational Expense.
+_Avoid_: Tax Payment, FONTUR Receipt, Parafiscal Log
+
 **External Confirmation Code**:
 The authoritative reservation reference or confirmation token assigned to a stay by an external booking platform (e.g., Airbnb confirmation code `HMXXXXXXXX`), recorded on an External Reservation for operator cross-referencing and guest lookup.
 _Avoid_: Airbnb Code, Partner ID, Booking Reference
@@ -320,7 +336,7 @@ The central administrative landing view (`/`) aggregating critical real-time ope
 _Avoid_: Admin Home, Overview Page, Control Center, Portal, Landing Page
 
 **Operational Alert**:
-A high-priority actionable indicator surfaced on the Dashboard Hub for active or upcoming stays (prior to the Check-out Date and not administratively dismissed), specifically highlighting un-onboarded Channel Blocks requiring External Reservation creation, Confirmed Reservations with upcoming arrival dates whose Guest Registry has not yet been submitted, or Confirmed Reservations whose Condominium Clearance Sync has failed.
+A high-priority actionable indicator surfaced on the Dashboard Hub for active or upcoming stays or statutory obligations (when not administratively dismissed), specifically highlighting un-onboarded Channel Blocks requiring External Reservation creation, Confirmed Reservations with upcoming arrival dates whose Guest Registry has not yet been submitted, Confirmed Reservations whose Condominium Clearance Sync has failed, or closed Parafiscal Periods whose Parafiscal Settlement remains unsettled.
 _Avoid_: Warning, System Notification, Todo, Action Item
 
 **Occupancy Heatmap**:
@@ -340,7 +356,7 @@ A visual operational marker displayed on a current or future Occupancy Heatmap d
 _Avoid_: Warning Dot, Error Badge, Alert Pin
 
 **Financial Report**:
-The dedicated administrative analytical view in the Admin Console restricted to `admin` and `superadmin` roles that aggregates and slices Gross Revenue, Operational Expenses, Net Operating Income, and occupancy performance across properties, time dimensions, and booking sources.
+The dedicated administrative analytical view in the Admin Console restricted to `admin` and `superadmin` roles that aggregates and slices Gross Revenue, Operational Expenses, Net Operating Income, Parafiscal Contributions, Parafiscal Settlements, and occupancy performance across properties, time dimensions, and booking sources.
 _Avoid_: Earnings Page, Accounting Dashboard, Revenue Sheet, Finance Tab
 
 **Available Night**:

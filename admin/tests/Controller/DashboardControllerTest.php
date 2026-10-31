@@ -1291,4 +1291,108 @@ final class DashboardControllerTest extends TestCase
         $this->assertSame(302, $drawerRedirectResp->getStatusCode());
         $this->assertSame('/reservations/res_drawer_999', $drawerRedirectResp->getHeader('Location'));
     }
+
+    public function testDashboardHubRendersAndDismissesPendingParafiscalSettlementAlert(): void
+    {
+        $pdo = \OceanViewFlats\Admin\Tests\Support\AdminDatabaseTestHelper::createDatabaseWithDefaultAdmin();
+        $dismissalRepo = new \OceanViewFlats\Domain\Reservation\Dashboard\PdoOperationalAlertDismissalRepository($pdo);
+        $auditLogger = new \OceanViewFlats\Admin\Audit\AuditLogger($pdo);
+
+        $parafiscalAlert = new OperationalAlert(
+            id: 'parafiscal_2026-Q3_1606',
+            type: AlertType::PENDING_PARAFISCAL_SETTLEMENT,
+            severity: AlertSeverity::WARNING,
+            propertyId: '1606',
+            title: 'Pending FONTUR Parafiscal Declaration: 2026-Q3 (Property 1606 · RNT #270413)',
+            description: 'Quarter 2026-Q3 has closed for Property 1606 (RNT #270413). Statutory payment deadline is 2026-10-29.',
+            dueDate: '2026-10-29',
+            actionPayload: [
+                'period_key' => '2026-Q3',
+                'property_id' => '1606',
+                'rnt_number' => '270413',
+                'taxable_base' => 4000000.0,
+                'calculated_amount' => 10000.0,
+                'due_date' => '2026-10-29',
+                'target_url' => '/financial-report#fontur-parafiscal-section',
+            ]
+        );
+
+        $hubWithAlert = new DashboardHubViewData(
+            selectedPropertyFilter: '1606',
+            alerts: [$parafiscalAlert],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0
+        );
+
+        $emptyHub = new DashboardHubViewData(
+            selectedPropertyFilter: '1606',
+            alerts: [],
+            scheduleByDate: [],
+            rateStatus: [],
+            upcomingMaintenanceBlocks: [],
+            channelSyncData: [],
+            todayArrivalsCount: 0,
+            todayDeparturesCount: 0,
+            activeStaysCount: 0
+        );
+
+        $queryService = $this->createMock(DashboardQueryServiceInterface::class);
+        $queryService->expects($this->exactly(2))
+            ->method('getDashboardHubData')
+            ->with('1606')
+            ->willReturnOnConsecutiveCalls($hubWithAlert, $emptyHub);
+
+        $controller = new DashboardController(
+            viewRenderer: $this->viewRenderer,
+            syncService: null,
+            dashboardQueryService: $queryService,
+            dismissalRepo: $dismissalRepo,
+            auditLogger: $auditLogger
+        );
+
+        $session = ['admin_user_id' => 1, 'csrf_token' => 'csrf_pf_tok'];
+
+        // 1. Render Dashboard Hub with Parafiscal alert
+        $getResp = $controller->index(new Request('GET', '/', query: ['property_id' => '1606']), $session);
+        $this->assertSame(200, $getResp->getStatusCode());
+        $body = $getResp->getBody();
+        $this->assertStringContainsString('Pending FONTUR Parafiscal Declaration: 2026-Q3 (Property 1606 · RNT #270413)', $body);
+        $this->assertStringContainsString('href="/financial-report#fontur-parafiscal-section"', $body);
+        $this->assertStringContainsString('Review &amp; Settle in Financial Report &rarr;', $body);
+        $this->assertStringContainsString('name="alert_id" value="parafiscal_2026-Q3_1606"', $body);
+        $this->assertStringContainsString('name="alert_type" value="pending_parafiscal_settlement"', $body);
+
+        // 2. Dismiss the Parafiscal alert via POST /dashboard/alerts/dismiss
+        $dismissReq = new Request(
+            method: 'POST',
+            uri: '/dashboard/alerts/dismiss',
+            query: [],
+            post: [
+                'alert_id' => 'parafiscal_2026-Q3_1606',
+                'alert_type' => 'pending_parafiscal_settlement',
+                'property_id' => '1606',
+                'filter_property_id' => '1606',
+            ],
+            server: [
+                'HTTP_HX_REQUEST' => 'true',
+                'REMOTE_ADDR' => '10.0.0.55',
+            ]
+        );
+        $dismissResp = $controller->dismissAlert($dismissReq, $session);
+        $this->assertSame(200, $dismissResp->getStatusCode());
+        $this->assertTrue($dismissalRepo->isDismissed('parafiscal_2026-Q3_1606'));
+
+        $auditLogs = \OceanViewFlats\Admin\Audit\AuditLogger::getLogsForEntity($pdo, 'parafiscal_settlement', 'parafiscal_2026-Q3_1606');
+        $this->assertCount(1, $auditLogs);
+        $this->assertSame('alert_dismissed', $auditLogs[0]['action']);
+        $after = json_decode((string) $auditLogs[0]['payload_after'], true);
+        $this->assertSame('parafiscal_2026-Q3_1606', $after['alert_id']);
+        $this->assertSame('pending_parafiscal_settlement', $after['alert_type']);
+        $this->assertSame('1606', $after['property_id']);
+    }
 }

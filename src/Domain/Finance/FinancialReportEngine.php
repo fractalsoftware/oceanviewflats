@@ -7,21 +7,36 @@ namespace OceanViewFlats\Domain\Finance;
 use DateInterval;
 use DatePeriod;
 use DateTimeImmutable;
+use DateTimeZone;
+use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
+use OceanViewFlats\Domain\Reservation\Dashboard\OperationalAlert;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlockSourceInterface;
 use OceanViewFlats\Domain\Reservation\Reservation;
 use OceanViewFlats\Domain\Reservation\ReservationRepositoryInterface;
 
 /**
  * Authoritative domain engine for accrual-prorated P&L, verified-settlement Policy Retention,
- * per-night capacity deduplication, and 50/50 shared Operational Expense allocation.
+ * per-night capacity deduplication, 50/50 shared Operational Expense allocation, and
+ * FONTUR Parafiscal Contribution (0.25%) assessment.
  */
 final class FinancialReportEngine implements FinancialReportEngineInterface
 {
+    public const PARAFISCAL_RATE = 0.0025;
+
+    public const PROPERTY_RNT_MAP = PropertyRatesConfig::DEFAULT_RNT_NUMBERS;
+
+    private readonly PropertyRatesConfig $ratesConfig;
+    private readonly ParafiscalSettlementRepositoryInterface $parafiscalRepository;
+
     public function __construct(
         private readonly ReservationRepositoryInterface $reservationRepository,
         private readonly MaintenanceBlockSourceInterface $maintenanceBlockSource,
-        private readonly OperationalExpenseRepositoryInterface $expenseRepository
+        private readonly OperationalExpenseRepositoryInterface $expenseRepository,
+        ?PropertyRatesConfig $ratesConfig = null,
+        ?ParafiscalSettlementRepositoryInterface $parafiscalRepository = null
     ) {
+        $this->ratesConfig = $ratesConfig ?? PropertyRatesConfig::createDefault();
+        $this->parafiscalRepository = $parafiscalRepository ?? new InMemoryParafiscalSettlementRepository();
     }
 
     public function generate(
@@ -156,6 +171,11 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
             blockedNights1707: $blockedNights1707
         );
 
+        $parafiscalPeriods = $this->evaluateParafiscalPeriods(
+            propertyFilter: 'all',
+            now: $now
+        );
+
         return new FinancialReportViewData(
             filter: $filter,
             periodStart: $periodStart,
@@ -170,8 +190,369 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
             portfolioSlice: $portfolioSlice,
             property1606Slice: $property1606Slice,
             property1707Slice: $property1707Slice,
-            monthlyTrends: $monthlyTrends
+            monthlyTrends: $monthlyTrends,
+            parafiscalPeriods: $parafiscalPeriods
         );
+    }
+
+    /**
+     * Evaluates all contiguous quarterly Parafiscal Periods ('YYYY-Q1' through 'YYYY-Q4')
+     * from the earliest commercial Reservation check-in quarter (or Q1 of the current year in America/Bogota)
+     * through the current quarter of $now, for Property '1606' (RNT #270413) and Property '1707' (RNT #268781).
+     *
+     * Ordered newest quarter first (period_key DESC), then property_id ASC ('1606', '1707').
+     *
+     * @return list<ParafiscalPeriod>
+     */
+    public function evaluateParafiscalPeriods(
+        string $propertyFilter = 'all',
+        ?DateTimeImmutable $now = null
+    ): array {
+        $clock = ($now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota')))
+            ->setTimezone(new DateTimeZone('America/Bogota'));
+        $todayStr = $clock->format('Y-m-d');
+        $todayDt = new DateTimeImmutable($todayStr, new DateTimeZone('America/Bogota'));
+        $currentYear = (int) $clock->format('Y');
+        $currentQuarterKey = ColombianStatutoryCalendar::quarterKeyForDate($todayStr);
+        $currentQuarterMeta = ColombianStatutoryCalendar::parseQuarterKey($currentQuarterKey);
+        $horizonEnd = $currentQuarterMeta['period_end'];
+
+        $allReservations = $this->reservationRepository->findOverlappingRange(
+            startDate: '1970-01-01',
+            endDate: $horizonEnd,
+            propertyId: 'all'
+        );
+
+        $earliestCommercialDate = null;
+        foreach ($allReservations as $reservation) {
+            if (!$reservation->status->isConfirmed()) {
+                continue;
+            }
+            $channelGroup = BookingSourceGroup::fromReservationSource($reservation->source);
+            if ($channelGroup === BookingSourceGroup::OWNER_STAY) {
+                continue;
+            }
+            if (!in_array($reservation->propertyId, ['1606', '1707'], true)) {
+                continue;
+            }
+            if ($earliestCommercialDate === null || $reservation->checkIn < $earliestCommercialDate) {
+                $earliestCommercialDate = $reservation->checkIn;
+            }
+        }
+
+        $startQuarterKey = $earliestCommercialDate !== null
+            ? ColombianStatutoryCalendar::quarterKeyForDate($earliestCommercialDate)
+            : sprintf('%04d-Q1', $currentYear);
+
+        if (strcmp($startQuarterKey, $currentQuarterKey) > 0) {
+            $startQuarterKey = $currentQuarterKey;
+        }
+
+        $quarterKeys = ColombianStatutoryCalendar::generateQuarterKeysBetween($startQuarterKey, $currentQuarterKey);
+
+        // Index stored settlements by "propertyId:periodKey"
+        $storedSettlements = $this->parafiscalRepository->listAll('all');
+        /** @var array<string, ParafiscalSettlement> $settlementMap */
+        $settlementMap = [];
+        foreach ($storedSettlements as $settlement) {
+            $settlementMap[$settlement->propertyId . ':' . $settlement->periodKey] = $settlement;
+            // Ensure any stored settlement outside the reservation range is also included in the quarter horizon
+            if (!in_array($settlement->periodKey, $quarterKeys, true)) {
+                $quarterKeys[] = $settlement->periodKey;
+            }
+        }
+
+        usort($quarterKeys, static fn (string $a, string $b): int => strcmp($b, $a));
+
+        $targetProperties = in_array($propertyFilter, ['1606', '1707'], true)
+            ? [$propertyFilter]
+            : ['1606', '1707'];
+
+        $periods = [];
+        foreach ($quarterKeys as $periodKey) {
+            $qMeta = ColombianStatutoryCalendar::parseQuarterKey($periodKey);
+            $qStart = $qMeta['period_start'];
+            $qEnd = $qMeta['period_end'];
+            $qLabel = $qMeta['label'];
+            $dueDate = ColombianStatutoryCalendar::calculateQuarterDueDate($periodKey);
+            $dueDt = new DateTimeImmutable($dueDate, new DateTimeZone('America/Bogota'));
+            $daysUntilDue = (int) $todayDt->diff($dueDt)->format('%r%a');
+
+            foreach ($targetProperties as $propId) {
+                $periods[] = $this->buildParafiscalPeriod(
+                    periodKey: $periodKey,
+                    periodLabel: $qLabel,
+                    periodStart: $qStart,
+                    periodEnd: $qEnd,
+                    dueDate: $dueDate,
+                    propertyId: $propId,
+                    todayStr: $todayStr,
+                    daysUntilDue: $daysUntilDue,
+                    reservations: $allReservations,
+                    stored: $settlementMap[$propId . ':' . $periodKey] ?? null
+                );
+            }
+        }
+
+        return $periods;
+    }
+
+    /**
+     * Evaluates a single quarterly Parafiscal Period ('YYYY-Q1' through 'YYYY-Q4')
+     * for a specific Property ('1606' or '1707').
+     */
+    public function evaluateSingleParafiscalPeriod(
+        string $periodKey,
+        string $propertyId,
+        ?DateTimeImmutable $now = null
+    ): ParafiscalPeriod {
+        $normalizedProperty = trim($propertyId);
+        if (!in_array($normalizedProperty, ['1606', '1707'], true)) {
+            throw new \InvalidArgumentException(sprintf('Invalid Parafiscal property ID "%s".', $propertyId));
+        }
+
+        $normalizedPeriodKey = strtoupper(trim($periodKey));
+        $qMeta = ColombianStatutoryCalendar::parseQuarterKey($normalizedPeriodKey);
+        $qStart = $qMeta['period_start'];
+        $qEnd = $qMeta['period_end'];
+        $qLabel = $qMeta['label'];
+        $dueDate = ColombianStatutoryCalendar::calculateQuarterDueDate($normalizedPeriodKey);
+
+        $clock = ($now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota')))
+            ->setTimezone(new DateTimeZone('America/Bogota'));
+        $todayStr = $clock->format('Y-m-d');
+        $todayDt = new DateTimeImmutable($todayStr, new DateTimeZone('America/Bogota'));
+        $dueDt = new DateTimeImmutable($dueDate, new DateTimeZone('America/Bogota'));
+        $daysUntilDue = (int) $todayDt->diff($dueDt)->format('%r%a');
+
+        $overlappingReservations = $this->reservationRepository->findOverlappingRange(
+            startDate: $qStart,
+            endDate: $qEnd,
+            propertyId: $normalizedProperty
+        );
+
+        $stored = $this->parafiscalRepository->findByPropertyAndPeriod($normalizedProperty, $normalizedPeriodKey);
+
+        return $this->buildParafiscalPeriod(
+            periodKey: $normalizedPeriodKey,
+            periodLabel: $qLabel,
+            periodStart: $qStart,
+            periodEnd: $qEnd,
+            dueDate: $dueDate,
+            propertyId: $normalizedProperty,
+            todayStr: $todayStr,
+            daysUntilDue: $daysUntilDue,
+            reservations: $overlappingReservations,
+            stored: $stored
+        );
+    }
+
+    /**
+     * Constructs a ParafiscalPeriod value object from quarter metadata, reservations, and any stored settlement.
+     *
+     * @param list<Reservation> $reservations
+     */
+    private function buildParafiscalPeriod(
+        string $periodKey,
+        string $periodLabel,
+        string $periodStart,
+        string $periodEnd,
+        string $dueDate,
+        string $propertyId,
+        string $todayStr,
+        int $daysUntilDue,
+        array $reservations,
+        ?ParafiscalSettlement $stored
+    ): ParafiscalPeriod {
+        $rntNumber = $this->resolvePropertyRntNumber($propertyId) ?? '';
+
+        $metrics = $this->computeQuarterParafiscalMetrics(
+            propertyId: $propertyId,
+            periodStart: $periodStart,
+            periodEnd: $periodEnd,
+            reservations: $reservations
+        );
+
+        $linkedExpense = null;
+        if ($stored !== null && $stored->operationalExpenseId !== null) {
+            $linkedExpense = $this->expenseRepository->findById($stored->operationalExpenseId);
+        }
+
+        if ($stored !== null && $stored->isSettled()) {
+            $status = ParafiscalPeriod::STATUS_SETTLED;
+        } elseif ($todayStr < $periodEnd) {
+            $status = ParafiscalPeriod::STATUS_IN_PROGRESS;
+        } elseif ($todayStr <= $dueDate) {
+            $status = ParafiscalPeriod::STATUS_PENDING;
+        } else {
+            $status = ParafiscalPeriod::STATUS_OVERDUE;
+        }
+
+        $hasVariance = false;
+        $varianceDelta = 0.0;
+        if ($stored !== null && $stored->isSettled()) {
+            $snapshotCalculated = $stored->settledCalculatedAmount ?? $stored->settledAmount ?? 0.0;
+            $liveCalculated = $metrics['calculated_contribution'];
+            if (round($liveCalculated, 0) !== round($snapshotCalculated, 0)) {
+                $hasVariance = true;
+                $varianceDelta = round($liveCalculated - $snapshotCalculated, 0);
+            }
+        }
+
+        return new ParafiscalPeriod(
+            periodKey: $periodKey,
+            periodLabel: $periodLabel,
+            periodStart: $periodStart,
+            periodEnd: $periodEnd,
+            dueDate: $dueDate,
+            propertyId: $propertyId,
+            rntNumber: $rntNumber,
+            activeStayRevenue: $metrics['active_stay_revenue'],
+            deductedDirectFees: $metrics['deducted_direct_fees'],
+            excludedPolicyRetention: $metrics['excluded_policy_retention'],
+            taxableBase: $metrics['taxable_base'],
+            calculatedContribution: $metrics['calculated_contribution'],
+            status: $status,
+            daysUntilDue: $daysUntilDue,
+            settlement: $stored,
+            linkedExpense: $linkedExpense,
+            hasRecalculationVariance: $hasVariance,
+            recalculationVarianceDelta: $varianceDelta
+        );
+    }
+
+    private function resolvePropertyRntNumber(string $propertyId): ?string
+    {
+        if ($this->ratesConfig->isValidProperty($propertyId)) {
+            return $this->ratesConfig->getRntNumber($propertyId);
+        }
+
+        return PropertyRatesConfig::DEFAULT_RNT_NUMBERS[$propertyId] ?? null;
+    }
+
+    /**
+     * Builds Dashboard Hub OperationalAlerts for all closed, unsettled ParafiscalPeriods
+     * matching the given property filter ('all', '1606', '1707').
+     *
+     * @return list<OperationalAlert>
+     */
+    public function getPendingParafiscalAlerts(
+        string $propertyFilter = 'all',
+        ?DateTimeImmutable $now = null
+    ): array {
+        $periods = $this->evaluateParafiscalPeriods($propertyFilter, $now);
+        $alerts = [];
+
+        foreach ($periods as $period) {
+            $alert = $period->toOperationalAlert();
+            if ($alert !== null) {
+                $alerts[] = $alert;
+            }
+        }
+
+        return $alerts;
+    }
+
+    /**
+     * Computes Parafiscal revenue, surcharges, excluded retention, taxable base, and 0.25% contribution
+     * for a single property and half-open quarter window [$periodStart, $periodEnd).
+     *
+     * @param list<Reservation> $reservations
+     * @return array{
+     *     active_stay_revenue: float,
+     *     deducted_direct_fees: float,
+     *     excluded_policy_retention: float,
+     *     taxable_base: float,
+     *     calculated_contribution: float
+     * }
+     */
+    private function computeQuarterParafiscalMetrics(
+        string $propertyId,
+        string $periodStart,
+        string $periodEnd,
+        array $reservations
+    ): array {
+        $periodDates = self::datesInWindow($periodStart, $periodEnd);
+        $periodDateSet = array_fill_keys($periodDates, true);
+
+        $activeStayRevenue = 0.0;
+        $taxableBase = 0.0;
+        $policyRetention = 0.0;
+
+        foreach ($reservations as $reservation) {
+            if ($reservation->propertyId !== $propertyId) {
+                continue;
+            }
+            if ($reservation->checkIn >= $periodEnd || $reservation->checkOut <= $periodStart) {
+                continue;
+            }
+
+            $allResNights = $reservation->nights();
+            $totalNights = count($allResNights);
+            if ($totalNights === 0) {
+                continue;
+            }
+
+            $inPeriodNights = 0;
+            foreach ($allResNights as $nd) {
+                if (isset($periodDateSet[$nd])) {
+                    $inPeriodNights++;
+                }
+            }
+            if ($inPeriodNights === 0) {
+                continue;
+            }
+
+            $channelGroup = BookingSourceGroup::fromReservationSource($reservation->source);
+            if ($channelGroup === BookingSourceGroup::OWNER_STAY) {
+                continue;
+            }
+
+            $factor = $inPeriodNights / $totalNights;
+            $netContract = max(0.0, $reservation->totalPrice - $reservation->refundedAmount);
+            $proratedNet = $netContract * $factor;
+
+            if ($reservation->status->isConfirmed()) {
+                $activeStayRevenue += $proratedNet;
+
+                if (
+                    $channelGroup === BookingSourceGroup::DIRECT_ONLINE
+                    || $channelGroup === BookingSourceGroup::DIRECT_MANUAL
+                ) {
+                    $flatSurcharges = $this->ratesConfig->isValidProperty($propertyId)
+                        ? $this->ratesConfig->getFlatSurcharges($propertyId)
+                        : 0.0;
+                    $eligibleContractBase = max(0.0, $netContract - $flatSurcharges);
+                    $eligibleStayBase = $eligibleContractBase * $factor;
+                } else {
+                    $eligibleStayBase = $proratedNet;
+                }
+
+                $taxableBase += $eligibleStayBase;
+            } elseif ($reservation->status->isCancelled()) {
+                $paymentStatusNorm = strtolower(trim((string) ($reservation->paymentStatus ?? '')));
+                $isSettled = in_array($paymentStatusNorm, ['approved', 'partially_refunded', 'refunded'], true)
+                    || $reservation->refundedAmount > 0.0;
+
+                if ($isSettled) {
+                    $policyRetention += $proratedNet;
+                }
+            }
+        }
+
+        $activeStayRevenue = round($activeStayRevenue, 2);
+        $taxableBase = round($taxableBase, 2);
+        $deductedDirectFees = max(0.0, round($activeStayRevenue - $taxableBase, 2));
+        $excludedPolicyRetention = round($policyRetention, 2);
+        $calculatedContribution = round($taxableBase * self::PARAFISCAL_RATE, 0);
+
+        return [
+            'active_stay_revenue' => $activeStayRevenue,
+            'deducted_direct_fees' => $deductedDirectFees,
+            'excluded_policy_retention' => $excludedPolicyRetention,
+            'taxable_base' => $taxableBase,
+            'calculated_contribution' => $calculatedContribution,
+        ];
     }
 
     /**
@@ -221,6 +602,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $refundedAmount = 0.0;
         $grossCharged = 0.0;
         $allSourcesGrossRevenue = 0.0;
+        $parafiscalTaxableBase = 0.0;
 
         $unpricedAirbnbCount = 0;
         $unpricedAirbnbUids = [];
@@ -310,6 +692,21 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                 $refundedAmount += $proratedRefunded;
                 $activeStaysCount++;
                 $totalActiveStayNights += $totalNights;
+
+                if (
+                    $channelGroup === BookingSourceGroup::DIRECT_ONLINE
+                    || $channelGroup === BookingSourceGroup::DIRECT_MANUAL
+                ) {
+                    $flatSurcharges = $this->ratesConfig->isValidProperty($reservation->propertyId)
+                        ? $this->ratesConfig->getFlatSurcharges($reservation->propertyId)
+                        : 0.0;
+                    $eligibleContractBase = max(0.0, $netContract - $flatSurcharges);
+                    $eligibleStayBase = $eligibleContractBase * $factor;
+                } else {
+                    $eligibleStayBase = $proratedNet;
+                }
+
+                $parafiscalTaxableBase += $eligibleStayBase;
 
                 $isUnpricedAirbnb = ($channelGroup === BookingSourceGroup::AIRBNB && $netContract <= 0.0);
                 if ($isUnpricedAirbnb) {
@@ -407,6 +804,11 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         $grossCharged = round($grossCharged, 2);
         $grossRevenue = round($activeStayRevenue + $policyRetention, 2);
         $allSourcesGrossRevenue = round($allSourcesGrossRevenue, 2);
+
+        $parafiscalTaxableBase = round($parafiscalTaxableBase, 2);
+        $parafiscalDeductedFees = max(0.0, round($activeStayRevenue - $parafiscalTaxableBase, 2));
+        $parafiscalContribution = round($parafiscalTaxableBase * self::PARAFISCAL_RATE, 0);
+        $rntNumber = $this->resolvePropertyRntNumber($propertyFilter);
 
         $occupancyPct = $availableNights > 0
             ? round(($occupiedNights / $availableNights) * 100.0, 2)
@@ -528,7 +930,13 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
             byCategory: $byCategory,
             attributedReservations: $attributedReservations,
             allocatedExpenses: $allocatedExpenses,
-            expenses: $filteredExpenseEntities
+            expenses: $filteredExpenseEntities,
+            parafiscalDeductedFees: $parafiscalDeductedFees,
+            parafiscalTaxableBase: $parafiscalTaxableBase,
+            parafiscalContribution: $parafiscalContribution,
+            rntNumber: $rntNumber,
+            deductedDirectFees: $parafiscalDeductedFees,
+            excludedPolicyRetention: $policyRetention
         );
     }
 

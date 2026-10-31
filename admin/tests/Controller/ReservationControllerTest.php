@@ -2293,7 +2293,7 @@ final class ReservationControllerTest extends TestCase
             ) VALUES 
             ('res-1', '1606', 'Alice Smith', 'alice@example.com', '+573001112233', '2026-11-01', '2026-11-05', 1200000.00, 'confirmed', 'web', 1, '1234#', 'pay-mp-123456', 'approved', '2026-09-01 12:00:00'),
             ('res-2', '1606', 'Bob Jones', 'bob@example.com', '+573004445566', '2026-10-10', '2026-10-15', 1500000.00, 'pending_payment', 'cash', 0, NULL, NULL, 'pending', '2026-09-02 12:00:00'),
-            ('res-3', '1707', 'Carlos Gomez', 'carlos@example.com', '+573007778899', '2026-10-20', '2026-10-25', 1800000.00, 'confirmed', 'manual_override', 0, '5678#', NULL, 'offline', '2026-09-03 12:00:00');
+            ('res-3', '1707', 'Carlos Gomez', 'carlos@example.com', '+573007778899', '2027-10-20', '2027-10-25', 1800000.00, 'confirmed', 'manual_override', 0, '5678#', NULL, 'offline', '2026-09-03 12:00:00');
 
             INSERT INTO admin_audit_logs (admin_user_id, action, entity_type, entity_id, payload_before, payload_after, ip_address, created_at)
             VALUES (1, 'pin_override', 'reservation', 'res-1', '{\"door_code\": \"1111#\"}', '{\"door_code\": \"1234#\"}', '127.0.0.1', '2026-09-29 10:00:00');
