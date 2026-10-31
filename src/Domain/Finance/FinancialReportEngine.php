@@ -347,6 +347,100 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
     }
 
     /**
+     * Evaluates a single quarterly Parafiscal Period ('YYYY-Q1' through 'YYYY-Q4')
+     * for a specific Property ('1606' or '1707').
+     */
+    public function evaluateSingleParafiscalPeriod(
+        string $periodKey,
+        string $propertyId,
+        ?DateTimeImmutable $now = null
+    ): ParafiscalPeriod {
+        $normalizedProperty = trim($propertyId);
+        if (!in_array($normalizedProperty, ['1606', '1707'], true)) {
+            throw new \InvalidArgumentException(sprintf('Invalid Parafiscal property ID "%s".', $propertyId));
+        }
+
+        $normalizedPeriodKey = strtoupper(trim($periodKey));
+        $qMeta = ColombianStatutoryCalendar::parseQuarterKey($normalizedPeriodKey);
+        $qStart = $qMeta['period_start'];
+        $qEnd = $qMeta['period_end'];
+        $qLabel = $qMeta['label'];
+        $dueDate = ColombianStatutoryCalendar::calculateQuarterDueDate($normalizedPeriodKey);
+
+        $clock = ($now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota')))
+            ->setTimezone(new DateTimeZone('America/Bogota'));
+        $todayStr = $clock->format('Y-m-d');
+        $todayDt = new DateTimeImmutable($todayStr, new DateTimeZone('America/Bogota'));
+        $dueDt = new DateTimeImmutable($dueDate, new DateTimeZone('America/Bogota'));
+        $daysUntilDue = (int) $todayDt->diff($dueDt)->format('%r%a');
+
+        $rntNumber = $this->ratesConfig->isValidProperty($normalizedProperty)
+            ? $this->ratesConfig->getRntNumber($normalizedProperty)
+            : self::PROPERTY_RNT_MAP[$normalizedProperty];
+
+        $overlappingReservations = $this->reservationRepository->findOverlappingRange(
+            startDate: $qStart,
+            endDate: $qEnd,
+            propertyId: $normalizedProperty
+        );
+
+        $metrics = $this->computeQuarterParafiscalMetrics(
+            propertyId: $normalizedProperty,
+            periodStart: $qStart,
+            periodEnd: $qEnd,
+            reservations: $overlappingReservations
+        );
+
+        $stored = $this->parafiscalRepository->findByPropertyAndPeriod($normalizedProperty, $normalizedPeriodKey);
+        $linkedExpense = null;
+        if ($stored !== null && $stored->operationalExpenseId !== null) {
+            $linkedExpense = $this->expenseRepository->findById($stored->operationalExpenseId);
+        }
+
+        if ($stored !== null && $stored->isSettled()) {
+            $status = ParafiscalPeriod::STATUS_SETTLED;
+        } elseif ($todayStr < $qEnd) {
+            $status = ParafiscalPeriod::STATUS_IN_PROGRESS;
+        } elseif ($todayStr <= $dueDate) {
+            $status = ParafiscalPeriod::STATUS_PENDING;
+        } else {
+            $status = ParafiscalPeriod::STATUS_OVERDUE;
+        }
+
+        $hasVariance = false;
+        $varianceDelta = 0.0;
+        if ($stored !== null && $stored->isSettled()) {
+            $snapshotCalculated = $stored->settledCalculatedAmount ?? $stored->settledAmount ?? 0.0;
+            $liveCalculated = $metrics['calculated_contribution'];
+            if (round($liveCalculated, 0) !== round($snapshotCalculated, 0)) {
+                $hasVariance = true;
+                $varianceDelta = round($liveCalculated - $snapshotCalculated, 0);
+            }
+        }
+
+        return new ParafiscalPeriod(
+            periodKey: $normalizedPeriodKey,
+            periodLabel: $qLabel,
+            periodStart: $qStart,
+            periodEnd: $qEnd,
+            dueDate: $dueDate,
+            propertyId: $normalizedProperty,
+            rntNumber: $rntNumber,
+            activeStayRevenue: $metrics['active_stay_revenue'],
+            deductedDirectFees: $metrics['deducted_direct_fees'],
+            excludedPolicyRetention: $metrics['excluded_policy_retention'],
+            taxableBase: $metrics['taxable_base'],
+            calculatedContribution: $metrics['calculated_contribution'],
+            status: $status,
+            daysUntilDue: $daysUntilDue,
+            settlement: $stored,
+            linkedExpense: $linkedExpense,
+            hasRecalculationVariance: $hasVariance,
+            recalculationVarianceDelta: $varianceDelta
+        );
+    }
+
+    /**
      * Builds Dashboard Hub OperationalAlerts for all closed, unsettled ParafiscalPeriods
      * matching the given property filter ('all', '1606', '1707').
      *

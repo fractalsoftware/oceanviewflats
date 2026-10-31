@@ -437,6 +437,10 @@ final class AdminApp
             ->post('/financial-report/expenses/{id}', [$financialReportController, 'updateExpense'])
             ->delete('/financial-report/expenses/{id}', [$financialReportController, 'deleteExpense'])
             ->post('/financial-report/expenses/{id}/delete', [$financialReportController, 'deleteExpense'])
+            ->get('/financial-report/parafiscal/{periodKey}/{propertyId}/modal', [$financialReportController, 'parafiscalModal'])
+            ->get('/financial-report/parafiscal/{periodKey}/{propertyId}/settle', [$financialReportController, 'parafiscalModal'])
+            ->post('/financial-report/parafiscal/{periodKey}/{propertyId}/settle', [$financialReportController, 'settleParafiscal'])
+            ->post('/financial-report/parafiscal/{periodKey}/{propertyId}/revert', [$financialReportController, 'revertParafiscal'])
             ->get('/audit-logs', [$auditLogController, 'index'])
             ->get('/audit-logs/{id}', [$auditLogController, 'show']);
 

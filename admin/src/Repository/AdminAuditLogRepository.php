@@ -62,6 +62,9 @@ class AdminAuditLogRepository
             'operational_expense_created',
             'operational_expense_updated',
             'operational_expense_deleted',
+            'parafiscal_settled',
+            'parafiscal_updated',
+            'parafiscal_reverted',
         ],
     ];
 

@@ -1215,5 +1215,20 @@ final class FinancialReportEngineTest extends TestCase
         $this->assertSame(1000.0, $q4_2025_1606->recalculationVarianceDelta);
         $this->assertNotNull($q4_2025_1606->linkedExpense);
         $this->assertSame($linkedExp->expenseUid, $q4_2025_1606->linkedExpense->expenseUid);
+
+        // Verify evaluateSingleParafiscalPeriod returns identical metrics, settlement snapshot, and variance
+        $singleQ4 = $engine->evaluateSingleParafiscalPeriod('2025-Q4', '1606', $refOct17);
+        $this->assertSame('2025-Q4', $singleQ4->periodKey);
+        $this->assertSame('1606', $singleQ4->propertyId);
+        $this->assertSame('270413', $singleQ4->rntNumber);
+        $this->assertSame(2000000.0, $singleQ4->taxableBase);
+        $this->assertSame(5000.0, $singleQ4->calculatedContribution);
+        $this->assertTrue($singleQ4->isSettled());
+        $this->assertTrue($singleQ4->hasRecalculationVariance);
+        $this->assertSame(1000.0, $singleQ4->recalculationVarianceDelta);
+        $this->assertNotNull($singleQ4->settlement);
+        $this->assertSame(4000.0, $singleQ4->settlement->settledAmount);
+        $this->assertNotNull($singleQ4->linkedExpense);
+        $this->assertSame($linkedExp->expenseUid, $singleQ4->linkedExpense->expenseUid);
     }
 }

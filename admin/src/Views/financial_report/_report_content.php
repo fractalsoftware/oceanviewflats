@@ -781,6 +781,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                             : ($pendingRow->daysUntilDue <= 7
                                 ? 'CRITICAL (Due in ' . $pendingRow->daysUntilDue . 'd)'
                                 : 'PENDING (Due in ' . $pendingRow->daysUntilDue . 'd)');
+                        $pendingModalQuery = http_build_query($activeQueryParams);
                     ?>
                         <div data-pending-parafiscal-callout="<?= htmlspecialchars($pendingRow->periodKey . '_' . $pendingRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
                              class="p-3 rounded-xl border <?= $calloutBg ?> flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
@@ -797,9 +798,18 @@ if (!function_exists('formatCopCompactCurrency')) {
                                     Due Date: <strong class="font-mono"><?= htmlspecialchars($pendingRow->dueDate, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </span>
                             </div>
-                            <span class="text-[11px] font-semibold shrink-0 <?= $isCriticalRow ? 'text-rose-800' : 'text-amber-800' ?>">
-                                Action Required: File RNT #<?= htmlspecialchars($pendingRow->rntNumber, ENT_QUOTES, 'UTF-8') ?> Declaration
-                            </span>
+                            <div class="flex items-center gap-2.5 shrink-0">
+                                <span class="text-[11px] font-semibold <?= $isCriticalRow ? 'text-rose-800' : 'text-amber-800' ?>">
+                                    Action Required: File RNT #<?= htmlspecialchars($pendingRow->rntNumber, ENT_QUOTES, 'UTF-8') ?> Declaration
+                                </span>
+                                <button type="button"
+                                        hx-get="/financial-report/parafiscal/<?= urlencode($pendingRow->periodKey) ?>/<?= urlencode($pendingRow->propertyId) ?>/modal<?= $pendingModalQuery !== '' ? '?' . htmlspecialchars($pendingModalQuery, ENT_QUOTES, 'UTF-8') : '' ?>"
+                                        hx-target="#modal-container"
+                                        hx-swap="innerHTML"
+                                        class="px-3 py-1 rounded-lg <?= $isCriticalRow ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700' ?> text-white text-[11px] font-semibold shadow-2xs cursor-pointer">
+                                    Mark as Paid
+                                </button>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -834,10 +844,17 @@ if (!function_exists('formatCopCompactCurrency')) {
                             <th scope="col" class="px-4 py-3 text-left">Status</th>
                             <th scope="col" class="px-4 py-3 text-left">Settled Details</th>
                             <th scope="col" class="px-4 py-3 text-left">Linked Expense</th>
+                            <th scope="col" class="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white">
-                        <?php foreach ($scopedParafiscalPeriods as $pRow): ?>
+                        <?php
+                        $parafiscalModalQuery = http_build_query($activeQueryParams);
+                        foreach ($scopedParafiscalPeriods as $pRow):
+                            $pModalHref = '/financial-report/parafiscal/' . urlencode($pRow->periodKey) . '/' . urlencode($pRow->propertyId) . '/modal'
+                                . ($parafiscalModalQuery !== '' ? '?' . $parafiscalModalQuery : '');
+                            $pRevertHref = '/financial-report/parafiscal/' . urlencode($pRow->periodKey) . '/' . urlencode($pRow->propertyId) . '/revert';
+                        ?>
                             <tr data-parafiscal-row="<?= htmlspecialchars($pRow->periodKey . '_' . $pRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
                                 data-parafiscal-property="<?= htmlspecialchars($pRow->propertyId, ENT_QUOTES, 'UTF-8') ?>"
                                 data-parafiscal-status="<?= htmlspecialchars($pRow->status, ENT_QUOTES, 'UTF-8') ?>"
@@ -913,6 +930,45 @@ if (!function_exists('formatCopCompactCurrency')) {
                                         </span>
                                     <?php else: ?>
                                         <span class="text-gray-400 text-[11px]">&mdash;</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right space-x-1.5">
+                                    <?php if ($pRow->isSettled()): ?>
+                                        <button type="button"
+                                                hx-get="<?= htmlspecialchars($pModalHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-[11px] cursor-pointer">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                                hx-post="<?= htmlspecialchars($pRevertHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-vals='<?= htmlspecialchars((string) json_encode([
+                                                    'csrf_token' => $csrfToken,
+                                                    'current_property_id' => $filters['property_id'] ?? 'all',
+                                                    'current_period' => $filters['period'] ?? 'this_month',
+                                                    'current_date_from' => $filters['date_from'] ?? '',
+                                                    'current_date_to' => $filters['date_to'] ?? '',
+                                                    'current_compare' => $filters['compare'] ?? 'prev_period',
+                                                    'current_source' => $filters['source'] ?? 'all',
+                                                    'current_category' => $filters['category'] ?? 'all',
+                                                    'current_tab' => $filters['tab'] ?? 'expenses',
+                                                    'current_search' => $filters['search'] ?? '',
+                                                ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'
+                                                hx-target="#financial-report-content"
+                                                hx-swap="outerHTML"
+                                                hx-confirm="Are you sure you want to revert this Parafiscal Settlement back to Pending? Any linked FONTUR Operational Expense will be deleted."
+                                                class="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium text-[11px] cursor-pointer">
+                                            Revert
+                                        </button>
+                                    <?php else: ?>
+                                        <button type="button"
+                                                hx-get="<?= htmlspecialchars($pModalHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] shadow-2xs cursor-pointer">
+                                            Mark as Paid
+                                        </button>
                                     <?php endif; ?>
                                 </td>
                             </tr>

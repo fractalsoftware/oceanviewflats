@@ -26,6 +26,7 @@ $rawAfter = (string) ($log['raw_payload_after'] ?? '');
 
 $isReservation = ($entityType === 'reservation');
 $isOperationalExpense = ($entityType === 'operational_expense');
+$isParafiscalSettlement = ($entityType === 'parafiscal_settlement');
 
 /**
  * Computes a key-by-key delta between before and after payloads.
@@ -178,6 +179,16 @@ window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
                             <a href="/financial-report?tab=expenses&amp;search=<?= urlencode($entityId) ?>"
                                target="_blank"
                                title="Open operational expense ledger"
+                               class="font-mono text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center">
+                                <?= htmlspecialchars($entityId, ENT_QUOTES, 'UTF-8') ?>
+                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                            </a>
+                        <?php elseif ($isParafiscalSettlement): ?>
+                            <a href="/financial-report#fontur-parafiscal-section"
+                               target="_blank"
+                               title="Open FONTUR Parafiscal settlements in Financial Report"
                                class="font-mono text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center">
                                 <?= htmlspecialchars($entityId, ENT_QUOTES, 'UTF-8') ?>
                                 <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

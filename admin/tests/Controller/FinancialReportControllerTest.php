@@ -146,6 +146,10 @@ final class FinancialReportControllerTest extends TestCase
             'POST /financial-report/expenses/1' => ['POST', '/financial-report/expenses/1'],
             'DELETE /financial-report/expenses/1' => ['DELETE', '/financial-report/expenses/1'],
             'POST /financial-report/expenses/1/delete' => ['POST', '/financial-report/expenses/1/delete'],
+            'GET /financial-report/parafiscal/2026-Q3/1606/modal' => ['GET', '/financial-report/parafiscal/2026-Q3/1606/modal'],
+            'GET /financial-report/parafiscal/2026-Q3/1606/settle' => ['GET', '/financial-report/parafiscal/2026-Q3/1606/settle'],
+            'POST /financial-report/parafiscal/2026-Q3/1606/settle' => ['POST', '/financial-report/parafiscal/2026-Q3/1606/settle'],
+            'POST /financial-report/parafiscal/2026-Q3/1606/revert' => ['POST', '/financial-report/parafiscal/2026-Q3/1606/revert'],
         ];
     }
 
@@ -1209,5 +1213,410 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertStringContainsString('data-parafiscal-row="2026-Q1_1606"', $body1606);
         $this->assertStringNotContainsString('data-parafiscal-row="2026-Q4_1707"', $body1606);
         $this->assertStringNotContainsString('data-parafiscal-row="2026-Q1_1707"', $body1606);
+    }
+
+    public function testParafiscalSettlementModalConfirmEditZeroDeclarationRevertBidirectionalExpenseSyncVarianceAndAlertClearing(): void
+    {
+        $this->pdo->exec('DELETE FROM reservations');
+        $this->pdo->exec('DELETE FROM calendar_blocks');
+        $this->pdo->exec('DELETE FROM operational_expenses');
+        $this->pdo->exec('DELETE FROM parafiscal_settlements');
+        $this->pdo->exec('DELETE FROM admin_audit_logs');
+
+        // Seed commercial reservations:
+        // - 2026-Q3 on Property 1606 (RNT #270413, flat surcharge 100,000 COP):
+        //   2026-08-10 -> 2026-08-15 (5 nights), total 4,100,000 COP => Taxable Base = 4,000,000 COP, Calculated = 10,000 COP
+        // - 2026-Q3 on Property 1707 (RNT #268781): 0 reservations => Taxable Base = 0 COP, Calculated = 0 COP (declaración en cero)
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES (
+                'ovf_q3_1606_settle', '1606', 'Q3 Guest 1606', 'q3_1606@example.com', '+573001110001',
+                '2026-08-10', '2026-08-15', 4100000, 0, 'confirmed', 'approved', 'web'
+            );
+        ");
+
+        $pfsRepo = new \OceanViewFlats\Domain\Finance\PdoParafiscalSettlementRepository($this->pdo);
+
+        // 0. Verify Financial Report renders "Mark as Paid" triggers with explicit hx-swap="innerHTML" targeting #modal-container (Lesson #8)
+        $reportInitResp = $this->app->handle(new Request('GET', '/financial-report'), $this->adminSession);
+        $this->assertSame(200, $reportInitResp->getStatusCode());
+        $reportInitBody = $reportInitResp->getBody();
+        $this->assertStringContainsString('hx-get="/financial-report/parafiscal/2026-Q3/1606/modal', $reportInitBody);
+        $this->assertStringContainsString('hx-target="#modal-container"', $reportInitBody);
+        $this->assertStringContainsString('hx-swap="innerHTML"', $reportInitBody);
+
+        // Also verify Dashboard Hub currently surfaces pending Parafiscal alerts for 2026-Q3_1606 and 2026-Q3_1707
+        $dashBeforeResp = $this->app->handle(new Request('GET', '/'), $this->adminSession);
+        $this->assertSame(200, $dashBeforeResp->getStatusCode());
+        $this->assertStringContainsString('parafiscal_2026-Q3_1606', $dashBeforeResp->getBody());
+        $this->assertStringContainsString('parafiscal_2026-Q3_1707', $dashBeforeResp->getBody());
+
+        // 1. Open HTMX Settlement Modal for 2026-Q3 on Property 1606:
+        //    Pre-filled with calculated 0.25% contribution (10000), today's date (2026-10-17), and safe min="0" step="any" (Lesson #14)
+        $modalResp = $this->app->handle(
+            new Request(
+                method: 'GET',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/modal',
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $modalResp->getStatusCode());
+        $modalBody = $modalResp->getBody();
+        $this->assertStringContainsString('id="parafiscal-modal"', $modalBody);
+        $this->assertStringContainsString('Settle FONTUR Parafiscal Contribution — 2026-Q3 (Property 1606 · RNT #270413)', $modalBody);
+        $this->assertStringContainsString('$ 4.000.000 COP', $modalBody);
+        $this->assertStringContainsString('$ 10.000 COP', $modalBody);
+        $this->assertStringContainsString('name="settled_amount"', $modalBody);
+        $this->assertStringContainsString('min="0"', $modalBody);
+        $this->assertStringContainsString('step="any"', $modalBody);
+        $this->assertStringContainsString('value="10000"', $modalBody);
+        $this->assertStringContainsString('value="2026-10-17"', $modalBody);
+
+        // 2. Test CSRF rejection on POST settle & revert
+        $csrfFailResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: ['csrf_token' => 'wrong-token', 'settled_amount' => '10000', 'payment_date' => '2026-10-17'],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(403, $csrfFailResp->getStatusCode());
+
+        // 3. Test Validation Failure (HTTP 422 with HX-Retarget: #modal-container and HX-Reswap: innerHTML per Lesson #5)
+        $invalidResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '-500',
+                    'payment_date' => 'invalid-date',
+                    'reference_code' => 'FNT-ERR-1606',
+                    'notes' => 'Keep these notes on error',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(422, $invalidResp->getStatusCode());
+        $this->assertSame('#modal-container', $invalidResp->getHeader('HX-Retarget'));
+        $this->assertSame('innerHTML', $invalidResp->getHeader('HX-Reswap'));
+        $invalidBody = $invalidResp->getBody();
+        $this->assertStringContainsString('Settled amount must be a number greater than or equal to 0 COP.', $invalidBody);
+        $this->assertStringContainsString('Payment / filing date must be a valid date in YYYY-MM-DD format.', $invalidBody);
+        $this->assertStringContainsString('value="FNT-ERR-1606"', $invalidBody);
+        $this->assertStringContainsString('Keep these notes on error', $invalidBody);
+
+        // 4. Confirm Settlement for 2026-Q3 on Property 1606 with settled_amount >= 1 COP (10,000 COP):
+        //    Creates a 1-to-1 taxes_insurance OperationalExpense with vendor_name='FONTUR', expense_date='2026-10-17',
+        //    and title='Contribución Parafiscal FONTUR 2026-Q3 (RNT #270413)'
+        $settle1606Resp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '10000',
+                    'payment_date' => '2026-10-17',
+                    'reference_code' => 'FNT-2026Q3-1606',
+                    'notes' => 'Paid online PSE',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true', 'REMOTE_ADDR' => '190.10.20.40']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $settle1606Resp->getStatusCode());
+        $this->assertSame('parafiscalSettled', $settle1606Resp->getHeader('HX-Trigger'));
+        $settle1606Body = $settle1606Resp->getBody();
+        $this->assertStringContainsString('<div id="modal-container" hx-swap-oob="innerHTML"></div>', $settle1606Body);
+        $this->assertStringContainsString('FNT-2026Q3-1606', $settle1606Body);
+
+        $savedPfs1606 = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($savedPfs1606);
+        $this->assertSame('settled', $savedPfs1606->status);
+        $this->assertSame(4000000.0, $savedPfs1606->settledTaxableBase);
+        $this->assertSame(10000.0, $savedPfs1606->settledCalculatedAmount);
+        $this->assertSame(10000.0, $savedPfs1606->settledAmount);
+        $this->assertSame('2026-10-17', $savedPfs1606->paymentDate);
+        $this->assertSame('FNT-2026Q3-1606', $savedPfs1606->referenceCode);
+        $this->assertSame('Paid online PSE', $savedPfs1606->notes);
+        $this->assertNotNull($savedPfs1606->operationalExpenseId);
+
+        $linkedExp1606 = $this->expenseRepo->findById($savedPfs1606->operationalExpenseId);
+        $this->assertNotNull($linkedExp1606);
+        $this->assertSame('1606', $linkedExp1606->propertyId);
+        $this->assertSame(ExpenseCategory::TAXES_INSURANCE, $linkedExp1606->category);
+        $this->assertSame('Contribución Parafiscal FONTUR 2026-Q3 (RNT #270413)', $linkedExp1606->title);
+        $this->assertSame(10000.0, $linkedExp1606->amount);
+        $this->assertSame('2026-10-17', $linkedExp1606->expenseDate);
+        $this->assertSame('FONTUR', $linkedExp1606->vendorName);
+        $this->assertSame('FNT-2026Q3-1606', $linkedExp1606->referenceCode);
+        $this->assertSame('Paid online PSE', $linkedExp1606->notes);
+
+        // Verify Dashboard Hub alert for parafiscal_2026-Q3_1606 is automatically cleared upon settlement!
+        $dashAfter1606Resp = $this->app->handle(new Request('GET', '/'), $this->adminSession);
+        $this->assertStringNotContainsString('parafiscal_2026-Q3_1606', $dashAfter1606Resp->getBody());
+        $this->assertStringContainsString('parafiscal_2026-Q3_1707', $dashAfter1606Resp->getBody());
+
+        // 5. Confirm $0 COP Zero Declaration (declaración en cero) for 2026-Q3 on Property 1707:
+        //    Marks settlement as settled WITHOUT inserting a $0 row into operational_expenses
+        $settle1707ZeroResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1707/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '0',
+                    'payment_date' => '2026-10-17',
+                    'reference_code' => 'FNT-2026Q3-1707-ZERO',
+                    'notes' => 'Declaración en cero Q3',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->superadminSession
+        );
+        $this->assertSame(200, $settle1707ZeroResp->getStatusCode());
+        $this->assertStringContainsString('Declaraci&oacute;n en Cero', $settle1707ZeroResp->getBody());
+        $this->assertStringContainsString('$0 Declaration (No Expense)', $settle1707ZeroResp->getBody());
+
+        $savedPfs1707 = $pfsRepo->findByPropertyAndPeriod('1707', '2026-Q3');
+        $this->assertNotNull($savedPfs1707);
+        $this->assertSame('settled', $savedPfs1707->status);
+        $this->assertSame(0.0, $savedPfs1707->settledAmount);
+        $this->assertNull($savedPfs1707->operationalExpenseId);
+        // Only 1 operational expense exists (the 10,000 COP one for 1606)
+        $this->assertCount(1, $this->expenseRepo->listForPeriod('2026-01-01', '2027-01-01', 'all'));
+
+        // Verify Dashboard Hub alert for parafiscal_2026-Q3_1707 is also cleared
+        $dashAfter1707Resp = $this->app->handle(new Request('GET', '/'), $this->adminSession);
+        $this->assertStringNotContainsString('parafiscal_2026-Q3_1707', $dashAfter1707Resp->getBody());
+
+        // 6. Edit settled ParafiscalSettlement on 1606 (adjusting settled_amount to 10,500 COP for late interest):
+        //    Updates linked OperationalExpense in place without creating duplicates
+        $editModal1606Resp = $this->app->handle(
+            new Request('GET', '/financial-report/parafiscal/2026-Q3/1606/modal', server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $editModal1606Resp->getStatusCode());
+        $this->assertStringContainsString('Edit FONTUR Parafiscal Settlement — 2026-Q3 (Property 1606 · RNT #270413)', $editModal1606Resp->getBody());
+        $this->assertStringContainsString('Revert to Pending', $editModal1606Resp->getBody());
+
+        $update1606Resp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '10500',
+                    'payment_date' => '2026-10-18',
+                    'reference_code' => 'FNT-2026Q3-1606-REV',
+                    'notes' => 'Adjusted +500 COP rounding',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $update1606Resp->getStatusCode());
+
+        $allExpensesAfterEdit = $this->expenseRepo->listForPeriod('2026-01-01', '2027-01-01', 'all');
+        $this->assertCount(1, $allExpensesAfterEdit);
+        $this->assertSame($linkedExp1606->id, $allExpensesAfterEdit[0]->id);
+        $this->assertSame(10500.0, $allExpensesAfterEdit[0]->amount);
+        $this->assertSame('2026-10-18', $allExpensesAfterEdit[0]->expenseDate);
+        $this->assertSame('FNT-2026Q3-1606-REV', $allExpensesAfterEdit[0]->referenceCode);
+        $this->assertSame('Adjusted +500 COP rounding', $allExpensesAfterEdit[0]->notes);
+
+        // 7. Edit 1606 settlement down to 0 COP (crossing from >= 1 COP to 0 COP deletes the linked expense)
+        $zeroOut1606Resp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '0',
+                    'payment_date' => '2026-10-18',
+                    'reference_code' => 'FNT-2026Q3-1606-ZERO',
+                    'notes' => 'Zeroed for test',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $zeroOut1606Resp->getStatusCode());
+        $this->assertCount(0, $this->expenseRepo->listForPeriod('2026-01-01', '2027-01-01', 'all'));
+        $zeroedPfs1606 = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($zeroedPfs1606);
+        $this->assertNull($zeroedPfs1606->operationalExpenseId);
+        $this->assertSame(0.0, $zeroedPfs1606->settledAmount);
+
+        // Edit 1606 settlement back from 0 COP to 10,000 COP (crossing from 0 COP to >= 1 COP creates a new linked expense)
+        $restore1606Resp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '10000',
+                    'payment_date' => '2026-10-18',
+                    'reference_code' => 'FNT-2026Q3-1606-RESTORED',
+                    'notes' => 'Restored to 10000 COP',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $restore1606Resp->getStatusCode());
+        $restoredPfs1606 = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($restoredPfs1606);
+        $this->assertNotNull($restoredPfs1606->operationalExpenseId);
+        $restoredExpenseId = $restoredPfs1606->operationalExpenseId;
+
+        // 8. Two-Way Sync from Operational Expenses Ledger:
+        // 8a. Editing the FONTUR-linked OperationalExpense via POST /financial-report/expenses/{id}
+        //     updates the linked ParafiscalSettlement's settled_amount, payment_date, reference_code, and notes in lockstep
+        $editFromExpenseLedgerResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: "/financial-report/expenses/{$restoredExpenseId}",
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'property_id' => '1606',
+                    'category' => 'taxes_insurance',
+                    'title' => 'Contribución Parafiscal FONTUR 2026-Q3 (RNT #270413)',
+                    'amount' => '11200',
+                    'expense_date' => '2026-10-19',
+                    'vendor_name' => 'FONTUR',
+                    'reference_code' => 'FNT-SYNC-FROM-EXP',
+                    'reservation_uid' => '',
+                    'notes' => 'Edited from Expense Ledger',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $editFromExpenseLedgerResp->getStatusCode());
+
+        $syncedPfs1606 = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($syncedPfs1606);
+        $this->assertSame('settled', $syncedPfs1606->status);
+        $this->assertSame(11200.0, $syncedPfs1606->settledAmount);
+        $this->assertSame('2026-10-19', $syncedPfs1606->paymentDate);
+        $this->assertSame('FNT-SYNC-FROM-EXP', $syncedPfs1606->referenceCode);
+        $this->assertSame('Edited from Expense Ledger', $syncedPfs1606->notes);
+
+        // 8b. Retroactive change to Reservations in an already-settled quarter (2026-Q3 on 1606):
+        //     Add a new commercial reservation in 2026-Q3 on 1606:
+        //     Settled snapshot (settledCalculatedAmount = 10,000, settledAmount = 11,200) and linked expense remain untouched,
+        //     while the ledger row displays "Recalculated Variance (Snapshot: $ 10.000)"
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, refunded_amount, status, payment_status, source
+            ) VALUES (
+                'ovf_q3_1606_retro', '1606', 'Retroactive Q3 Guest', 'retro@example.com', '+573001119999',
+                '2026-09-05', '2026-09-10', 2100000, 0, 'confirmed', 'approved', 'web'
+            );
+        ");
+
+        $varianceReportResp = $this->app->handle(new Request('GET', '/financial-report'), $this->adminSession);
+        $this->assertSame(200, $varianceReportResp->getStatusCode());
+        $varianceBody = $varianceReportResp->getBody();
+        // Live calculated contribution is now (4,000,000 + 2,000,000) * 0.0025 = 15,000 COP vs snapshot 10,000 COP
+        $this->assertStringContainsString('data-parafiscal-variance="true"', $varianceBody);
+        $this->assertStringContainsString('Recalculated Variance (Snapshot: $ 10.000)', $varianceBody);
+        // Settled amount and linked expense remain untouched at 11,200 COP
+        $unchangedExp = $this->expenseRepo->findById($restoredExpenseId);
+        $this->assertNotNull($unchangedExp);
+        $this->assertSame(11200.0, $unchangedExp->amount);
+
+        // 8c. Deleting the FONTUR-linked OperationalExpense from the Operational Expenses Ledger
+        //     automatically reverts the ParafiscalSettlement back to pending (operational_expense_id = null)
+        $deleteFromExpenseLedgerResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: "/financial-report/expenses/{$restoredExpenseId}/delete",
+                post: ['csrf_token' => 'valid-csrf-token'],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $deleteFromExpenseLedgerResp->getStatusCode());
+        $this->assertNull($this->expenseRepo->findById($restoredExpenseId));
+
+        $revertedViaExpDelete = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($revertedViaExpDelete);
+        $this->assertSame('pending', $revertedViaExpDelete->status);
+        $this->assertNull($revertedViaExpDelete->operationalExpenseId);
+        $this->assertNull($revertedViaExpDelete->settledAmount);
+        $this->assertNull($revertedViaExpDelete->paymentDate);
+
+        // 9. Settle 2026-Q3 on 1606 again (15,000 COP), then click "Revert" via POST /financial-report/parafiscal/2026-Q3/1606/revert:
+        //    Deletes linked OperationalExpense and restores ParafiscalSettlement to pending
+        $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/settle',
+                post: [
+                    'csrf_token' => 'valid-csrf-token',
+                    'settled_amount' => '15000',
+                    'payment_date' => '2026-10-17',
+                    'reference_code' => 'FNT-BEFORE-REVERT',
+                ],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $beforeRevertPfs = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($beforeRevertPfs);
+        $this->assertSame('settled', $beforeRevertPfs->status);
+        $expIdToRevert = $beforeRevertPfs->operationalExpenseId;
+        $this->assertNotNull($expIdToRevert);
+        $this->assertNotNull($this->expenseRepo->findById($expIdToRevert));
+
+        $revertEndpointResp = $this->app->handle(
+            new Request(
+                method: 'POST',
+                uri: '/financial-report/parafiscal/2026-Q3/1606/revert',
+                post: ['csrf_token' => 'valid-csrf-token'],
+                server: ['HTTP_HX_REQUEST' => 'true']
+            ),
+            $this->adminSession
+        );
+        $this->assertSame(200, $revertEndpointResp->getStatusCode());
+        $this->assertSame('parafiscalReverted', $revertEndpointResp->getHeader('HX-Trigger'));
+        $this->assertNull($this->expenseRepo->findById($expIdToRevert));
+
+        $afterRevertPfs = $pfsRepo->findByPropertyAndPeriod('1606', '2026-Q3');
+        $this->assertNotNull($afterRevertPfs);
+        $this->assertSame('pending', $afterRevertPfs->status);
+        $this->assertNull($afterRevertPfs->operationalExpenseId);
+
+        // 10. Verify Audit Log entries (parafiscal_settled, parafiscal_updated, parafiscal_reverted) in admin_audit_logs
+        $stmt = $this->pdo->prepare("
+            SELECT id, action, entity_type, entity_id, payload_before, payload_after, admin_user_id
+            FROM admin_audit_logs
+            WHERE entity_type = 'parafiscal_settlement'
+            ORDER BY id ASC
+        ");
+        $stmt->execute();
+        $pfsAuditLogs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $recordedActions = array_column($pfsAuditLogs, 'action');
+        $this->assertContains('parafiscal_settled', $recordedActions);
+        $this->assertContains('parafiscal_updated', $recordedActions);
+        $this->assertContains('parafiscal_reverted', $recordedActions);
+
+        // Verify Audit Logs view deep-links parafiscal_settlement entities to /financial-report#fontur-parafiscal-section
+        $auditResp = $this->app->handle(
+            new Request('GET', '/audit-logs', query: ['action' => 'cat:expenses']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $auditResp->getStatusCode());
+        $this->assertStringContainsString('/financial-report#fontur-parafiscal-section', $auditResp->getBody());
     }
 }
