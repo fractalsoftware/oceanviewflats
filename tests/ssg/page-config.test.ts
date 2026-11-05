@@ -781,3 +781,414 @@ test("registry.js and main.js encode form submissions via URLSearchParams to avo
 		"main.js contact form must wrap FormData in URLSearchParams",
 	);
 });
+
+test("Shared chrome across all 6 locales renders accessible #lang-toggle button, >=40px tap targets, relative #nav-logo assetPrefix, and compliant Footer (#237)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			rootFile: "index.html",
+			nestedFile: "Oceanview1707/index.html",
+			expectedRootLogoHref: "./",
+			expectedNestedLogoHref: "../",
+			expectedEngineeredBy: "Engineered by",
+		},
+		{
+			code: "es",
+			rootFile: "es.html",
+			nestedFile: "Oceanview1707/es.html",
+			expectedRootLogoHref: "./es.html",
+			expectedNestedLogoHref: "../es.html",
+			expectedEngineeredBy: "Desarrollado por",
+		},
+		{
+			code: "fr",
+			rootFile: "fr.html",
+			nestedFile: "Oceanview1707/fr.html",
+			expectedRootLogoHref: "./fr.html",
+			expectedNestedLogoHref: "../fr.html",
+			expectedEngineeredBy: "Conçu par",
+		},
+		{
+			code: "it",
+			rootFile: "it.html",
+			nestedFile: "Oceanview1707/it.html",
+			expectedRootLogoHref: "./it.html",
+			expectedNestedLogoHref: "../it.html",
+			expectedEngineeredBy: "Sviluppato da",
+		},
+		{
+			code: "de",
+			rootFile: "de.html",
+			nestedFile: "Oceanview1707/de.html",
+			expectedRootLogoHref: "./de.html",
+			expectedNestedLogoHref: "../de.html",
+			expectedEngineeredBy: "Entwickelt von",
+		},
+		{
+			code: "ja",
+			rootFile: "ja.html",
+			nestedFile: "Oceanview1707/ja.html",
+			expectedRootLogoHref: "./ja.html",
+			expectedNestedLogoHref: "../ja.html",
+			expectedEngineeredBy: "開発:",
+		},
+	];
+
+	for (const locale of locales) {
+		const rootHtml = fs.readFileSync(
+			path.join(distDir, locale.rootFile),
+			"utf-8",
+		);
+		const nestedHtml = fs.readFileSync(
+			path.join(distDir, locale.nestedFile),
+			"utf-8",
+		);
+
+		for (const [label, html, expectedLogoHref] of [
+			[locale.rootFile, rootHtml, locale.expectedRootLogoHref],
+			[locale.nestedFile, nestedHtml, locale.expectedNestedLogoHref],
+		] as const) {
+			// 1. Semantic #lang-toggle button with aria-haspopup="true", aria-expanded="false", and >=40px tap target
+			const langToggleMatch = html.match(/<button[^>]*id="lang-toggle"[^>]*>/);
+			assert.ok(
+				langToggleMatch,
+				`${label} must render #lang-toggle as a semantic <button>`,
+			);
+			assert.ok(
+				langToggleMatch[0].includes('type="button"'),
+				`${label} #lang-toggle must specify type="button"`,
+			);
+			assert.ok(
+				langToggleMatch[0].includes('aria-haspopup="true"') &&
+					langToggleMatch[0].includes('aria-expanded="false"'),
+				`${label} #lang-toggle must include aria-haspopup="true" and aria-expanded="false"`,
+			);
+			assert.ok(
+				langToggleMatch[0].includes("min-h-[40px]") &&
+					langToggleMatch[0].includes("min-w-[40px]"),
+				`${label} #lang-toggle must enforce >= 40px x 40px touch target`,
+			);
+
+			// 2. #nav-contact enforces >=40px x 40px touch target
+			const navContactMatch = html.match(/<a[^>]*id="nav-contact"[^>]*>/);
+			assert.ok(navContactMatch, `${label} must render #nav-contact`);
+			assert.ok(
+				navContactMatch[0].includes("min-h-[40px]") &&
+					navContactMatch[0].includes("min-w-[40px]"),
+				`${label} #nav-contact must enforce >= 40px x 40px touch target`,
+			);
+
+			// 3. Closed #lang-dropdown has hidden class so collapsed links are not keyboard-focusable, and AA hover contrast
+			const dropdownMatch = html.match(/<div[^>]*id="lang-dropdown"[^>]*>/);
+			assert.ok(dropdownMatch, `${label} must render #lang-dropdown`);
+			assert.ok(
+				dropdownMatch[0].includes("hidden"),
+				`${label} #lang-dropdown must include 'hidden' when collapsed so links are removed from tab order`,
+			);
+			assert.ok(
+				html.includes("hover:text-rose-700") &&
+					!html.includes("hover:text-[#FF5A5F]"),
+				`${label} language menu items must use WCAG AA hover:text-rose-700 instead of low-contrast hover:text-[#FF5A5F]`,
+			);
+
+			// 4. #nav-logo uses relative assetPrefix
+			const navLogoMatch = html.match(/<a[^>]*id="nav-logo"[^>]*>/);
+			assert.ok(navLogoMatch, `${label} must render #nav-logo`);
+			assert.ok(
+				navLogoMatch[0].includes(`href="${expectedLogoHref}"`),
+				`${label} #nav-logo must use relative assetPrefix href="${expectedLogoHref}", got: ${navLogoMatch[0]}`,
+			);
+
+			// 5. Global footer compliance: no <style>, no dark-glow, no 11px/#a1a1aa, RNT line >=4.5:1 (text-slate-300), localized attribution
+			const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
+			assert.ok(footerMatch, `${label} must render <footer>`);
+			const footerHtml = footerMatch[0];
+			assert.ok(
+				!footerHtml.includes("<style") && !footerHtml.includes("style="),
+				`${label} footer must not contain inline <style> blocks or inline style attributes`,
+			);
+			assert.ok(
+				!footerHtml.includes("#10b981") &&
+					!footerHtml.includes("11px") &&
+					!footerHtml.includes("#a1a1aa"),
+				`${label} footer must not contain #10b981 neon glow, 11px font-size, or #a1a1aa color`,
+			);
+			assert.ok(
+				!footerHtml.includes("text-slate-500") &&
+					footerHtml.includes("text-slate-300"),
+				`${label} footer RNT line must use high-contrast text-slate-300 instead of low-contrast text-slate-500`,
+			);
+			assert.ok(
+				footerHtml.includes("268781") && footerHtml.includes("270413"),
+				`${label} footer must display both statutory RNT numbers`,
+			);
+			assert.ok(
+				footerHtml.includes(`<span>${locale.expectedEngineeredBy}</span>`),
+				`${label} footer must localize developer attribution prefix as "${locale.expectedEngineeredBy}"`,
+			);
+		}
+	}
+
+	// 6. Japanese (ja) municipality standardization: サンタマルタ instead of ガイラ
+	const jaHome = fs.readFileSync(path.join(distDir, "ja.html"), "utf-8");
+	const ja1707 = fs.readFileSync(
+		path.join(distDir, "Oceanview1707", "ja.html"),
+		"utf-8",
+	);
+	assert.ok(
+		jaHome.includes("コロンビア、サンタマルタ、プラヤ・サルグエロ") &&
+			!jaHome.includes("ガイラ"),
+		"dist/ja.html must reference サンタマルタ and never ガイラ",
+	);
+	assert.ok(
+		ja1707.includes("コロンビア、サンタマルタ、プラヤ・サルグエロ") &&
+			!ja1707.includes("ガイラ"),
+		"dist/Oceanview1707/ja.html must reference サンタマルタ and never ガイラ",
+	);
+
+	// 7. Component templates use centralized CHROME_THEME without inline ternaries or style tags
+	for (const compFile of [
+		"Navigation.tsx",
+		"LanguageDropdown.tsx",
+		"Footer.tsx",
+	]) {
+		const compSource = fs.readFileSync(
+			path.join(process.cwd(), "src", "components", compFile),
+			"utf-8",
+		);
+		assert.ok(
+			compSource.includes("CHROME_THEME"),
+			`${compFile} must consume centralized CHROME_THEME from src/constants/theme.ts`,
+		);
+		assert.ok(
+			!compSource.includes("dangerouslySetInnerHTML") &&
+				!compSource.includes("style={{"),
+			`${compFile} must not embed inline <style> or style={{...}}`,
+		);
+	}
+});
+
+test("main.js #lang-toggle opens menu with aria-expanded='true', closes and restores focus on Escape, and closes on outside click (#237)", () => {
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		key?: string;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		focus: () => void;
+		blur: () => void;
+		isFocused: () => boolean;
+		appendChild: (child: MockNode) => MockNode;
+		contains: (target: unknown) => boolean;
+		querySelector: (sel: string) => MockNode | null;
+		querySelectorAll: (sel: string) => MockNode[];
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Listener[]> = {};
+		const children: MockNode[] = [];
+		let focused = false;
+
+		const node: MockNode = {
+			id,
+			tagName,
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			focus: () => {
+				focused = true;
+			},
+			blur: () => {
+				focused = false;
+			},
+			isFocused: () => focused,
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+			contains: (target: unknown) => {
+				if (target === node) return true;
+				return children.some((c) => c === target || c.contains?.(target));
+			},
+			querySelector: (sel: string) => {
+				if (sel === ".absolute.right-0.top-full") {
+					return children.find((c) => c.id === "lang-dropdown") || null;
+				}
+				return null;
+			},
+			querySelectorAll: (sel: string) => {
+				if (sel === "a") {
+					return children.filter((c) => c.tagName === "A");
+				}
+				return [];
+			},
+		};
+		return node;
+	};
+
+	const langToggleGroup = createMockNode("lang-toggle-group", "DIV", [
+		"relative",
+		"group",
+	]);
+	const langToggle = createMockNode("lang-toggle", "BUTTON", ["min-h-[40px]"], {
+		type: "button",
+		"aria-haspopup": "true",
+		"aria-expanded": "false",
+	});
+	const langDropdown = createMockNode("lang-dropdown", "DIV", [
+		"absolute",
+		"right-0",
+		"top-full",
+		"hidden",
+		"opacity-0",
+		"invisible",
+	]);
+	const esLink = createMockNode("lang-link-es", "A", [], { href: "es.html" });
+	langDropdown.appendChild(esLink);
+	langToggleGroup.appendChild(langToggle);
+	langToggleGroup.appendChild(langDropdown);
+	langToggleGroup.querySelectorAll = () => [esLink];
+
+	const outsideNode = createMockNode("outside", "DIV");
+
+	const elementsById = new Map<string, MockNode>([
+		["lang-toggle-group", langToggleGroup],
+		["lang-toggle", langToggle],
+		["lang-dropdown", langDropdown],
+	]);
+
+	const docListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			location: { search: "?property=1707", pathname: "/index.html" },
+			addEventListener: () => {},
+		},
+		document: {
+			documentElement: { lang: "en" },
+			createElement: () => ({ ...scriptStub }),
+			getElementsByTagName: () => [scriptStub],
+			getElementById: (id: string) => elementsById.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		console,
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+
+	// Trigger DOMContentLoaded
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+
+	// Verify query string propagation on language links
+	assert.equal(esLink.getAttribute("href"), "es.html?property=1707");
+
+	// 1. Initial closed state: aria-expanded="false" and hidden class present
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("hidden"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
+
+	// 2. Click #lang-toggle -> opens menu and sets aria-expanded="true"
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("hidden"), false);
+	assert.equal(langDropdown.classList.contains("opacity-100"), true);
+	assert.equal(langDropdown.classList.contains("visible"), true);
+
+	// 3. Press Escape -> closes menu, sets aria-expanded="false", and returns focus to #lang-toggle
+	langToggle.blur();
+	assert.equal(langToggle.isFocused(), false);
+	sandbox.document.dispatchEvent("keydown", { key: "Escape" });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("hidden"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
+	assert.equal(langDropdown.classList.contains("invisible"), true);
+	assert.equal(
+		langToggle.isFocused(),
+		true,
+		"Escape key must restore focus to #lang-toggle",
+	);
+
+	// 4. Re-open and click outside -> closes menu and sets aria-expanded="false"
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("hidden"), false);
+
+	sandbox.document.dispatchEvent("click", { target: outsideNode });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("hidden"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
+});

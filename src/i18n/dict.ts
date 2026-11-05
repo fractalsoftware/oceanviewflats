@@ -46,6 +46,7 @@ export const dict = {
 		poolNote:
 			"Pool is open daily (hours vary, closed Tuesdays). A building administration fee of COP $20,000 per person applies for the use of common areas.",
 		footer: "Hosted by Manuel Enrique • Santa Marta, Colombia",
+		footerEngineeredBy: "Engineered by",
 		nomadWifiDesc: "Reliable connection for all your meetings.",
 		nomadOceanDesc: "Find inspiration looking out at the Caribbean sea.",
 		nomadImgAlt: "Digital Nomad Workspace",
@@ -598,6 +599,7 @@ export const dict = {
 		poolNote:
 			"Piscina abierta todos los días (horarios varían, cerrada los martes). Aplica una tarifa de administración de COP $20.000 por persona para áreas comunes.",
 		footer: "Anfitrión: Manuel Enrique • Santa Marta, Colombia",
+		footerEngineeredBy: "Desarrollado por",
 		nomadWifiDesc: "Conexión confiable para todas tus reuniones.",
 		nomadOceanDesc: "Encuentra inspiración mirando al mar Caribe.",
 		nomadImgAlt: "Espacio de trabajo para Nómadas Digitales",
@@ -1166,6 +1168,7 @@ export const dict = {
 		poolNote:
 			"La piscine est ouverte tous les jours (les horaires varient, fermée le mardi). Des frais d'administration de 20 000 COP par personne s'appliquent pour les espaces communs.",
 		footer: "Hôte : Manuel Enrique • Santa Marta, Colombie",
+		footerEngineeredBy: "Conçu par",
 		nomadWifiDesc: "Connexion fiable pour toutes vos réunions.",
 		nomadOceanDesc: "Trouvez l'inspiration face à la mer des Caraïbes.",
 		nomadImgAlt: "Espace de travail pour Nomades Digitaux",
@@ -1741,6 +1744,7 @@ export const dict = {
 		poolNote:
 			"La piscina è aperta tutti i giorni (gli orari variano, chiusa il martedì). Si applica una quota amministrativa di 20.000 COP a persona per l'uso delle aree comuni.",
 		footer: "Ospitato da Manuel Enrique • Santa Marta, Colombia",
+		footerEngineeredBy: "Sviluppato da",
 		nomadWifiDesc: "Connessione affidabile per tutte le tue riunioni.",
 		nomadOceanDesc: "Trova l'ispirazione guardando il mar dei Caraibi.",
 		nomadImgAlt: "Spazio di lavoro per Nomadi Digitali",
@@ -2307,6 +2311,7 @@ export const dict = {
 		poolNote:
 			"Der Pool ist täglich geöffnet (Zeiten variieren, dienstags geschlossen). Für die Nutzung der Gemeinschaftsbereiche fällt eine Verwaltungsgebühr des Gebäudes von 20.000 COP pro Person an.",
 		footer: "Gastgeber: Manuel Enrique • Santa Marta, Kolumbien",
+		footerEngineeredBy: "Entwickelt von",
 		nomadWifiDesc: "Zuverlässige Verbindung für all deine Meetings.",
 		nomadOceanDesc: "Finde Inspiration beim Blick auf die Karibik.",
 		nomadImgAlt: "Arbeitsplatz für Digitale Nomaden",
@@ -2878,13 +2883,15 @@ export const dict = {
 		poolNoteTitle: "重要なお知らせ",
 		poolNote:
 			"プールは毎日営業しています（営業時間は異なります。火曜日は休業）。共有エリアの使用には、1人あたり20,000 COPのビル管理費が適用されます。",
-		footer: "ホスト: Manuel Enrique • ガイラ、マグダレナ、コロンビア",
+		footer:
+			"ホスト: Manuel Enrique • コロンビア、サンタマルタ、プラヤ・サルグエロ",
+		footerEngineeredBy: "開発:",
 		nomadWifiDesc: "すべての会議に対応する信頼性の高い接続。",
 		nomadOceanDesc:
 			"カリブ海を眺めながらインスピレーションを見つけてください。",
 		nomadImgAlt: "デジタルノマドのワークスペース",
 		heroImgAlt: "バルコニーからのオーシャンビュー",
-		heroLocation: "コロンビア、ガイラ、プラヤ・サルグエロ",
+		heroLocation: "コロンビア、サンタマルタ、プラヤ・サルグエロ",
 		aboutBedroomAlt: "ベッドルーム",
 		aboutPoolAlt: "プール",
 		footerRights: "OceanViewFlats. 無断複写・転載を禁じます。",
