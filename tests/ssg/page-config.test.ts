@@ -1192,3 +1192,184 @@ test("main.js #lang-toggle opens menu with aria-expanded='true', closes and rest
 	assert.equal(langDropdown.classList.contains("hidden"), true);
 	assert.equal(langDropdown.classList.contains("opacity-0"), true);
 });
+
+test("Homepage Hero and Property 1707 / 1606 showcase cards render localized value proposition, floor/RNT/parking specs, relative assetPrefix links, and WCAG AA contrast across all 6 locales (#238)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expected1707Href: "./Oceanview1707/index.html",
+			expected1606Href: "./Oceanview1606/index.html",
+			expectedHeroAlt: "Balcony Ocean View",
+			expected1707Title: "Oceanview Flat 1707",
+			expected1606Title: "Oceanview Flat 1606",
+			expected1707Badge: "17th Floor • RNT #268781",
+			expected1606Badge: "16th Floor • RNT #270413",
+			expected1707Parking: "Assigned Parking Bay 95",
+			expected1606Parking: "Assigned Parking Bay 87",
+			expectedBaths: "2 Baths",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expected1707Href: "./Oceanview1707/es.html",
+			expected1606Href: "./Oceanview1606/es.html",
+			expectedHeroAlt: "Vista al mar desde el balcón",
+			expected1707Title: "Apartamento Vista al Mar 1707",
+			expected1606Title: "Apartamento Vista al Mar 1606",
+			expected1707Badge: "Piso 17 • RNT #268781",
+			expected1606Badge: "Piso 16 • RNT #270413",
+			expected1707Parking: "Parqueadero Asignado Bahía 95",
+			expected1606Parking: "Parqueadero Asignado Bahía 87",
+			expectedBaths: "2 Baños",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expected1707Href: "./Oceanview1707/fr.html",
+			expected1606Href: "./Oceanview1606/fr.html",
+			expectedHeroAlt: "Vue sur l&#x27;océan depuis le balcon",
+			expected1707Title: "Appartement Vue Mer 1707",
+			expected1606Title: "Appartement Vue Mer 1606",
+			expected1707Badge: "17e Étage • RNT #268781",
+			expected1606Badge: "16e Étage • RNT #270413",
+			expected1707Parking: "Parking Attribué Place 95",
+			expected1606Parking: "Parking Attribué Place 87",
+			expectedBaths: "2 Salles de bain",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expected1707Href: "./Oceanview1707/it.html",
+			expected1606Href: "./Oceanview1606/it.html",
+			expectedHeroAlt: "Vista oceano dal balcone",
+			expected1707Title: "Appartamento Vista Mare 1707",
+			expected1606Title: "Appartamento Vista Mare 1606",
+			expected1707Badge: "17° Piano • RNT #268781",
+			expected1606Badge: "16° Piano • RNT #270413",
+			expected1707Parking: "Posto Auto Assegnato N. 95",
+			expected1606Parking: "Posto Auto Assegnato N. 87",
+			expectedBaths: "2 Bagni",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expected1707Href: "./Oceanview1707/de.html",
+			expected1606Href: "./Oceanview1606/de.html",
+			expectedHeroAlt: "Meerblick vom Balkon",
+			expected1707Title: "Apartment mit Meerblick 1707",
+			expected1606Title: "Apartment mit Meerblick 1606",
+			expected1707Badge: "17. Etage • RNT #268781",
+			expected1606Badge: "16. Etage • RNT #270413",
+			expected1707Parking: "Zugewiesener Stellplatz Nr. 95",
+			expected1606Parking: "Zugewiesener Stellplatz Nr. 87",
+			expectedBaths: "2 Bäder",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expected1707Href: "./Oceanview1707/ja.html",
+			expected1606Href: "./Oceanview1606/ja.html",
+			expectedHeroAlt: "バルコニーからのオーシャンビュー",
+			expected1707Title: "オーシャンビューフラット 1707",
+			expected1606Title: "オーシャンビューフラット 1606",
+			expected1707Badge: "17階 • RNT #268781",
+			expected1606Badge: "16階 • RNT #270413",
+			expected1707Parking: "専用駐車場 95番",
+			expected1606Parking: "専用駐車場 87番",
+			expectedBaths: "2 バスルーム",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. Navbar & Hero CTA both link to #properties
+		const propertiesAnchors = html.match(/<a[^>]*href="#properties"[^>]*>/g);
+		assert.ok(
+			propertiesAnchors && propertiesAnchors.length >= 2,
+			`${locale.file} must render both Navbar and Hero CTAs linking to href="#properties"`,
+		);
+
+		// 2. Hero image uses localized alt text (t.heroImgAlt) instead of generic "OceanViewFlats"
+		assert.ok(
+			html.includes(`alt="${locale.expectedHeroAlt}"`) &&
+				!html.includes('alt="OceanViewFlats"'),
+			`${locale.file} hero image must use localized alt="${locale.expectedHeroAlt}"`,
+		);
+
+		// 3. Featured Properties section has id="properties"
+		const propSectionMatch = html.match(
+			/<section[^>]*id="properties"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(
+			propSectionMatch,
+			`${locale.file} must render <section id="properties">`,
+		);
+		const propSectionHtml = propSectionMatch[0];
+
+		// 4. Relative assetPrefix links on both property cards (never root-relative /Oceanview1707 or /Oceanview1606)
+		assert.ok(
+			propSectionHtml.includes(`href="${locale.expected1707Href}"`) &&
+				!propSectionHtml.includes('href="/Oceanview1707'),
+			`${locale.file} Property 1707 card must use relative href="${locale.expected1707Href}"`,
+		);
+		assert.ok(
+			propSectionHtml.includes(`href="${locale.expected1606Href}"`) &&
+				!propSectionHtml.includes('href="/Oceanview1606'),
+			`${locale.file} Property 1606 card must use relative href="${locale.expected1606Href}"`,
+		);
+
+		// 5. Standardized singular English naming ("Oceanview Flat 1606", never plural "Oceanview Flats 1606" in card title)
+		assert.ok(
+			propSectionHtml.includes(locale.expected1707Title) &&
+				propSectionHtml.includes(locale.expected1606Title) &&
+				!propSectionHtml.includes("Oceanview Flats 1606"),
+			`${locale.file} must render canonical titles "${locale.expected1707Title}" and "${locale.expected1606Title}"`,
+		);
+
+		// 6. Floor + RNT badges, bath counts, and assigned parking bays (Bay 95 & Bay 87)
+		assert.ok(
+			propSectionHtml.includes(locale.expected1707Badge) &&
+				propSectionHtml.includes(locale.expected1606Badge),
+			`${locale.file} must display floor and statutory RNT badges on both cards`,
+		);
+		assert.ok(
+			propSectionHtml.includes(locale.expected1707Parking) &&
+				propSectionHtml.includes(locale.expected1606Parking),
+			`${locale.file} must display assigned parking bays (95 and 87) on the property cards`,
+		);
+		assert.ok(
+			propSectionHtml.includes(locale.expectedBaths),
+			`${locale.file} must display bathroom count (${locale.expectedBaths}) on the property cards`,
+		);
+
+		// 7. No line-clamp-2 truncation on localized descriptions, and WCAG AA contrast tokens used inside #properties
+		assert.ok(
+			!propSectionHtml.includes("line-clamp-2"),
+			`${locale.file} property cards must not truncate descriptions with line-clamp-2`,
+		);
+		assert.ok(
+			propSectionHtml.includes("text-[#BE123C]") &&
+				!propSectionHtml.includes("text-[#FF5A5F]") &&
+				!propSectionHtml.includes("text-rose-600"),
+			`${locale.file} property cards must use WCAG AA high-contrast text-[#BE123C] instead of low-contrast text-[#FF5A5F] or text-rose-600`,
+		);
+	}
+
+	// 8. Verify Home.tsx source uses HOME_THEME, getPropertyPagePath, and has excised dead useState/useEffect scroll listener
+	const homeSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "Home.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		homeSource.includes("HOME_THEME") &&
+			homeSource.includes("getPropertyPagePath"),
+		"Home.tsx must consume centralized HOME_THEME and getPropertyPagePath",
+	);
+	assert.ok(
+		!homeSource.includes("useState") && !homeSource.includes("useEffect"),
+		"Home.tsx must not contain dead client-side useState/useEffect hooks in zero-hydration SSG",
+	);
+});

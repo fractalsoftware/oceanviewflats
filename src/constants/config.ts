@@ -64,6 +64,24 @@ export const HOME_PAGE_PATHS: Record<string, string> = {
 	ja: "ja.html",
 };
 
+export const OCEANVIEW_1707_PATHS: Record<string, string> = {
+	en: "Oceanview1707/index.html",
+	es: "Oceanview1707/es.html",
+	fr: "Oceanview1707/fr.html",
+	it: "Oceanview1707/it.html",
+	de: "Oceanview1707/de.html",
+	ja: "Oceanview1707/ja.html",
+};
+
+export const OCEANVIEW_1606_PATHS: Record<string, string> = {
+	en: "Oceanview1606/index.html",
+	es: "Oceanview1606/es.html",
+	fr: "Oceanview1606/fr.html",
+	it: "Oceanview1606/it.html",
+	de: "Oceanview1606/de.html",
+	ja: "Oceanview1606/ja.html",
+};
+
 export const getPrivacyPolicyPath = (
 	lang: string,
 	assetPrefix = "./",
@@ -88,6 +106,32 @@ export const getGuidePagePath = (lang: string, assetPrefix = "./"): string => {
 export const getHomePagePath = (lang: string, assetPrefix = "./"): string => {
 	const relPath = HOME_PAGE_PATHS[lang] ?? HOME_PAGE_PATHS.en;
 	return `${assetPrefix}${relPath}`;
+};
+
+export const getOceanview1707Path = (
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = OCEANVIEW_1707_PATHS[lang] || OCEANVIEW_1707_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getOceanview1606Path = (
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = OCEANVIEW_1606_PATHS[lang] || OCEANVIEW_1606_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getPropertyPagePath = (
+	propertyId: "1707" | "1606",
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	return propertyId === "1707"
+		? getOceanview1707Path(lang, assetPrefix)
+		: getOceanview1606Path(lang, assetPrefix);
 };
 
 export interface RegistryGuestSlotConfig {

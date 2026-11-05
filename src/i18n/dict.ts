@@ -55,7 +55,7 @@ export const dict = {
 		aboutBedroomAlt: "Bedroom",
 		aboutPoolAlt: "Pool",
 		footerRights: "OceanViewFlats. All rights reserved.",
-		hero1606Title: "Oceanview Flats 1606",
+		hero1606Title: "Oceanview Flat 1606",
 		hero1606Sub:
 			"A serene coastal escape for families and couples in Playa Salguero.",
 		stats1606Beds: "2 Bedrooms • 3 Beds",
@@ -89,6 +89,14 @@ export const dict = {
 			"Book your serene beachfront stay at Oceanview Flat 1606 in Playa Salguero. Perfect for couples and families, featuring stunning Caribbean sea sunsets and modern luxury. Book your direct stay now.",
 		homeWelcome: "Welcome to OceanViewFlats",
 		homeSubtitle: "Discover your perfect beachfront stay in Santa Marta.",
+		homeHeroValueProp:
+			"0% OTA Commission • Authoritative COP Quotes • Instant Online Checkout",
+		homeHeroCta: "Explore Beachfront Properties",
+		homeCard1707Badge: "17th Floor • RNT #268781",
+		homeCard1606Badge: "16th Floor • RNT #270413",
+		homeCard1707Parking: "Assigned Parking Bay 95",
+		homeCard1606Parking: "Assigned Parking Bay 87",
+		homeCardCta: "Explore & Book Direct",
 		homeExpTitle: "Tailored Experiences",
 		homeExpNomad: "Digital Nomad Heaven",
 		homeExpNomadDesc:
@@ -643,6 +651,14 @@ export const dict = {
 			"Reserva tu estancia serena frente al mar en Oceanview Flat 1606 en Playa Salguero. Perfecto para parejas y familias, con impresionantes atardeceres caribeños y lujo moderno. Reserva tu estancia directa ahora.",
 		homeWelcome: "Bienvenido a OceanViewFlats",
 		homeSubtitle: "Descubre tu estancia perfecta frente al mar en Santa Marta.",
+		homeHeroValueProp:
+			"0% Comisión de Plataformas • Cotizaciones Oficiales en COP • Reserva Inmediata en Línea",
+		homeHeroCta: "Explorar Apartamentos Frente al Mar",
+		homeCard1707Badge: "Piso 17 • RNT #268781",
+		homeCard1606Badge: "Piso 16 • RNT #270413",
+		homeCard1707Parking: "Parqueadero Asignado Bahía 95",
+		homeCard1606Parking: "Parqueadero Asignado Bahía 87",
+		homeCardCta: "Explorar y Reservar Directo",
 		homeExpTitle: "Experiencias a la Medida",
 		homeExpNomad: "Paraíso para Nómadas Digitales",
 		homeExpNomadDesc:
@@ -1213,6 +1229,14 @@ export const dict = {
 		homeWelcome: "Bienvenue chez OceanViewFlats",
 		homeSubtitle:
 			"Découvrez votre séjour parfait en bord de mer à Santa Marta.",
+		homeHeroValueProp:
+			"0% de Commission OTA • Devis Officiels en COP • Paiement Direct en Ligne",
+		homeHeroCta: "Découvrir nos Appartements Vue Mer",
+		homeCard1707Badge: "17e Étage • RNT #268781",
+		homeCard1606Badge: "16e Étage • RNT #270413",
+		homeCard1707Parking: "Parking Attribué Place 95",
+		homeCard1606Parking: "Parking Attribué Place 87",
+		homeCardCta: "Découvrir et Réserver en Direct",
 		homeExpTitle: "Expériences sur Mesure",
 		homeExpNomad: "Le Paradis des Nomades Digitaux",
 		homeExpNomadDesc:
@@ -1788,6 +1812,14 @@ export const dict = {
 			"Prenota il tuo sereno soggiorno fronte mare all'Oceanview Flat 1606 a Playa Salguero. Perfetto per coppie e famiglie, con splendidi tramonti sul Mar dei Caraibi e lusso moderno. Prenota ora il tuo soggiorno diretto.",
 		homeWelcome: "Benvenuti a OceanViewFlats",
 		homeSubtitle: "Scopri il tuo soggiorno perfetto fronte mare a Santa Marta.",
+		homeHeroValueProp:
+			"0% Commissioni OTA • Preventivi Ufficiali in COP • Checkout Diretto Online",
+		homeHeroCta: "Esplora gli Appartamenti Fronte Mare",
+		homeCard1707Badge: "17° Piano • RNT #268781",
+		homeCard1606Badge: "16° Piano • RNT #270413",
+		homeCard1707Parking: "Posto Auto Assegnato N. 95",
+		homeCard1606Parking: "Posto Auto Assegnato N. 87",
+		homeCardCta: "Esplora e Prenota Direttamente",
 		homeExpTitle: "Esperienze su Misura",
 		homeExpNomad: "Paradiso per Nomadi Digitali",
 		homeExpNomadDesc:
@@ -2356,6 +2388,14 @@ export const dict = {
 		homeWelcome: "Willkommen bei OceanViewFlats",
 		homeSubtitle:
 			"Entdecken Sie Ihren perfekten Aufenthalt direkt am Strand in Santa Marta.",
+		homeHeroValueProp:
+			"0% Plattformgebühren • Verbindliche COP-Preise • Direkter Online-Checkout",
+		homeHeroCta: "Strandapartments Entdecken",
+		homeCard1707Badge: "17. Etage • RNT #268781",
+		homeCard1606Badge: "16. Etage • RNT #270413",
+		homeCard1707Parking: "Zugewiesener Stellplatz Nr. 95",
+		homeCard1606Parking: "Zugewiesener Stellplatz Nr. 87",
+		homeCardCta: "Entdecken & Direkt Buchen",
 		homeExpTitle: "Maßgeschneiderte Erlebnisse",
 		homeExpNomad: "Paradies für digitale Nomaden",
 		homeExpNomadDesc:
@@ -2930,6 +2970,14 @@ export const dict = {
 			"プラヤ・サルグエロのオーシャンビューフラット 1606で、穏やかなビーチフロントの滞在を予約しましょう。カップルや家族に最適で、カリブ海の美しい夕日とモダンな贅沢を楽しめます。今すぐ直接予約しましょう。",
 		homeWelcome: "OceanViewFlatsへようこそ",
 		homeSubtitle: "サンタマルタで最高のビーチフロント滞在を見つけましょう。",
+		homeHeroValueProp:
+			"仲介手数料0% • 公式COP建てお見積り • オンライン即時予約",
+		homeHeroCta: "ビーチフロント物件を見る",
+		homeCard1707Badge: "17階 • RNT #268781",
+		homeCard1606Badge: "16階 • RNT #270413",
+		homeCard1707Parking: "専用駐車場 95番",
+		homeCard1606Parking: "専用駐車場 87番",
+		homeCardCta: "詳細を見る・直接予約",
 		homeExpTitle: "カスタマイズされた体験",
 		homeExpNomad: "デジタルノマドの天国",
 		homeExpNomadDesc:
