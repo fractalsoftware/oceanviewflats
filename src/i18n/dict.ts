@@ -134,13 +134,16 @@ export const dict = {
 		rnt1606: "RNT #270413",
 		faqQ3: "Can I book directly to avoid booking fees?",
 		faqA3:
-			"Absolutely! You can use our secure Contact form to send an inquiry directly. Booking directly guarantees you the lowest price by bypassing platform commissions.",
+			"Yes! Select your Check-in Date and Check-out Date directly on the Oceanview Flat 1707 or Oceanview Flat 1606 page to view an authoritative itemized Quote in Colombian Pesos (COP) with 0% third-party OTA commission, and complete instant online checkout via Credit/Debit Card, PSE bank transfer, or Cash Voucher (Efecty). You can also use our Contact page for pre-booking Inquiries.",
 		faqQ4: "Is the Wi-Fi fast enough for remote work?",
 		faqA4:
 			"Yes, both OceanViewFlats 1707 and 1606 are equipped with reliable, high-speed fiber optic Wi-Fi (up to 900 Mbps), perfect for Zoom video calls, streaming, and remote productivity.",
 		faqQ5: "Are these rental properties officially registered?",
 		faqA5:
 			"Yes, OceanViewFlats operates legally and is fully registered under the National Tourism Registry of Colombia. Flat 1707 is registered under RNT #268781 and Flat 1606 under RNT #270413.",
+		faqQ6: "How do check-in, the Guest Registry, and the building fee work?",
+		faqA6:
+			"Before arrival, the Primary Guest completes our mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors), which immediately unlocks your digital Guest Guide, Assigned Parking Space (Bay 95 for Flat 1707 or Bay 87 for Flat 1606), and temporal 0XXXXXX# smart-lock Access Credential. Upon arrival at Edificio Salguero Sunset front-desk reception, a mandatory one-time Building Registration Fee of 20,000 COP per person is payable on-site for security wristbands and access to the infinity pools (please note pools close every Tuesday for scheduled maintenance).",
 		hostTitle: "Your Host",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -696,7 +699,7 @@ export const dict = {
 		rnt1606: "RNT #270413",
 		faqQ3: "¿Puedo reservar directamente para evitar cargos de plataformas?",
 		faqA3:
-			"¡Por supuesto! Puedes usar nuestro formulario de Contacto seguro para enviarnos una consulta. Reservar de forma directa te garantiza la mejor tarifa al evitar las comisiones de intermediarios.",
+			"¡Sí! Selecciona tus fechas de Check-in y Check-out directamente en la página de Oceanview Flat 1707 u Oceanview Flat 1606 para consultar una Cotización detallada en Pesos Colombianos (COP) con 0% de comisión de plataformas OTA, y completa tu pago en línea al instante con Tarjeta de Crédito/Débito, transferencia PSE o cupón en efectivo (Efecty). También puedes usar nuestra página de Contacto para consultas previas.",
 		faqQ4:
 			"¿La conexión Wi-Fi es lo suficientemente rápida para trabajar a distancia?",
 		faqA4:
@@ -704,6 +707,10 @@ export const dict = {
 		faqQ5: "¿Están estos apartamentos de alquiler registrados oficialmente?",
 		faqA5:
 			"Sí, OceanViewFlats opera legalmente y cuenta con registro vigente en el Registro Nacional de Turismo de Colombia. El apartamento 1707 tiene RNT #268781 y el apartamento 1606 tiene RNT #270413.",
+		faqQ6:
+			"¿Cómo funcionan el check-in, el Registro de Huéspedes y la tarifa del edificio?",
+		faqA6:
+			"Antes de tu llegada, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea (incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores), lo cual desbloquea de inmediato tu Guía del Huésped digital, tu Parqueadero Asignado (Bahía 95 para el 1707 o Bahía 87 para el 1606) y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio obligatoria de 20,000 COP por persona por las manillas de seguridad y el acceso a las piscinas infinitas (ten en cuenta que las piscinas cierran todos los martes por mantenimiento programado).",
 		hostTitle: "Tu Anfitrión",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1275,7 +1282,7 @@ export const dict = {
 		faqQ3:
 			"Puis-je réserver directement pour éviter les frais des plateformes ?",
 		faqA3:
-			"Absolument ! Vous pouvez utiliser notre formulaire de Contact sécurisé pour envoyer une demande. Réserver en direct vous garantit le tarif le plus bas en évitant les commissions de tiers.",
+			"Oui ! Sélectionnez vos dates d'arrivée et de départ directement sur la page Oceanview Flat 1707 ou Oceanview Flat 1606 pour afficher un Devis détaillé en Pesos Colombiens (COP) avec 0 % de commission OTA, et finalisez votre paiement en ligne instantanément par Carte de Crédit/Débit, virement PSE ou bon d'espèces (Efecty). Vous pouvez également utiliser notre page Contact pour toute demande préalable.",
 		faqQ4: "La connexion Wi-Fi est-elle assez rapide pour le télétravail ?",
 		faqA4:
 			"Oui, OceanViewFlats 1707 et 1606 disposent d'un Wi-Fi haut débit par fibre optique (jusqu'à 900 Mbps), parfait pour les appels vidéo Zoom, le streaming et la productivité en voyage.",
@@ -1283,6 +1290,10 @@ export const dict = {
 			"Ces propriétés de location sont-elles officiellement enregistrées ?",
 		faqA5:
 			"Oui, OceanViewFlats opère légalement et est enregistré au Registre National du Tourisme en Colombie. L'appartement 1707 est sous RNT #268781 et l'appartement 1606 sous RNT #270413.",
+		faqQ6:
+			"Comment fonctionnent l'enregistrement, le Registre des Invités et les frais d'immeuble ?",
+		faqA6:
+			"Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne (incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs), ce qui débloque immédiatement votre Guide de l'Invité numérique, votre Place de Parking Attribuée (Place 95 pour le 1707 ou Place 87 pour le 1606) et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble obligatoires de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement (veuillez noter que les piscines ferment tous les mardis pour maintenance).",
 		hostTitle: "Votre Hôte",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1858,13 +1869,17 @@ export const dict = {
 		faqQ3:
 			"Posso prenotare direttamente per evitare le commissioni delle piattaforme?",
 		faqA3:
-			"Assolutamente sì! Puoi usare il nostro modulo di Contatto sicuro per inviare direttamente una richiesta. La prenotazione diretta garantisce il prezzo più basso eliminando i costi delle piattaforme.",
+			"Certamente! Seleziona le date di Check-in e Check-out direttamente nella pagina Oceanview Flat 1707 o Oceanview Flat 1606 per visualizzare un Preventivo dettagliato in Pesos Colombiani (COP) con lo 0% di commissioni OTA e completare il pagamento istantaneo online tramite Carta di Credito/Debito, bonifico PSE o voucher in contanti (Efecty). Puoi anche utilizzare la pagina Contatti per richieste preliminari.",
 		faqQ4: "La connessione Wi-Fi è abbastanza veloce per il lavoro da remoto?",
 		faqA4:
 			"Sì, sia OceanViewFlats 1707 che 1606 sono dotati di connessione Wi-Fi a fibra ottica ad alta velocità (fino a 900 Mbps), perfetta per videochiamate Zoom, streaming e produttività per nomadi digitali.",
 		faqQ5: "Questi appartamenti in affitto sono registrati ufficialmente?",
 		faqA5:
 			"Sì, OceanViewFlats opera legalmente ed è registrato presso il Registro Nazionale del Turismo della Colombia. L'appartamento 1707 è registrato con RNT #268781 e il 1606 con RNT #270413.",
+		faqQ6:
+			"Come funzionano il check-in, il Registro Ospiti e la tariffa condominiale?",
+		faqA6:
+			"Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio (inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679), sbloccando immediatamente la Guida dell'Ospite digitale, il Posto Auto Assegnato (N. 95 per il 1707 o N. 87 per il 1606) e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. All'arrivo alla reception dell'Edificio Salguero Sunset, è previsto il pagamento in loco di una Tariffa di Registrazione Condominiale obbligatoria di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro (si ricorda che le piscine chiudono ogni martedì per manutenzione programmata).",
 		hostTitle: "Il Tuo Ospite",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -2433,13 +2448,17 @@ export const dict = {
 		rnt1606: "RNT #270413",
 		faqQ3: "Kann ich direkt buchen, um Vermittlungsgebühren zu sparen?",
 		faqA3:
-			"Absolut! Nutzen Sie einfach unser sicheres Kontaktformular für eine Anfrage. Die Direktbuchung garantiert Ihnen den besten Preis, da keine hohen Servicegebühren anfallen.",
+			"Ja! Wählen Sie Ihr Check-in- und Check-out-Datum direkt auf der Seite von Oceanview Flat 1707 oder Oceanview Flat 1606 aus, um ein verbindliches Angebot in Kolumbianischen Pesos (COP) mit 0 % OTA-Provision einzusehen und Ihre Direktbuchung sofort online per Kredit-/Debitkarte, PSE-Überweisung oder Bargeld-Gutschein (Efecty) abzuschließen. Für Vorabanfragen steht Ihnen zudem unsere Kontaktseite zur Verfügung.",
 		faqQ4: "Ist das WLAN schnell genug für Remote-Arbeit?",
 		faqA4:
 			"Ja, sowohl OceanViewFlats 1707 als auch 1606 sind mit zuverlässigem Highspeed-Glasfaser-WLAN (bis zu 900 Mbps) ausgestattet, perfekt für Zoom-Meetings, Streaming und produktives Arbeiten.",
 		faqQ5: "Sind diese Ferienunterkünfte offiziell registriert?",
 		faqA5:
 			"Ja, OceanViewFlats arbeitet vollkommen legal und ist im nationalen Tourismusregister Kolumbiens eingetragen. Flat 1707 hat die RNT #268781 und Flat 1606 die RNT #270413.",
+		faqQ6:
+			"Wie funktionieren Check-in, Gästeregistrierung und die Gebäudegebühr?",
+		faqA6:
+			"Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus (einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen). Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr zugewiesener Stellplatz (Nr. 95 für Flat 1707 bzw. Nr. 87 für Flat 1606) sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine obligatorische einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten (bitte beachten Sie, dass die Pools jeden Dienstag wegen planmäßiger Wartung geschlossen sind).",
 		hostTitle: "Ihr Gastgeber",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -3015,13 +3034,17 @@ export const dict = {
 		rnt1606: "RNT番号: 270413",
 		faqQ3: "手数料を避けるために直接予約することはできますか？",
 		faqA3:
-			"もちろんです！安全な「お問い合わせ」フォームから直接ご連絡ください。仲介プラットフォームを通さない直接予約により、最もお得な価格を保証いたします。",
+			"はい！Oceanview Flat 1707またはOceanview Flat 1606のページでチェックイン日とチェックアウト日を直接選択すると、OTA仲介手数料0%のコロンビア・ペソ（COP）建て明細見積もりをご確認いただけ、クレジットカード／デビットカード、PSE銀行振込、または現金バウチャー（Efecty）で即座にオンライン決済を完了できます。予約前のご質問にはお問い合わせページもご利用いただけます。",
 		faqQ4: "Wi-Fiはリモートワークに十分な速度ですか？",
 		faqA4:
 			"はい、OceanViewFlats 1707および1606には、信頼性の高い高速光回線Wi-Fi（最大900 Mbps）が完備されており、Zoomビデオ通話や動画配信、リモートワークも快適に行えます。",
 		faqQ5: "これらの宿泊施設は公式に登録されていますか？",
 		faqA5:
 			"はい、OceanViewFlatsは合法的に運営されており、コロンビア国家観光登録に登録されています。1707号室はRNT #268781、1606号室はRNT #270413として公式登録されています。",
+		faqQ6:
+			"チェックイン、宿泊者名簿（ゲスト登録）、および建物登録料の仕組みは？",
+		faqA6:
+			"ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出いただくと、デジタルゲストガイド、専用駐車場（1707号室は95番、1606号室は87番）、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。ご到着時はEdificio Salguero Sunsetのフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください（なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます）。",
 		hostTitle: "ホスト",
 		hostName: "Manuel Enrique",
 		hostBio:

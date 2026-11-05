@@ -230,6 +230,89 @@ export const HOME_THEME = {
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
+	directSection:
+		"py-20 bg-gradient-to-b from-white to-slate-50 border-t border-b border-slate-200 px-6",
+	directContainer: "max-w-6xl mx-auto",
+	directHeader: "text-center max-w-3xl mx-auto mb-16",
+	directTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4",
+	directSubtitle: "text-lg text-slate-700 font-light",
+	directGrid: "grid grid-cols-1 md:grid-cols-4 gap-8",
+	directCard:
+		"bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300",
+	directIconEmerald:
+		"w-12 h-12 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mb-6",
+	directIconCoral:
+		"w-12 h-12 bg-red-50 text-[#BE123C] rounded-2xl flex items-center justify-center mb-6",
+	directIconSky:
+		"w-12 h-12 bg-sky-50 text-sky-700 rounded-2xl flex items-center justify-center mb-6",
+	directIconRose:
+		"w-12 h-12 bg-rose-50 text-rose-700 rounded-2xl flex items-center justify-center mb-6",
+	directCardTitle: "text-xl font-bold mb-3 text-slate-900",
+	directCardDesc: "text-sm text-slate-700 leading-relaxed",
+	editorialSection: "bg-slate-900 text-white py-24 px-6",
+	editorialContainer: "max-w-6xl mx-auto",
+	editorialHeader: "max-w-3xl mx-auto text-center mb-16",
+	editorialTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight text-white",
+	editorialGrid: "grid grid-cols-1 md:grid-cols-2 gap-10 mb-16",
+	editorialCard:
+		"group flex flex-col bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden hover:border-slate-500 transition-all duration-300",
+	editorialCardMedia: "h-64 relative overflow-hidden bg-slate-900",
+	editorialCardImage:
+		"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
+	editorialCardBody: "p-8 flex-grow flex flex-col justify-between",
+	editorialFeatureList: "space-y-4 mb-6",
+	editorialFeatureItem: "flex items-start gap-4",
+	editorialFeatureIconSky:
+		"w-10 h-10 shrink-0 bg-slate-900 text-sky-400 rounded-xl flex items-center justify-center mt-0.5",
+	editorialFeatureIconRose:
+		"w-10 h-10 shrink-0 bg-slate-900 text-rose-400 rounded-xl flex items-center justify-center mt-0.5",
+	editorialFeatureIconEmerald:
+		"w-10 h-10 shrink-0 bg-slate-900 text-emerald-400 rounded-xl flex items-center justify-center mt-0.5",
+	editorialFeatureTitle: "text-xl font-bold text-white mb-1",
+	editorialFeatureDesc: "text-sm text-slate-200 leading-relaxed",
+	editorialCardCta:
+		"inline-flex items-center space-x-2 text-sm font-bold text-white group-hover:text-slate-200",
+	hostCard:
+		"bg-slate-800 rounded-3xl p-8 md:p-12 border border-slate-700 flex flex-col md:flex-row items-center gap-10",
+	hostAvatarWrapper:
+		"w-32 h-32 md:w-44 md:h-44 rounded-full overflow-hidden shrink-0 border-4 border-slate-700",
+	hostAvatarImg: "w-full h-full object-cover",
+	hostHeaderRow: "flex flex-wrap items-center gap-3 mb-4",
+	hostName: "text-2xl md:text-3xl font-bold text-white",
+	hostRoleBadge:
+		"inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-slate-900 text-slate-200 border border-slate-700",
+	hostBio: "text-base md:text-lg text-slate-200 leading-relaxed mb-4",
+	hostRntBadge:
+		"inline-flex items-center space-x-2 text-xs font-semibold text-emerald-400 bg-slate-900 px-4 py-2 rounded-full border border-slate-700",
+	faqSection: "py-24 px-6 max-w-4xl mx-auto border-t border-slate-200",
+	faqTitle:
+		"text-3xl md:text-4xl font-extrabold mb-12 text-center text-slate-900",
+	faqList: "space-y-4",
+	faqDetails:
+		"group bg-white rounded-2xl border border-slate-200 shadow-sm open:shadow-md transition-all",
+	faqSummary:
+		"flex items-center justify-between gap-4 p-6 md:p-8 cursor-pointer list-none font-bold text-lg md:text-xl text-slate-900 select-none",
+	faqChevron:
+		"w-5 h-5 text-slate-500 shrink-0 transition-transform duration-300 group-open:rotate-180",
+	faqAnswerWrapper: "px-6 pb-6 md:px-8 md:pb-8 pt-4 border-t border-slate-100",
+	faqAnswer: "text-slate-700 leading-relaxed",
+	ctaSection: "py-20 px-6 max-w-6xl mx-auto mb-12",
+	ctaCard:
+		"bg-slate-900 text-white text-center relative overflow-hidden rounded-3xl py-16 px-8 md:px-16 shadow-2xl border border-slate-800",
+	ctaContent: "relative z-10 max-w-2xl mx-auto flex flex-col items-center",
+	ctaIconBox:
+		"w-14 h-14 bg-slate-800 text-white rounded-2xl flex items-center justify-center mb-6",
+	ctaTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white",
+	ctaSubtitle: "text-lg text-slate-200 font-light mb-8 leading-relaxed",
+	ctaActionsRow:
+		"flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto",
+	ctaPrimaryBtn:
+		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105",
+	ctaSecondaryBtn:
+		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-rose-700 bg-[#BE123C] hover:bg-rose-800 text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105",
 } as const;
 
 export const PRIVACY_THEME_STYLES = {
