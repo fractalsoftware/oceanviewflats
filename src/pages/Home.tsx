@@ -1,5 +1,8 @@
 import {
+	ArrowRight,
+	Calendar as CalendarIcon,
 	Heart,
+	MapPin,
 	MessageCircle,
 	MessageSquare,
 	Percent,
@@ -8,118 +11,173 @@ import {
 	Users,
 	Wifi,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
-import { IMAGES } from "../constants/config";
+import { getPropertyPagePath, IMAGES } from "../constants/config";
+import { HOME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const t = dict[lang];
-	const [isScrolled, setIsScrolled] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const handleScroll = () => setIsScrolled(window.scrollY > 50);
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
+	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
 
 	return (
-		<div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth">
+		<div className={HOME_THEME.pageWrapper}>
 			<Navigation
-				isScrolled={isScrolled}
+				isScrolled={false}
 				lang={lang}
-				showBookButton={false}
+				showBookButton={true}
+				bookHref="#properties"
 				assetPrefix={assetPrefix}
 			/>
 
 			{/* Hero Section */}
-			<header className="relative pt-28 pb-12 px-6 text-center overflow-hidden">
-				<div className="absolute inset-0 w-full h-full">
+			<header className={HOME_THEME.heroHeader}>
+				<div className={HOME_THEME.heroMediaWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
-						alt="OceanViewFlats"
-						className="w-full h-full object-cover"
+						alt={t.heroImgAlt}
+						className={HOME_THEME.heroImage}
 						fetchPriority="high"
 						loading="eager"
 					/>
-					<div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 to-slate-900/40"></div>
+					<div className={HOME_THEME.heroOverlay}></div>
 				</div>
-				<div className="relative z-10 max-w-3xl mx-auto mt-4">
-					<h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white tracking-tight drop-shadow-md">
-						{t.homeWelcome}
-					</h1>
-					<p className="text-lg md:text-xl text-slate-200 font-light max-w-2xl mx-auto drop-shadow">
-						{t.homeSubtitle}
-					</p>
+				<div className={HOME_THEME.heroContent}>
+					<div className={HOME_THEME.heroLocationBadge}>
+						<MapPin
+							className={HOME_THEME.heroLocationIcon}
+							aria-hidden="true"
+						/>
+						<span>{t.heroLocation}</span>
+					</div>
+					<h1 className={HOME_THEME.heroTitle}>{t.homeWelcome}</h1>
+					<p className={HOME_THEME.heroSubtitle}>{t.homeSubtitle}</p>
+					<p className={HOME_THEME.heroValueProp}>{t.homeHeroValueProp}</p>
+					<a href="#properties" className={HOME_THEME.heroCtaBtn}>
+						<CalendarIcon
+							className={HOME_THEME.heroCtaIcon}
+							aria-hidden="true"
+						/>
+						<span>{t.homeHeroCta}</span>
+					</a>
 				</div>
 			</header>
 
-			<main className="flex-grow w-full">
+			<main className={HOME_THEME.main}>
 				{/* Properties Section */}
-				<section className="py-20 px-6 max-w-6xl mx-auto">
-					<h2 className="sr-only">Our Featured Properties</h2>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+				<section id="properties" className={HOME_THEME.propertiesSection}>
+					<h2 className={HOME_THEME.propertiesSrHeading}>
+						Our Featured Properties
+					</h2>
+					<div className={HOME_THEME.propertiesGrid}>
 						<a
-							href={
-								lang === "en" ? "/Oceanview1707" : `/Oceanview1707/${lang}.html`
-							}
-							className="group block bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+							id="home-card-1707"
+							href={property1707Href}
+							className={HOME_THEME.card1707.card}
 						>
-							<div className="h-80 relative overflow-hidden">
+							<div className={HOME_THEME.card1707.cardMedia}>
 								<img
 									src={`${assetPrefix}${IMAGES["1707"].hero}`}
-									className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+									className={HOME_THEME.card1707.cardImage}
 									alt={t.heroTitle}
 									loading="lazy"
 								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
-								<div className="absolute bottom-6 left-6 text-white">
-									<p className="text-sm font-semibold tracking-wider uppercase mb-1 opacity-90">
+								<div className={HOME_THEME.card1707.cardOverlay}></div>
+								<span className={HOME_THEME.card1707.cardBadge}>
+									{t.homeCard1707Badge}
+								</span>
+								<div className={HOME_THEME.card1707.cardHeaderContent}>
+									<p className={HOME_THEME.card1707.cardLocation}>
 										{t.heroLocation}
 									</p>
-									<h3 className="text-3xl font-bold">{t.heroTitle}</h3>
+									<h3 className={HOME_THEME.card1707.cardTitle}>
+										{t.heroTitle}
+									</h3>
 								</div>
 							</div>
-							<div className="p-6 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors">
-								<p className="text-slate-600 line-clamp-2">{t.nomadDesc}</p>
-								<div className="mt-4 flex items-center space-x-4 text-sm font-medium text-[#FF5A5F]">
-									<span>{t.statsBeds}</span>
-									<span>•</span>
-									<span>{t.statsGuests}</span>
+							<div className={HOME_THEME.card1707.cardBody}>
+								<div>
+									<p className={HOME_THEME.card1707.cardDesc}>{t.nomadDesc}</p>
+									<div className={HOME_THEME.card1707.cardSpecsList}>
+										<span className={HOME_THEME.card1707.cardSpecPill}>
+											{t.statsBeds}
+										</span>
+										<span className={HOME_THEME.card1707.cardSpecPill}>
+											{t.statsBaths}
+										</span>
+										<span className={HOME_THEME.card1707.cardSpecPill}>
+											{t.statsGuests}
+										</span>
+										<span className={HOME_THEME.card1707.cardSpecHighlight}>
+											{t.homeCard1707Parking}
+										</span>
+									</div>
+								</div>
+								<div className={HOME_THEME.card1707.cardCtaRow}>
+									<span>{t.homeCardCta}</span>
+									<ArrowRight
+										className={HOME_THEME.card1707.cardCtaIcon}
+										aria-hidden="true"
+									/>
 								</div>
 							</div>
 						</a>
 
 						<a
-							href={
-								lang === "en" ? "/Oceanview1606" : `/Oceanview1606/${lang}.html`
-							}
-							className="group block bg-white rounded-3xl shadow-md border border-stone-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+							id="home-card-1606"
+							href={property1606Href}
+							className={HOME_THEME.card1606.card}
 						>
-							<div className="h-80 relative overflow-hidden">
+							<div className={HOME_THEME.card1606.cardMedia}>
 								<img
 									src={`${assetPrefix}${IMAGES["1606"].hero}`}
-									className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+									className={HOME_THEME.card1606.cardImage}
 									alt={t.hero1606Title}
 									loading="lazy"
 								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 to-transparent"></div>
-								<div className="absolute bottom-6 left-6 text-white">
-									<p className="text-sm font-semibold tracking-wider uppercase mb-1 opacity-90">
+								<div className={HOME_THEME.card1606.cardOverlay}></div>
+								<span className={HOME_THEME.card1606.cardBadge}>
+									{t.homeCard1606Badge}
+								</span>
+								<div className={HOME_THEME.card1606.cardHeaderContent}>
+									<p className={HOME_THEME.card1606.cardLocation}>
 										{t.heroLocation}
 									</p>
-									<h3 className="text-3xl font-bold">{t.hero1606Title}</h3>
+									<h3 className={HOME_THEME.card1606.cardTitle}>
+										{t.hero1606Title}
+									</h3>
 								</div>
 							</div>
-							<div className="p-6 bg-stone-50 border-t border-stone-100 group-hover:bg-white transition-colors">
-								<p className="text-stone-600 line-clamp-2">{t.romanticDesc}</p>
-								<div className="mt-4 flex items-center space-x-4 text-sm font-medium text-rose-600">
-									<span>{t.stats1606Beds}</span>
-									<span>•</span>
-									<span>{t.statsGuests}</span>
+							<div className={HOME_THEME.card1606.cardBody}>
+								<div>
+									<p className={HOME_THEME.card1606.cardDesc}>
+										{t.romanticDesc}
+									</p>
+									<div className={HOME_THEME.card1606.cardSpecsList}>
+										<span className={HOME_THEME.card1606.cardSpecPill}>
+											{t.stats1606Beds}
+										</span>
+										<span className={HOME_THEME.card1606.cardSpecPill}>
+											{t.statsBaths}
+										</span>
+										<span className={HOME_THEME.card1606.cardSpecPill}>
+											{t.statsGuests}
+										</span>
+										<span className={HOME_THEME.card1606.cardSpecHighlight}>
+											{t.homeCard1606Parking}
+										</span>
+									</div>
+								</div>
+								<div className={HOME_THEME.card1606.cardCtaRow}>
+									<span>{t.homeCardCta}</span>
+									<ArrowRight
+										className={HOME_THEME.card1606.cardCtaIcon}
+										aria-hidden="true"
+									/>
 								</div>
 							</div>
 						</a>

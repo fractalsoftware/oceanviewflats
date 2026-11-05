@@ -143,6 +143,95 @@ export const CHROME_THEME = {
 	footerBadgeBrand: "text-white font-bold tracking-wide",
 } as const;
 
+export const HOME_CARD_THEMES = {
+	"1707": {
+		card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
+		cardMedia: "h-80 relative overflow-hidden bg-slate-900",
+		cardImage:
+			"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
+		cardOverlay:
+			"absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/25 to-transparent",
+		cardBadge:
+			"absolute top-5 left-5 inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/80 text-white border border-white/20 backdrop-blur-md",
+		cardHeaderContent: "absolute bottom-6 left-6 right-6 text-white",
+		cardLocation:
+			"text-xs md:text-sm font-semibold tracking-wider uppercase mb-1 text-slate-200",
+		cardTitle: "text-2xl md:text-3xl font-bold text-white",
+		cardBody:
+			"flex-grow flex flex-col justify-between p-6 md:p-8 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors",
+		cardDesc: "text-slate-700 text-base leading-relaxed",
+		cardSpecsList:
+			"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-rose-700 text-[#BE123C]",
+		cardSpecPill:
+			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
+		cardSpecHighlight:
+			"inline-flex items-center px-3 py-1 rounded-full bg-red-50 border border-rose-200 text-rose-700 text-[#BE123C]",
+		cardCtaRow:
+			"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-rose-700 text-[#BE123C] group-hover:text-slate-900 transition-colors",
+		cardCtaIcon:
+			"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 shrink-0",
+	},
+	"1606": {
+		card: "group flex flex-col bg-white rounded-3xl shadow-md border border-stone-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
+		cardMedia: "h-80 relative overflow-hidden bg-stone-900",
+		cardImage:
+			"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
+		cardOverlay:
+			"absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/25 to-transparent",
+		cardBadge:
+			"absolute top-5 left-5 inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-stone-900/80 text-stone-100 border border-white/20 backdrop-blur-md",
+		cardHeaderContent: "absolute bottom-6 left-6 right-6 text-white",
+		cardLocation:
+			"text-xs md:text-sm font-semibold tracking-wider uppercase mb-1 text-stone-200",
+		cardTitle: "text-2xl md:text-3xl font-bold text-white",
+		cardBody:
+			"flex-grow flex flex-col justify-between p-6 md:p-8 bg-stone-50 border-t border-stone-100 group-hover:bg-white transition-colors",
+		cardDesc: "text-stone-700 text-base leading-relaxed",
+		cardSpecsList:
+			"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-rose-700 text-[#BE123C]",
+		cardSpecPill:
+			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-stone-200 text-stone-700",
+		cardSpecHighlight:
+			"inline-flex items-center px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[#BE123C]",
+		cardCtaRow:
+			"mt-6 pt-5 border-t border-stone-200/80 flex items-center justify-between text-base font-bold text-rose-700 text-[#BE123C] group-hover:text-stone-900 transition-colors",
+		cardCtaIcon:
+			"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 shrink-0",
+	},
+} as const;
+
+export const HOME_THEME = {
+	pageWrapper:
+		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",
+	heroHeader:
+		"relative bg-slate-900 pt-32 pb-20 md:pt-36 md:pb-24 px-6 text-center overflow-hidden",
+	heroMediaWrapper: "absolute inset-0 w-full h-full",
+	heroImage: "w-full h-full object-cover",
+	heroOverlay:
+		"absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/55 to-slate-900/80",
+	heroContent:
+		"relative z-10 max-w-4xl mx-auto mt-4 flex flex-col items-center",
+	heroLocationBadge:
+		"inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-semibold tracking-wider uppercase mb-6",
+	heroLocationIcon: "w-4 h-4 shrink-0",
+	heroTitle:
+		"text-4xl md:text-6xl font-extrabold mb-4 text-white tracking-tight leading-tight drop-shadow-md",
+	heroSubtitle:
+		"text-lg md:text-2xl text-slate-200 font-light max-w-2xl mx-auto mb-6 drop-shadow",
+	heroValueProp:
+		"inline-flex items-center justify-center bg-slate-900/70 border border-white/20 backdrop-blur-md px-5 py-2 rounded-full text-xs md:text-sm font-semibold text-slate-100 tracking-wide mb-8",
+	heroCtaBtn:
+		"inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105",
+	heroCtaIcon: "w-5 h-5 text-[#BE123C] shrink-0",
+	main: "flex-grow w-full",
+	propertiesSection: "py-20 px-6 max-w-6xl mx-auto scroll-mt-20",
+	propertiesSrHeading: "sr-only",
+	propertiesGrid: "grid grid-cols-1 md:grid-cols-2 gap-10",
+	cards: HOME_CARD_THEMES,
+	card1707: HOME_CARD_THEMES["1707"],
+	card1606: HOME_CARD_THEMES["1606"],
+} as const;
+
 export const PRIVACY_THEME_STYLES = {
 	privacyPageWrapper:
 		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",
