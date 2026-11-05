@@ -1373,3 +1373,144 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		"Home.tsx must not contain dead client-side useState/useEffect hooks in zero-hydration SSG",
 	);
 });
+
+test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive-Disclosure FAQ (<details>/<summary>), and Direct-Checkout Funnel align across all 6 locales (#239)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expectedContactHref: "./contact/index.html",
+			expectedDirectTitle: "Why Book Direct?",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expectedContactHref: "./contact/es.html",
+			expectedDirectTitle: "¿Por qué Reservar Directamente?",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expectedContactHref: "./contact/fr.html",
+			expectedDirectTitle: "Pourquoi Réserver Directement ?",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expectedContactHref: "./contact/it.html",
+			expectedDirectTitle: "Perché Prenotare Direttamente?",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expectedContactHref: "./contact/de.html",
+			expectedDirectTitle: "Warum Direkt Buchen?",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expectedContactHref: "./contact/ja.html",
+			expectedDirectTitle: "公式サイトから直接予約する理由",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. Why Book Direct section has no duplicate kicker pill above <h2>{t.directTitle}</h2> and no amber/purple icons
+		const directMatch = html.match(
+			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(
+			directMatch,
+			`${locale.file} must render <section id="why-book-direct">`,
+		);
+		const directHtml = directMatch[0];
+		const directTitleOccurrences =
+			directHtml.split(locale.expectedDirectTitle).length - 1;
+		assert.equal(
+			directTitleOccurrences,
+			1,
+			`${locale.file} must render directTitle exactly once in #why-book-direct (no duplicate kicker pill)`,
+		);
+		assert.ok(
+			!directHtml.includes("bg-amber-50") &&
+				!directHtml.includes("bg-purple-50"),
+			`${locale.file} #why-book-direct must use cohesive palette without amber/purple icon boxes`,
+		);
+
+		// 2. Editorial Lifestyle & Host Showcase section renders real photography and Host Manuel Enrique with RNT badges
+		const expMatch = html.match(
+			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(
+			expMatch,
+			`${locale.file} must render <section id="experiences">`,
+		);
+		const expHtml = expMatch[0];
+		assert.ok(
+			expHtml.includes("./images/1707-balcony-working-nomad.webp") &&
+				expHtml.includes("./images/1606-romantic-experiences.webp") &&
+				expHtml.includes("./images/host-image.webp"),
+			`${locale.file} #experiences must showcase 1707-balcony-working-nomad.webp, 1606-romantic-experiences.webp, and host-image.webp`,
+		);
+		assert.ok(
+			expHtml.includes('id="home-host-card"') &&
+				expHtml.includes("Manuel Enrique") &&
+				expHtml.includes("268781") &&
+				expHtml.includes("270413"),
+			`${locale.file} #experiences must render #home-host-card with Manuel Enrique and both RNT numbers`,
+		);
+		assert.ok(
+			!expHtml.includes("mt-10"),
+			`${locale.file} #experiences must not have an exposed mt-10 gap`,
+		);
+
+		// 3. Progressive-Disclosure FAQ section uses 6 native <details>/<summary> accordions (first open) with COP, 20,000 COP, and 0XXXXXX# disclosures
+		const faqMatch = html.match(
+			/<section[^>]*id="faq"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(faqMatch, `${locale.file} must render <section id="faq">`);
+		const faqHtml = faqMatch[0];
+		const detailsMatches = faqHtml.match(/<details/g) || [];
+		const summaryMatches = faqHtml.match(/<summary/g) || [];
+		assert.equal(
+			detailsMatches.length,
+			6,
+			`${locale.file} #faq must render 6 <details> accordion items`,
+		);
+		assert.equal(
+			summaryMatches.length,
+			6,
+			`${locale.file} #faq must render 6 <summary> headers`,
+		);
+		assert.ok(
+			/<details[^>]*open/.test(faqHtml),
+			`${locale.file} #faq must have the first <details> item open by default`,
+		);
+		assert.ok(
+			faqHtml.includes("20,000 COP") &&
+				faqHtml.includes("0XXXXXX#") &&
+				faqHtml.includes("1581") &&
+				faqHtml.includes("Efecty"),
+			`${locale.file} #faq must disclose 20,000 COP building fee, 0XXXXXX# door PIN, Law 1581 Guest Registry, and direct checkout payment rails`,
+		);
+
+		// 4. FAQPage JSON-LD structured data includes all 6 Questions
+		assert.ok(
+			html.includes('"@type":"FAQPage"') && html.includes("20,000 COP"),
+			`${locale.file} FAQPage JSON-LD must include the 6th FAQ item`,
+		);
+
+		// 5. Bottom CTA section provides both #properties primary direct-checkout anchor and localized contact link without dark-glow blur-3xl blobs
+		assert.ok(
+			html.includes(`href="${locale.expectedContactHref}"`),
+			`${locale.file} bottom CTA must link to ${locale.expectedContactHref}`,
+		);
+		assert.ok(
+			!html.includes("blur-3xl"),
+			`${locale.file} must not contain decorative blur-3xl dark-glow blobs`,
+		);
+	}
+});

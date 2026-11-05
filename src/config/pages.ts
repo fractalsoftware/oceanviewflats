@@ -217,6 +217,14 @@ export const pages: PageConfig[] = [
 									text: t.faqA5,
 								},
 							},
+							{
+								"@type": "Question",
+								name: t.faqQ6,
+								acceptedAnswer: {
+									"@type": "Answer",
+									text: t.faqA6,
+								},
+							},
 						],
 					},
 				],
