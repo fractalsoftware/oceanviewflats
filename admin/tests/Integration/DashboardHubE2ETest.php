@@ -39,6 +39,7 @@ final class DashboardHubE2ETest extends TestCase
 
     protected function setUp(): void
     {
+        date_default_timezone_set('America/Bogota');
         $this->pdo = AdminDatabaseTestHelper::createDatabaseWithDefaultAdmin();
     }
 
