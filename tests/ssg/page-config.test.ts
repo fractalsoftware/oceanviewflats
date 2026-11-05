@@ -1199,6 +1199,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		{
 			code: "en",
 			file: "index.html",
+			expectedNavBookDirect: "Book Direct",
+			forbiddenNavAirbnb: "Book on Airbnb",
 			expected1707Href: "./Oceanview1707/index.html",
 			expected1606Href: "./Oceanview1606/index.html",
 			expectedHeroAlt: "Balcony Ocean View",
@@ -1213,6 +1215,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		{
 			code: "es",
 			file: "es.html",
+			expectedNavBookDirect: "Reservar Directo",
+			forbiddenNavAirbnb: "Reservar en Airbnb",
 			expected1707Href: "./Oceanview1707/es.html",
 			expected1606Href: "./Oceanview1606/es.html",
 			expectedHeroAlt: "Vista al mar desde el balcón",
@@ -1227,6 +1231,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		{
 			code: "fr",
 			file: "fr.html",
+			expectedNavBookDirect: "Réserver en Direct",
+			forbiddenNavAirbnb: "Réserver sur Airbnb",
 			expected1707Href: "./Oceanview1707/fr.html",
 			expected1606Href: "./Oceanview1606/fr.html",
 			expectedHeroAlt: "Vue sur l&#x27;océan depuis le balcon",
@@ -1241,6 +1247,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		{
 			code: "it",
 			file: "it.html",
+			expectedNavBookDirect: "Prenota Diretto",
+			forbiddenNavAirbnb: "Prenota su Airbnb",
 			expected1707Href: "./Oceanview1707/it.html",
 			expected1606Href: "./Oceanview1606/it.html",
 			expectedHeroAlt: "Vista oceano dal balcone",
@@ -1255,6 +1263,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		{
 			code: "de",
 			file: "de.html",
+			expectedNavBookDirect: "Direkt Buchen",
+			forbiddenNavAirbnb: "Auf Airbnb buchen",
 			expected1707Href: "./Oceanview1707/de.html",
 			expected1606Href: "./Oceanview1606/de.html",
 			expectedHeroAlt: "Meerblick vom Balkon",
@@ -1269,6 +1279,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 		{
 			code: "ja",
 			file: "ja.html",
+			expectedNavBookDirect: "直接予約",
+			forbiddenNavAirbnb: "Airbnbで予約",
 			expected1707Href: "./Oceanview1707/ja.html",
 			expected1606Href: "./Oceanview1606/ja.html",
 			expectedHeroAlt: "バルコニーからのオーシャンビュー",
@@ -1285,18 +1297,30 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. Navbar & Hero CTA both link to #properties
+		// 1. Navbar & Hero CTA both link to #properties, and Navbar uses "Book Direct" (never "Book on Airbnb")
 		const propertiesAnchors = html.match(/<a[^>]*href="#properties"[^>]*>/g);
 		assert.ok(
 			propertiesAnchors && propertiesAnchors.length >= 2,
 			`${locale.file} must render both Navbar and Hero CTAs linking to href="#properties"`,
 		);
+		const navMatch = html.match(/<nav[\s\S]*?<\/nav>/);
+		assert.ok(navMatch, `${locale.file} must render <nav>`);
+		assert.ok(
+			navMatch[0].includes(locale.expectedNavBookDirect) &&
+				!navMatch[0].includes(locale.forbiddenNavAirbnb),
+			`${locale.file} navbar must display "${locale.expectedNavBookDirect}" instead of "${locale.forbiddenNavAirbnb}"`,
+		);
 
-		// 2. Hero image uses localized alt text (t.heroImgAlt) instead of generic "OceanViewFlats"
+		// 2. Hero image uses localized alt text (t.heroImgAlt) and Hero names Edificio Salguero Sunset
 		assert.ok(
 			html.includes(`alt="${locale.expectedHeroAlt}"`) &&
 				!html.includes('alt="OceanViewFlats"'),
 			`${locale.file} hero image must use localized alt="${locale.expectedHeroAlt}"`,
+		);
+		const headerMatch = html.match(/<header[\s\S]*?<\/header>/);
+		assert.ok(
+			headerMatch && headerMatch[0].includes("Edificio Salguero Sunset"),
+			`${locale.file} Hero header must visibly display "Edificio Salguero Sunset"`,
 		);
 
 		// 3. Featured Properties section has id="properties"
@@ -1329,7 +1353,7 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			`${locale.file} must render canonical titles "${locale.expected1707Title}" and "${locale.expected1606Title}"`,
 		);
 
-		// 6. Floor + RNT badges, bath counts, and assigned parking bays (Bay 95 & Bay 87)
+		// 6. Floor + RNT badges, bath counts, assigned parking bays (Bay 95 & Bay 87), and 7–12 multi-property disclosure
 		assert.ok(
 			propSectionHtml.includes(locale.expected1707Badge) &&
 				propSectionHtml.includes(locale.expected1606Badge),
@@ -1344,29 +1368,41 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			propSectionHtml.includes(locale.expectedBaths),
 			`${locale.file} must display bathroom count (${locale.expectedBaths}) on the property cards`,
 		);
+		assert.ok(
+			propSectionHtml.includes('id="home-multi-property-note"') &&
+				propSectionHtml.includes("7–12") &&
+				propSectionHtml.includes("Edificio Salguero Sunset"),
+			`${locale.file} #properties must display the 7–12 Guest multi-property family stay note in Edificio Salguero Sunset`,
+		);
 
-		// 7. No line-clamp-2 truncation on localized descriptions, and WCAG AA contrast tokens used inside #properties
+		// 7. No line-clamp-2 truncation on localized descriptions, and Property Temperature Rule + WCAG AA contrast tokens used inside #properties
 		assert.ok(
 			!propSectionHtml.includes("line-clamp-2"),
 			`${locale.file} property cards must not truncate descriptions with line-clamp-2`,
 		);
 		assert.ok(
-			propSectionHtml.includes("text-[#BE123C]") &&
+			propSectionHtml.includes("text-[#B91C1C]") &&
+				propSectionHtml.includes("text-[#BE123C]") &&
 				!propSectionHtml.includes("text-[#FF5A5F]") &&
 				!propSectionHtml.includes("text-rose-600"),
-			`${locale.file} property cards must use WCAG AA high-contrast text-[#BE123C] instead of low-contrast text-[#FF5A5F] or text-rose-600`,
+			`${locale.file} property cards must use Coral Horizon deep text-[#B91C1C] on 1707 and Salguero Sunset Rose deep text-[#BE123C] on 1606`,
 		);
 	}
 
-	// 8. Verify Home.tsx source uses HOME_THEME, getPropertyPagePath, and has excised dead useState/useEffect scroll listener
+	// 8. Verify Home.tsx source uses HOME_THEME, HOME_PROPERTY_CARDS, getPropertyPagePath, zero inline class strings, and no useState/useEffect
 	const homeSource = fs.readFileSync(
 		path.join(process.cwd(), "src", "pages", "Home.tsx"),
 		"utf-8",
 	);
 	assert.ok(
 		homeSource.includes("HOME_THEME") &&
+			homeSource.includes("HOME_PROPERTY_CARDS") &&
 			homeSource.includes("getPropertyPagePath"),
-		"Home.tsx must consume centralized HOME_THEME and getPropertyPagePath",
+		"Home.tsx must consume centralized HOME_THEME, HOME_PROPERTY_CARDS, and getPropertyPagePath",
+	);
+	assert.ok(
+		!homeSource.includes('className="'),
+		"Home.tsx must not contain any hardcoded inline className strings",
 	);
 	assert.ok(
 		!homeSource.includes("useState") && !homeSource.includes("useEffect"),
@@ -1503,10 +1539,12 @@ test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive
 			`${locale.file} FAQPage JSON-LD must include the 6th FAQ item`,
 		);
 
-		// 5. Bottom CTA section provides both #properties primary direct-checkout anchor and localized contact link without dark-glow blur-3xl blobs
+		// 5. Bottom CTA section provides #properties primary direct-checkout anchor, localized contact link, and WhatsApp link without dark-glow blur-3xl blobs
 		assert.ok(
-			html.includes(`href="${locale.expectedContactHref}"`),
-			`${locale.file} bottom CTA must link to ${locale.expectedContactHref}`,
+			html.includes(`href="${locale.expectedContactHref}"`) &&
+				html.includes('href="https://wa.me/573108155234"') &&
+				html.includes("COP"),
+			`${locale.file} bottom CTA must link to ${locale.expectedContactHref} and WhatsApp while referencing COP direct checkout`,
 		);
 		assert.ok(
 			!html.includes("blur-3xl"),
