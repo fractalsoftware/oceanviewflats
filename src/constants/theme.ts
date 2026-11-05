@@ -161,13 +161,13 @@ export const HOME_CARD_THEMES = {
 			"flex-grow flex flex-col justify-between p-6 md:p-8 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors",
 		cardDesc: "text-slate-700 text-base leading-relaxed",
 		cardSpecsList:
-			"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-rose-700 text-[#BE123C]",
+			"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-red-700 text-[#B91C1C]",
 		cardSpecPill:
 			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
 		cardSpecHighlight:
-			"inline-flex items-center px-3 py-1 rounded-full bg-red-50 border border-rose-200 text-rose-700 text-[#BE123C]",
+			"inline-flex items-center px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-[#B91C1C]",
 		cardCtaRow:
-			"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-rose-700 text-[#BE123C] group-hover:text-slate-900 transition-colors",
+			"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-red-700 text-[#B91C1C] group-hover:text-slate-900 transition-colors",
 		cardCtaIcon:
 			"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 shrink-0",
 	},
@@ -222,11 +222,23 @@ export const HOME_THEME = {
 		"inline-flex items-center justify-center bg-slate-900/70 border border-white/20 backdrop-blur-md px-5 py-2 rounded-full text-xs md:text-sm font-semibold text-slate-100 tracking-wide mb-8",
 	heroCtaBtn:
 		"inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105",
-	heroCtaIcon: "w-5 h-5 text-[#BE123C] shrink-0",
+	heroCtaIcon: "w-5 h-5 text-red-700 text-[#B91C1C] shrink-0",
+	iconSm: "w-4 h-4 shrink-0",
+	iconMd: "w-5 h-5 shrink-0",
+	iconLg: "w-6 h-6",
+	iconXl: "w-7 h-7",
 	main: "flex-grow w-full",
 	propertiesSection: "py-20 px-6 max-w-6xl mx-auto scroll-mt-20",
 	propertiesSrHeading: "sr-only",
 	propertiesGrid: "grid grid-cols-1 md:grid-cols-2 gap-10",
+	multiPropertyBanner:
+		"mt-10 bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6",
+	multiPropertyContent: "flex items-start gap-4",
+	multiPropertyIconBox:
+		"w-12 h-12 shrink-0 bg-red-50 text-red-700 text-[#B91C1C] rounded-2xl flex items-center justify-center",
+	multiPropertyText: "text-sm md:text-base text-slate-700 leading-relaxed",
+	multiPropertyCta:
+		"shrink-0 inline-flex items-center justify-center space-x-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors",
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
@@ -243,7 +255,7 @@ export const HOME_THEME = {
 	directIconEmerald:
 		"w-12 h-12 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mb-6",
 	directIconCoral:
-		"w-12 h-12 bg-red-50 text-[#BE123C] rounded-2xl flex items-center justify-center mb-6",
+		"w-12 h-12 bg-red-50 text-red-700 text-[#B91C1C] rounded-2xl flex items-center justify-center mb-6",
 	directIconSky:
 		"w-12 h-12 bg-sky-50 text-sky-700 rounded-2xl flex items-center justify-center mb-6",
 	directIconRose:
@@ -265,11 +277,9 @@ export const HOME_THEME = {
 	editorialFeatureList: "space-y-4 mb-6",
 	editorialFeatureItem: "flex items-start gap-4",
 	editorialFeatureIconSky:
-		"w-10 h-10 shrink-0 bg-slate-900 text-sky-400 rounded-xl flex items-center justify-center mt-0.5",
+		"w-10 h-10 shrink-0 bg-slate-900 text-sky-400 text-[#38BDF8] border border-slate-700 rounded-xl flex items-center justify-center mt-0.5",
 	editorialFeatureIconRose:
-		"w-10 h-10 shrink-0 bg-slate-900 text-rose-400 rounded-xl flex items-center justify-center mt-0.5",
-	editorialFeatureIconEmerald:
-		"w-10 h-10 shrink-0 bg-slate-900 text-emerald-400 rounded-xl flex items-center justify-center mt-0.5",
+		"w-10 h-10 shrink-0 bg-slate-900 text-rose-400 text-[#FB7185] border border-slate-700 rounded-xl flex items-center justify-center mt-0.5",
 	editorialFeatureTitle: "text-xl font-bold text-white mb-1",
 	editorialFeatureDesc: "text-sm text-slate-200 leading-relaxed",
 	editorialCardCta:
@@ -285,7 +295,7 @@ export const HOME_THEME = {
 		"inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-slate-900 text-slate-200 border border-slate-700",
 	hostBio: "text-base md:text-lg text-slate-200 leading-relaxed mb-4",
 	hostRntBadge:
-		"inline-flex items-center space-x-2 text-xs font-semibold text-emerald-400 bg-slate-900 px-4 py-2 rounded-full border border-slate-700",
+		"inline-flex items-center space-x-2 text-xs font-semibold text-emerald-400 text-[#34D399] bg-slate-900 px-4 py-2 rounded-full border border-slate-700",
 	faqSection: "py-24 px-6 max-w-4xl mx-auto border-t border-slate-200",
 	faqTitle:
 		"text-3xl md:text-4xl font-extrabold mb-12 text-center text-slate-900",
@@ -301,18 +311,20 @@ export const HOME_THEME = {
 	ctaSection: "py-20 px-6 max-w-6xl mx-auto mb-12",
 	ctaCard:
 		"bg-slate-900 text-white text-center relative overflow-hidden rounded-3xl py-16 px-8 md:px-16 shadow-2xl border border-slate-800",
-	ctaContent: "relative z-10 max-w-2xl mx-auto flex flex-col items-center",
+	ctaContent: "relative z-10 max-w-3xl mx-auto flex flex-col items-center",
 	ctaIconBox:
 		"w-14 h-14 bg-slate-800 text-white rounded-2xl flex items-center justify-center mb-6",
 	ctaTitle:
 		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white",
 	ctaSubtitle: "text-lg text-slate-200 font-light mb-8 leading-relaxed",
 	ctaActionsRow:
-		"flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto",
+		"flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 w-full sm:w-auto",
 	ctaPrimaryBtn:
 		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105",
 	ctaSecondaryBtn:
 		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-rose-700 bg-[#BE123C] hover:bg-rose-800 text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105",
+	ctaWhatsAppBtn:
+		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-emerald-700 bg-[#047857] hover:bg-emerald-800 text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105",
 } as const;
 
 export const PRIVACY_THEME_STYLES = {

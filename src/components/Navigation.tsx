@@ -11,6 +11,7 @@ interface NavigationProps {
 	lang: Lang;
 	showBookButton?: boolean;
 	bookHref?: string;
+	bookLabelKey?: "navBook" | "navBookDirect";
 	assetPrefix?: string;
 }
 
@@ -19,6 +20,7 @@ export const Navigation = ({
 	lang,
 	showBookButton = true,
 	bookHref = "#booking",
+	bookLabelKey = "navBook",
 	assetPrefix = "./",
 }: NavigationProps) => {
 	const t = dict[lang];
@@ -56,7 +58,7 @@ export const Navigation = ({
 					<LanguageDropdown currentLang={lang} isScrolled={isScrolled} />
 					{showBookButton && (
 						<a href={bookHref} className={CHROME_THEME.navBookBtn}>
-							{t.navBook}
+							{t[bookLabelKey]}
 						</a>
 					)}
 				</div>

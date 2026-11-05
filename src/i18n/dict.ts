@@ -9,6 +9,7 @@ export const dict = {
 		seoDescription:
 			"Book your beachfront stay at Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfect for digital nomads, featuring high-speed Wi-Fi, pool, and stunning Caribbean sea sunsets. Book your direct stay now.",
 		navBook: "Book on Airbnb",
+		navBookDirect: "Book Direct",
 		heroTitle: "Oceanview Flat 1707",
 		heroSub:
 			"Work, relax, and live by the beach in Playa Salguero, Santa Marta.",
@@ -51,7 +52,8 @@ export const dict = {
 		nomadOceanDesc: "Find inspiration looking out at the Caribbean sea.",
 		nomadImgAlt: "Digital Nomad Workspace",
 		heroImgAlt: "Balcony Ocean View",
-		heroLocation: "Playa Salguero, Santa Marta, Colombia",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Bedroom",
 		aboutPoolAlt: "Pool",
 		footerRights: "OceanViewFlats. All rights reserved.",
@@ -92,6 +94,13 @@ export const dict = {
 		homeHeroValueProp:
 			"0% OTA Commission • Authoritative COP Quotes • Instant Online Checkout",
 		homeHeroCta: "Explore Beachfront Properties",
+		homeFeaturedPropertiesTitle: "Our Featured Beachfront Properties",
+		homeMultiPropertyNote:
+			"Traveling with a larger group of 7–12 Guests? Oceanview Flat 1707 (17th Floor) and Oceanview Flat 1606 (16th Floor) are located just one floor apart in Edificio Salguero Sunset—book both Properties together or send us an Inquiry for a coordinated multi-property family stay.",
+		homeCtaTitle: "Ready to Book Direct or Have a Question?",
+		homeCtaSub:
+			"Select a beachfront Property above to calculate an authoritative COP Quote and complete instant online checkout (Card, PSE, or Cash Voucher) with 0% OTA commission—or send a pre-booking Inquiry via our Contact page or WhatsApp for custom requests and 7–12 Guest multi-property stays.",
+		homeCtaWhatsApp: "Chat on WhatsApp",
 		homeCard1707Badge: "17th Floor • RNT #268781",
 		homeCard1606Badge: "16th Floor • RNT #270413",
 		homeCard1707Parking: "Assigned Parking Bay 95",
@@ -573,6 +582,7 @@ export const dict = {
 		seoDescription:
 			"Reserva tu estadía frente a la playa en Oceanview Flat 1707 en Playa Salguero, Santa Marta. Ideal para nómadas digitales, con Wi-Fi de alta velocidad, piscina e increíbles atardeceres del Caribe. Reserva tu estancia directa ahora.",
 		navBook: "Reservar en Airbnb",
+		navBookDirect: "Reservar Directo",
 		heroTitle: "Apartamento Vista al Mar 1707",
 		heroSub:
 			"Trabaja, relájate y vive frente a la playa en Playa Salguero, Santa Marta.",
@@ -615,7 +625,8 @@ export const dict = {
 		nomadOceanDesc: "Encuentra inspiración mirando al mar Caribe.",
 		nomadImgAlt: "Espacio de trabajo para Nómadas Digitales",
 		heroImgAlt: "Vista al mar desde el balcón",
-		heroLocation: "Playa Salguero, Santa Marta, Colombia",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Habitación",
 		aboutPoolAlt: "Piscina",
 		footerRights: "OceanViewFlats. Todos los derechos reservados.",
@@ -657,6 +668,13 @@ export const dict = {
 		homeHeroValueProp:
 			"0% Comisión de Plataformas • Cotizaciones Oficiales en COP • Reserva Inmediata en Línea",
 		homeHeroCta: "Explorar Apartamentos Frente al Mar",
+		homeFeaturedPropertiesTitle: "Nuestras Propiedades Frente al Mar",
+		homeMultiPropertyNote:
+			"¿Viajas con un grupo grande de 7–12 Huéspedes? El Apartamento 1707 (Piso 17) y el Apartamento 1606 (Piso 16) están ubicados a solo un piso de distancia en el Edificio Salguero Sunset: reserva ambas propiedades juntas o envíanos una consulta para coordinar una estadía familiar multipropiedad.",
+		homeCtaTitle: "¿Listo para Reservar Directo o Tienes Alguna Pregunta?",
+		homeCtaSub:
+			"Selecciona una Propiedad arriba para calcular una Cotización oficial en COP y completar tu pago en línea al instante (Tarjeta, PSE o Efecty) con 0% de comisión OTA, o envía una Consulta previa desde nuestra página de Contacto o por WhatsApp para solicitudes especiales y estadías multipropiedad de 7–12 Huéspedes.",
+		homeCtaWhatsApp: "Chatear por WhatsApp",
 		homeCard1707Badge: "Piso 17 • RNT #268781",
 		homeCard1606Badge: "Piso 16 • RNT #270413",
 		homeCard1707Parking: "Parqueadero Asignado Bahía 95",
@@ -1154,6 +1172,7 @@ export const dict = {
 		seoDescription:
 			"Réservez votre séjour en bord de mer au Oceanview Flat 1707 à Playa Salguero, Santa Marta. Idéal pour les nomades digitaux, avec Wi-Fi haut débit, piscine et superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
 		navBook: "Réserver sur Airbnb",
+		navBookDirect: "Réserver en Direct",
 		heroTitle: "Appartement Vue Mer 1707",
 		heroSub:
 			"Travaillez, détendez-vous et vivez face à la plage à Playa Salguero, Santa Marta.",
@@ -1196,7 +1215,8 @@ export const dict = {
 		nomadOceanDesc: "Trouvez l'inspiration face à la mer des Caraïbes.",
 		nomadImgAlt: "Espace de travail pour Nomades Digitaux",
 		heroImgAlt: "Vue sur l'océan depuis le balcon",
-		heroLocation: "Playa Salguero, Santa Marta, Colombie",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombie",
 		aboutBedroomAlt: "Chambre",
 		aboutPoolAlt: "Piscine",
 		footerRights: "OceanViewFlats. Tous droits réservés.",
@@ -1239,6 +1259,13 @@ export const dict = {
 		homeHeroValueProp:
 			"0% de Commission OTA • Devis Officiels en COP • Paiement Direct en Ligne",
 		homeHeroCta: "Découvrir nos Appartements Vue Mer",
+		homeFeaturedPropertiesTitle: "Nos Propriétés en Bord de Mer",
+		homeMultiPropertyNote:
+			"Vous voyagez avec un grand groupe de 7–12 Voyageurs ? L'Appartement 1707 (17e étage) et l'Appartement 1606 (16e étage) sont situés à un seul étage d'écart dans l'Edificio Salguero Sunset — réservez les deux logements ensemble ou envoyez-nous une demande pour un séjour familial multi-propriétés.",
+		homeCtaTitle: "Prêt à Réserver en Direct ou Vous Avez une Question ?",
+		homeCtaSub:
+			"Sélectionnez un appartement ci-dessus pour obtenir un Devis officiel en COP et finaliser votre paiement en ligne instantané (Carte, PSE ou Efecty) avec 0 % de commission OTA — ou envoyez une Demande via notre page Contact ou sur WhatsApp pour toute question ou un séjour multi-propriétés de 7–12 Voyageurs.",
+		homeCtaWhatsApp: "Discuter sur WhatsApp",
 		homeCard1707Badge: "17e Étage • RNT #268781",
 		homeCard1606Badge: "16e Étage • RNT #270413",
 		homeCard1707Parking: "Parking Attribué Place 95",
@@ -1742,6 +1769,7 @@ export const dict = {
 		seoDescription:
 			"Prenota il tuo soggiorno di fronte al mare all'Oceanview Flat 1707 a Playa Salguero, Santa Marta. Perfetto per i nomadi digitali, con Wi-Fi ad alta velocità, piscina e splendidi tramonti sui Caraibi. Prenota ora il tuo soggiorno diretto.",
 		navBook: "Prenota su Airbnb",
+		navBookDirect: "Prenota Diretto",
 		heroTitle: "Appartamento Vista Mare 1707",
 		heroSub:
 			"Lavora, rilassati e vivi di fronte alla spiaggia a Playa Salguero, Santa Marta.",
@@ -1784,7 +1812,8 @@ export const dict = {
 		nomadOceanDesc: "Trova l'ispirazione guardando il mar dei Caraibi.",
 		nomadImgAlt: "Spazio di lavoro per Nomadi Digitali",
 		heroImgAlt: "Vista oceano dal balcone",
-		heroLocation: "Playa Salguero, Santa Marta, Colombia",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Camera da letto",
 		aboutPoolAlt: "Piscina",
 		footerRights: "OceanViewFlats. Tutti i diritti riservati.",
@@ -1826,6 +1855,13 @@ export const dict = {
 		homeHeroValueProp:
 			"0% Commissioni OTA • Preventivi Ufficiali in COP • Checkout Diretto Online",
 		homeHeroCta: "Esplora gli Appartamenti Fronte Mare",
+		homeFeaturedPropertiesTitle: "Le Nostre Proprietà Fronte Mare",
+		homeMultiPropertyNote:
+			"Viaggi con un gruppo numeroso di 7–12 Ospiti? L'Appartamento 1707 (17° piano) e l'Appartamento 1606 (16° piano) si trovano a un solo piano di distanza nell'Edificio Salguero Sunset: prenota entrambi gli appartamenti insieme o inviaci una richiesta per un soggiorno familiare multi-proprietà.",
+		homeCtaTitle: "Pronto a Prenotare Diretto o Hai una Domanda?",
+		homeCtaSub:
+			"Seleziona un appartamento qui sopra per calcolare un Preventivo ufficiale in COP e completare il pagamento istantaneo online (Carta, PSE o Efecty) con lo 0% di commissioni OTA, oppure invia una Richiesta tramite la pagina Contatti o su WhatsApp per domande personalizzate e soggiorni multi-proprietà da 7–12 Ospiti.",
+		homeCtaWhatsApp: "Scrivici su WhatsApp",
 		homeCard1707Badge: "17° Piano • RNT #268781",
 		homeCard1606Badge: "16° Piano • RNT #270413",
 		homeCard1707Parking: "Posto Auto Assegnato N. 95",
@@ -2321,6 +2357,7 @@ export const dict = {
 		seoDescription:
 			"Buchen Sie Ihren Strandurlaub im Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfekt für digitale Nomaden, mit Highspeed-WLAN, Pool und atemberaubenden Sonnenuntergängen in der Karibik. Buchen Sie jetzt Ihren Aufenthalt direkt.",
 		navBook: "Auf Airbnb buchen",
+		navBookDirect: "Direkt Buchen",
 		heroTitle: "Apartment mit Meerblick 1707",
 		heroSub:
 			"Arbeiten, entspannen und direkt am Strand von Playa Salguero, Santa Marta leben.",
@@ -2363,7 +2400,8 @@ export const dict = {
 		nomadOceanDesc: "Finde Inspiration beim Blick auf die Karibik.",
 		nomadImgAlt: "Arbeitsplatz für Digitale Nomaden",
 		heroImgAlt: "Meerblick vom Balkon",
-		heroLocation: "Playa Salguero, Santa Marta, Kolumbien",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Kolumbien",
 		aboutBedroomAlt: "Schlafzimmer",
 		aboutPoolAlt: "Schwimmbad",
 		footerRights: "OceanViewFlats. Alle Rechte vorbehalten.",
@@ -2406,6 +2444,13 @@ export const dict = {
 		homeHeroValueProp:
 			"0% Plattformgebühren • Verbindliche COP-Preise • Direkter Online-Checkout",
 		homeHeroCta: "Strandapartments Entdecken",
+		homeFeaturedPropertiesTitle: "Unsere Strandunterkünfte",
+		homeMultiPropertyNote:
+			"Reisen Sie mit einer größeren Gruppe von 7–12 Gästen? Das Apartment 1707 (17. Etage) und das Apartment 1606 (16. Etage) liegen nur eine Etage voneinander entfernt im Edificio Salguero Sunset – buchen Sie beide Unterkünfte zusammen oder senden Sie uns eine Anfrage für einen koordinierten Familienaufenthalt.",
+		homeCtaTitle: "Bereit für Ihre Direktbuchung oder Haben Sie Fragen?",
+		homeCtaSub:
+			"Wählen Sie oben ein Strandapartment aus, um ein verbindliches Angebot in COP zu berechnen und sofort online zu buchen (Karte, PSE oder Efecty) mit 0 % OTA-Provision – oder senden Sie uns über die Kontaktseite oder per WhatsApp eine Vorabanfrage für individuelle Wünsche und Aufenthalte für 7–12 Gäste.",
+		homeCtaWhatsApp: "Per WhatsApp Chatten",
 		homeCard1707Badge: "17. Etage • RNT #268781",
 		homeCard1606Badge: "16. Etage • RNT #270413",
 		homeCard1707Parking: "Zugewiesener Stellplatz Nr. 95",
@@ -2906,6 +2951,7 @@ export const dict = {
 		seoDescription:
 			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707で、ビーチフロントの滞在をご予約ください。デジタルノマドに最適で、高速Wi-Fi、プール、カリブ海の美しい夕日をお楽しみいただけます。今すぐ直接予約しましょう。",
 		navBook: "Airbnbで予約",
+		navBookDirect: "直接予約",
 		heroTitle: "オーシャンビューフラット 1707",
 		heroSub:
 			"サンタマルタのプラヤ・サルグエロで、ビーチの目の前で働き、リラックスし、暮らす。",
@@ -2950,7 +2996,8 @@ export const dict = {
 			"カリブ海を眺めながらインスピレーションを見つけてください。",
 		nomadImgAlt: "デジタルノマドのワークスペース",
 		heroImgAlt: "バルコニーからのオーシャンビュー",
-		heroLocation: "コロンビア、サンタマルタ、プラヤ・サルグエロ",
+		heroLocation:
+			"Edificio Salguero Sunset • コロンビア、サンタマルタ、プラヤ・サルグエロ",
 		aboutBedroomAlt: "ベッドルーム",
 		aboutPoolAlt: "プール",
 		footerRights: "OceanViewFlats. 無断複写・転載を禁じます。",
@@ -2992,6 +3039,13 @@ export const dict = {
 		homeHeroValueProp:
 			"仲介手数料0% • 公式COP建てお見積り • オンライン即時予約",
 		homeHeroCta: "ビーチフロント物件を見る",
+		homeFeaturedPropertiesTitle: "おすすめのビーチフロント物件",
+		homeMultiPropertyNote:
+			"7–12名様のグループや大家族でのご旅行ですか？オーシャンビューフラット 1707（17階）と 1606（16階）は Edificio Salguero Sunset 内のわずか1階違いに位置しています。2部屋同時の直接予約、または複数物件での滞在についてお気軽にお問い合わせください。",
+		homeCtaTitle: "直接予約のお手続き・事前のご質問はこちら",
+		homeCtaSub:
+			"上の物件カードを選択すると、OTA手数料0%の公式COP建て見積もりを計算し、カード・PSE・現金バウチャー（Efecty）で即座にオンライン予約を完了できます。事前のご質問や7–12名様での2部屋同時滞在のご相談は、お問い合わせページまたはWhatsAppよりお気軽にご連絡ください。",
+		homeCtaWhatsApp: "WhatsAppで相談する",
 		homeCard1707Badge: "17階 • RNT #268781",
 		homeCard1606Badge: "16階 • RNT #270413",
 		homeCard1707Parking: "専用駐車場 95番",
