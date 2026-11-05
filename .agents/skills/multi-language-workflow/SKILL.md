@@ -5,147 +5,38 @@ description: Guides the end-to-end integration of new multi-language features ac
 
 # Multi-Language (i18n) Workflow Guide
 
-This project supports **six official languages** by default: English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), German (`de`), and Japanese (`ja`). When adding, modifying, or refactoring text or features, you must preserve the language context across the entire application stack.
+OceanViewFlats supports 6 locales across the entire stack: English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), German (`de`), and Japanese (`ja`).
 
----
+## 1. Frontend & Client Interactivity (`src/i18n/dict.ts` -> `#ovf-page-config`)
 
-## 🏗️ The End-to-End Language Pipeline
+1. **Define Strings in `src/i18n/dict.ts`**:
+   Add the key to `TranslationDict` and provide translations across all 6 locales (`en`, `es`, `fr`, `it`, `de`, `ja`).
+2. **Static JSX Rendering**:
+   Read translations in React components via `const t = dict[lang] || dict.en;`.
+3. **Client-Side Vanilla JS ([ADR 0010](../../../docs/adr/0010-multilingual-page-hydration-seam.md))**:
+   - If a string is needed at runtime in `public/js/*.js`, include its key in `getClientDictionaryForPage(pageId, t)` inside `src/config/pages.ts`.
+   - Access it in JS via `window.t('keyName', { param: 'value' })` and read `lang`, `assetPrefix`, and `apiBase` via `window.getPageConfig()` (`public/js/page-config.js`).
 
-To pass, store, and display language selections, follow this data flow:
-
-```mermaid
-graph TD
-    Client[Browser UI / Language Toggle] -->|Saves state in localStorage & documentElement.lang| Script[JS Client: main.js, registry.js, guide.js]
-    Script -->|Appends lang parameter to POST/GET| API[Backend PHP REST API: public/api/*]
-    API -->|Resolves language via get_validated_lang| Dict[translations.php]
-    API -->|Saves language preference 'lang'| DB[(MySQL Table: reservations)]
-    Webhook[mp-webhook.php] -->|Reads reservation by UID| DB
-    Webhook -->|Fetches language choice| Dict
-    Webhook -->|Sends customized email in preferred language| Guest[Guest Inbox]
-```
-
----
-
-## 💻 Frontend Localizations (`src/i18n/dict.ts`)
-
-Never write plain text inside React files under `src/pages/` or `src/components/`. All strings must be declared inside `src/i18n/dict.ts`.
-
-### 1. Structure
-Add your keys under the appropriate section of the dictionary, ensuring translations are provided for all 6 keys (`en`, `es`, `fr`, `it`, `de`, `ja`):
-```typescript
-export const dict = {
-  en: {
-    section_key: {
-      my_text: "My English string"
-    }
-  },
-  es: {
-    section_key: {
-      my_text: "Mi string en español"
-    }
-  },
-  // Include fr, it, de, ja...
-};
-```
-
-### 2. Rendering in React Components
-Ensure that your component accepts the `lang` prop and pulls the matching translated fragment:
-```typescript
-interface ComponentProps {
-  lang: string;
-}
-
-export function MyComponent({ lang }: ComponentProps) {
-  const t = dict[lang as keyof typeof dict] || dict.en;
-  
-  return (
-    <div>{t.section_key.my_text}</div>
-  );
-}
-```
-
----
-
-## 🔌 Backend Localizations (`public/api/translations.php`)
-
-All validation errors, form responses, CAPTCHA challenges, and transactional receipts are stored centrally in `/public/api/translations.php`.
-
-### 1. Structure
-Organize your backend translations neatly within the module-specific arrays (e.g., `booking`, `contact`, `registry`, `webhook`):
-```php
-return [
-    'en' => [
-        'contact' => [
-            'err_name_required' => 'Please enter your name.',
-        ],
-        'webhook' => [
-            'email_subject' => 'Reservation Confirmed!',
-        ]
-    ],
-    'es' => [
-        'contact' => [
-            'err_name_required' => 'Por favor, ingrese su nombre.',
-        ],
-        'webhook' => [
-            'email_subject' => '¡Reservación Confirmada!',
-        ]
-    ],
-    // Include fr, it, de, ja...
-];
-```
-
-### 2. Loading Translations in PHP scripts
-Always load translations using the unified whitelister `get_validated_lang()` helper inside `utils.php`:
-```php
-$lang = get_validated_lang();
-$t = $all_translations[$lang]['contact'] ?? $all_translations['en']['contact'];
-```
-
----
-
-## ⚡ Client-Side Parameters Passing
-
-When making any fetch requests or redirects, you must append the resolved language parameter.
-
-### 1. Appending to fetch/AJAX GET queries
 ```javascript
-const currentLang = document.documentElement.lang || 'en';
-const response = await fetch(`/api/book-request.php?action=captcha&lang=${currentLang}`);
+const pageConfig = window.getPageConfig();
+const lang = pageConfig.lang || document.documentElement.lang || 'en';
+const apiBase = pageConfig.apiBase || 'api/';
+const message = window.t('guideWelcomeWithGuest', { guestName: 'Maria' });
 ```
 
-### 2. Appending to FormData POST payloads
-```javascript
-const formData = new FormData(formElement);
-formData.append('lang', document.documentElement.lang || 'en');
-```
+## 2. Backend REST API & Transactional Emails (`public/api/translations.php`)
 
-### 3. Preserving Language Context in Redirections
-When redirecting users or building dynamic links (such as navigating from the Guest Welcome Guide to the Guest Registry), ensure the language is preserved via the static localized page route without adding redundant `lang` query parameters:
-```javascript
-const pageName = lang === 'en' ? 'registry/index.html' : `registry/${lang}.html`;
-const regParams = new URLSearchParams();
-if (reservationCode) regParams.set('code', reservationCode);
-registryLink.href = `${pathPrefix}${pageName}${regParams.toString() ? '?' + regParams.toString() : ''}`;
-```
+1. **Define Backend Strings**:
+   Add module keys (`booking`, `contact`, `registry`, `webhook`) for all 6 locales inside `public/api/translations.php`.
+2. **Resolve Validated Locale**:
+   In `public/api/*.php`, resolve the request locale via `get_validated_lang()` (`public/api/utils.php`):
+   ```php
+   $lang = get_validated_lang();
+   $t = $all_translations[$lang]['registry'] ?? $all_translations['en']['registry'];
+   ```
+3. **Asynchronous Lifecycle Emails**:
+   Persist `$lang` on `reservations.lang` during checkout so asynchronous webhook settlements (`mercadopago-webhook.php`), Guest Registry dispatches, and cancellation notices render in the Primary Guest's preferred language.
 
----
+## 3. Verification
 
-## 🔄 dynamic Webhook Notifications & Emails
-
-When dispatching automatic system emails (such as payment receipts from `mercadopago-webhook.php`):
-1.  Query the reservation entry from the database.
-2.  Retrieve the `lang` preference column.
-3.  Sanitize the language code, and fallback to email-based TLD detection if blank or invalid.
-4.  Load the sub-array translations from `translations.php` matching the language selection.
-5.  Compose and dispatch the HTML email fully customized in the guest's language.
-
----
-
-## 🚀 Build Verification
-
-Whenever making translation edits or additions:
-1.  Run the full generation pipeline to verify zero TypeScript, Vite, or minification issues:
-    ```bash
-    npm run build
-    ```
-2.  Audit the output `/dist` folder to ensure that all localized static pages (`index.html`, `es.html`, `fr.html`, etc.) are built perfectly with correct canonical and language tag configurations.
+Run `npm test && npm run typecheck && npm run build` to verify all 6 locale dictionaries and `#ovf-page-config` slices compile cleanly.

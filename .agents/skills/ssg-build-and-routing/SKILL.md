@@ -5,64 +5,33 @@ description: Master custom React Static Site Generator (SSG) compiler, dynamic p
 
 # Custom Static Site Generator (SSG) & Routing Standards
 
-You are an expert static site generation (SSG) and build engineer. This guide enforces the strict architectural compile-time workflow of the OceanViewFlats React generator.
+Architectural compile-time workflow for the OceanViewFlats React 19 Static Site Generator (`render.tsx` -> `dist/`).
 
----
+## Build Pipeline (`npm run build`)
 
-## 🏗️ Build Lifecycle Flow (`render.tsx` -> `dist/`)
+1. **Clean & Mirror Assets**: Wipes `dist/` and copies raw assets from `public/` to `dist/`.
+2. **Compile Pricing Cache**: Parses `public/data/prices.csv` into `public/cache/prices.json` and `dist/cache/prices.json`.
+3. **Static HTML Generation (`render.tsx`)**:
+   - Loops through every route in `src/config/pages.ts` across all 6 locales (`['en', 'es', 'fr', 'it', 'de', 'ja']`).
+   - Computes `assetPrefix` (`./`, `../`, or `/` for `404`) and `apiBase` (`${assetPrefix}api/`).
+   - Renders the React component via `renderToStaticMarkup(<PageComponent lang={lang} assetPrefix={assetPrefix} />)`.
+   - Extracts the page-scoped `i18n` slice (`getClientDictionaryForPage`) and extra config (`getClientExtraConfigForPage`) and serializes `<script id="ovf-page-config" type="application/json">` inside `src/templates/base.ts` ([ADR 0010](../../../docs/adr/0010-multilingual-page-hydration-seam.md)).
+4. **Sitemap Generation**: Writes `dist/sitemap.xml` for indexable public pages (excluding `404`, `registry`, `guide`, `booking-success`, `booking-failure`, and `booking-pending`).
+5. **Tailwind CSS v4 & JS Minification**: Runs `vite build` to emit `dist/css/style.css`, followed by `terser` minification for `page-config.js`, `main.js`, `lang-detect.js`, `registry.js`, and `guide.js`.
 
-The application does not use server-side React or hydration. It utilizes a custom node TypeScript build pipeline.
+## Adding or Modifying Routes (`src/config/pages.ts`)
 
-```text
-+---------------------+     Loop through page configs     +---------------------------+
-| src/config/pages.ts | --------------------------------> |     render.tsx (node)     |
-+---------------------+                                   +---------------------------+
-                                                                        |
-                                                                        | 1. renderToStaticMarkup()
-                                                                        | 2. Wrap baseTemplate()
-                                                                        v
-                                                          +---------------------------+
-                                                          |  dist/[route]/[lang].html |
-                                                          +---------------------------+
-```
+Every route in `pages: PageConfig[]` defines:
+- `id`: Route identifier (`'home'`, `'Oceanview1707'`, `'Oceanview1606'`, `'contact'`, `'registry'`, `'guide'`, `'privacy'`, etc.).
+- `path`: URL directory segment (`""`, `"Oceanview1707"`, `"privacy"`, etc.).
+- `component`: React component accepting `{ lang, assetPrefix }`.
+- `filename(lang)`: Output path relative to `dist/` (e.g. `lang === "en" ? "privacy/index.html" : "privacy/" + lang + ".html"`).
+- `seoTitle(t)` & `seoDescription(t)`: Localized metadata selectors from `src/i18n/dict.ts`.
+- `ogImage`: OpenGraph image path from `src/constants/config.ts`.
+- `getStructuredData(t, lang, baseUrl)`: Schema.org JSON-LD builder.
+- `scripts`: Client scripts loaded after `js/page-config.js`.
+- `clientI18n?(t)`: Optional custom dictionary slice override for `window.t()`.
 
----
+## Relative Asset Prefix Rule
 
-## 🛠️ Core Build Steps
-
-1. **Clean Directory**: Wipes existing `dist/` artifacts.
-2. **Compile Cached Data**: Reads seasonal night-by-night configurations (`public/data/prices.csv`) and generates `/dist/data/prices.json`.
-3. **HTML Generator Loop**:
-   * Reads all declared page routes in [`src/config/pages.ts`](src/config/pages.ts).
-   * Iterates through the whitelisted language codes (`['en', 'es', 'fr', 'it', 'de', 'ja']`).
-   * Computes the exact `assetPrefix` based on depth (e.g., `./` for root pages like `index.html`, or `../` for subdirectories like `Oceanview1707/index.html`).
-   * Renders the React page component to static text using `ReactDOMServer.renderToStaticMarkup`.
-4. **Master Template Wrap**: Injects the React string output, hreflang alternate links, detailed schema markup, and canonical tags into [`src/templates/base.ts`](src/templates/base.ts).
-5. **Tailwind v4 CSS Extraction**: Vite scans compiled outputs to bundle utility CSS classes, minifying to `dist/css/style.css`.
-6. **Javascript Compression**: Terser minifies all custom JS scripts in `public/js/` into `dist/js/`.
-
----
-
-## 🌐 Adding New Pages or Routes
-
-All routes must be centrally defined inside [`src/config/pages.ts`](src/config/pages.ts).
-
-### Mandatory Route Properties:
-*   `id`: Unique alphanumeric identifier (e.g., `'about'`).
-*   `component`: React Page component instance (with typing `React.ComponentType<any>`).
-*   `getSlug(lang)`: Compiles the output file naming scheme (e.g., `es.html` or nested subfolder structures like `Oceanview1707/es.html`).
-*   `getMetadata(lang)`: Generates strict, translated SEO `<title>` and `<meta name="description">` blocks.
-*   `getStructuredData(lang)`: Emits complete JSON-LD configurations mapped accurately to schema.org recommendations (e.g., `VacationRental`, `WebSite`).
-
----
-
-## 🔗 The Golden Rule: Asset Prefixing
-
-Because the compiler outputs nested directory routing structures, **never use hardcoded absolute local paths** (e.g. `/images/hero.webp` or `/js/main.js`). They will break on subdirectory environments and local static file previews.
-
-*   Always pass down the `assetPrefix` prop generated in `render.tsx` through all components.
-*   Prepend `assetPrefix` to every local relative link:
-    ```typescript
-    <img src={`${assetPrefix}images/example.webp`} alt="Example" />
-    <script src={`${assetPrefix}js/main.js`}></script>
-    ```
+Always pass `assetPrefix` down to child components and prepend `${assetPrefix}` to all local asset and page links (`<img src={`${assetPrefix}images/...`} />`).

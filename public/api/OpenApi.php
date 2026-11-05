@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(
     version: '1.0.0',
     title: 'OceanViewFlats REST API',
-    description: 'Comprehensive REST API documentation for OceanViewFlats vacation rentals in Cartagena, Colombia (Apartments 1606 & 1707). Provides endpoints for real-time calendar availability, direct booking requests, Mercado Pago Checkout Bricks payment processing, asynchronous webhooks, police guest registration, and iCalendar synchronization.',
+    description: 'REST API documentation for OceanViewFlats beachfront vacation rentals in Playa Salguero, Santa Marta, Colombia (Properties 1606 & 1707). Provides endpoints for real-time calendar availability, authoritative quotations, direct booking requests, Mercado Pago Checkout Bricks payment processing, asynchronous webhooks, statutory Guest Registry verification, gated Guest Guide access, and iCalendar synchronization.',
     contact: new OA\Contact(
         name: 'OceanViewFlats Support',
         email: 'rentals@oceanviewflats.com',
@@ -271,7 +271,7 @@ class BookingEndpoints
         path: '/book-request.php',
         operationId: 'submitBookingRequest',
         summary: 'Submit a direct booking inquiry and quotation calculation',
-        description: 'Validates requested dates against blocked calendar dates, computes rate breakdown, logs reservation to database and Google Sheets, and sends confirmation emails.',
+        description: 'Validates requested dates against blocked calendar dates, computes rate breakdown, records the pending reservation in the database with Ley 1581 privacy authorization, and dispatches confirmation emails.',
         tags: ['Booking'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -279,7 +279,7 @@ class BookingEndpoints
             content: new OA\MediaType(
                 mediaType: 'application/x-www-form-urlencoded',
                 schema: new OA\Schema(
-                    required: ['property_id', 'check_in', 'check_out', 'guest_name', 'guest_email', 'guest_phone', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
+                    required: ['property_id', 'check_in', 'check_out', 'guest_name', 'guest_email', 'guest_phone', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
                     properties: [
                         new OA\Property(property: 'property_id', type: 'string', enum: ['1606', '1707'], example: '1606'),
                         new OA\Property(property: 'check_in', type: 'string', format: 'date', example: '2026-09-10'),
@@ -289,6 +289,7 @@ class BookingEndpoints
                         new OA\Property(property: 'guest_phone', type: 'string', example: '+57 300 123 4567'),
                         new OA\Property(property: 'total_price_cop', type: 'number', format: 'float', example: 1520000),
                         new OA\Property(property: 'lang', type: 'string', enum: ['en', 'es', 'fr', 'it', 'de', 'ja'], default: 'en'),
+                        new OA\Property(property: 'privacy_consent', type: 'string', enum: ['1', 'true', 'on'], example: '1', description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
                         new OA\Property(property: 'captcha_challenge', type: 'string', example: '5 + 3 = ?'),
                         new OA\Property(property: 'captcha_signature', type: 'string', example: 'f8c9d0...'),
                         new OA\Property(property: 'captcha_response', type: 'string', example: '8'),
@@ -361,13 +362,14 @@ class ContactEndpoints
             content: new OA\MediaType(
                 mediaType: 'application/x-www-form-urlencoded',
                 schema: new OA\Schema(
-                    required: ['name', 'email', 'message', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
+                    required: ['name', 'email', 'message', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
                     properties: [
                         new OA\Property(property: 'name', type: 'string', example: 'Jane Smith'),
                         new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
                         new OA\Property(property: 'phone', type: 'string', example: '+1 555 123 4567'),
                         new OA\Property(property: 'message', type: 'string', example: 'Hello, I have a question about parking availability.'),
                         new OA\Property(property: 'lang', type: 'string', enum: ['en', 'es', 'fr', 'it', 'de', 'ja'], default: 'en'),
+                        new OA\Property(property: 'privacy_consent', type: 'string', enum: ['1', 'true', 'on'], example: '1', description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
                         new OA\Property(property: 'captcha_challenge', type: 'string', example: '9 + 2 = ?'),
                         new OA\Property(property: 'captcha_signature', type: 'string', example: '9a8b7c...'),
                         new OA\Property(property: 'captcha_response', type: 'string', example: '11'),
@@ -408,7 +410,7 @@ class PaymentEndpoints
             required: true,
             description: 'Payment transaction payload with Mercado Pago Token and Booking details',
             content: new OA\JsonContent(
-                required: ['property_id', 'check_in', 'check_out', 'guest_name', 'guest_email', 'guest_phone', 'payment_method_id', 'transaction_amount', 'payer', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
+                required: ['property_id', 'check_in', 'check_out', 'guest_name', 'guest_email', 'guest_phone', 'payment_method_id', 'transaction_amount', 'payer', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
                 properties: [
                     new OA\Property(property: 'property_id', type: 'string', enum: ['1606', '1707'], example: '1606'),
                     new OA\Property(property: 'check_in', type: 'string', format: 'date', example: '2026-10-01'),
@@ -423,6 +425,7 @@ class PaymentEndpoints
                     new OA\Property(property: 'installments', type: 'integer', default: 1, example: 1),
                     new OA\Property(property: 'transaction_amount', type: 'number', format: 'float', example: 1750000),
                     new OA\Property(property: 'payer', ref: '#/components/schemas/PaymentPayer'),
+                    new OA\Property(property: 'privacy_consent', type: 'boolean', example: true, description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
                     new OA\Property(property: 'captcha_challenge', type: 'string', example: '4 + 6 = ?'),
                     new OA\Property(property: 'captcha_signature', type: 'string', example: '3f2e1d...'),
                     new OA\Property(property: 'captcha_response', type: 'string', example: '10'),
@@ -473,7 +476,7 @@ class WebhookEndpoints
         path: '/mercadopago-webhook.php',
         operationId: 'handleMercadoPagoWebhook',
         summary: 'Mercado Pago asynchronous IPN & Webhook receiver',
-        description: 'Receives real-time payment status updates from Mercado Pago, verifies payment status server-to-server, updates database reservation records, and syncs status with Google Sheets and guest emails.',
+        description: 'Receives real-time payment status updates from Mercado Pago, verifies payment status server-to-server, updates database reservation and refund records with Resurrection Defense, and dispatches localized guest confirmation or cancellation emails.',
         tags: ['Webhooks'],
         parameters: [
             new OA\Parameter(
@@ -538,7 +541,7 @@ class RegistryEndpoints
         path: '/registry-processor.php',
         operationId: 'submitGuestRegistry',
         summary: 'Submit Guest Check-in Police Registration',
-        description: 'Submits guest personal identity details, document numbers, companion guest information, and vehicle details required by Colombian tourism and police regulation (SIRE / TRA).',
+        description: 'Submits guest personal identity details (encrypted at rest via XSalsa20-Poly1305 per ADR 0012), document numbers, companion guest information, vehicle details, Personal Data Authorization, and Minor Guardian Attestation required by Colombian hospitality law and Edificio Salguero Sunset security clearance (ADR 0001, ADR 0008).',
         tags: ['Guest Registry'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -546,7 +549,7 @@ class RegistryEndpoints
             content: new OA\MediaType(
                 mediaType: 'application/x-www-form-urlencoded',
                 schema: new OA\Schema(
-                    required: ['property', 'check_in', 'check_out', 'guests', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
+                    required: ['property', 'check_in', 'check_out', 'guests', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
                     properties: [
                         new OA\Property(property: 'property', type: 'string', enum: ['1606', '1707'], example: '1606'),
                         new OA\Property(property: 'check_in', type: 'string', format: 'date', example: '2026-09-10'),
@@ -557,8 +560,10 @@ class RegistryEndpoints
                             description: 'Array of registered guests',
                             items: new OA\Items(ref: '#/components/schemas/GuestInfo')
                         ),
-                        new OA\Property(property: 'car_plates', type: 'string', nullable: true, example: 'XYZ 123'),
+                        new OA\Property(property: 'car_plates', type: 'string', nullable: true, example: 'XYZ123'),
                         new OA\Property(property: 'car_model', type: 'string', nullable: true, example: 'Toyota Fortuner White'),
+                        new OA\Property(property: 'privacy_consent', type: 'string', enum: ['1', 'true', 'on'], example: '1', description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
+                        new OA\Property(property: 'minor_guardian_consent', type: 'string', enum: ['1', 'true', 'on'], nullable: true, example: '1', description: 'Mandatory Minor Guardian Attestation when any guest is under 18 or holds a minor ID'),
                         new OA\Property(property: 'lang', type: 'string', enum: ['en', 'es', 'fr', 'it', 'de', 'ja'], default: 'es'),
                         new OA\Property(property: 'captcha_challenge', type: 'string', example: '3 + 8 = ?'),
                         new OA\Property(property: 'captcha_signature', type: 'string', example: '4e5f6a...'),

@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "OceanViewFlats REST API",
-        "description": "Comprehensive REST API documentation for OceanViewFlats vacation rentals in Cartagena, Colombia (Apartments 1606 & 1707). Provides endpoints for real-time calendar availability, direct booking requests, Mercado Pago Checkout Bricks payment processing, asynchronous webhooks, police guest registration, and iCalendar synchronization.",
+        "description": "REST API documentation for OceanViewFlats beachfront vacation rentals in Playa Salguero, Santa Marta, Colombia (Properties 1606 & 1707). Provides endpoints for real-time calendar availability, authoritative quotations, direct booking requests, Mercado Pago Checkout Bricks payment processing, asynchronous webhooks, statutory Guest Registry verification, gated Guest Guide access, and iCalendar synchronization.",
         "contact": {
             "name": "OceanViewFlats Support",
             "url": "https://oceanviewflats.com",
@@ -135,7 +135,7 @@
                     "Booking"
                 ],
                 "summary": "Submit a direct booking inquiry and quotation calculation",
-                "description": "Validates requested dates against blocked calendar dates, computes rate breakdown, logs reservation to database and Google Sheets, and sends confirmation emails.",
+                "description": "Validates requested dates against blocked calendar dates, computes rate breakdown, records the pending reservation in the database with Ley 1581 privacy authorization, and dispatches confirmation emails.",
                 "operationId": "submitBookingRequest",
                 "requestBody": {
                     "description": "Booking request parameters (Form-urlencoded or multipart)",
@@ -150,6 +150,7 @@
                                     "guest_name",
                                     "guest_email",
                                     "guest_phone",
+                                    "privacy_consent",
                                     "captcha_challenge",
                                     "captcha_signature",
                                     "captcha_response"
@@ -202,6 +203,16 @@
                                             "de",
                                             "ja"
                                         ]
+                                    },
+                                    "privacy_consent": {
+                                        "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
+                                        "type": "string",
+                                        "enum": [
+                                            "1",
+                                            "true",
+                                            "on"
+                                        ],
+                                        "example": "1"
                                     },
                                     "captcha_challenge": {
                                         "type": "string",
@@ -315,6 +326,7 @@
                                     "name",
                                     "email",
                                     "message",
+                                    "privacy_consent",
                                     "captcha_challenge",
                                     "captcha_signature",
                                     "captcha_response"
@@ -348,6 +360,16 @@
                                             "de",
                                             "ja"
                                         ]
+                                    },
+                                    "privacy_consent": {
+                                        "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
+                                        "type": "string",
+                                        "enum": [
+                                            "1",
+                                            "true",
+                                            "on"
+                                        ],
+                                        "example": "1"
                                     },
                                     "captcha_challenge": {
                                         "type": "string",
@@ -423,6 +445,7 @@
                                     "payment_method_id",
                                     "transaction_amount",
                                     "payer",
+                                    "privacy_consent",
                                     "captcha_challenge",
                                     "captcha_signature",
                                     "captcha_response"
@@ -498,6 +521,11 @@
                                     },
                                     "payer": {
                                         "$ref": "#/components/schemas/PaymentPayer"
+                                    },
+                                    "privacy_consent": {
+                                        "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
+                                        "type": "boolean",
+                                        "example": true
                                     },
                                     "captcha_challenge": {
                                         "type": "string",
@@ -591,7 +619,7 @@
                     "Webhooks"
                 ],
                 "summary": "Mercado Pago asynchronous IPN & Webhook receiver",
-                "description": "Receives real-time payment status updates from Mercado Pago, verifies payment status server-to-server, updates database reservation records, and syncs status with Google Sheets and guest emails.",
+                "description": "Receives real-time payment status updates from Mercado Pago, verifies payment status server-to-server, updates database reservation and refund records with Resurrection Defense, and dispatches localized guest confirmation or cancellation emails.",
                 "operationId": "handleMercadoPagoWebhook",
                 "parameters": [
                     {
@@ -698,7 +726,7 @@
                     "Guest Registry"
                 ],
                 "summary": "Submit Guest Check-in Police Registration",
-                "description": "Submits guest personal identity details, document numbers, companion guest information, and vehicle details required by Colombian tourism and police regulation (SIRE / TRA).",
+                "description": "Submits guest personal identity details (encrypted at rest via XSalsa20-Poly1305 per ADR 0012), document numbers, companion guest information, vehicle details, Personal Data Authorization, and Minor Guardian Attestation required by Colombian hospitality law and Edificio Salguero Sunset security clearance (ADR 0001, ADR 0008).",
                 "operationId": "submitGuestRegistry",
                 "requestBody": {
                     "description": "Guest check-in registry form data",
@@ -711,6 +739,7 @@
                                     "check_in",
                                     "check_out",
                                     "guests",
+                                    "privacy_consent",
                                     "captcha_challenge",
                                     "captcha_signature",
                                     "captcha_response"
@@ -743,12 +772,33 @@
                                     },
                                     "car_plates": {
                                         "type": "string",
-                                        "example": "XYZ 123",
+                                        "example": "XYZ123",
                                         "nullable": true
                                     },
                                     "car_model": {
                                         "type": "string",
                                         "example": "Toyota Fortuner White",
+                                        "nullable": true
+                                    },
+                                    "privacy_consent": {
+                                        "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
+                                        "type": "string",
+                                        "enum": [
+                                            "1",
+                                            "true",
+                                            "on"
+                                        ],
+                                        "example": "1"
+                                    },
+                                    "minor_guardian_consent": {
+                                        "description": "Mandatory Minor Guardian Attestation when any guest is under 18 or holds a minor ID",
+                                        "type": "string",
+                                        "enum": [
+                                            "1",
+                                            "true",
+                                            "on"
+                                        ],
+                                        "example": "1",
                                         "nullable": true
                                     },
                                     "lang": {

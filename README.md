@@ -1,185 +1,136 @@
-# OceanViewFlats Static Site Generator & Secure REST API
+# OceanViewFlats
 
-High-performance, multilingual static site generator and secure backend REST API for OceanViewFlats' premium beachfront vacation rental properties in Playa Salguero, Santa Marta, Colombia.
-
-Built on top of **React**, **Vite**, and **Tailwind CSS v4** on the frontend, combined with a secure **PHP & MySQL** REST backend. This project compiles React components into SEO/GEO-optimized static HTML files with structured JSON-LD data for rich search snippets and AI search engine discovery, while serving direct booking transactions and form inquiries through a hardened server API.
+Direct booking platform, guest fulfillment engine, and administrative property management system (PMS) for OceanViewFlats' beachfront short-term rental properties (`1707` — RNT #268781, and `1606` — RNT #270413) in Playa Salguero, Santa Marta, Colombia.
 
 ---
 
-## 🚀 Key Features
+## Architecture Overview
 
-*   **Component-Driven Static Generation**: Author web pages in React 19 and compile them into zero-dependency, ultra-fast static HTML files.
-*   **Centralized Parameter-Driven Themes**: Thematic variations between properties (Slate vs. Stone, Red vs. Rose) are dynamically resolved from a single style-agnostic component layer powered by a centralized configuration dictionary ([`src/constants/theme.ts`](src/constants/theme.ts)).
-*   **Fully Multilingual (6 Languages)**: Native support for English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), German (`de`), and Japanese (`ja`) with dynamic language detection and seamless navigation.
-*   **SEO & GEO (Generative Engine Optimization)**:
-    *   Automatic generation of structured **JSON-LD Schema** (LodgingBusiness, WebSite, WebPage, FAQPage) for AI engine search indexing.
-    *   Canonical links and fully mapped `hreflang` tags generated for each locale.
-    *   Exclusion of private pages (guest guide, registry) from the automatically generated `sitemap.xml`.
-*   **Secure Backend REST API (`public/api/`)**:
-    *   **Direct Booking Engine**: Handles quote validation, local database persistence with self-healing MySQL tables, language tracking, and email dispatches.
-    *   **Secure Inquiries**: Math-Captcha protected endpoints for contact submissions and digital guest check-ins (`public/api/contact-processor.php`, `public/api/registry-processor.php`).
-    *   **MercadoPago Checkout Bricks**: Custom inline checkout integration utilizing the native Payment Brick. This allows transparent processing of PSE transfers, credit/debit cards, and Efecty cash vouchers server-to-server (`public/api/payment.php`) with robust double-charge idempotency protection.
-    *   **Gateway Webhooks**: Integrates with MercadoPago webhooks to process off-line payment confirmations (PSE/Efecty) and dispatch localized confirmation/payment emails.
-    *   **Robust Security Hardening**:
-        *   Restricted file listings (`Options -Indexes`) and blocked direct access to utility scripts (`translations.php`, `utils.php`) inside `.htaccess`.
-        *   Strict CORS rules mapping inquiries explicitly to official host domains (`https://www.oceanviewflats.com`).
-        *   Direct address bar submissions blocked via empty referrer filters against generic browser user-agents.
-*   **Dynamic Guest Guide (`/guide`)**: A secure guest welcome center that processes URL query parameters (`guest`, `property`, `check_in`, `check_out`, `code`) to render localized arrival instructions, secure temporary entry codes, and one-click copyable Wi-Fi configurations.
-*   **Interactive Guest Registry (`/registry`)**: Seamless digital guest check-in form collecting mandatory building security info.
-*   **Asset Processing**: Modern styling via **Tailwind CSS v4** bundled through Vite, with client-side interactive JS files minified using **Terser**.
-*   **Centralized Database CLI Migrations**: No dynamic schema mutations occur inside public runtime PHP scripts. Relational table structures and index specifications are updated using the dynamic self-healing CLI script (`scripts/migrate.php`).
+OceanViewFlats is built as a three-layer hybrid platform:
+
+1. **Public Portal (`oceanviewflats.com`)**: Zero-hydration **React 19 Static Site Generator (SSG)** (`render.tsx`), **Tailwind CSS v4** (`vite.config.ts`), lightweight Vanilla JS (`public/js/`), and a hardened PHP 8.3 REST API (`public/api/`).
+2. **Admin Console (`admin.oceanviewflats.com`)**: Subdomain-isolated, server-rendered PHP 8.3 + **HTMX** application (`admin/`) deployed via **cPanel Pattern A** (`DocumentRoot` at `/home/<user>/admin/public`, keeping controllers, views, domain logic, `vendor/`, and `scripts/` outside the public web root) ([ADR 0005](docs/adr/0005-admin-interface-architecture-and-subdomain-isolation.md)).
+3. **Shared Core Domain & Hexagonal Infrastructure (`src/Domain/`, `src/Infrastructure/`)**: Pure, framework-agnostic PHP domain services and hexagonal ports/adapters shared by both the public REST API and the Admin Console.
+
+### Core Domain Capabilities
+
+- **Authoritative Quote Engine ([ADR 0004](docs/adr/0004-authoritative-quote-engine-and-itemized-pricing.md))**: Evaluates night-by-night **Seasonal Rate Tiers** (`PdoRateSource` with `CsvRateSource` fallback), enforces minimum stays, and itemizes per-property **Cleaning Fees** and **Resort Fees** in **Settlement Currency** (`COP`).
+- **Reservation Lifecycle Engine ([ADR 0011](docs/adr/0011-reservation-lifecycle-engine.md))**: Hexagonal engine (`ReservationLifecycleEngine`) coordinating concurrency-safe checkout holds (30-min **Standard Hold Window**; 72-hour **Voucher Hold Window** per [ADR 0003](docs/adr/0003-extended-hold-window-for-cash-vouchers.md)), **Direct Reservations** (`ovf_*`), **Manual Reservations** (`res-man-*`), **External Reservations** (`res-abnb-*` with **Channel Block Absorption** per [ADR 0007](docs/adr/0007-external-platform-reservations-and-guest-onboarding.md)), pre-transaction Mercado Pago **Gateway Refunds**, and **Resurrection Defense**.
+- **Mandatory Guest Registry & Access Gating ([ADR 0001](docs/adr/0001-mandatory-registry-before-access.md), [ADR 0009](docs/adr/0009-concluded-reservation-credential-and-metadata-redaction.md))**: **Access Credentials** (cryptographically random `0XXXXXX#` smart-lock PINs, Wi-Fi, and **Assigned Parking Space** Bay 87 / Bay 95) are strictly withheld until the **Guest Registry** is completed, and automatically redacted once a stay becomes a **Concluded Reservation** (after 23:59:59 COT on the **Check-out Date**).
+- **Automated Condominium Clearance Sync ([ADR 0008](docs/adr/0008-automated-condominium-clearance-sync.md))**: Out-of-band two-step integration (`HuespedManagerClearanceSync`) that sanitizes and transmits registered occupant rosters and vehicle plates to the Edificio Salguero Sunset **Condominium Administration Portal** (Huésped Manager), recording the issued **Condominium Clearance Number** (`consecutivo`) with 1-click admin retry and **Operational Alert** surfacing.
+- **Personal Data Protection — Ley 1581 of 2012 ([ADR 0012](docs/adr/0012-personal-data-protection-and-ley-1581-compliance.md))**: Multilingual `/privacy` **Data Processing Policy**, verifiable **Personal Data Authorization** and **Minor Guardian Attestation**, XSalsa20-Poly1305 encryption at rest for `guest_registries.guests_payload` (`PayloadEncryptor`), PII masking across secondary logs/emails (`PiiMasker`), and financial-safe **PII Redaction** (admin ARCO action + 90-day post-checkout CLI runner).
+- **Financial Report & FONTUR Parafiscal Compliance ([ADR 0013](docs/adr/0013-fontur-parafiscal-contribution-and-expense-sync.md))**: Portfolio and per-property analytics (**Gross Revenue**, **Operational Expenses**, **Net Operating Income**, **Average Daily Rate**, **RevPAR**, **Occupied Nights**) plus quarterly **Parafiscal Contribution** calculation (0.25% of **Parafiscal Taxable Base** per RNT), Colombian statutory 20-business-day deadlines, and bidirectional synchronization between **Parafiscal Settlements** and `taxes_insurance` **Operational Expenses**.
+- **Multilingual Zero-Hydration Seam ([ADR 0010](docs/adr/0010-multilingual-page-hydration-seam.md))**: Pre-compiles 6 locales (`en`, `es`, `fr`, `it`, `de`, `ja`) with JSON-LD structured data, `hreflang` alternates, and scoped `#ovf-page-config` JSON payloads consumed at runtime via `window.t()` and `window.getPageConfig()`.
 
 ---
 
-## 📁 Project Structure
+## Project Layout
 
 ```text
-├── .agents/                    # Workspace agent guidelines and custom skills
-├── .env.example                # Sample environment variables
-├── AGENTS.md                   # Agent guidelines and workflow orchestration
-├── LICENSE                     # MIT License
-├── package.json                # NPM scripts and dependencies
-├── render.tsx                  # Core Static HTML Generator script
-├── vite.config.ts              # Vite asset compilation configuration (Tailwind v4)
-├── scripts/                    # Relational database CLI assets
-│   ├── schema.sql              # Master MySQL schema definitions
-│   └── migrate.php             # CLI-exclusive self-healing database migration runner
-├── public/                     # Static assets, raw client-side scripts, and REST API
-│   ├── favicon.svg             # Multi-format favicons
-│   ├── images/                 # Property high-res gallery images
-│   ├── js/                     # Interactivity scripts (lang-detect, main, registry, guide)
-│   └── api/                    # Secure REST API (PHP backend)
-│       ├── .htaccess           # Security, directory listing blocks, and access controls
-│       ├── book-request.php    # Local database booking logger & confirmation dispatcher
-│       ├── payment.php         # Processes server-to-server Checkout Bricks API payments
-│       ├── contact-processor.php  # Contact form handler with cryptographic captcha check
-│       ├── registry-processor.php # Multi-step guest check-in database logger
-│       ├── mercadopago-webhook.php # MercadoPago transaction webhook callback endpoint
-│       ├── translations.php    # Centralized backend dynamic email & response dictionary
-│       └── utils.php           # CORS, Math Captchas, and strict get_validated_lang() utilities
-├── src/                        # React source application files
-│   ├── components/             # Reusable UI components (Navbar, Footer, Gallery, FAQ)
-│   ├── config/                 # Page lists, routing setup, metadata, and JSON-LD builders
-│   │   └── pages.ts            # Defines page structure, SEO titles, descriptions, and metadata
-│   ├── constants/              # Asset links, properties themes, and configs
-│   │   ├── config.ts           # Core endpoints and base asset definitions
-│   │   └── theme.ts            # Theme dictionary mapping Slate/Stone tokens and properties images
-│   ├── i18n/                   # Multilingual dictionaries
-│   │   └── dict.ts             # 6-language translation dictionaries
-│   ├── pages/                  # React layout components (Home, Oceanview1707, Guide, etc.)
-│   ├── style.css               # Core Tailwind CSS imports and custom utility classes
-│   ├── templates/              # HTML base page structural templates
-│   │   └── base.ts             # Injects React markup, scripts, meta tags, and schema JSON
-│   ├── types/                  # TypeScript interface definitions
-│   └── utils/                  # Localization and helper utilities
-└── tasks/                      # Project workflow task files (todo, lessons)
+├── .agents/skills/             # Specialized engineering agent skills
+├── .github/workflows/          # CI (ci.yml, admin-ci.yml) & SFTP Deploy (deploy.yml, admin-deploy.yml)
+├── admin/                      # Subdomain-isolated Admin Console (admin.oceanviewflats.com)
+│   ├── public/                 # Pattern A DocumentRoot (index.php, setup.php, .htaccess)
+│   ├── src/                    # AdminApp kernel, Controllers, Repositories, Auth/CSRF Middleware, HTMX Views
+│   └── tests/                  # Admin PHPUnit test suite (PHPStan Level 8)
+├── docs/
+│   ├── adr/                    # Architecture Decision Records (0001–0013)
+│   ├── agents/                 # Agent conventions (domain, issue-tracker, triage-labels)
+│   └── operations/             # Production deployment & administrator operational runbook
+├── public/                     # Static assets, Vanilla JS, and public PHP REST API (copied to dist/)
+│   ├── api/                    # Public REST endpoints (quote, availability, book-request, payment,
+│   │                           #   mercadopago-webhook, registry-lookup, registry-processor,
+│   │                           #   guide-access, contact-processor, ical, openapi.json/yaml)
+│   ├── data/prices.csv         # Seed seasonal pricing tiers
+│   └── js/                     # Client scripts (page-config.js, main.js, registry.js, guide.js, lang-detect.js)
+├── scripts/                    # CLI operational utilities & master SQL schema
+│   ├── schema.sql              # Authoritative 13-table MySQL InnoDB schema
+│   ├── migrate.php             # Self-healing CLI database migration runner
+│   ├── create-admin-user.php   # CLI Argon2id administrator provisioning & unlock utility
+│   ├── sync-channels.php       # CLI inbound iCal channel sync runner (15-min cron)
+│   ├── redact-expired-pii.php  # CLI 90-day post-checkout Ley 1581 PII redaction runner
+│   └── generate-docs.php       # OpenAPI 3.0 specification generator
+├── src/
+│   ├── Domain/                 # Pure PHP domain logic (Access, Database, Finance, Fulfillment,
+│   │                           #   Payment, Privacy, Quote, Reservation, Security, Support)
+│   ├── Infrastructure/         # Hexagonal persistence, refund, audit, and event adapters
+│   ├── components/ & pages/    # Build-time React 19 UI components & page views
+│   ├── config/pages.ts         # Route definitions, SEO metadata, JSON-LD, & client i18n slices
+│   ├── constants/              # Centralized theme tokens (theme.ts) & endpoint configs (config.ts)
+│   ├── i18n/dict.ts            # 6-language UI translation dictionary
+│   └── templates/base.ts       # Master HTML shell & #ovf-page-config serializer
+├── tests/                      # Domain, Infrastructure, API, and SSG test suites
+├── CONTEXT.md                  # Canonical domain glossary (ubiquitous language)
+├── AGENTS.md                   # Coding rules & workflow instructions for AI agents
+└── render.tsx                  # Static Site Generator compiler entry point
 ```
 
 ---
 
-## 🛠️ Getting Started
+## Development & Verification
 
 ### Prerequisites
 
-Ensure you have [Node.js](https://nodejs.org/) installed (version 18 or above recommended).
+- **Node.js** >= 24 (`npm`)
+- **PHP** >= 8.3 (`pdo_mysql`, `sqlite3`, `mbstring`, `sodium`, `curl`, `json`, `argon2`) & **Composer**
 
-### Installation
-
-1. Clone this repository to your local system.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Database Migration
-
-Before deploying the PHP REST API, run the database migrations tool to provision tables and index structures on your remote MySQL database instance:
+### Setup & Build
 
 ```bash
+# Install dependencies
+npm ci
+composer install
+
+# Provision / update local MySQL schema (13 tables)
 php scripts/migrate.php
+
+# Compile static site (HTML, cache/prices.json, sitemap.xml, Tailwind CSS v4, Terser JS) to dist/
+npm run build
 ```
 
-### Local Development & Live Server
-
-Since this is a static site generator, you can compile and view your static files. You can run a local HTTP server to preview the generated files in your browser:
+### Quality Gates & Tests
 
 ```bash
-# Compile and build everything to /dist
-npm run build
+# Frontend checks (SSG page-config tests, TypeScript typecheck, Biome lint)
+npm test
+npm run typecheck
+npm run lint
 
-# Start a local preview server
-npx serve dist
+# Backend & Domain checks (PHPUnit & PHPStan)
+composer test
+composer phpstan
+
+# Admin Console checks (PHPUnit & PHPStan Level 8)
+composer admin:test
+composer admin:phpstan
+
+# Regenerate OpenAPI specification (public/api/openapi.json & openapi.yaml)
+composer generate-docs
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables (`.env`)
 
-The project uses environment variables to handle secure transactions, notifications, and form spam validation. To configure these, create a `.env` file in the root directory:
+Copy `.env.example` to `.env` for local development. In production, CI workflows inject `SetEnv` directives into `public/.htaccess` and `admin/public/.htaccess`, and `EnvLoader` resolves them automatically across web, CLI, and cron contexts:
 
-```env
-# Notification Settings
-RECIPIENT_EMAIL=contact@mail.com
-
-# Cryptographic Captcha Security
-CAPTCHA_SECRET=your_secure_random_salt_secret
-
-# Third-Party Synchronization
-GOOGLE_SHEET_WEBAPP_URL=https://script.google.com/macros/s/macro_id/exec
-
-# Database Credentials
-DB_HOST=127.0.0.1
-DB_NAME=oceanviewflats_db
-DB_USER=root
-DB_PASS=local_db_password
-
-# MercadoPago API Credentials (Checkout Bricks)
-MERCADOPAGO_PUBLIC_KEY=APP_USR-xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-MERCADOPAGO_ACCESS_TOKEN=APP_USR-xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-MERCADOPAGO_SANDBOX=true
-
-# Property Access Fallbacks (Emergency Smart Lock PINs & Wi-Fi)
-PROPERTY_1606_DOOR_CODE=0160600#
-PROPERTY_1606_WIFI_SSID=APTO1606
-PROPERTY_1606_WIFI_PASSWORD=Invitado@1606@HN
-PROPERTY_1707_DOOR_CODE=0170700#
-PROPERTY_1707_WIFI_SSID=APTO1707
-PROPERTY_1707_WIFI_PASSWORD=Invitado@1707@HN
-
-# Condominium Administration Portal (Huésped Manager)
-HUESPED_MANAGER_BASE_URL=https://salguerosunset.huespedmanager.com.co/propietarios/production
-HUESPED_MANAGER_1707_CHECK=ep92449222
-HUESPED_MANAGER_1606_CHECK=ep24281580
-```
+| Variable | Purpose |
+| :--- | :--- |
+| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS` | MySQL / MariaDB connection credentials |
+| `RECIPIENT_EMAIL` | Host notification mailbox (`rentals@oceanviewflats.com`) |
+| `CAPTCHA_SECRET` | HMAC secret for stateless mathematical CAPTCHA signing |
+| `APP_ENCRYPTION_KEY` | 32-byte (or 64-char hex) key for XSalsa20-Poly1305 encryption of `guest_registries.guests_payload` ([ADR 0012](docs/adr/0012-personal-data-protection-and-ley-1581-compliance.md)) |
+| `OVF_ADMIN_SESSION_SECRET` | 64-char hex secret for Admin Console session signing and `setup.php` authorization |
+| `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_SANDBOX` | Mercado Pago Checkout Bricks & server-to-server payment/refund credentials |
+| `PROPERTY_1606_DOOR_CODE`, `PROPERTY_1606_WIFI_SSID`, `PROPERTY_1606_WIFI_PASSWORD` | Property `1606` emergency fallback PIN and Wi-Fi credentials |
+| `PROPERTY_1707_DOOR_CODE`, `PROPERTY_1707_WIFI_SSID`, `PROPERTY_1707_WIFI_PASSWORD` | Property `1707` emergency fallback PIN and Wi-Fi credentials |
+| `HUESPED_MANAGER_BASE_URL`, `HUESPED_MANAGER_1707_CHECK`, `HUESPED_MANAGER_1606_CHECK` | Condominium Administration Portal base URL and per-property security check tokens ([ADR 0008](docs/adr/0008-automated-condominium-clearance-sync.md)) |
 
 ---
 
-## 📦 Build & Compilation Details
+## Documentation Index
 
-When you run `npm run build`, the following steps execute sequentially:
-
-1.  **Cleanup**: Removes any existing `dist/` directory.
-2.  **Asset Mirroring**: Copies all raw files from the `public/` folder directly to `dist/` (including the `api/` endpoints).
-3.  **Vite Bundling**: Invokes Vite to compile, tree-shake, and optimize Tailwind CSS v4 styles (`src/style.css`) into `dist/css/style.css`.
-4.  **Static Page Generation (`render.tsx`)**:
-    *   Loops through each page entry inside `src/config/pages.ts`.
-    *   Iterates across each language locale (`en`, `es`, `fr`, `it`, `de`, `ja`).
-    *   Uses React's `renderToStaticMarkup` to generate the HTML blocks.
-    *   Combines the markup with the HTML base template injecting `hreflang`, canonical tags, metadata, page scripts, and unique SEO JSON-LD schema.
-    *   **CI Dynamic Public Key Injection**: During deployment pipelines, the GitHub Actions process automatically injects the production `MERCADOPAGO_PUBLIC_KEY` secret into `src/constants/config.ts` prior to building, preventing any exposed tokens or environmental lookups.
-    *   Saves the compiled HTML files into relative directories (e.g., `dist/index.html`, `dist/es.html`, `dist/guide/index.html`, `dist/guide/es.html`).
-5.  **Sitemap Generation**: Generates `dist/sitemap.xml` containing all indexable, public multilingual pages (excluding `/404`, `/registry`, and `/guide`).
-6.  **Script Minification**: Runs `terser` to compress and optimize client-side interactive logic scripts:
-    *   `lang-detect.js`: Detects browser language preferences and redirects appropriately.
-    *   `main.js`: Core landing page animations, captcha matching, dynamic MercadoPago SDK async preloader, and dynamic Checkout Bricks iframe mount handlers.
-    *   `registry.js`: Dynamic multipage guest check-in form validation.
-    *   `guide.js`: Interactive welcoming cards, URL parameter parsing, and temporary access codes with feedback.
-
----
-
-## 🚀 Deployment
-
-The compiled assets reside in the `dist/` folder after running `npm run build`. This directory is ready for hosting on any modern static deployment provider supporting PHP backends or separate static hosting + server setups:
-
-*   **Classic Hostings (with Apache + PHP)**: Deploy the entire contents of the `dist/` folder. The static HTML works natively, and the `api/` directory serves dynamic REST actions out-of-the-box.
-*   **Static Hostings (Firebase/Cloudflare Pages)**: Deploy the compiled static pages to your provider, and proxy `/api/*` references to an Apache/PHP-compatible server running the `api/` directory.
+- **[`CONTEXT.md`](CONTEXT.md)**: Canonical domain glossary and ubiquitous language.
+- **[`docs/adr/`](docs/adr/)**: Architecture Decision Records (`0001` through `0013`).
+- **[`docs/operations/administrator-operational-guide.md`](docs/operations/administrator-operational-guide.md)**: Production deployment, cPanel Pattern A setup, CLI utilities, cron jobs, and troubleshooting runbook.
+- **[`AGENTS.md`](AGENTS.md)**: Engineering rules and context pointers for AI coding agents.
