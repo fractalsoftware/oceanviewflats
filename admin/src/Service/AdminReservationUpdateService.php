@@ -745,7 +745,10 @@ final class AdminReservationUpdateService
                 if ((string) ($step1['outdate'] ?? '') !== $reservation->checkOut) {
                     return true;
                 }
-                if (trim((string) ($step1['car'] ?? '')) !== trim((string) ($registry['car_plates'] ?? ''))) {
+                if (
+                    \OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync::sanitizePortalCarPlate((string) ($step1['car'] ?? ''))
+                    !== \OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync::sanitizePortalCarPlate((string) ($registry['car_plates'] ?? ''))
+                ) {
                     return true;
                 }
                 if ((int) ($step1['cant_hp'] ?? 0) !== count($occupants)) {
@@ -762,8 +765,8 @@ final class AdminReservationUpdateService
                 foreach ($occupants as $i => $occ) {
                     $occDoc = trim((string) ($occ['doc_num'] ?? $occ['doc_number'] ?? ''));
                     $maskedOccDoc = PiiMasker::maskDocNumber($occDoc);
-                    $occFn = trim((string) ($occ['first_name'] ?? $occ['name'] ?? ''));
-                    $occLn = trim((string) ($occ['last_name'] ?? ''));
+                    $occFn = \OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync::sanitizePortalName((string) ($occ['first_name'] ?? $occ['name'] ?? ''));
+                    $occLn = \OceanViewFlats\Domain\Fulfillment\HuespedManagerClearanceSync::sanitizePortalName((string) ($occ['last_name'] ?? ''));
 
                     $syncedDoc = $syncedDocs[$i] ?? null;
                     if ($syncedDoc !== $occDoc && $syncedDoc !== $maskedOccDoc) {

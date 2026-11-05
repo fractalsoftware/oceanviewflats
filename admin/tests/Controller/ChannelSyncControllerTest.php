@@ -501,7 +501,7 @@ final class ChannelSyncControllerTest extends TestCase
             ->willReturnCallback(function (string $propertyId) {
                 if ($propertyId === '1606') {
                     return [
-                        new ChannelBlock('1606', '2026-11-01', '2026-11-05', 'airbnb', 'Airbnb (Not available)')
+                        new ChannelBlock('1606', '2027-11-01', '2027-11-05', 'airbnb', 'Airbnb (Not available)')
                     ];
                 }
                 return [];
@@ -526,8 +526,8 @@ final class ChannelSyncControllerTest extends TestCase
 
         $this->assertStringContainsString('Detected External Platform Bookings (Airbnb)', $body);
         $this->assertStringContainsString('Onboard Guest', $body);
-        $this->assertStringContainsString('2026-11-01 &rarr; 2026-11-05', $body);
-        $this->assertStringContainsString('/reservations/new?property_id=1606&check_in=2026-11-01&check_out=2026-11-05&source=airbnb', $body);
+        $this->assertStringContainsString('2027-11-01 &rarr; 2027-11-05', $body);
+        $this->assertStringContainsString('/reservations/new?property_id=1606&check_in=2027-11-01&check_out=2027-11-05&source=airbnb', $body);
     }
 }
 
