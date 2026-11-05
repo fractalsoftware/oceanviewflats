@@ -1,5 +1,6 @@
 import { ChevronDown, Globe } from "lucide-react";
 import React from "react";
+import { CHROME_THEME, getChromeScrollState } from "../constants/theme";
 import type { Lang } from "../types";
 
 interface LanguageDropdownProps {
@@ -23,32 +24,30 @@ export const LanguageDropdown = ({
 	const currentLangObj =
 		LANGUAGES.find((l) => l.code === currentLang) || LANGUAGES[0];
 	const otherLangs = LANGUAGES.filter((l) => l.code !== currentLang);
+	const scrollState = getChromeScrollState(isScrolled);
 
 	return (
-		<div className="relative group cursor-pointer" id="lang-toggle-group">
-			<div
-				className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-					isScrolled
-						? "bg-slate-100 hover:bg-slate-200 text-slate-700"
-						: "bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
-				}`}
+		<div className={CHROME_THEME.langGroup} id="lang-toggle-group">
+			<button
+				type="button"
+				className={CHROME_THEME.langToggle[scrollState]}
 				id="lang-toggle"
+				aria-haspopup="true"
+				aria-expanded="false"
+				aria-controls="lang-dropdown"
 			>
-				<Globe className="w-4 h-4" />
+				<Globe className={CHROME_THEME.langGlobeIcon} />
 				<span>{currentLangObj.label}</span>
-				<ChevronDown className="w-3 h-3 ml-1" />
-			</div>
+				<ChevronDown className={CHROME_THEME.langChevronIcon} />
+			</button>
 
 			{/* Dropdown Menu */}
-			<div className="absolute right-0 top-full pt-2 w-32 opacity-0 invisible transition-all duration-200 z-50">
-				<div className="bg-white rounded-xl shadow-lg border border-slate-100">
-					<ul className="py-2">
+			<div id="lang-dropdown" className={CHROME_THEME.langDropdownWrapper}>
+				<div className={CHROME_THEME.langDropdownCard}>
+					<ul className={CHROME_THEME.langDropdownList}>
 						{otherLangs.map((lang) => (
 							<li key={lang.code}>
-								<a
-									href={lang.link}
-									className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#FF5A5F] transition-colors"
-								>
+								<a href={lang.link} className={CHROME_THEME.langDropdownItem}>
 									{lang.label}
 								</a>
 							</li>

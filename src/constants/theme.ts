@@ -81,6 +81,68 @@ export interface PropertyTheme {
 	privacyRetentionCallout: string;
 }
 
+export type ChromeScrollState = "top" | "scrolled";
+
+export const getChromeScrollState = (isScrolled: boolean): ChromeScrollState =>
+	isScrolled ? "scrolled" : "top";
+
+export const CHROME_THEME = {
+	nav: {
+		top: "fixed w-full z-50 transition-all duration-300 bg-transparent py-5",
+		scrolled:
+			"fixed w-full z-50 transition-all duration-300 bg-white/90 backdrop-blur-md shadow-sm py-3",
+	},
+	navContainer: "max-w-6xl mx-auto px-6 flex justify-between items-center",
+	navLogo: {
+		top: "font-bold text-xl tracking-tight flex items-center space-x-2 transition-colors text-white hover:text-white/80",
+		scrolled:
+			"font-bold text-xl tracking-tight flex items-center space-x-2 transition-colors text-[#FF5A5F] hover:text-[#FF424D]",
+	},
+	navLogoIcon: "w-6 h-6 fill-current",
+	navActions: "flex items-center space-x-6",
+	navContact: {
+		top: "inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors text-white hover:text-white/80",
+		scrolled:
+			"inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors text-slate-600 hover:text-rose-700",
+	},
+	navContactIcon: "w-5 h-5 md:hidden",
+	navContactText: "hidden md:inline",
+	navBookBtn:
+		"hidden md:inline-flex items-center justify-center min-h-[40px] bg-rose-700 bg-[#BE123C] hover:bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-lg transition-transform hover:scale-105",
+	langGroup: "relative group",
+	langToggle: {
+		top: "inline-flex items-center justify-center space-x-1.5 min-h-[40px] min-w-[40px] px-3.5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm",
+		scrolled:
+			"inline-flex items-center justify-center space-x-1.5 min-h-[40px] min-w-[40px] px-3.5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700",
+	},
+	langGlobeIcon: "w-4 h-4",
+	langChevronIcon: "w-3 h-3 ml-1",
+	langDropdownWrapper:
+		"absolute right-0 top-full pt-2 w-36 hidden opacity-0 invisible transition-all duration-200 z-50",
+	langDropdownCard: "bg-white rounded-xl shadow-lg border border-slate-100",
+	langDropdownList: "py-2",
+	langDropdownItem:
+		"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-rose-700 transition-colors",
+	langDropdownActiveItem:
+		"block px-4 py-2 text-sm font-semibold text-rose-700 bg-slate-50",
+	footer:
+		"bg-slate-900 text-slate-300 py-12 px-6 text-center border-t border-slate-800",
+	footerContainer: "max-w-4xl mx-auto flex flex-col items-center",
+	footerLogo: "w-8 h-8 fill-current text-slate-400 mb-4",
+	footerHostText: "mb-2 font-medium text-slate-200",
+	footerRntText: "text-xs tracking-wider text-slate-300 uppercase mb-2",
+	footerPrivacyWrapper: "text-xs mb-4",
+	footerPrivacyLink:
+		"text-slate-300 hover:text-white underline transition-colors",
+	footerCopyright: "text-sm text-slate-300 mb-6",
+	footerBadge:
+		"group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 hover:border-slate-500 text-xs font-mono font-semibold text-slate-300 hover:text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5",
+	footerBadgeDot: "w-1.5 h-1.5 rounded-full bg-slate-400",
+	footerBadgeLogo:
+		"w-3.5 h-3.5 fill-current text-slate-300 transition-transform duration-300 group-hover:scale-110",
+	footerBadgeBrand: "text-white font-bold tracking-wide",
+} as const;
+
 export const PRIVACY_THEME_STYLES = {
 	privacyPageWrapper:
 		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",
