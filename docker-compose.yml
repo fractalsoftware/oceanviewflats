@@ -1,0 +1,63 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: ovf-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-local_root_pass}
+      MYSQL_DATABASE: ${DB_NAME:-oceanviewflats_db}
+      MYSQL_USER: ${DB_USER:-ovf_user}
+      MYSQL_PASSWORD: ${DB_PASS:-local_db_pass}
+    ports:
+      - "${DB_EXPOSE_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS:-local_root_pass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MERCADOPAGO_PUBLIC_KEY: ${MERCADOPAGO_PUBLIC_KEY:-}
+    container_name: ovf-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PUBLIC_PORT:-8080}:80"
+      - "${ADMIN_PORT:-8081}:8081"
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DB_HOST: ${DB_HOST:-db}
+      DB_NAME: ${DB_NAME:-oceanviewflats_db}
+      DB_USER: ${DB_USER:-ovf_user}
+      DB_PASS: ${DB_PASS:-local_db_pass}
+      RECIPIENT_EMAIL: ${RECIPIENT_EMAIL:-contact@oceanviewflats.com}
+      CAPTCHA_SECRET: ${CAPTCHA_SECRET:-local_dev_captcha_secret}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-local_dev_encryption_key_32bytes}
+      OVF_ADMIN_SESSION_SECRET: ${OVF_ADMIN_SESSION_SECRET:-local_dev_admin_session_secret_key}
+      MERCADOPAGO_PUBLIC_KEY: ${MERCADOPAGO_PUBLIC_KEY:-}
+      MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN:-}
+      MERCADOPAGO_SANDBOX: ${MERCADOPAGO_SANDBOX:-true}
+      PROPERTY_1606_DOOR_CODE: ${PROPERTY_1606_DOOR_CODE:-0160600#}
+      PROPERTY_1606_WIFI_SSID: ${PROPERTY_1606_WIFI_SSID:-APTO1606}
+      PROPERTY_1606_WIFI_PASSWORD: ${PROPERTY_1606_WIFI_PASSWORD:-Invitado@1606@HN}
+      PROPERTY_1707_DOOR_CODE: ${PROPERTY_1707_DOOR_CODE:-0170700#}
+      PROPERTY_1707_WIFI_SSID: ${PROPERTY_1707_WIFI_SSID:-APTO1707}
+      PROPERTY_1707_WIFI_PASSWORD: ${PROPERTY_1707_WIFI_PASSWORD:-Invitado@1707@HN}
+      HUESPED_MANAGER_BASE_URL: ${HUESPED_MANAGER_BASE_URL:-https://salguerosunset.huespedmanager.com.co/propietarios/production}
+      HUESPED_MANAGER_1707_CHECK: ${HUESPED_MANAGER_1707_CHECK:-ep92449222}
+      HUESPED_MANAGER_1606_CHECK: ${HUESPED_MANAGER_1606_CHECK:-ep24281580}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@oceanviewflats.com}
+      ADMIN_NAME: ${ADMIN_NAME:-Local Administrator}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-AdminOceanView123!}
+      ADMIN_ROLE: ${ADMIN_ROLE:-superadmin}
+
+volumes:
+  mysql_data:

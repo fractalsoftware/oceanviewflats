@@ -1,0 +1,29 @@
+# Dependencies & build artifacts (rebuilt inside Docker stages)
+node_modules/
+vendor/
+dist/
+staging/
+
+# Version control & local worktrees
+.git/
+.worktrees/
+
+# Local environment secrets (injected at runtime via docker-compose / env)
+.env
+.env.*
+!.env.example
+
+# Caches, logs & test outputs
+.cache/
+.phpunit.cache/
+.phpunit.result.cache
+*.log
+error_log
+logs/
+trivy-results.sarif
+architecture-review-*.html
+
+# OS metadata
+.DS_Store
+._*
+Thumbs.db
