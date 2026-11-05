@@ -57,7 +57,11 @@ export const Navigation = ({
 					</a>
 					<LanguageDropdown currentLang={lang} isScrolled={isScrolled} />
 					{showBookButton && (
-						<a href={bookHref} className={CHROME_THEME.navBookBtn}>
+						<a
+							id="nav-book"
+							href={bookHref}
+							className={CHROME_THEME.navBookBtn[scrollState]}
+						>
 							{t[bookLabelKey]}
 						</a>
 					)}

@@ -17,6 +17,7 @@ window.addEventListener('scroll', () => {
     const logo = document.getElementById('nav-logo');
     const toggle = document.getElementById('lang-toggle');
     const contact = document.getElementById('nav-contact');
+    const bookBtn = document.getElementById('nav-book');
     if (!nav || !logo || !toggle) return;
     
     if (window.scrollY > 50) {
@@ -30,6 +31,10 @@ window.addEventListener('scroll', () => {
             contact.classList.add('text-slate-600', 'hover:text-rose-700');
             contact.classList.remove('text-white', 'hover:text-white/80');
         }
+        if (bookBtn) {
+            bookBtn.classList.add('text-slate-600', 'hover:text-rose-700');
+            bookBtn.classList.remove('text-white', 'hover:text-white/80');
+        }
     } else {
         nav.classList.remove('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-3');
         nav.classList.add('bg-transparent', 'py-5');
@@ -40,6 +45,10 @@ window.addEventListener('scroll', () => {
         if (contact) {
             contact.classList.remove('text-slate-600', 'hover:text-rose-700');
             contact.classList.add('text-white', 'hover:text-white/80');
+        }
+        if (bookBtn) {
+            bookBtn.classList.remove('text-slate-600', 'hover:text-rose-700');
+            bookBtn.classList.add('text-white', 'hover:text-white/80');
         }
     }
 });
@@ -92,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (langToggle && langToggle.getAttribute('aria-expanded') === 'true') {
             return true;
         }
-        return dropdownMenu.classList.contains('opacity-100') && !dropdownMenu.classList.contains('hidden');
+        return dropdownMenu.classList.contains('opacity-100') && !dropdownMenu.classList.contains('invisible');
     }
 
     function openLangDropdown() {
@@ -105,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeLangDropdown(restoreFocus = false) {
         dropdownMenu.classList.remove('opacity-100', 'visible');
-        dropdownMenu.classList.add('hidden', 'opacity-0', 'invisible');
+        dropdownMenu.classList.add('opacity-0', 'invisible');
         if (langToggle) {
             langToggle.setAttribute('aria-expanded', 'false');
             if (restoreFocus && typeof langToggle.focus === 'function') {

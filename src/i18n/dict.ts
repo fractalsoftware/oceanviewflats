@@ -103,8 +103,8 @@ export const dict = {
 		homeCtaWhatsApp: "Chat on WhatsApp",
 		homeCard1707Badge: "17th Floor • RNT #268781",
 		homeCard1606Badge: "16th Floor • RNT #270413",
-		homeCard1707Parking: "Assigned Parking Bay 95",
-		homeCard1606Parking: "Assigned Parking Bay 87",
+		homeCard1707Parking: "Private Parking Included",
+		homeCard1606Parking: "Private Parking Included",
 		homeCardCta: "Explore & Book Direct",
 		homeExpTitle: "Tailored Experiences",
 		homeExpNomad: "Digital Nomad Heaven",
@@ -152,7 +152,7 @@ export const dict = {
 			"Yes, OceanViewFlats operates legally and is fully registered under the National Tourism Registry of Colombia. Flat 1707 is registered under RNT #268781 and Flat 1606 under RNT #270413.",
 		faqQ6: "How do check-in, the Guest Registry, and the building fee work?",
 		faqA6:
-			"Before arrival, the Primary Guest completes our mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors), which immediately unlocks your digital Guest Guide, Assigned Parking Space (Bay 95 for Flat 1707 or Bay 87 for Flat 1606), and temporal 0XXXXXX# smart-lock Access Credential. Upon arrival at Edificio Salguero Sunset front-desk reception, a mandatory one-time Building Registration Fee of 20,000 COP per person is payable on-site for security wristbands and access to the infinity pools (please note pools close every Tuesday for scheduled maintenance).",
+			"Before arrival, the Primary Guest completes our mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors), which immediately unlocks your digital Guest Guide, private parking space, and temporal 0XXXXXX# smart-lock Access Credential. Upon arrival at Edificio Salguero Sunset front-desk reception, a mandatory one-time Building Registration Fee of 20,000 COP per person is payable on-site for security wristbands and access to the infinity pools (please note pools close every Tuesday for scheduled maintenance).",
 		hostTitle: "Your Host",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -677,8 +677,8 @@ export const dict = {
 		homeCtaWhatsApp: "Chatear por WhatsApp",
 		homeCard1707Badge: "Piso 17 • RNT #268781",
 		homeCard1606Badge: "Piso 16 • RNT #270413",
-		homeCard1707Parking: "Parqueadero Asignado Bahía 95",
-		homeCard1606Parking: "Parqueadero Asignado Bahía 87",
+		homeCard1707Parking: "Parqueadero Privado Incluido",
+		homeCard1606Parking: "Parqueadero Privado Incluido",
 		homeCardCta: "Explorar y Reservar Directo",
 		homeExpTitle: "Experiencias a la Medida",
 		homeExpNomad: "Paraíso para Nómadas Digitales",
@@ -728,7 +728,7 @@ export const dict = {
 		faqQ6:
 			"¿Cómo funcionan el check-in, el Registro de Huéspedes y la tarifa del edificio?",
 		faqA6:
-			"Antes de tu llegada, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea (incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores), lo cual desbloquea de inmediato tu Guía del Huésped digital, tu Parqueadero Asignado (Bahía 95 para el 1707 o Bahía 87 para el 1606) y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio obligatoria de 20,000 COP por persona por las manillas de seguridad y el acceso a las piscinas infinitas (ten en cuenta que las piscinas cierran todos los martes por mantenimiento programado).",
+			"Antes de tu llegada, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea (incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores), lo cual desbloquea de inmediato tu Guía del Huésped digital, tu parqueadero privado incluido y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio obligatoria de 20,000 COP por persona por las manillas de seguridad y el acceso a las piscinas infinitas (ten en cuenta que las piscinas cierran todos los martes por mantenimiento programado).",
 		hostTitle: "Tu Anfitrión",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1268,8 +1268,8 @@ export const dict = {
 		homeCtaWhatsApp: "Discuter sur WhatsApp",
 		homeCard1707Badge: "17e Étage • RNT #268781",
 		homeCard1606Badge: "16e Étage • RNT #270413",
-		homeCard1707Parking: "Parking Attribué Place 95",
-		homeCard1606Parking: "Parking Attribué Place 87",
+		homeCard1707Parking: "Parking Privé Inclus",
+		homeCard1606Parking: "Parking Privé Inclus",
 		homeCardCta: "Découvrir et Réserver en Direct",
 		homeExpTitle: "Expériences sur Mesure",
 		homeExpNomad: "Le Paradis des Nomades Digitaux",
@@ -1320,7 +1320,7 @@ export const dict = {
 		faqQ6:
 			"Comment fonctionnent l'enregistrement, le Registre des Invités et les frais d'immeuble ?",
 		faqA6:
-			"Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne (incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs), ce qui débloque immédiatement votre Guide de l'Invité numérique, votre Place de Parking Attribuée (Place 95 pour le 1707 ou Place 87 pour le 1606) et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble obligatoires de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement (veuillez noter que les piscines ferment tous les mardis pour maintenance).",
+			"Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne (incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs), ce qui débloque immédiatement votre Guide de l'Invité numérique, votre place de parking privé incluse et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble obligatoires de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement (veuillez noter que les piscines ferment tous les mardis pour maintenance).",
 		hostTitle: "Votre Hôte",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1864,8 +1864,8 @@ export const dict = {
 		homeCtaWhatsApp: "Scrivici su WhatsApp",
 		homeCard1707Badge: "17° Piano • RNT #268781",
 		homeCard1606Badge: "16° Piano • RNT #270413",
-		homeCard1707Parking: "Posto Auto Assegnato N. 95",
-		homeCard1606Parking: "Posto Auto Assegnato N. 87",
+		homeCard1707Parking: "Parcheggio Privato Incluso",
+		homeCard1606Parking: "Parcheggio Privato Incluso",
 		homeCardCta: "Esplora e Prenota Direttamente",
 		homeExpTitle: "Esperienze su Misura",
 		homeExpNomad: "Paradiso per Nomadi Digitali",
@@ -1915,7 +1915,7 @@ export const dict = {
 		faqQ6:
 			"Come funzionano il check-in, il Registro Ospiti e la tariffa condominiale?",
 		faqA6:
-			"Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio (inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679), sbloccando immediatamente la Guida dell'Ospite digitale, il Posto Auto Assegnato (N. 95 per il 1707 o N. 87 per il 1606) e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. All'arrivo alla reception dell'Edificio Salguero Sunset, è previsto il pagamento in loco di una Tariffa di Registrazione Condominiale obbligatoria di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro (si ricorda che le piscine chiudono ogni martedì per manutenzione programmata).",
+			"Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio (inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679), sbloccando immediatamente la Guida dell'Ospite digitale, il parcheggio privato incluso e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. All'arrivo alla reception dell'Edificio Salguero Sunset, è previsto il pagamento in loco di una Tariffa di Registrazione Condominiale obbligatoria di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro (si ricorda che le piscine chiudono ogni martedì per manutenzione programmata).",
 		hostTitle: "Il Tuo Ospite",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -2453,8 +2453,8 @@ export const dict = {
 		homeCtaWhatsApp: "Per WhatsApp Chatten",
 		homeCard1707Badge: "17. Etage • RNT #268781",
 		homeCard1606Badge: "16. Etage • RNT #270413",
-		homeCard1707Parking: "Zugewiesener Stellplatz Nr. 95",
-		homeCard1606Parking: "Zugewiesener Stellplatz Nr. 87",
+		homeCard1707Parking: "Privater Parkplatz Inklusive",
+		homeCard1606Parking: "Privater Parkplatz Inklusive",
 		homeCardCta: "Entdecken & Direkt Buchen",
 		homeExpTitle: "Maßgeschneiderte Erlebnisse",
 		homeExpNomad: "Paradies für digitale Nomaden",
@@ -2503,7 +2503,7 @@ export const dict = {
 		faqQ6:
 			"Wie funktionieren Check-in, Gästeregistrierung und die Gebäudegebühr?",
 		faqA6:
-			"Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus (einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen). Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr zugewiesener Stellplatz (Nr. 95 für Flat 1707 bzw. Nr. 87 für Flat 1606) sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine obligatorische einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten (bitte beachten Sie, dass die Pools jeden Dienstag wegen planmäßiger Wartung geschlossen sind).",
+			"Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus (einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen). Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr privater Parkplatz sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine obligatorische einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten (bitte beachten Sie, dass die Pools jeden Dienstag wegen planmäßiger Wartung geschlossen sind).",
 		hostTitle: "Ihr Gastgeber",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -3048,8 +3048,8 @@ export const dict = {
 		homeCtaWhatsApp: "WhatsAppで相談する",
 		homeCard1707Badge: "17階 • RNT #268781",
 		homeCard1606Badge: "16階 • RNT #270413",
-		homeCard1707Parking: "専用駐車場 95番",
-		homeCard1606Parking: "専用駐車場 87番",
+		homeCard1707Parking: "専用駐車場付き",
+		homeCard1606Parking: "専用駐車場付き",
 		homeCardCta: "詳細を見る・直接予約",
 		homeExpTitle: "カスタマイズされた体験",
 		homeExpNomad: "デジタルノマドの天国",
@@ -3098,7 +3098,7 @@ export const dict = {
 		faqQ6:
 			"チェックイン、宿泊者名簿（ゲスト登録）、および建物登録料の仕組みは？",
 		faqA6:
-			"ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出いただくと、デジタルゲストガイド、専用駐車場（1707号室は95番、1606号室は87番）、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。ご到着時はEdificio Salguero Sunsetのフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください（なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます）。",
+			"ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出いただくと、デジタルゲストガイド、専用駐車場、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。ご到着時はEdificio Salguero Sunsetのフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください（なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます）。",
 		hostTitle: "ホスト",
 		hostName: "Manuel Enrique",
 		hostBio:

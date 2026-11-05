@@ -879,12 +879,13 @@ test("Shared chrome across all 6 locales renders accessible #lang-toggle button,
 				`${label} #nav-contact must enforce >= 40px x 40px touch target`,
 			);
 
-			// 3. Closed #lang-dropdown has hidden class so collapsed links are not keyboard-focusable, and AA hover contrast
+			// 3. Closed #lang-dropdown has invisible class (visibility: hidden) so collapsed links are not keyboard-focusable, and AA hover contrast
 			const dropdownMatch = html.match(/<div[^>]*id="lang-dropdown"[^>]*>/);
 			assert.ok(dropdownMatch, `${label} must render #lang-dropdown`);
 			assert.ok(
-				dropdownMatch[0].includes("hidden"),
-				`${label} #lang-dropdown must include 'hidden' when collapsed so links are removed from tab order`,
+				dropdownMatch[0].includes("invisible") &&
+					dropdownMatch[0].includes("opacity-0"),
+				`${label} #lang-dropdown must include 'invisible' and 'opacity-0' when collapsed so links are removed from tab order`,
 			);
 			assert.ok(
 				html.includes("hover:text-rose-700") &&
@@ -1089,7 +1090,6 @@ test("main.js #lang-toggle opens menu with aria-expanded='true', closes and rest
 		"absolute",
 		"right-0",
 		"top-full",
-		"hidden",
 		"opacity-0",
 		"invisible",
 	]);
@@ -1156,15 +1156,15 @@ test("main.js #lang-toggle opens menu with aria-expanded='true', closes and rest
 	// Verify query string propagation on language links
 	assert.equal(esLink.getAttribute("href"), "es.html?property=1707");
 
-	// 1. Initial closed state: aria-expanded="false" and hidden class present
+	// 1. Initial closed state: aria-expanded="false" and invisible/opacity-0 classes present
 	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
-	assert.equal(langDropdown.classList.contains("hidden"), true);
+	assert.equal(langDropdown.classList.contains("invisible"), true);
 	assert.equal(langDropdown.classList.contains("opacity-0"), true);
 
 	// 2. Click #lang-toggle -> opens menu and sets aria-expanded="true"
 	langToggle.dispatchEvent("click");
 	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
-	assert.equal(langDropdown.classList.contains("hidden"), false);
+	assert.equal(langDropdown.classList.contains("invisible"), false);
 	assert.equal(langDropdown.classList.contains("opacity-100"), true);
 	assert.equal(langDropdown.classList.contains("visible"), true);
 
@@ -1173,9 +1173,8 @@ test("main.js #lang-toggle opens menu with aria-expanded='true', closes and rest
 	assert.equal(langToggle.isFocused(), false);
 	sandbox.document.dispatchEvent("keydown", { key: "Escape" });
 	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
-	assert.equal(langDropdown.classList.contains("hidden"), true);
-	assert.equal(langDropdown.classList.contains("opacity-0"), true);
 	assert.equal(langDropdown.classList.contains("invisible"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
 	assert.equal(
 		langToggle.isFocused(),
 		true,
@@ -1185,11 +1184,11 @@ test("main.js #lang-toggle opens menu with aria-expanded='true', closes and rest
 	// 4. Re-open and click outside -> closes menu and sets aria-expanded="false"
 	langToggle.dispatchEvent("click");
 	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
-	assert.equal(langDropdown.classList.contains("hidden"), false);
+	assert.equal(langDropdown.classList.contains("invisible"), false);
 
 	sandbox.document.dispatchEvent("click", { target: outsideNode });
 	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
-	assert.equal(langDropdown.classList.contains("hidden"), true);
+	assert.equal(langDropdown.classList.contains("invisible"), true);
 	assert.equal(langDropdown.classList.contains("opacity-0"), true);
 });
 
@@ -1208,8 +1207,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			expected1606Title: "Oceanview Flat 1606",
 			expected1707Badge: "17th Floor • RNT #268781",
 			expected1606Badge: "16th Floor • RNT #270413",
-			expected1707Parking: "Assigned Parking Bay 95",
-			expected1606Parking: "Assigned Parking Bay 87",
+			expected1707Parking: "Private Parking Included",
+			expected1606Parking: "Private Parking Included",
 			expectedBaths: "2 Baths",
 		},
 		{
@@ -1224,8 +1223,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			expected1606Title: "Apartamento Vista al Mar 1606",
 			expected1707Badge: "Piso 17 • RNT #268781",
 			expected1606Badge: "Piso 16 • RNT #270413",
-			expected1707Parking: "Parqueadero Asignado Bahía 95",
-			expected1606Parking: "Parqueadero Asignado Bahía 87",
+			expected1707Parking: "Parqueadero Privado Incluido",
+			expected1606Parking: "Parqueadero Privado Incluido",
 			expectedBaths: "2 Baños",
 		},
 		{
@@ -1240,8 +1239,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			expected1606Title: "Appartement Vue Mer 1606",
 			expected1707Badge: "17e Étage • RNT #268781",
 			expected1606Badge: "16e Étage • RNT #270413",
-			expected1707Parking: "Parking Attribué Place 95",
-			expected1606Parking: "Parking Attribué Place 87",
+			expected1707Parking: "Parking Privé Inclus",
+			expected1606Parking: "Parking Privé Inclus",
 			expectedBaths: "2 Salles de bain",
 		},
 		{
@@ -1256,8 +1255,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			expected1606Title: "Appartamento Vista Mare 1606",
 			expected1707Badge: "17° Piano • RNT #268781",
 			expected1606Badge: "16° Piano • RNT #270413",
-			expected1707Parking: "Posto Auto Assegnato N. 95",
-			expected1606Parking: "Posto Auto Assegnato N. 87",
+			expected1707Parking: "Parcheggio Privato Incluso",
+			expected1606Parking: "Parcheggio Privato Incluso",
 			expectedBaths: "2 Bagni",
 		},
 		{
@@ -1272,8 +1271,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			expected1606Title: "Apartment mit Meerblick 1606",
 			expected1707Badge: "17. Etage • RNT #268781",
 			expected1606Badge: "16. Etage • RNT #270413",
-			expected1707Parking: "Zugewiesener Stellplatz Nr. 95",
-			expected1606Parking: "Zugewiesener Stellplatz Nr. 87",
+			expected1707Parking: "Privater Parkplatz Inklusive",
+			expected1606Parking: "Privater Parkplatz Inklusive",
 			expectedBaths: "2 Bäder",
 		},
 		{
@@ -1288,8 +1287,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			expected1606Title: "オーシャンビューフラット 1606",
 			expected1707Badge: "17階 • RNT #268781",
 			expected1606Badge: "16階 • RNT #270413",
-			expected1707Parking: "専用駐車場 95番",
-			expected1606Parking: "専用駐車場 87番",
+			expected1707Parking: "専用駐車場付き",
+			expected1606Parking: "専用駐車場付き",
 			expectedBaths: "2 バスルーム",
 		},
 	];
@@ -1375,17 +1374,17 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			`${locale.file} #properties must display the 7–12 Guest multi-property family stay note in Edificio Salguero Sunset`,
 		);
 
-		// 7. No line-clamp-2 truncation on localized descriptions, and Property Temperature Rule + WCAG AA contrast tokens used inside #properties
+		// 7. No line-clamp-2 truncation on localized descriptions, and unified 1707/1606 card color scheme + WCAG AA contrast tokens used inside #properties
 		assert.ok(
 			!propSectionHtml.includes("line-clamp-2"),
 			`${locale.file} property cards must not truncate descriptions with line-clamp-2`,
 		);
 		assert.ok(
 			propSectionHtml.includes("text-[#B91C1C]") &&
-				propSectionHtml.includes("text-[#BE123C]") &&
 				!propSectionHtml.includes("text-[#FF5A5F]") &&
-				!propSectionHtml.includes("text-rose-600"),
-			`${locale.file} property cards must use Coral Horizon deep text-[#B91C1C] on 1707 and Salguero Sunset Rose deep text-[#BE123C] on 1606`,
+				!propSectionHtml.includes("text-rose-600") &&
+				!propSectionHtml.includes("bg-rose-50"),
+			`${locale.file} property cards must share the 1707 color scheme with text-[#B91C1C] CTA and neutral spec pills`,
 		);
 	}
 
