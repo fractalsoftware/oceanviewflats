@@ -226,7 +226,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $this->assertSame('11:00', $step1['data']['send_horaout']);
         $this->assertSame('TRANSFERENCIA', $step1['data']['send_fpay']);
         $this->assertSame('2', $step1['data']['send_cant_hp']);
-        $this->assertSame('XYZ-123', $step1['data']['send_car']);
+        $this->assertSame('XYZ123', $step1['data']['send_car']);
         $this->assertSame('Late arrival at 6 PM', $step1['data']['send_observacion']);
 
         // Verify Step 2 call
@@ -243,8 +243,8 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $this->assertSame(['Mendoza', 'Gomez'], $step2['data']['lname']);
         $this->assertSame(['Perez', ''], $step2['data']['mname']);
         $this->assertSame(['ESPANA', 'COLOMBIA'], $step2['data']['country']);
-        // Crucial: companion inherited primary guest phone!
-        $this->assertSame(['+34 600 123 456', '+34 600 123 456'], $step2['data']['phone']);
+        // Crucial: companion inherited primary guest phone (sanitized to digits-only for Huésped Manager v2.0.0)!
+        $this->assertSame(['34600123456', '34600123456'], $step2['data']['phone']);
         $this->assertSame(['TITULAR', 'ACOMPAÑANTE'], $step2['data']['nexo']);
         $this->assertSame(['0', '0'], $step2['data']['covid3']);
         $this->assertSame(['0', '0'], $step2['data']['covid10']);
@@ -349,7 +349,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
 
         $step2 = $requests[1];
         $this->assertSame(
-            ['+1 305 555 0100', '+1 305 555 0100', '+1 416 555 0200'],
+            ['13055550100', '13055550100', '14165550200'],
             $step2['data']['phone']
         );
         $this->assertSame(['TITULAR', 'ACOMPAÑANTE', 'ACOMPAÑANTE'], $step2['data']['nexo']);
@@ -770,8 +770,8 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         // Verify Step 1 payload formatted notes with vehicle info
         $this->assertCount(2, $requests);
         $step1 = $requests[0];
-        $this->assertSame('Late arrival at 6 PM | Vehicle: Toyota Fortuner', $step1['data']['send_observacion']);
-        $this->assertSame('XYZ-123', $step1['data']['send_car']);
+        $this->assertSame('Late arrival at 6 PM - Vehicle - Toyota Fortuner', $step1['data']['send_observacion']);
+        $this->assertSame('XYZ123', $step1['data']['send_car']);
 
         // Verify audit log entry
         $logs = AuditLogger::getLogsForEntity($this->pdo, 'reservation', 'ovf_res_deep_test');
@@ -992,8 +992,8 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         // Verify request payload formatted notes
         $this->assertCount(2, $requests);
         $step1 = $requests[0];
-        $this->assertSame('Honeymoon stay | Vehicle: Renault Duster', $step1['data']['send_observacion']);
-        $this->assertSame('ABC-789', $step1['data']['send_car']);
+        $this->assertSame('Honeymoon stay - Vehicle - Renault Duster', $step1['data']['send_observacion']);
+        $this->assertSame('ABC789', $step1['data']['send_car']);
 
         // Verify persistence
         $saved = $this->repository->findByReservationUid('ovf_res_in_memory');
@@ -1095,6 +1095,72 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         // Verify Step 2 submit token
         $step2 = $requests[1]['data'];
         $this->assertSame('0', $step2['btn_checkin']);
+    }
+
+    public function testCondominiumPortalV2ValidationSanitizesPayloadAndExtractsHtmlErrorSnippet(): void
+    {
+        $requests = [];
+        $mockTransport = $this->createMock(HttpTransportInterface::class);
+        $mockTransport->method('post')->willReturnCallback(function (string $url, array|string $data = []) use (&$requests): array {
+            $requests[] = ['url' => $url, 'data' => $data];
+            if (str_contains($url, 'reg_guest_owner_pre.php')) {
+                return ['statusCode' => 200, 'body' => json_encode(['last_id' => 3665]), 'headers' => [], 'cookies' => ['PHPSESSID' => 's1'], 'error' => null];
+            }
+            return [
+                'statusCode' => 200,
+                'body' => '<!DOCTYPE html><html lang="es"><head><title>Datos por corregir</title><style>' . str_repeat('body{margin:0}', 40) . '</style></head><body><div class="c"><h1>Revise la información</h1><p>Huésped #1: El teléfono registrado para el consecutivo solo admite números (entre 7 y 15 dígitos).</p></div></body></html>',
+                'headers' => [],
+                'cookies' => [],
+                'error' => null,
+            ];
+        });
+
+        $adapter = new HuespedManagerClearanceSync(repository: $this->repository, transport: $mockTransport);
+        $occupants = [
+            new OccupantDetails(
+                index: 1,
+                name: 'Jorge-Luis Castro',
+                firstName: 'Jorge-Luis',
+                lastName: "Castro O'Connor",
+                middleName: 'J.',
+                docType: 'Cédula de Ciudadanía',
+                docNum: '79.123.456',
+                country: 'Colombia',
+                phone: '+57 300 123 4567',
+                email: 'jorge.castro@example.com'
+            ),
+            new OccupantDetails(
+                index: 2,
+                name: 'Ana',
+                firstName: 'Ana',
+                lastName: '',
+                docType: 'Cédula de Ciudadanía',
+                docNum: 'AB12',
+                country: 'Colombia',
+                phone: '123456'
+            ),
+        ];
+
+        $res = $this->createSampleReservation('ovf_res_jorge_castro', '1707', '2026-11-05', '2026-11-10', 'Flight: AV123 (Late check-in)');
+        $sub = $this->createSampleSubmission('ovf_res_jorge_castro', '1707', '2026-11-05', '2026-11-10', $occupants, 'XYZ-123', 'Toyota Prado (Gris)', 'jorge.castro@example.com');
+
+        $clearance = $adapter->syncSubmission($res, $sub);
+
+        $step1Data = $requests[0]['data'];
+        $this->assertSame('XYZ123', $step1Data['car']);
+        $this->assertSame('Flight - AV123 Late check-in - Vehicle - Toyota Prado Gris', $step1Data['observacion']);
+
+        $step2Data = $requests[1]['data'];
+        $this->assertSame(['CC', 'DE'], $step2Data['typeid']);
+        $this->assertSame(['79123456', 'AB12'], $step2Data['ide']);
+        $this->assertSame(['Jorge Luis', 'Ana'], $step2Data['name']);
+        $this->assertSame(['', ''], $step2Data['sname']);
+        $this->assertSame(['Castro O Connor', 'Ana'], $step2Data['lname']);
+        $this->assertSame(['573001234567', '573001234567'], $step2Data['phone']);
+
+        $this->assertTrue($clearance->isFailed());
+        $this->assertStringContainsString('Datos por corregir - Revise la información - Huésped #1: El teléfono registrado para el consecutivo solo admite números (entre 7 y 15 dígitos).', $clearance->errorMessage ?? '');
+        $this->assertStringNotContainsString('<style>', $clearance->errorMessage ?? '');
     }
 }
 

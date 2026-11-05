@@ -80,15 +80,78 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
      */
     public static function formatClearanceNotes(?string $notes, ?string $carModel): ?string
     {
-        $cleanNotes = ($notes !== null && trim($notes) !== '') ? trim($notes) : null;
-        $cleanModel = ($carModel !== null && trim((string) $carModel) !== '') ? trim((string) $carModel) : null;
+        $rawNotes = $notes !== null ? trim($notes) : '';
+        $rawModel = $carModel !== null ? trim((string) $carModel) : '';
+        $combined = $rawModel !== ''
+            ? ($rawNotes !== '' ? $rawNotes . ' - Vehicle - ' . $rawModel : 'Vehicle - ' . $rawModel)
+            : $rawNotes;
+        $sanitized = self::sanitizePortalText($combined);
 
-        if ($cleanModel === null) {
-            return $cleanNotes;
+        return $sanitized !== '' ? $sanitized : null;
+    }
+
+    /**
+     * Sanitizes free-text fields (observacion) for Condominium Administration Portal RX.texto rule (max 250 chars).
+     */
+    public static function sanitizePortalText(?string $text): string
+    {
+        $normalized = str_replace(['|', ':', ';', '/', '\\'], ' - ', (string) $text);
+        return self::sanitizePortalLatin($normalized, '0-9 .,\\-', 1, 250);
+    }
+
+    /**
+     * Sanitizes occupant name segments for Condominium Administration Portal RX.nombre rule (2–60 chars).
+     */
+    public static function sanitizePortalName(?string $name): string
+    {
+        return self::sanitizePortalLatin((string) $name, '', 2, 60);
+    }
+
+    /**
+     * Sanitizes vehicle license plates for Condominium Administration Portal RX.placa rule (/^[A-Za-z0-9]{3,8}$/).
+     */
+    public static function sanitizePortalCarPlate(?string $carPlates): string
+    {
+        $alnum = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', (string) $carPlates));
+        return strlen($alnum) >= 3 ? substr($alnum, 0, 8) : '';
+    }
+
+    /**
+     * Sanitizes phone numbers for Condominium Administration Portal RX.telefono rule (/^[0-9]{7,15}$/).
+     */
+    public static function sanitizePortalPhone(?string $phone): string
+    {
+        $digits = (string) preg_replace('/\D+/', '', (string) $phone);
+        if (str_starts_with($digits, '00') && strlen($digits) > 9) {
+            $digits = substr($digits, 2);
         }
+        $trimmed = strlen($digits) > 15 ? substr($digits, -15) : $digits;
+        return strlen($trimmed) >= 7 ? $trimmed : '';
+    }
 
-        $vehicleNote = 'Vehicle: ' . $cleanModel;
-        return $cleanNotes !== null ? $cleanNotes . ' | ' . $vehicleNote : $vehicleNote;
+    /**
+     * Resolves portal document code and sanitized document number honoring Condominium Administration Portal DOCS bounds.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private static function resolvePortalDocument(OccupantDetails $occ): array
+    {
+        $type = $occ->getPortalDocType();
+        $alnum = (string) preg_replace('/[^A-Za-z0-9]/', '', $occ->docNum);
+        $bounds = ['CC' => [true, 3, 10], 'TI' => [true, 6, 11], 'RC' => [true, 6, 11], 'CE' => [true, 3, 15], 'PA' => [false, 4, 20]];
+        if (!isset($bounds[$type])) {
+            return [$type, $alnum];
+        }
+        [$numericOnly, $min, $max] = $bounds[$type];
+        $candidate = substr($numericOnly ? (string) preg_replace('/\D+/', '', $occ->docNum) : $alnum, 0, $max);
+        return strlen($candidate) >= $min ? [$type, $candidate] : ['DE', $alnum];
+    }
+
+    private static function sanitizePortalLatin(string $value, string $extraChars, int $minLen, int $maxLen): string
+    {
+        $pattern = '/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÇç ' . $extraChars . ']+/u';
+        $cleaned = mb_substr(trim((string) preg_replace('/\s+/u', ' ', (string) preg_replace($pattern, ' ', $value))), 0, $maxLen, 'UTF-8');
+        return mb_strlen($cleaned, 'UTF-8') >= $minLen ? $cleaned : '';
     }
 
     /**
@@ -205,7 +268,9 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             return $this->finalizeClearance($clearance, $reservationUid, $payloadBefore, $admin);
         }
 
-        $primaryPhone = trim((string) ($occupants[0]->phone ?? ''));
+        $primaryPhone = self::sanitizePortalPhone($occupants[0]->phone);
+        $sanitizedCarPlates = self::sanitizePortalCarPlate($carPlates);
+        $sanitizedNotes = self::sanitizePortalText($notes);
 
         $productionBase = $this->getProductionBaseUrl();
         $step1Url = sprintf('%s/reg_guest_owner_pre.php?unit=%s&check=%s', $productionBase, urlencode($propertyId), urlencode($checkToken));
@@ -220,8 +285,8 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             'fpay' => 'TRANSFERENCIA',
             'cant_hp' => (string) count($occupants),
             'price' => '0',
-            'car' => $carPlates ?? '',
-            'observacion' => $notes ?? '',
+            'car' => $sanitizedCarPlates,
+            'observacion' => $sanitizedNotes,
 
             // Defensive backward-compatibility aliases
             'send_apt' => $propertyId,
@@ -232,8 +297,8 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             'send_fpay' => 'TRANSFERENCIA',
             'send_cant_hp' => (string) count($occupants),
             'send_price' => '0',
-            'send_car' => $carPlates ?? '',
-            'send_observacion' => $notes ?? '',
+            'send_car' => $sanitizedCarPlates,
+            'send_observacion' => $sanitizedNotes,
             'send_btn' => '1',
             'btn_send' => '1',
         ];
@@ -286,16 +351,19 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
         $covid = [];
 
         foreach ($occupants as $i => $occ) {
-            $typeid[] = $occ->getPortalDocType();
-            $ide[] = $occ->docNum;
-            $name[] = $occ->firstName ?? $occ->name;
-            $sname[] = $occ->middleName ?? '';
-            $lname[] = $occ->lastName ?? '';
-            $mname[] = $occ->secondLastName ?? '';
+            [$docType, $docNum] = self::resolvePortalDocument($occ);
+            $firstName = self::sanitizePortalName($occ->firstName ?? $occ->name);
+            $lastName = self::sanitizePortalName($occ->lastName);
+            $typeid[] = $docType;
+            $ide[] = $docNum;
+            $name[] = $firstName;
+            $sname[] = self::sanitizePortalName($occ->middleName);
+            $lname[] = $lastName !== '' ? $lastName : $firstName;
+            $mname[] = self::sanitizePortalName($occ->secondLastName);
             $country[] = $occ->normalizeCountry($occ->country ?? 'COLOMBIA') ?? 'COLOMBIA';
 
-            // Companion inherits primary guest phone if empty
-            $occPhone = trim((string) ($occ->phone ?? ''));
+            // Companion inherits primary guest phone if empty or invalid (<7 digits)
+            $occPhone = self::sanitizePortalPhone($occ->phone);
             $phone[] = $occPhone !== '' ? $occPhone : $primaryPhone;
 
             // Primary occupant is TITULAR, companions are ACOMPAÑANTE
@@ -378,12 +446,16 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             } elseif ($status2 === 200) {
                 $bodyLower = strtolower($response2['body']);
                 $effLower = strtolower($response2['effectiveUrl'] ?? '');
+                $isValidationErrorPage = str_contains($bodyLower, 'datos por corregir') || str_contains($bodyLower, 'revise la informaci');
                 if (
-                    str_contains($effLower, 'succ')
-                    || str_contains($bodyLower, 'succ')
-                    || str_contains($bodyLower, 'registrad')
-                    || str_contains($bodyLower, 'exitos')
-                    || str_contains($bodyLower, 'consecutivo')
+                    !$isValidationErrorPage
+                    && (
+                        str_contains($effLower, 'succ')
+                        || str_contains($bodyLower, 'succ')
+                        || str_contains($bodyLower, 'registrad')
+                        || str_contains($bodyLower, 'exitos')
+                        || str_contains($bodyLower, 'consecutivo')
+                    )
                 ) {
                     $isSuccess = true;
                 } else {
@@ -391,7 +463,10 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
                     if ($trimmedBody === '') {
                         $failureReason = 'Step 2 returned HTTP 200 with empty body (missing success redirect or confirmation text)';
                     } else {
-                        $failureReason = sprintf('Step 2 returned HTTP 200 without recognized success indicator: %s', substr($trimmedBody, 0, 250));
+                        $failureReason = sprintf(
+                            'Step 2 returned HTTP 200 without recognized success indicator: %s',
+                            self::extractPortalErrorSnippet($trimmedBody)
+                        );
                     }
                 }
             } else {
@@ -497,5 +572,18 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
             }
         }
         return $normalized;
+    }
+
+    /**
+     * Extracts a concise, human-readable diagnostic message from Huésped Manager HTML error responses
+     * (e.g., <title>Datos por corregir</title> ... <h1>Revise la información</h1><p>Huésped #1: ...</p>)
+     * instead of truncating inside inline <style> blocks.
+     */
+    public static function extractPortalErrorSnippet(string $rawBody): string
+    {
+        $withoutCssJs = (string) preg_replace('/<(style|script)\b[^>]*>.*?<\/\1>/is', ' ', $rawBody);
+        $spacedTags = str_replace(['</title>', '</h1>', '</p>', '</div>'], ' - ', $withoutCssJs);
+        $plain = trim((string) preg_replace('/\s*(?:-\s*)+/u', ' - ', (string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($spacedTags), ENT_QUOTES | ENT_HTML5, 'UTF-8'))), " \t\n\r\0\x0B-");
+        return $plain !== '' ? mb_substr($plain, 0, 250, 'UTF-8') : substr(trim($rawBody), 0, 250);
     }
 }
