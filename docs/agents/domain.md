@@ -1,51 +1,13 @@
 # Domain Docs
 
-How the engineering skills should consume this repo's domain documentation when exploring the codebase.
+Single-context domain documentation layout at the repository root:
 
-## Before exploring, read these
+- **[`CONTEXT.md`](../../CONTEXT.md)**: Canonical domain glossary and ubiquitous language.
+- **[`docs/adr/`](../adr/)**: Architecture Decision Records (`0001`–`0013`).
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists: it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`**: read ADRs that touch the area you're about to work in. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
+## Rules
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates them lazily when terms or decisions actually get resolved.
-
-## File structure
-
-Single-context repo (most repos):
-
-```
-/
-├── CONTEXT.md
-├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
-└── src/
-```
-
-Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
-
-```
-/
-├── CONTEXT-MAP.md
-├── docs/adr/                          ← system-wide decisions
-└── src/
-    ├── ordering/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/                  ← context-specific decisions
-    └── billing/
-        ├── CONTEXT.md
-        └── docs/adr/
-```
-
-## Use the glossary's vocabulary
-
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
-
-If the concept you need isn't in the glossary yet, that's a signal: either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
-
-## Flag ADR conflicts
-
-If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
-
-> _Contradicts ADR-0007 (event-sourced orders), but worth reopening because…_
+1. **Read before exploring**: Consult `CONTEXT.md` and relevant ADRs in `docs/adr/` before designing or modifying domain, API, or admin workflows.
+2. **Use canonical vocabulary**: Always use the exact term defined in `CONTEXT.md` (in code, tests, UI labels, issues, and commits) and avoid listed synonyms.
+3. **Keep `CONTEXT.md` pure**: `CONTEXT.md` is strictly a domain glossary — never put UI implementation details, CSS classes, or code snippets in it.
+4. **Surface ADR conflicts**: If a change contradicts or amends an existing ADR, call it out explicitly and update the ADR when the decision is finalized.

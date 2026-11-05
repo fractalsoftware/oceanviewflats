@@ -1,88 +1,40 @@
-## Workflow Orchestration
+# OceanViewFlats Agent Guidelines
 
-### 1. Plan Mode Default
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately — don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
+## Architecture & Development Rules
 
-### 2. Subagent Strategy
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One task per subagent for focused execution
+1. **Theme & Config Centralization (`src/constants/theme.ts`, `src/constants/config.ts`)**:
+   - Centralize style classes, layout flags, imagery arrays, and endpoint constants in `src/constants/`.
+   - Keep React components (`src/components/`, `src/pages/`) 100% style-agnostic without property-conditional layout ternaries.
 
-### 3. Self-Improvement Loop
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
+2. **Multilingual Zero-Hydration Seam ([ADR 0010](docs/adr/0010-multilingual-page-hydration-seam.md))**:
+   - Define all UI translations across all 6 locales (`en`, `es`, `fr`, `it`, `de`, `ja`) in `src/i18n/dict.ts` and backend/email strings in `public/api/translations.php`.
+   - Expose client-side strings via scoped slices in `src/config/pages.ts`, serialized at build time into `<script id="ovf-page-config" type="application/json">` (`src/templates/base.ts`).
+   - In Vanilla JS (`public/js/`), read translations exclusively via `window.t(key, params, fallback)` and runtime paths (`lang`, `assetPrefix`, `apiBase`) via `window.getPageConfig()` (`public/js/page-config.js`). Never hardcode text literals, embed inline translation dictionaries, or scrape `data-msg-*` attributes.
 
-### 4. Verification Before Done
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
+3. **Relative Asset Prefix Propagation**:
+   - Pass the build-time `assetPrefix` prop (`./` or `../`) through React components and prepend it to every local asset or page link so static builds work at root and nested depths.
 
-### 5. Demand Elegance (Balanced)
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes — don't over-engineer
-- Challenge your own work before presenting it
+4. **On-Demand Third-Party SDK Loading**:
+   - Omit external SDK scripts (e.g., Mercado Pago `sdk.mercadopago.com/js/v2`) from global HTML templates (`src/templates/base.ts`). Load them asynchronously via Promises in `public/js/main.js` only on active user intent.
 
-### 6. Autonomous Bug Fixing
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests — then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
+5. **Centralized Database Migrations (`scripts/schema.sql`, `scripts/migrate.php`)**:
+   - Never run `ALTER TABLE` or `CREATE TABLE` inside runtime HTTP endpoints. Define schema changes in `scripts/schema.sql` and `OceanViewFlats\Domain\Database\MigrationRunner`, executed via `php scripts/migrate.php`.
 
-## Task Management
+6. **Hexagonal Domain & Privacy Invariants**:
+   - Route reservation holds, confirmations, manual/external onboarding, and cancellations/refunds through `ReservationLifecycleEngine` ([ADR 0011](docs/adr/0011-reservation-lifecycle-engine.md)); execute external Mercado Pago refunds before acquiring database locks.
+   - Enforce Colombian Law 1581 of 2012 ([ADR 0012](docs/adr/0012-personal-data-protection-and-ley-1581-compliance.md)): require explicit `Personal Data Authorization` (and `Minor Guardian Attestation` when `age < 18` or minor document type), encrypt `guest_registries.guests_payload` at rest via `PayloadEncryptor`, mask PII in secondary logs/emails via `PiiMasker`, and generate cryptographically random door PINs (`0XXXXXX#` via `DoorCodeGenerator`).
 
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+## Verification Gates
 
-## Core Principles
+Run the relevant verification suite before marking any task complete:
+- **Frontend & SSG**: `npm test && npm run typecheck && npm run lint && npm run build`
+- **Backend & Domain**: `composer test && composer phpstan`
+- **Admin Console (Level 8)**: `composer admin:test && composer admin:phpstan`
+- **OpenAPI Spec** (when modifying `public/api/`): `composer generate-docs`
 
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+## Context Pointers
 
-## 🛠️ Development Rules (From Lessons Learned)
-
-### 🎨 Theme Abstractions & Component Separation
-- Completely centralize style classes, custom layout flags, imagery arrays, and target endpoints within central config sheets (e.g. `src/constants/theme.ts` or `src/constants/config.ts`).
-- **Rule**: React components must never contain localized dynamic layout ternary operators or hardcoded property-conditional paths. Keep components 100% style-agnostic.
-
-### 🌐 Multilingual Page Hydration Seam (SSG-to-Client Config)
-- Client-side Vanilla JS scripts must never embed hardcoded text literals, duplicate inline translation dictionaries, or scrape ad-hoc `data-msg-*` attributes from DOM elements.
-- **Rule**: All client translations must be defined in `src/i18n/dict.ts`, scoped in `src/config/pages.ts`, serialized at build time into `<script id="ovf-page-config" type="application/json">`, and accessed at runtime exclusively via `window.t(key, params, fallback)` provided by `public/js/page-config.js`. Authoritative paths and locale metadata (`lang`, `assetPrefix`, `apiBase`) must be accessed via `window.getPageConfig()`.
-
-### ⚡ Async Lazyloading of Weighty Assets
-- Banish globally loaded third-party scripts/SDKs from the base templates (e.g. `base.ts`) to preserve pristine PageSpeed / Core Web Vitals (FCP, LCP) on static content views.
-- **Rule**: Load external SDK scripts dynamically via custom Promises triggered only on active user intent events (such as calendar unhiding or form field focusing).
-
-### 🗄️ Banned Inline Database Schema Mutations
-- Banish inline, dynamic `ALTER TABLE` or `CREATE TABLE IF NOT EXISTS` commands inside runtime client-facing transactional REST scripts (e.g. `payment.php`).
-- **Rule**: Centralize SQL schema definitions under `scripts/schema.sql` and run additions exclusively using CLI migration routines (`scripts/migrate.php`) during deploy time.
-
-### 🔗 Absolute Asset Prefix Propagation
-- Since generated outputs map to both root and nested folder structures, compile-time relative links will break if absolute paths are utilized.
-- **Rule**: Always pass down the calculated `assetPrefix` prop through all React modules and prepend it to every relative link to ensure local preview and subdirectory durability.
-
-## Agent skills
-
-### Issue tracker
-
-Issues and specs live in GitHub Issues for `fractalsoftware/oceanviewflats` using the `gh` CLI. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Canonical five-role triage vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context documentation layout (`CONTEXT.md` and `docs/adr/` at repo root). See `docs/agents/domain.md`.
+- **Domain Glossary**: Read [`CONTEXT.md`](CONTEXT.md) for canonical ubiquitous language and forbidden synonyms (`docs/agents/domain.md`).
+- **Architecture Decisions**: Read [`docs/adr/`](docs/adr/) (`0001`–`0013`) before modifying domain rules, fulfillment, privacy, or financial/parafiscal logic.
+- **Operations & Deployment**: Read [`docs/operations/administrator-operational-guide.md`](docs/operations/administrator-operational-guide.md) when working on cPanel Pattern A topology, CI/CD secrets, cron jobs, or CLI scripts.
+- **Issue Tracker & Triage**: Use `gh` CLI against `fractalsoftware/oceanviewflats` per [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md) and [`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).

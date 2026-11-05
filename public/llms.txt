@@ -1,79 +1,52 @@
 # OceanViewFlats
 
-OceanViewFlats offers premium beachfront vacation rentals in the exclusive Playa Salguero area of Santa Marta, Magdalena, Colombia. The platform is designed as a highly optimized static website featuring full multilingual support across 6 languages.
+OceanViewFlats offers direct beachfront short-term vacation rentals in Playa Salguero, Santa Marta, Magdalena, Colombia (`https://www.oceanviewflats.com`). The platform is a fast, multilingual static site with a direct booking engine across 6 languages.
 
 ---
 
 ## Global Multilingual Support
-The platform is fully translated and optimized for the following languages:
-- **English (EN):** Default / Root path
-- **Español (ES):** `/es.html` or `/pages/es.html`
-- **Français (FR):** `/fr.html`
-- **Italiano (IT):** `/it.html`
-- **Deutsch (DE):** `/de.html`
-- **日本語 (JA):** `/ja.html`
 
-*Note: Automatic browser language detection and localized redirection is managed dynamically via `js/lang-detect.js` based on client headers and stored local preferences (`lang-pref`).*
+All public pages are available in 6 languages:
+- **English (EN)**: `/` (default), `/Oceanview1707`, `/Oceanview1606`, `/contact`, `/privacy`
+- **Español (ES)**: `/es.html`, `/Oceanview1707/es.html`, `/Oceanview1606/es.html`, `/contact/es.html`, `/privacy/es.html`
+- **Français (FR)**: `/fr.html`, `/Oceanview1707/fr.html`, `/Oceanview1606/fr.html`, `/contact/fr.html`, `/privacy/fr.html`
+- **Italiano (IT)**: `/it.html`, `/Oceanview1707/it.html`, `/Oceanview1606/it.html`, `/contact/it.html`, `/privacy/it.html`
+- **Deutsch (DE)**: `/de.html`, `/Oceanview1707/de.html`, `/Oceanview1606/de.html`, `/contact/de.html`, `/privacy/de.html`
+- **日本語 (JA)**: `/ja.html`, `/Oceanview1707/ja.html`, `/Oceanview1606/ja.html`, `/contact/ja.html`, `/privacy/ja.html`
 
 ---
 
-## Our Properties
-
-We offer two distinct, highly-optimized flats for direct vacation rental or booking:
+## Properties
 
 ### [OceanViewFlats 1707](https://www.oceanviewflats.com/Oceanview1707)
-*   **Target Audience:** Digital Nomads and Remote Workers
-*   **Total Occupancy:** Up to 6 Guests
-*   **Official Registration:** Registro Nacional de Turismo (RNT) #268781
-*   **Layout:** 2 Bedrooms, 2 Bathrooms
-    *   **Master Bedroom:** 1 Queen Bed, Air conditioning, TV
-    *   **Guest Bedroom:** 2 Double Beds, Air conditioning
-*   **Key Features:** High-speed fiber Wi-Fi (up to 900 Mbps), dedicated laptop-friendly workspace, fully equipped kitchen, and a private balcony with stunning Caribbean sea sunsets.
-*   **Rating:** 4.9/5 stars based on 24 reviews.
+- **Focus**: Digital Nomads & Remote Workers
+- **Maximum Occupancy**: Up to 6 Guests
+- **National Tourism Registry (RNT)**: #268781
+- **Assigned Parking Space**: Bay 95
+- **Layout**: 2 Bedrooms (1 Queen Bed; 2 Double Beds), 2 Bathrooms, private ocean-view balcony, dedicated workspace, high-speed fiber Wi-Fi (up to 900 Mbps), full kitchen, in-unit laundry.
 
 ### [OceanViewFlats 1606](https://www.oceanviewflats.com/Oceanview1606)
-*   **Target Audience:** Families and Romantic Escapes
-*   **Total Occupancy:** Up to 6 Guests
-*   **Official Registration:** Registro Nacional de Turismo (RNT) #270413
-*   **Layout:** 2 Bedrooms, 2 Bathrooms
-    *   **Master Bedroom:** 1 Queen Bed, Air conditioning, TV
-    *   **Guest Bedroom:** 2 Double Beds, Air conditioning
-*   **Key Features:** Spacious, warm layout, private terrace, resort-style amenities, fully equipped kitchen, and a cozy coastal atmosphere.
-*   **Rating:** 5.0/5 stars based on verified guest reviews.
+- **Focus**: Families & Romantic Escapes
+- **Maximum Occupancy**: Up to 6 Guests
+- **National Tourism Registry (RNT)**: #270413
+- **Assigned Parking Space**: Bay 87
+- **Layout**: 2 Bedrooms (1 Queen Bed; 2 Double Beds), 2 Bathrooms, private ocean-view terrace, high-speed fiber Wi-Fi (up to 900 Mbps), full kitchen, in-unit laundry.
 
 ---
 
-## Direct Booking & Contact Options
-To save 15-20% on booking and platform service fees charged by Airbnb or Booking.com, guests can book directly with the host.
-*   **Contact Page:** [Contact OceanViewFlats](https://www.oceanviewflats.com/contact) (available in all 6 languages)
-*   **Direct Email:** [rentals@oceanviewflats.com](mailto:rentals@oceanviewflats.com)
-*   **Host Name:** Manuel Enrique
-*   **WhatsApp / Phone:** [+57 (310) 815-5234](https://wa.me/573108155234)
+## Direct Booking, Check-In & Regulatory Compliance
+
+- **Settlement Currency**: All quotes and direct payments (Credit/Debit Card, PSE bank transfer, Efecty cash voucher via Mercado Pago) settle in Colombian Pesos (`COP`), saving 15–20% over third-party OTA fees.
+- **Mandatory Guest Registry (`/registry`)**: Per Colombian hospitality law and Edificio Salguero Sunset security regulations, all staying Guests must register identification details (and **Minor Guardian Attestation** for guests under 18) prior to arrival. Smart-lock **Access Credentials** and the **Guest Guide** (`/guide`) unlock automatically upon Guest Registry completion.
+- **Building Registration Fee**: Edificio Salguero Sunset condominium administration assesses a mandatory statutory registration fee of `20,000 COP` per person payable directly at the front-desk reception upon arrival.
+- **Data Protection (`/privacy`)**: Personal data is processed in accordance with Colombian Statutory Law 1581 of 2012 (*Política de Tratamiento de Datos Personales*).
 
 ---
 
-## Common Amenities
-All flats include access to premium building amenities:
-- High-speed fiber optic Wi-Fi (up to 900 Mbps, optimized for video conferencing)
-- Fully equipped gourmet kitchens
-- In-unit laundry and free on-site private parking
-- Smart lock keyless self check-in
-- Air conditioning in all main areas
-- Access to the building's panoramic swimming pool (open daily, hours vary, closed Tuesdays for maintenance)
-- Pristine beach access just one block from the lobby
+## Location & Contact
 
----
-
-## Location Details
-*   **Street Address:** Calle 26 # 2-80, Playa Salguero
-*   **City / State:** Santa Marta, Magdalena
-*   **Postal Code:** 470006
-*   **Country:** Colombia (CO)
-*   **Coordinates:** Latitude 11.1876481, Longitude -74.2313921
-
----
-
-## Smart 404 Error Routing
-The platform includes an appealing, ocean-themed multilingual 404 page experience:
-*   **Root Error Path:** `/404.html`
-*   **Automatic Localization:** If a visitor lands on a missing URL, `js/lang-detect.js` automatically routes non-English users to their preferred language 404 counterpart (e.g., `/404/es.html`, `/404/fr.html`, etc.) for seamless navigational assistance.
+- **Address**: Edificio Salguero Sunset, Calle 26 # 2-80, Playa Salguero, Santa Marta, Magdalena 470006, Colombia (`11.1876481, -74.2313921`)
+- **Host / Data Controller**: Manuel Enrique Herrera (OceanViewFlats)
+- **Email**: [rentals@oceanviewflats.com](mailto:rentals@oceanviewflats.com)
+- **WhatsApp / Phone**: [+57 (310) 815-5234](https://wa.me/573108155234)
+- **Contact Form**: [https://www.oceanviewflats.com/contact](https://www.oceanviewflats.com/contact)

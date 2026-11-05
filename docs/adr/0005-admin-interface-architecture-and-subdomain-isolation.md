@@ -17,7 +17,7 @@ We establish a dedicated administrative application served from an isolated subd
 ### 1. Webroot Topology: Pattern A vs. Pattern B
 Rather than nesting the administrative application inside `public_html/admin` (Pattern B), we configure cPanel with Pattern A:
 * **Subdomain DocumentRoot**: Explicitly mapped to `/home/<user>/admin/public`.
-* **Out-of-Webroot Isolation**: All sensitive application code (`admin/src/`), templates (`admin/templates/`), domain core (`src/Domain/`), Composer dependencies (`vendor/`), and CLI management utilities (`scripts/`) reside directly under `/home/<user>/`, outside all DocumentRoots.
+* **Out-of-Webroot Isolation**: All sensitive application code (`admin/src/`), server-rendered views (`admin/src/Views/`), domain core (`src/Domain/`), infrastructure adapters (`src/Infrastructure/`), Composer dependencies (`vendor/`), and CLI management utilities (`scripts/`) reside directly under `/home/<user>/`, outside all DocumentRoots.
 * **Apache Front-Controller**: An `.htaccess` file inside `admin/public/` enforces `DirectoryIndex index.php`, disables directory indexing (`Options -Indexes`), applies strict security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`), and rewrites all non-file/non-directory HTTP requests through `index.php`.
 
 ```text
@@ -25,18 +25,18 @@ Rather than nesting the administrative application inside `public_html/admin` (P
 ├── public_html/                 <-- DocumentRoot for oceanviewflats.com (Public SSG)
 │   ├── index.html
 │   ├── css/ & js/
-│   └── api/                     <-- Public REST APIs (calls ../vendor/autoload.php)
+│   └── api/                     <-- Public REST APIs (calls ../../vendor/autoload.php)
 ├── admin/
 │   ├── public/                  <-- DocumentRoot for admin.oceanviewflats.com (Pattern A)
 │   │   ├── index.php            <-- Administrative Front-Controller
+│   │   ├── setup.php            <-- One-Time Bootstrap Utility (auto-locks once admin exists)
 │   │   └── .htaccess            <-- Rewrite & Security Headers
-│   ├── src/                     <-- Protected Admin Application Logic
-│   └── templates/               <-- Server-rendered PHP Templates (HTMX Components)
+│   └── src/                     <-- Protected Admin Controllers, Repositories, & HTMX Views (Views/)
 ├── src/
-│   ├── Domain/                  <-- Shared Domain Models (QuoteEngine, Ledger, DoorCode)
+│   ├── Domain/                  <-- Shared Domain Models (Quote, Reservation, Finance, Privacy, Fulfillment)
 │   └── Infrastructure/          <-- Hexagonal Infrastructure Adapters (Persistence, Events, Refunds)
 ├── vendor/                      <-- Production Composer Autoloader & Dependencies
-└── scripts/                     <-- CLI Utilities (migrate.php, create-admin-user.php)
+└── scripts/                     <-- CLI Utilities (migrate.php, create-admin-user.php, sync-channels.php, redact-expired-pii.php)
 ```
 
 ### 2. Dual-Pipeline CI/CD Deployment Architecture
@@ -44,12 +44,12 @@ Deployments are strictly segregated across two independent GitHub Actions workfl
 
 1. **Public Static Site Pipeline (`.github/workflows/deploy.yml`)**:
    - Compiles React components and Tailwind CSS into static assets (`dist/`).
-   - Injects public environment secrets (`RECIPIENT_EMAIL`, `CAPTCHA_SECRET`, database and payment keys) into `public/.htaccess`.
+   - Injects public environment secrets (`RECIPIENT_EMAIL`, `CAPTCHA_SECRET`, `APP_ENCRYPTION_KEY`, `DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`) into `public/.htaccess`.
    - Transfers `./dist/.` to `/home/<user>/public_html/` via SFTP on port 2223.
 2. **Admin & Backend Pipeline (`.github/workflows/admin-deploy.yml`)**:
    - Triggers on changes to `admin/**`, `src/Domain/**`, `src/Infrastructure/**`, `scripts/**`, `composer.json`, or `composer.lock`.
    - Installs production Composer dependencies (`composer install --no-dev --prefer-dist --optimize-autoloader`).
-   - Injects production secrets (`DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `OVF_ADMIN_SESSION_SECRET`) into `admin/public/.htaccess`.
+   - Injects production secrets (`DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`, `APP_ENCRYPTION_KEY`, `OVF_ADMIN_SESSION_SECRET`) into `admin/public/.htaccess`.
    - Stages a clean payload containing `admin/`, `src/Domain/`, `src/Infrastructure/`, `vendor/`, and `scripts/` (omitting test files and dev configurations).
    - Transfers the payload to `/home/<user>/` via SFTP on port 2223.
 

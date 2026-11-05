@@ -2,7 +2,7 @@
 
 ## Context
 
-Under [ADR 0001](0001-mandatory-registry-before-access.md), OceanViewFlats enforces mandatory Guest Registry submission prior to releasing property access credentials (algorithmic door PIN, Wi-Fi credentials, parking assignments). Under [ADR 0007](0007-external-platform-reservations-and-guest-onboarding.md) and [ADR 0008](0008-automated-condominium-clearance-sync.md), guest registration automates building reception clearance and primary guest onboarding.
+Under [ADR 0001](0001-mandatory-registry-before-access.md), OceanViewFlats enforces mandatory Guest Registry submission prior to releasing property access credentials (cryptographically random door PIN, Wi-Fi credentials, parking assignments). Under [ADR 0007](0007-external-platform-reservations-and-guest-onboarding.md) and [ADR 0008](0008-automated-condominium-clearance-sync.md), guest registration automates building reception clearance and primary guest onboarding.
 
 However, once a guest's stay concludes, retaining public access to property credentials and stay metadata presents significant privacy and security risks:
 1. **Physical Security Risk**: Door PINs, building access procedures, and Wi-Fi credentials could remain accessible indefinitely to anyone with the reservation code, link, or browser history.

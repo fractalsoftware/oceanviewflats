@@ -4,7 +4,7 @@
 
 Under [ADR 0001](0001-mandatory-registry-before-access.md), OceanViewFlats strictly withholds Access Credentials (door code PIN) and the Guest Guide until the Primary Guest completes the Guest Registry for all staying occupants, enforcing compliance with Colombian statutory hospitality regulations and Playa Salguero condominium administration security clearance.
 
-In practice at Edificio Salguero Sunset (properties 1707 and 1606), physical building access, front-desk reception, and elevator/parking security clearance are managed through an external property management system (Huésped Manager). Historically, an OceanViewFlats human operator had to manually copy guest data from OceanViewFlats submissions and paste them into a two-step external web form (`booking.php` for reservation details and `guest_pre.php` for occupant details).
+In practice at Edificio Salguero Sunset (properties 1707 and 1606), physical building access, front-desk reception, and elevator/parking security clearance are managed through an external property management system (Huésped Manager). Historically, an OceanViewFlats human operator had to manually copy guest data from OceanViewFlats submissions and paste them into a two-step external web form (`reg_guest_owner_pre.php` for reservation details and `reg_hpds_pre.php` for occupant details).
 
 This manual workflow introduced operational delay, potential human data entry errors, and friction when guests arrived outside of standard administrative hours.
 
@@ -26,13 +26,15 @@ External access endpoints and security check tokens are configured via environme
 - `HUESPED_MANAGER_1707_CHECK`: Property 1707 check token (`ep92449222`).
 - `HUESPED_MANAGER_1606_CHECK`: Property 1606 check token (`ep24281580`).
 
-### 3. Guest Registry Data Fidelity & Smart Inheritance
+### 3. Guest Registry Data Fidelity, Smart Inheritance & Portal v2.0.0 Sanitization
 
-The `/registry` interface across all supported languages is enhanced to capture statutory requirements:
-- **Separated Name Fields**: First Name (`name`) and Last Name (`lname`) are collected separately to satisfy the building reception system, with optional middle name (`sname`) and second surname (`mname`).
-- **Country of Nationality**: A standardized nationality dropdown (`country`) is added for all guests, mapped to the uppercase country names expected by the portal.
-- **Phone Number Inheritance**: The Primary Guest is required to provide a contact phone number (`phone`). For companions (especially minors), phone entry is optional in the UI; if omitted, the sync adapter automatically inherits the Primary Guest's phone number to satisfy the external portal's mandatory phone requirement.
-- **Document Type Translation**: Localized document types map 1:1 to portal codes (`CC`, `CE`, `PA`, `TI`, `CD`, `DE`, `RC`).
+The `/registry` interface across all supported languages and `HuespedManagerClearanceSync` enforce strict data fidelity and portal v2.0.0 validation rules:
+- **Separated Name Fields & Latin Sanitization**: First Name (`name`) and Last Name (`lname`) are collected separately with optional middle name (`sname`) and second surname (`mname`), sanitized to 2–60 Latin characters (`RX.nombre`).
+- **Country of Nationality**: A standardized nationality dropdown (`country`) is mapped to the uppercase country names expected by the portal.
+- **Phone Number Inheritance & Normalization**: The Primary Guest provides a contact phone number (`phone`), normalized to 7–15 digits (`RX.telefono`, stripping leading `00`). If a companion omits their phone number, the sync adapter inherits the Primary Guest's phone number.
+- **Document Type & Bounds Resolution**: Localized document types map to portal codes (`CC`, `CE`, `PA`, `TI`, `CD`, `DE`, `RC`) and validate against portal `DOCS` numeric/length bounds (`CC`: 3–10 digits, `TI`/`RC`: 6–11 digits, `CE`: 3–15 digits, `PA`: 4–20 alphanumeric), falling back to `DE` when an international document format falls outside Colombian numeric bounds.
+- **Vehicle & Observation Sanitization**: Vehicle plates (`car`) are sanitized to 3–8 uppercase alphanumeric characters (`RX.placa`), and reservation/vehicle notes (`observacion`) are sanitized to a maximum of 250 allowed characters (`RX.texto`).
+- **Portal Error Diagnostics**: If Step 2 returns HTTP 200 with a portal validation error page (`"Datos por corregir"` / `"Revise la información"`), the adapter extracts a clean human-readable error snippet (`extractPortalErrorSnippet`) and marks the clearance `failed`.
 
 ### 4. Persistence Model & Admin Retries
 

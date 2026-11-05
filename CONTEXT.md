@@ -72,14 +72,6 @@ _Avoid_: Internal Booking, Native Reservation, Website Booking, Direct Booking
 A Reservation originated directly by an administrator without an external payment gateway (e.g. phone inquiry, external bank wire, or owner occupancy), attributed to an administrative payment source and confirmed immediately to secure calendar dates. Identified by a unique `res-man-*` reservation UID, which functions as an authoritative lookup token across both the Guest Registry and Guest Guide. Distinct from statutory *Guest Registration* / *Guest Registry*, which refers solely to Colombian police registration compliance (SIRE/TRA) and building registration fees.
 _Avoid_: Offline Booking, Phone Order, Admin Reservation, Walk-in, Manual Registration
 
-**Manual Reservation Validation & State Preservation Guarantees**:
-* **Reactive Submit Lock**: The creation modal submit button is locked (`disabled`, `aria-disabled="true"`, `opacity-50 cursor-not-allowed`) by default and unlocks only when all client validations pass and dates are confirmed available. Dynamic helper messaging surfaces specific unmet requirements in real time.
-* **Asynchronous Ledger Availability Gating**: Changing dates or property triggers an asynchronous quote preview that queries `ReservationLedger::getConflictReasons()`, signaling availability via declarative DOM attributes (`data-available="true|false"`) and `availabilityChecked` custom events.
-* **Date Range Auto-Synchronization**: Check-out date is dynamically constrained to a minimum of `check_in + 1 day`, auto-advancing if check-in is selected on or after the current check-out.
-* **Source-Dependent Validation Matrix**: Airbnb reservations require an external confirmation code (leaving email/phone optional); direct stays (`bank_transfer`, `cash`, `owner_stay`, `manual_override`) require guest name, valid email, and 7–25 character phone.
-* **In-Place HTTP 422 State Preservation**: If submission fails backend validation or encounters a concurrent ledger conflict, the server returns HTTP 422 with itemized conflict reasons, preserving 100% of operator input across all form fields.
-
-
 **External Reservation**:
 A Reservation originating from an external Online Travel Agency (e.g. Airbnb) where financial settlement occurs out-of-band on the external platform, but guest identity, legal Guest Registry completion, and Access Credentials fulfillment are managed within OceanViewFlats. Identified by a unique `res-abnb-*` reservation UID and linked to an External Confirmation Code and optional Channel Block UID.
 _Avoid_: External Booking, OTA Hold, Airbnb Order
@@ -244,7 +236,7 @@ The digital handbook providing access credentials, arrival instructions, and hou
 _Avoid_: Welcome Pack, House Manual, Instructions Page
 
 **Access Credential**:
-The temporal PIN or smart-lock entry code that grants physical entry to the Property during the reserved dates.
+The temporal, cryptographically random PIN (`0XXXXXX#`) or smart-lock entry code that grants physical entry to the Property during the reserved dates.
 _Avoid_: Door Password, Key Code, Room Key
 
 ### Communications & Inquiries
@@ -378,8 +370,4 @@ _Avoid_: Revenue Per Unit, Daily Yield, Net Yield
 **Booking Source**:
 The origination channel classification of a Reservation, grouped into Direct Online (`web`), Direct Manual (`bank_transfer`, `cash`, `manual_override`), External OTA (`airbnb`), and non-commercial Owner Stay (`owner_stay`).
 _Avoid_: Sales Channel, Platform Type, Origin Code
-
-
-
-
 
