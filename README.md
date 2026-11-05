@@ -74,7 +74,7 @@ OceanViewFlats is built as a three-layer hybrid platform:
 - **Node.js** >= 24 (`npm`)
 - **PHP** >= 8.3 (`pdo_mysql`, `sqlite3`, `mbstring`, `sodium`, `curl`, `json`, `argon2`) & **Composer**
 
-### Setup & Build
+### Setup & Build (Local Host)
 
 ```bash
 # Install dependencies
@@ -87,6 +87,18 @@ php scripts/migrate.php
 # Compile static site (HTML, cache/prices.json, sitemap.xml, Tailwind CSS v4, Terser JS) to dist/
 npm run build
 ```
+
+### Run Locally with Docker
+
+```bash
+# Build and start the Public Portal, Admin Console, and MySQL 8.4 database
+docker compose up --build -d
+```
+
+- **Public Portal & REST API**: `http://localhost:8080`
+- **Admin Console**: `http://localhost:8081` (or `http://admin.localhost:8080`)
+  - Default local credentials: `admin@oceanviewflats.com` / `AdminOceanView123!` (configurable via `ADMIN_EMAIL` and `ADMIN_PASSWORD`)
+- **MySQL 8.4**: `localhost:3306` (`oceanviewflats_db`, auto-migrated on startup)
 
 ### Quality Gates & Tests
 
