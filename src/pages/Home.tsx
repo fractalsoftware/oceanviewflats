@@ -124,7 +124,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											</span>
 											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
 											<div className={cardTheme.cardSpecsList}>
-												<span className={cardTheme.cardSpecPill}>
+												<span className={cardTheme.cardSpecHighlight}>
 													{t[card.bedsKey]}
 												</span>
 												<span className={cardTheme.cardSpecPill}>
@@ -136,7 +136,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												<span className={cardTheme.cardSpecPill}>
 													{t[card.wifiKey]}
 												</span>
-												<span className={cardTheme.cardSpecHighlight}>
+												<span className={cardTheme.cardSpecPill}>
 													{t[card.parkingKey]}
 												</span>
 											</div>
@@ -223,7 +223,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							</div>
 
 							<div className={HOME_THEME.directCard}>
-								<div className={HOME_THEME.directIconRose}>
+								<div className={HOME_THEME.directIconEmerald}>
 									<ShieldCheck
 										className={HOME_THEME.iconLg}
 										aria-hidden="true"
@@ -300,6 +300,14 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 														</div>
 													);
 												})}
+											</div>
+											<div className={HOME_THEME.editorialReviewBox}>
+												<p className={HOME_THEME.editorialReviewText}>
+													{t[card.reviewTextKey]}
+												</p>
+												<p className={HOME_THEME.editorialReviewAuthor}>
+													— {t[card.reviewAuthorKey]}
+												</p>
 											</div>
 											<div className={HOME_THEME.editorialCardCta}>
 												<span>{t.homeCardCta}</span>

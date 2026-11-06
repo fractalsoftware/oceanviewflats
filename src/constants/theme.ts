@@ -99,18 +99,18 @@ export const CHROME_THEME = {
 			"font-bold text-xl tracking-tight flex items-center space-x-2 transition-colors text-[#FF5A5F] hover:text-[#FF424D]",
 	},
 	navLogoIcon: "w-6 h-6 fill-current",
-	navActions: "flex items-center space-x-6",
+	navActions: "flex items-center space-x-3 md:space-x-6",
 	navContact: {
-		top: "inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors text-white hover:text-white/80",
+		top: "inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 		scrolled:
-			"inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors text-slate-600 hover:text-rose-700",
+			"inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors rounded-lg text-slate-600 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	},
 	navContactIcon: "w-5 h-5 md:hidden",
 	navContactText: "hidden md:inline",
 	navBookBtn: {
-		top: "hidden md:inline-flex items-center justify-center min-h-[40px] px-3 py-2 text-sm font-semibold transition-colors text-white hover:text-white/80",
+		top: "inline-flex items-center justify-center min-h-[40px] px-2.5 md:px-3 py-2 text-xs md:text-sm font-semibold transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 		scrolled:
-			"hidden md:inline-flex items-center justify-center min-h-[40px] px-3 py-2 text-sm font-semibold transition-colors text-slate-600 hover:text-rose-700",
+			"inline-flex items-center justify-center min-h-[40px] px-2.5 md:px-3 py-2 text-xs md:text-sm font-semibold transition-colors rounded-lg text-slate-600 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	},
 	langGroup: "relative group",
 	langToggle: {
@@ -147,7 +147,7 @@ export const CHROME_THEME = {
 } as const;
 
 const SHARED_HOME_CARD_THEME = {
-	card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
+	card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	cardMedia: "h-80 relative overflow-hidden bg-slate-900",
 	cardImage:
 		"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
@@ -169,7 +169,7 @@ const SHARED_HOME_CARD_THEME = {
 	cardSpecPill:
 		"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
 	cardSpecHighlight:
-		"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
+		"inline-flex items-center px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-slate-900 font-bold",
 	cardCtaRow:
 		"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-[#B91C1C] group-hover:text-slate-900 transition-colors",
 	cardCtaIcon:
@@ -202,8 +202,8 @@ export const HOME_THEME = {
 	heroValueProp:
 		"inline-flex items-center justify-center bg-slate-900/70 border border-white/20 backdrop-blur-md px-5 py-2 rounded-full text-xs md:text-sm font-semibold text-slate-100 tracking-wide mb-8",
 	heroCtaBtn:
-		"inline-flex items-center justify-center space-x-2.5 min-h-[48px] mb-8 md:mb-12 bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105",
-	heroCtaIcon: "w-5 h-5 text-[#B91C1C] shrink-0",
+		"inline-flex items-center justify-center space-x-2.5 min-h-[48px] mb-8 md:mb-12 bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
+	heroCtaIcon: "w-5 h-5 text-[#FF5A5F] shrink-0",
 	iconSm: "w-4 h-4 shrink-0",
 	iconMd: "w-5 h-5 shrink-0",
 	iconLg: "w-6 h-6",
@@ -220,7 +220,7 @@ export const HOME_THEME = {
 		"w-12 h-12 shrink-0 bg-red-50 text-[#B91C1C] rounded-2xl flex items-center justify-center",
 	multiPropertyText: "text-sm md:text-base text-slate-700 leading-relaxed",
 	multiPropertyCta:
-		"shrink-0 inline-flex items-center justify-center space-x-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors",
+		"shrink-0 inline-flex items-center justify-center space-x-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
@@ -251,7 +251,7 @@ export const HOME_THEME = {
 		"text-3xl md:text-4xl font-extrabold tracking-tight text-white",
 	editorialGrid: "grid grid-cols-1 md:grid-cols-2 gap-10 mb-16",
 	editorialCard:
-		"group flex flex-col bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden hover:border-slate-500 transition-all duration-300",
+		"group flex flex-col bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden hover:border-slate-500 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 	editorialCardMedia: "h-64 relative overflow-hidden bg-slate-900",
 	editorialCardImage:
 		"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
@@ -266,6 +266,10 @@ export const HOME_THEME = {
 		"w-10 h-10 shrink-0 bg-slate-900 text-[#FB7185] border border-slate-700 rounded-xl flex items-center justify-center mt-0.5",
 	editorialFeatureTitle: "text-xl font-bold text-white mb-1",
 	editorialFeatureDesc: "text-sm text-slate-200 leading-relaxed",
+	editorialReviewBox: "mt-8 pt-6 border-t border-slate-700/80 mb-6",
+	editorialReviewText: "text-sm italic text-slate-200 leading-relaxed mb-2",
+	editorialReviewAuthor:
+		"text-xs font-bold tracking-wider uppercase text-white",
 	editorialCardCta:
 		"inline-flex items-center space-x-2 text-sm font-bold text-white group-hover:text-slate-200",
 	hostCard:
@@ -287,7 +291,7 @@ export const HOME_THEME = {
 	faqDetails:
 		"group bg-white rounded-2xl border border-slate-200 shadow-sm open:shadow-md transition-all",
 	faqSummary:
-		"flex items-center justify-between gap-4 p-6 md:p-8 cursor-pointer list-none font-bold text-lg md:text-xl text-slate-900 select-none",
+		"flex items-center justify-between gap-4 p-6 md:p-8 cursor-pointer list-none font-bold text-lg md:text-xl text-slate-900 select-none rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	faqChevron:
 		"w-5 h-5 text-slate-500 shrink-0 transition-transform duration-300 group-open:rotate-180",
 	faqAnswerWrapper: "px-6 pb-6 md:px-8 md:pb-8 pt-4 border-t border-slate-100",
@@ -304,11 +308,11 @@ export const HOME_THEME = {
 	ctaActionsRow:
 		"flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 w-full sm:w-auto",
 	ctaPrimaryBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105",
+		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 	ctaSecondaryBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-slate-800/80 border border-slate-600 text-white hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors",
+		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-slate-800/80 border border-slate-600 text-white hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 	ctaWhatsAppBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-slate-800/80 border border-[#047857] text-[#34D399] hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors",
+		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-slate-800/80 border border-[#047857] text-[#34D399] hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 } as const;
 
 export const PRIVACY_THEME_STYLES = {
