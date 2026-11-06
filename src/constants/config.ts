@@ -64,6 +64,24 @@ export const HOME_PAGE_PATHS: Record<string, string> = {
 	ja: "ja.html",
 };
 
+export const OCEANVIEW_1707_PATHS: Record<string, string> = {
+	en: "Oceanview1707/index.html",
+	es: "Oceanview1707/es.html",
+	fr: "Oceanview1707/fr.html",
+	it: "Oceanview1707/it.html",
+	de: "Oceanview1707/de.html",
+	ja: "Oceanview1707/ja.html",
+};
+
+export const OCEANVIEW_1606_PATHS: Record<string, string> = {
+	en: "Oceanview1606/index.html",
+	es: "Oceanview1606/es.html",
+	fr: "Oceanview1606/fr.html",
+	it: "Oceanview1606/it.html",
+	de: "Oceanview1606/de.html",
+	ja: "Oceanview1606/ja.html",
+};
+
 export const getPrivacyPolicyPath = (
 	lang: string,
 	assetPrefix = "./",
@@ -89,6 +107,61 @@ export const getHomePagePath = (lang: string, assetPrefix = "./"): string => {
 	const relPath = HOME_PAGE_PATHS[lang] ?? HOME_PAGE_PATHS.en;
 	return `${assetPrefix}${relPath}`;
 };
+
+export const getPropertyPagePath = (
+	propertyId: "1707" | "1606",
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const paths =
+		propertyId === "1707" ? OCEANVIEW_1707_PATHS : OCEANVIEW_1606_PATHS;
+	const relPath = paths[lang] || paths.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getOceanview1707Path = (
+	lang: string,
+	assetPrefix = "./",
+): string => getPropertyPagePath("1707", lang, assetPrefix);
+
+export const getOceanview1606Path = (
+	lang: string,
+	assetPrefix = "./",
+): string => getPropertyPagePath("1606", lang, assetPrefix);
+
+export interface HomePropertyCardConfig {
+	id: "1707" | "1606";
+	cardDomId: string;
+	imageKey: "1707" | "1606";
+	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
+	titleKey: "heroTitle" | "hero1606Title";
+	descKey: "nomadDesc" | "romanticDesc";
+	bedsKey: "statsBeds" | "stats1606Beds";
+	parkingKey: "homeCard1707Parking" | "homeCard1606Parking";
+}
+
+export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
+	{
+		id: "1707",
+		cardDomId: "home-card-1707",
+		imageKey: "1707",
+		badgeKey: "homeCard1707Badge",
+		titleKey: "heroTitle",
+		descKey: "nomadDesc",
+		bedsKey: "statsBeds",
+		parkingKey: "homeCard1707Parking",
+	},
+	{
+		id: "1606",
+		cardDomId: "home-card-1606",
+		imageKey: "1606",
+		badgeKey: "homeCard1606Badge",
+		titleKey: "hero1606Title",
+		descKey: "romanticDesc",
+		bedsKey: "stats1606Beds",
+		parkingKey: "homeCard1606Parking",
+	},
+];
 
 export interface RegistryGuestSlotConfig {
 	num: number;

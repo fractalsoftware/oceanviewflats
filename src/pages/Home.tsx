@@ -1,5 +1,9 @@
 import {
+	ArrowRight,
+	Calendar as CalendarIcon,
+	ChevronDown,
 	Heart,
+	MapPin,
 	MessageCircle,
 	MessageSquare,
 	Percent,
@@ -8,184 +12,223 @@ import {
 	Users,
 	Wifi,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
-import { IMAGES } from "../constants/config";
+import {
+	DATA_CONTROLLER,
+	getContactPagePath,
+	getPropertyPagePath,
+	HOME_PROPERTY_CARDS,
+	IMAGES,
+} from "../constants/config";
+import { HOME_CARD_THEMES, HOME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const t = dict[lang];
-	const [isScrolled, setIsScrolled] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const handleScroll = () => setIsScrolled(window.scrollY > 50);
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
+	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
+	const contactHref = getContactPagePath(lang, assetPrefix);
+	const faqItems = [
+		{ q: t.faqQ1, a: t.faqA1, defaultOpen: true },
+		{ q: t.faqQ2, a: t.faqA2, defaultOpen: false },
+		{ q: t.faqQ3, a: t.faqA3, defaultOpen: false },
+		{ q: t.faqQ4, a: t.faqA4, defaultOpen: false },
+		{ q: t.faqQ5, a: t.faqA5, defaultOpen: false },
+		{ q: t.faqQ6, a: t.faqA6, defaultOpen: false },
+	];
 
 	return (
-		<div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth">
+		<div className={HOME_THEME.pageWrapper}>
 			<Navigation
-				isScrolled={isScrolled}
+				isScrolled={false}
 				lang={lang}
-				showBookButton={false}
+				showBookButton={true}
+				bookHref="#properties"
+				bookLabelKey="navBookDirect"
 				assetPrefix={assetPrefix}
 			/>
 
 			{/* Hero Section */}
-			<header className="relative pt-28 pb-12 px-6 text-center overflow-hidden">
-				<div className="absolute inset-0 w-full h-full">
+			<header className={HOME_THEME.heroHeader}>
+				<div className={HOME_THEME.heroMediaWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
-						alt="OceanViewFlats"
-						className="w-full h-full object-cover"
+						alt={t.heroImgAlt}
+						className={HOME_THEME.heroImage}
 						fetchPriority="high"
 						loading="eager"
 					/>
-					<div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 to-slate-900/40"></div>
+					<div className={HOME_THEME.heroOverlay}></div>
 				</div>
-				<div className="relative z-10 max-w-3xl mx-auto mt-4">
-					<h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white tracking-tight drop-shadow-md">
-						{t.homeWelcome}
-					</h1>
-					<p className="text-lg md:text-xl text-slate-200 font-light max-w-2xl mx-auto drop-shadow">
-						{t.homeSubtitle}
-					</p>
+				<div className={HOME_THEME.heroContent}>
+					<div className={HOME_THEME.heroLocationBadge}>
+						<MapPin
+							className={HOME_THEME.heroLocationIcon}
+							aria-hidden="true"
+						/>
+						<span>{t.heroLocation}</span>
+					</div>
+					<h1 className={HOME_THEME.heroTitle}>{t.homeWelcome}</h1>
+					<p className={HOME_THEME.heroSubtitle}>{t.homeSubtitle}</p>
+					<p className={HOME_THEME.heroValueProp}>{t.homeHeroValueProp}</p>
+					<a href="#properties" className={HOME_THEME.heroCtaBtn}>
+						<CalendarIcon
+							className={HOME_THEME.heroCtaIcon}
+							aria-hidden="true"
+						/>
+						<span>{t.homeHeroCta}</span>
+					</a>
 				</div>
 			</header>
 
-			<main className="flex-grow w-full">
+			<main className={HOME_THEME.main}>
 				{/* Properties Section */}
-				<section className="py-20 px-6 max-w-6xl mx-auto">
-					<h2 className="sr-only">Our Featured Properties</h2>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-						<a
-							href={
-								lang === "en" ? "/Oceanview1707" : `/Oceanview1707/${lang}.html`
-							}
-							className="group block bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
-						>
-							<div className="h-80 relative overflow-hidden">
-								<img
-									src={`${assetPrefix}${IMAGES["1707"].hero}`}
-									className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-									alt={t.heroTitle}
-									loading="lazy"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
-								<div className="absolute bottom-6 left-6 text-white">
-									<p className="text-sm font-semibold tracking-wider uppercase mb-1 opacity-90">
-										{t.heroLocation}
-									</p>
-									<h3 className="text-3xl font-bold">{t.heroTitle}</h3>
-								</div>
-							</div>
-							<div className="p-6 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors">
-								<p className="text-slate-600 line-clamp-2">{t.nomadDesc}</p>
-								<div className="mt-4 flex items-center space-x-4 text-sm font-medium text-[#FF5A5F]">
-									<span>{t.statsBeds}</span>
-									<span>•</span>
-									<span>{t.statsGuests}</span>
-								</div>
-							</div>
-						</a>
+				<section id="properties" className={HOME_THEME.propertiesSection}>
+					<h2 className={HOME_THEME.propertiesSrHeading}>
+						{t.homeFeaturedPropertiesTitle}
+					</h2>
+					<div className={HOME_THEME.propertiesGrid}>
+						{HOME_PROPERTY_CARDS.map((card) => {
+							const cardTheme = HOME_CARD_THEMES[card.id];
+							const cardHref = getPropertyPagePath(card.id, lang, assetPrefix);
+							return (
+								<a
+									key={card.id}
+									id={card.cardDomId}
+									href={cardHref}
+									className={cardTheme.card}
+								>
+									<div className={cardTheme.cardMedia}>
+										<img
+											src={`${assetPrefix}${IMAGES[card.imageKey].hero}`}
+											className={cardTheme.cardImage}
+											alt={t[card.titleKey]}
+											loading="lazy"
+										/>
+										<div className={cardTheme.cardOverlay}></div>
+										<span className={cardTheme.cardBadge}>
+											{t[card.badgeKey]}
+										</span>
+										<div className={cardTheme.cardHeaderContent}>
+											<p className={cardTheme.cardLocation}>{t.heroLocation}</p>
+											<h3 className={cardTheme.cardTitle}>
+												{t[card.titleKey]}
+											</h3>
+										</div>
+									</div>
+									<div className={cardTheme.cardBody}>
+										<div>
+											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
+											<div className={cardTheme.cardSpecsList}>
+												<span className={cardTheme.cardSpecPill}>
+													{t[card.bedsKey]}
+												</span>
+												<span className={cardTheme.cardSpecPill}>
+													{t.statsBaths}
+												</span>
+												<span className={cardTheme.cardSpecPill}>
+													{t.statsGuests}
+												</span>
+												<span className={cardTheme.cardSpecHighlight}>
+													{t[card.parkingKey]}
+												</span>
+											</div>
+										</div>
+										<div className={cardTheme.cardCtaRow}>
+											<span>{t.homeCardCta}</span>
+											<ArrowRight
+												className={cardTheme.cardCtaIcon}
+												aria-hidden="true"
+											/>
+										</div>
+									</div>
+								</a>
+							);
+						})}
+					</div>
 
-						<a
-							href={
-								lang === "en" ? "/Oceanview1606" : `/Oceanview1606/${lang}.html`
-							}
-							className="group block bg-white rounded-3xl shadow-md border border-stone-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
-						>
-							<div className="h-80 relative overflow-hidden">
-								<img
-									src={`${assetPrefix}${IMAGES["1606"].hero}`}
-									className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-									alt={t.hero1606Title}
-									loading="lazy"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 to-transparent"></div>
-								<div className="absolute bottom-6 left-6 text-white">
-									<p className="text-sm font-semibold tracking-wider uppercase mb-1 opacity-90">
-										{t.heroLocation}
-									</p>
-									<h3 className="text-3xl font-bold">{t.hero1606Title}</h3>
-								</div>
+					{/* Multi-Property (7–12 Guests) Family Stay Callout */}
+					<div
+						id="home-multi-property-note"
+						className={HOME_THEME.multiPropertyBanner}
+					>
+						<div className={HOME_THEME.multiPropertyContent}>
+							<div className={HOME_THEME.multiPropertyIconBox}>
+								<Users className={HOME_THEME.iconLg} aria-hidden="true" />
 							</div>
-							<div className="p-6 bg-stone-50 border-t border-stone-100 group-hover:bg-white transition-colors">
-								<p className="text-stone-600 line-clamp-2">{t.romanticDesc}</p>
-								<div className="mt-4 flex items-center space-x-4 text-sm font-medium text-rose-600">
-									<span>{t.stats1606Beds}</span>
-									<span>•</span>
-									<span>{t.statsGuests}</span>
-								</div>
-							</div>
+							<p className={HOME_THEME.multiPropertyText}>
+								{t.homeMultiPropertyNote}
+							</p>
+						</div>
+						<a href={contactHref} className={HOME_THEME.multiPropertyCta}>
+							<span>{t.navContact}</span>
+							<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
 						</a>
 					</div>
 				</section>
 
 				{/* Why Book Direct Section */}
-				<section className="py-20 bg-gradient-to-b from-white to-slate-50 border-t border-b border-slate-100 px-6">
-					<div className="max-w-6xl mx-auto">
-						<div className="text-center max-w-3xl mx-auto mb-16">
-							<span className="text-[#FF5A5F] text-sm font-extrabold uppercase tracking-widest bg-rose-50 px-4 py-1.5 rounded-full">
-								{t.directTitle}
-							</span>
-							<h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mt-4 mb-4">
-								{t.directTitle}
-							</h2>
-							<p className="text-lg text-slate-600 font-light">
-								{t.directSubtitle}
-							</p>
+				<section id="why-book-direct" className={HOME_THEME.directSection}>
+					<div className={HOME_THEME.directContainer}>
+						<div className={HOME_THEME.directHeader}>
+							<h2 className={HOME_THEME.directTitle}>{t.directTitle}</h2>
+							<p className={HOME_THEME.directSubtitle}>{t.directSubtitle}</p>
 						</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-							<div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
-								<div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
-									<Percent className="w-6 h-6" aria-hidden="true" />
+						<div className={HOME_THEME.directGrid}>
+							<div className={HOME_THEME.directCard}>
+								<div className={HOME_THEME.directIconEmerald}>
+									<Percent className={HOME_THEME.iconLg} aria-hidden="true" />
 								</div>
-								<h3 className="text-xl font-bold mb-3 text-slate-900">
+								<h3 className={HOME_THEME.directCardTitle}>
 									{t.directReason1Title}
 								</h3>
-								<p className="text-sm text-slate-600 leading-relaxed">
+								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason1Desc}
 								</p>
 							</div>
 
-							<div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
-								<div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
-									<Sparkles className="w-6 h-6" aria-hidden="true" />
+							<div className={HOME_THEME.directCard}>
+								<div className={HOME_THEME.directIconCoral}>
+									<Sparkles className={HOME_THEME.iconLg} aria-hidden="true" />
 								</div>
-								<h3 className="text-xl font-bold mb-3 text-slate-900">
+								<h3 className={HOME_THEME.directCardTitle}>
 									{t.directReason2Title}
 								</h3>
-								<p className="text-sm text-slate-600 leading-relaxed">
+								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason2Desc}
 								</p>
 							</div>
 
-							<div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
-								<div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
-									<MessageCircle className="w-6 h-6" aria-hidden="true" />
+							<div className={HOME_THEME.directCard}>
+								<div className={HOME_THEME.directIconSky}>
+									<MessageCircle
+										className={HOME_THEME.iconLg}
+										aria-hidden="true"
+									/>
 								</div>
-								<h3 className="text-xl font-bold mb-3 text-slate-900">
+								<h3 className={HOME_THEME.directCardTitle}>
 									{t.directReason3Title}
 								</h3>
-								<p className="text-sm text-slate-600 leading-relaxed">
+								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason3Desc}
 								</p>
 							</div>
 
-							<div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
-								<div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6">
-									<ShieldCheck className="w-6 h-6" aria-hidden="true" />
+							<div className={HOME_THEME.directCard}>
+								<div className={HOME_THEME.directIconRose}>
+									<ShieldCheck
+										className={HOME_THEME.iconLg}
+										aria-hidden="true"
+									/>
 								</div>
-								<h3 className="text-xl font-bold mb-3 text-slate-900">
+								<h3 className={HOME_THEME.directCardTitle}>
 									{t.directReason4Title}
 								</h3>
-								<p className="text-sm text-slate-600 leading-relaxed">
+								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason4Desc}
 								</p>
 							</div>
@@ -193,113 +236,204 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					</div>
 				</section>
 
-				{/* Experiences Section */}
-				<section className="bg-slate-900 text-white py-24 px-6 mt-10">
-					<div className="max-w-6xl mx-auto">
-						<h2 className="text-3xl md:text-4xl font-bold mb-16 text-center">
-							{t.homeExpTitle}
-						</h2>
+				{/* Editorial Lifestyle & Host Showcase Section */}
+				<section id="experiences" className={HOME_THEME.editorialSection}>
+					<div className={HOME_THEME.editorialContainer}>
+						<div className={HOME_THEME.editorialHeader}>
+							<h2 className={HOME_THEME.editorialTitle}>{t.homeExpTitle}</h2>
+						</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-							<div className="text-center">
-								<div className="w-16 h-16 mx-auto bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-6">
-									<Wifi className="w-8 h-8" aria-hidden="true" />
+						<div className={HOME_THEME.editorialGrid}>
+							<a href={property1707Href} className={HOME_THEME.editorialCard}>
+								<div className={HOME_THEME.editorialCardMedia}>
+									<img
+										src={`${assetPrefix}${IMAGES["1707"].nomad}`}
+										alt={t.homeExpNomad}
+										className={HOME_THEME.editorialCardImage}
+										loading="lazy"
+									/>
 								</div>
-								<h3 className="text-xl font-bold mb-4">{t.homeExpNomad}</h3>
-								<p className="text-slate-400 leading-relaxed">
-									{t.homeExpNomadDesc}
-								</p>
-							</div>
-
-							<div className="text-center">
-								<div className="w-16 h-16 mx-auto bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mb-6">
-									<Users className="w-8 h-8" aria-hidden="true" />
+								<div className={HOME_THEME.editorialCardBody}>
+									<div className={HOME_THEME.editorialFeatureList}>
+										<div className={HOME_THEME.editorialFeatureItem}>
+											<div className={HOME_THEME.editorialFeatureIconSky}>
+												<Wifi
+													className={HOME_THEME.iconMd}
+													aria-hidden="true"
+												/>
+											</div>
+											<div>
+												<h3 className={HOME_THEME.editorialFeatureTitle}>
+													{t.homeExpNomad}
+												</h3>
+												<p className={HOME_THEME.editorialFeatureDesc}>
+													{t.homeExpNomadDesc}
+												</p>
+											</div>
+										</div>
+									</div>
+									<div className={HOME_THEME.editorialCardCta}>
+										<span>{t.homeCardCta}</span>
+										<ArrowRight
+											className={HOME_THEME.iconSm}
+											aria-hidden="true"
+										/>
+									</div>
 								</div>
-								<h3 className="text-xl font-bold mb-4">{t.homeExpFamily}</h3>
-								<p className="text-slate-400 leading-relaxed">
-									{t.homeExpFamilyDesc}
-								</p>
-							</div>
-
-							<div className="text-center">
-								<div className="w-16 h-16 mx-auto bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mb-6">
-									<Heart className="w-8 h-8" aria-hidden="true" />
-								</div>
-								<h3 className="text-xl font-bold mb-4">{t.homeExpRomantic}</h3>
-								<p className="text-slate-400 leading-relaxed">
-									{t.homeExpRomanticDesc}
-								</p>
-							</div>
-						</div>
-					</div>
-				</section>
-
-				{/* FAQ Section */}
-				<section className="py-24 px-6 max-w-4xl mx-auto border-t border-slate-100">
-					<h2 className="text-3xl font-bold mb-12 text-center text-slate-900">
-						{t.faqTitle}
-					</h2>
-					<div className="space-y-8">
-						<div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-							<h3 className="text-xl font-bold mb-4 text-slate-900">
-								{t.faqQ1}
-							</h3>
-							<p className="text-slate-600 leading-relaxed">{t.faqA1}</p>
-						</div>
-						<div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-							<h3 className="text-xl font-bold mb-4 text-slate-900">
-								{t.faqQ2}
-							</h3>
-							<p className="text-slate-600 leading-relaxed">{t.faqA2}</p>
-						</div>
-						<div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-							<h3 className="text-xl font-bold mb-4 text-slate-900">
-								{t.faqQ3}
-							</h3>
-							<p className="text-slate-600 leading-relaxed">{t.faqA3}</p>
-						</div>
-						<div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-							<h3 className="text-xl font-bold mb-4 text-slate-900">
-								{t.faqQ4}
-							</h3>
-							<p className="text-slate-600 leading-relaxed">{t.faqA4}</p>
-						</div>
-						<div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-							<h3 className="text-xl font-bold mb-4 text-slate-900">
-								{t.faqQ5}
-							</h3>
-							<p className="text-slate-600 leading-relaxed">{t.faqA5}</p>
-						</div>
-					</div>
-				</section>
-
-				{/* Contact CTA Section */}
-				<section className="py-20 px-6 max-w-6xl mx-auto mb-12">
-					<div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white text-center relative overflow-hidden rounded-3xl py-16 px-8 md:px-16 shadow-2xl border border-slate-800/50">
-						{/* Decorative background glow blobs for a premium look */}
-						<div className="absolute -top-24 -left-24 w-72 h-72 bg-[#FF5A5F]/10 rounded-full blur-3xl pointer-events-none"></div>
-						<div className="absolute -bottom-24 -right-24 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-						<div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
-							<div className="w-14 h-14 bg-[#FF5A5F]/15 text-[#FF5A5F] rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-[#FF5A5F]/10">
-								<MessageSquare className="w-7 h-7" aria-hidden="true" />
-							</div>
-							<h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white">
-								{t.contactTitle}
-							</h2>
-							<p className="text-lg text-slate-300 font-light mb-8 leading-relaxed">
-								{t.contactSub}
-							</p>
-							<a
-								href={
-									lang === "en"
-										? `${assetPrefix}contact/index.html`
-										: `${assetPrefix}contact/${lang}.html`
-								}
-								className="inline-flex items-center space-x-2.5 bg-[#FF5A5F] hover:bg-[#FF424D] text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-[#FF5A5F]/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FF5A5F]/35 active:scale-[0.98]"
-							>
-								<span>{t.navContact}</span>
 							</a>
+
+							<a href={property1606Href} className={HOME_THEME.editorialCard}>
+								<div className={HOME_THEME.editorialCardMedia}>
+									<img
+										src={`${assetPrefix}${IMAGES["1606"].romantic}`}
+										alt={t.homeExpRomantic}
+										className={HOME_THEME.editorialCardImage}
+										loading="lazy"
+									/>
+								</div>
+								<div className={HOME_THEME.editorialCardBody}>
+									<div className={HOME_THEME.editorialFeatureList}>
+										<div className={HOME_THEME.editorialFeatureItem}>
+											<div className={HOME_THEME.editorialFeatureIconRose}>
+												<Heart
+													className={HOME_THEME.iconMd}
+													aria-hidden="true"
+												/>
+											</div>
+											<div>
+												<h3 className={HOME_THEME.editorialFeatureTitle}>
+													{t.homeExpRomantic}
+												</h3>
+												<p className={HOME_THEME.editorialFeatureDesc}>
+													{t.homeExpRomanticDesc}
+												</p>
+											</div>
+										</div>
+										<div className={HOME_THEME.editorialFeatureItem}>
+											<div className={HOME_THEME.editorialFeatureIconRose}>
+												<Users
+													className={HOME_THEME.iconMd}
+													aria-hidden="true"
+												/>
+											</div>
+											<div>
+												<h3 className={HOME_THEME.editorialFeatureTitle}>
+													{t.homeExpFamily}
+												</h3>
+												<p className={HOME_THEME.editorialFeatureDesc}>
+													{t.homeExpFamilyDesc}
+												</p>
+											</div>
+										</div>
+									</div>
+									<div className={HOME_THEME.editorialCardCta}>
+										<span>{t.homeCardCta}</span>
+										<ArrowRight
+											className={HOME_THEME.iconSm}
+											aria-hidden="true"
+										/>
+									</div>
+								</div>
+							</a>
+						</div>
+
+						{/* Host & Data Controller Showcase Card */}
+						<div id="home-host-card" className={HOME_THEME.hostCard}>
+							<div className={HOME_THEME.hostAvatarWrapper}>
+								<img
+									src={`${assetPrefix}${IMAGES.general.host}`}
+									alt={t.hostName}
+									className={HOME_THEME.hostAvatarImg}
+									loading="lazy"
+								/>
+							</div>
+							<div>
+								<div className={HOME_THEME.hostHeaderRow}>
+									<h3 className={HOME_THEME.hostName}>{t.hostName}</h3>
+									<span className={HOME_THEME.hostRoleBadge}>
+										{t.hostTitle}
+									</span>
+								</div>
+								<p className={HOME_THEME.hostBio}>{t.hostBio}</p>
+								<span className={HOME_THEME.hostRntBadge}>
+									<ShieldCheck
+										className={HOME_THEME.iconSm}
+										aria-hidden="true"
+									/>
+									<span>
+										{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
+									</span>
+								</span>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* Progressive-Disclosure FAQ Section */}
+				<section id="faq" className={HOME_THEME.faqSection}>
+					<h2 className={HOME_THEME.faqTitle}>{t.faqTitle}</h2>
+					<div className={HOME_THEME.faqList}>
+						{faqItems.map((item, idx) => (
+							<details
+								key={idx}
+								className={HOME_THEME.faqDetails}
+								open={item.defaultOpen}
+							>
+								<summary className={HOME_THEME.faqSummary}>
+									<span>{item.q}</span>
+									<ChevronDown
+										className={HOME_THEME.faqChevron}
+										aria-hidden="true"
+									/>
+								</summary>
+								<div className={HOME_THEME.faqAnswerWrapper}>
+									<p className={HOME_THEME.faqAnswer}>{item.a}</p>
+								</div>
+							</details>
+						))}
+					</div>
+				</section>
+
+				{/* Bottom Direct-Reservation & Inquiry CTA Section */}
+				<section className={HOME_THEME.ctaSection}>
+					<div className={HOME_THEME.ctaCard}>
+						<div className={HOME_THEME.ctaContent}>
+							<div className={HOME_THEME.ctaIconBox}>
+								<MessageSquare
+									className={HOME_THEME.iconXl}
+									aria-hidden="true"
+								/>
+							</div>
+							<h2 className={HOME_THEME.ctaTitle}>{t.homeCtaTitle}</h2>
+							<p className={HOME_THEME.ctaSubtitle}>{t.homeCtaSub}</p>
+							<div className={HOME_THEME.ctaActionsRow}>
+								<a href="#properties" className={HOME_THEME.ctaPrimaryBtn}>
+									<CalendarIcon
+										className={HOME_THEME.heroCtaIcon}
+										aria-hidden="true"
+									/>
+									<span>{t.homeHeroCta}</span>
+								</a>
+								<a href={contactHref} className={HOME_THEME.ctaSecondaryBtn}>
+									<span>{t.navContact}</span>
+									<ArrowRight
+										className={HOME_THEME.iconMd}
+										aria-hidden="true"
+									/>
+								</a>
+								<a
+									href={DATA_CONTROLLER.whatsappHref}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={HOME_THEME.ctaWhatsAppBtn}
+								>
+									<MessageCircle
+										className={HOME_THEME.iconMd}
+										aria-hidden="true"
+									/>
+									<span>{t.homeCtaWhatsApp}</span>
+								</a>
+							</div>
 						</div>
 					</div>
 				</section>

@@ -1,0 +1,597 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-11-05T00:00:00.000Z",
+	"title": "Design System: OceanViewFlats",
+	"extensions": {
+		"colorMeta": {
+			"coral-horizon": {
+				"role": "primary",
+				"displayName": "Coral Horizon",
+				"canonical": "#FF5A5F",
+				"tonalRamp": [
+					"#4C0519",
+					"#881337",
+					"#BE123C",
+					"#E11D48",
+					"#FF424D",
+					"#FF5A5F",
+					"#FDA4AF",
+					"#FEF2F2"
+				]
+			},
+			"coral-horizon-deep": {
+				"role": "primary",
+				"displayName": "Coral Horizon Deep",
+				"canonical": "#FF424D",
+				"tonalRamp": [
+					"#450A0A",
+					"#7F1D1D",
+					"#B91C1C",
+					"#DC2626",
+					"#FF424D",
+					"#F87171",
+					"#FCA5A5",
+					"#FEF2F2"
+				]
+			},
+			"coral-wash": {
+				"role": "primary",
+				"displayName": "Coral Wash",
+				"canonical": "#FEF2F2",
+				"tonalRamp": [
+					"#7F1D1D",
+					"#B91C1C",
+					"#EF4444",
+					"#F87171",
+					"#FCA5A5",
+					"#FECACA",
+					"#FEE2E2",
+					"#FEF2F2"
+				]
+			},
+			"salguero-sunset-rose": {
+				"role": "secondary",
+				"displayName": "Salguero Sunset Rose",
+				"canonical": "#E11D48",
+				"tonalRamp": [
+					"#4C0519",
+					"#881337",
+					"#9F1239",
+					"#BE123C",
+					"#E11D48",
+					"#F43F5E",
+					"#FDA4AF",
+					"#FFF1F2"
+				]
+			},
+			"salguero-sunset-rose-deep": {
+				"role": "secondary",
+				"displayName": "Salguero Sunset Rose Deep",
+				"canonical": "#BE123C",
+				"tonalRamp": [
+					"#4C0519",
+					"#881337",
+					"#9F1239",
+					"#BE123C",
+					"#E11D48",
+					"#FB7185",
+					"#FECDD3",
+					"#FFF1F2"
+				]
+			},
+			"rose-wash": {
+				"role": "secondary",
+				"displayName": "Rose Wash",
+				"canonical": "#FFF1F2",
+				"tonalRamp": [
+					"#881337",
+					"#BE123C",
+					"#E11D48",
+					"#F43F5E",
+					"#FB7185",
+					"#FDA4AF",
+					"#FFE4E6",
+					"#FFF1F2"
+				]
+			},
+			"clearance-emerald": {
+				"role": "tertiary",
+				"displayName": "Clearance Emerald",
+				"canonical": "#059669",
+				"tonalRamp": [
+					"#022C22",
+					"#064E3B",
+					"#065F46",
+					"#047857",
+					"#059669",
+					"#10B981",
+					"#6EE7B7",
+					"#ECFDF5"
+				]
+			},
+			"clearance-emerald-deep": {
+				"role": "tertiary",
+				"displayName": "Clearance Emerald Deep",
+				"canonical": "#047857",
+				"tonalRamp": [
+					"#022C22",
+					"#064E3B",
+					"#065F46",
+					"#047857",
+					"#059669",
+					"#34D399",
+					"#A7F3D0",
+					"#ECFDF5"
+				]
+			},
+			"emerald-wash": {
+				"role": "tertiary",
+				"displayName": "Emerald Wash",
+				"canonical": "#ECFDF5",
+				"tonalRamp": [
+					"#064E3B",
+					"#047857",
+					"#059669",
+					"#10B981",
+					"#34D399",
+					"#6EE7B7",
+					"#D1FAE5",
+					"#ECFDF5"
+				]
+			},
+			"keycard-amber": {
+				"role": "tertiary",
+				"displayName": "Keycard Amber",
+				"canonical": "#F59E0B",
+				"tonalRamp": [
+					"#451A03",
+					"#78350F",
+					"#92400E",
+					"#B45309",
+					"#D97706",
+					"#F59E0B",
+					"#FCD34D",
+					"#FFFBEB"
+				]
+			},
+			"amber-wash": {
+				"role": "tertiary",
+				"displayName": "Amber Wash",
+				"canonical": "#FFFBEB",
+				"tonalRamp": [
+					"#78350F",
+					"#B45309",
+					"#D97706",
+					"#F59E0B",
+					"#FBBF24",
+					"#FCD34D",
+					"#FEF3C7",
+					"#FFFBEB"
+				]
+			},
+			"nomad-sky": {
+				"role": "tertiary",
+				"displayName": "Nomad Sky",
+				"canonical": "#0EA5E9",
+				"tonalRamp": [
+					"#082F49",
+					"#0C4A6E",
+					"#0369A1",
+					"#0284C7",
+					"#0EA5E9",
+					"#38BDF8",
+					"#BAE6FD",
+					"#F0F9FF"
+				]
+			},
+			"sky-wash": {
+				"role": "tertiary",
+				"displayName": "Sky Wash",
+				"canonical": "#F0F9FF",
+				"tonalRamp": [
+					"#0C4A6E",
+					"#0369A1",
+					"#0284C7",
+					"#0EA5E9",
+					"#38BDF8",
+					"#7DD3FC",
+					"#E0F2FE",
+					"#F0F9FF"
+				]
+			},
+			"pure-white": {
+				"role": "neutral",
+				"displayName": "Pure White",
+				"canonical": "#FFFFFF",
+				"tonalRamp": [
+					"#0F172A",
+					"#1E293B",
+					"#475569",
+					"#94A3B8",
+					"#CBD5E1",
+					"#E2E8F0",
+					"#F8FAFC",
+					"#FFFFFF"
+				]
+			},
+			"coastal-mist": {
+				"role": "neutral",
+				"displayName": "Coastal Mist",
+				"canonical": "#F8FAFC",
+				"tonalRamp": [
+					"#0F172A",
+					"#1E293B",
+					"#334155",
+					"#64748B",
+					"#94A3B8",
+					"#E2E8F0",
+					"#F1F5F9",
+					"#F8FAFC"
+				]
+			},
+			"slate-surface": {
+				"role": "neutral",
+				"displayName": "Slate Surface",
+				"canonical": "#F1F5F9",
+				"tonalRamp": [
+					"#0F172A",
+					"#1E293B",
+					"#334155",
+					"#64748B",
+					"#94A3B8",
+					"#CBD5E1",
+					"#E2E8F0",
+					"#F1F5F9"
+				]
+			},
+			"slate-border": {
+				"role": "neutral",
+				"displayName": "Slate Border",
+				"canonical": "#E2E8F0",
+				"tonalRamp": [
+					"#0F172A",
+					"#1E293B",
+					"#475569",
+					"#64748B",
+					"#94A3B8",
+					"#CBD5E1",
+					"#E2E8F0",
+					"#F8FAFC"
+				]
+			},
+			"slate-muted": {
+				"role": "neutral",
+				"displayName": "Slate Muted",
+				"canonical": "#94A3B8",
+				"tonalRamp": [
+					"#0F172A",
+					"#1E293B",
+					"#334155",
+					"#475569",
+					"#64748B",
+					"#94A3B8",
+					"#CBD5E1",
+					"#F1F5F9"
+				]
+			},
+			"slate-body": {
+				"role": "neutral",
+				"displayName": "Slate Body",
+				"canonical": "#475569",
+				"tonalRamp": [
+					"#020617",
+					"#0F172A",
+					"#1E293B",
+					"#334155",
+					"#475569",
+					"#64748B",
+					"#CBD5E1",
+					"#F8FAFC"
+				]
+			},
+			"slate-ink": {
+				"role": "neutral",
+				"displayName": "Slate Ink",
+				"canonical": "#1E293B",
+				"tonalRamp": [
+					"#020617",
+					"#0F172A",
+					"#1E293B",
+					"#334155",
+					"#475569",
+					"#94A3B8",
+					"#E2E8F0",
+					"#F8FAFC"
+				]
+			},
+			"deep-caribbean-slate": {
+				"role": "neutral",
+				"displayName": "Deep Caribbean Slate",
+				"canonical": "#0F172A",
+				"tonalRamp": [
+					"#020617",
+					"#0F172A",
+					"#1E293B",
+					"#334155",
+					"#475569",
+					"#64748B",
+					"#CBD5E1",
+					"#F8FAFC"
+				]
+			},
+			"travertine-mist": {
+				"role": "neutral",
+				"displayName": "Travertine Mist",
+				"canonical": "#FAFAF9",
+				"tonalRamp": [
+					"#1C1917",
+					"#292524",
+					"#44403C",
+					"#78716C",
+					"#A8A29E",
+					"#E7E5E4",
+					"#F5F5F4",
+					"#FAFAF9"
+				]
+			},
+			"travertine-surface": {
+				"role": "neutral",
+				"displayName": "Travertine Surface",
+				"canonical": "#F5F5F4",
+				"tonalRamp": [
+					"#1C1917",
+					"#292524",
+					"#44403C",
+					"#78716C",
+					"#A8A29E",
+					"#D6D3D1",
+					"#E7E5E4",
+					"#F5F5F4"
+				]
+			},
+			"travertine-border": {
+				"role": "neutral",
+				"displayName": "Travertine Border",
+				"canonical": "#E7E5E4",
+				"tonalRamp": [
+					"#1C1917",
+					"#292524",
+					"#57534E",
+					"#78716C",
+					"#A8A29E",
+					"#D6D3D1",
+					"#E7E5E4",
+					"#FAFAF9"
+				]
+			},
+			"travertine-ink": {
+				"role": "neutral",
+				"displayName": "Travertine Ink",
+				"canonical": "#292524",
+				"tonalRamp": [
+					"#0C0A09",
+					"#1C1917",
+					"#292524",
+					"#44403C",
+					"#57534E",
+					"#A8A29E",
+					"#E7E5E4",
+					"#FAFAF9"
+				]
+			},
+			"warm-travertine-stone": {
+				"role": "neutral",
+				"displayName": "Warm Travertine Stone",
+				"canonical": "#1C1917",
+				"tonalRamp": [
+					"#0C0A09",
+					"#1C1917",
+					"#292524",
+					"#44403C",
+					"#57534E",
+					"#78716C",
+					"#D6D3D1",
+					"#FAFAF9"
+				]
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Display",
+				"purpose": "Full-bleed hero titles over darkened beachfront photography."
+			},
+			"headline": {
+				"displayName": "Headline",
+				"purpose": "Major section headings across marketing and fulfillment views."
+			},
+			"title": {
+				"displayName": "Title",
+				"purpose": "Property showcase titles, booking card headers, and operational panel titles."
+			},
+			"body": {
+				"displayName": "Body",
+				"purpose": "Property descriptions, FAQ answers, arrival instructions, and statutory consent clauses."
+			},
+			"label": {
+				"displayName": "Label",
+				"purpose": "Uppercase form field headers, eyebrow pills, and required-field badges."
+			},
+			"mono": {
+				"displayName": "Monospace Credential",
+				"purpose": "Temporal smart-lock PINs (0XXXXXX#) and policy version stamps."
+			}
+		},
+		"shadows": [
+			{
+				"name": "shadow-xs",
+				"value": "0 1px 2px 0 rgba(15, 23, 42, 0.05)",
+				"purpose": "Subtle depth on credential wells, copy buttons, and compact pill controls."
+			},
+			{
+				"name": "shadow-sm",
+				"value": "0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06)",
+				"purpose": "Scrolled navigation bar, date display tiles, and primary guest slot cards."
+			},
+			{
+				"name": "shadow-md",
+				"value": "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06)",
+				"purpose": "Default resting elevation for property showcase cards, Guest Guide panels, and Privacy sections."
+			},
+			{
+				"name": "shadow-xl",
+				"value": "0 20px 25px -5px rgba(15, 23, 42, 0.10), 0 8px 10px -6px rgba(15, 23, 42, 0.06)",
+				"purpose": "Primary transactional workspaces (BookingSection card and Guest Registry form panel)."
+			},
+			{
+				"name": "shadow-2xl",
+				"value": "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+				"purpose": "Hero primary CTA pills, floating photo badges, and property showcase cards on hover."
+			},
+			{
+				"name": "shadow-coral-glow",
+				"value": "0 10px 25px -5px rgba(255, 90, 95, 0.28)",
+				"purpose": "Warm accent glow beneath Coral Horizon CTAs on dark callout banners."
+			}
+		],
+		"motion": [
+			{
+				"name": "ease-standard",
+				"value": "cubic-bezier(0.4, 0, 0.2, 1)",
+				"purpose": "Default 300ms transition for card hover lifts, navbar scroll state, and focus rings."
+			},
+			{
+				"name": "duration-photo-zoom",
+				"value": "700ms cubic-bezier(0.4, 0, 0.2, 1)",
+				"purpose": "Slow, resort-paced 1.05x image zoom on property showcase card hover."
+			}
+		],
+		"breakpoints": [
+			{ "name": "sm", "value": "640px" },
+			{ "name": "md", "value": "768px" },
+			{ "name": "lg", "value": "1024px" },
+			{ "name": "xl", "value": "1280px" }
+		]
+	},
+	"components": [
+		{
+			"name": "Primary Coral CTA Pill",
+			"kind": "button",
+			"refersTo": "button-primary",
+			"description": "Primary pill action button used in navigation, contact CTAs, and Guest Registry submission.",
+			"html": "<button class=\"ds-btn-primary\" type=\"button\"><svg class=\"ds-btn-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" ry=\"2\"/><line x1=\"16\" x2=\"16\" y1=\"2\" y2=\"6\"/><line x1=\"8\" x2=\"8\" y1=\"2\" y2=\"6\"/><line x1=\"3\" x2=\"21\" y1=\"10\" y2=\"10\"/></svg><span>Book Direct Now</span></button>",
+			"css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #FF5A5F; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; line-height: 1.4; padding: 14px 28px; border: none; border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(255, 90, 95, 0.28); cursor: pointer; transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #FF424D; transform: scale(1.03); box-shadow: 0 16px 32px -6px rgba(255, 90, 95, 0.38); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(255, 90, 95, 0.35); } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-icon { width: 18px; height: 18px; flex-shrink: 0; }"
+		},
+		{
+			"name": "Property 1606 Sunset Rose CTA",
+			"kind": "button",
+			"refersTo": "button-property-1606",
+			"description": "Structured 12px-radius booking button tuned to Property 1606's Salguero Sunset Rose palette.",
+			"html": "<button class=\"ds-btn-1606\" type=\"button\"><span>Check Availability — 1606</span><svg class=\"ds-btn-1606-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/><polyline points=\"15 3 21 3 21 9\"/><line x1=\"10\" x2=\"21\" y1=\"14\" y2=\"3\"/></svg></button>",
+			"css": ".ds-btn-1606 { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 340px; background: #E11D48; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; padding: 15px 24px; border: none; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.25); cursor: pointer; transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-1606:hover { background: #BE123C; transform: scale(1.02); } .ds-btn-1606:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.35); } .ds-btn-1606:active { transform: scale(0.99); } .ds-btn-1606-icon { width: 18px; height: 18px; flex-shrink: 0; }"
+		},
+		{
+			"name": "Direct COP Settlement Submit Button",
+			"kind": "button",
+			"refersTo": "button-settlement",
+			"description": "High-trust Clearance Emerald button reserved for direct checkout COP payment submission.",
+			"html": "<button class=\"ds-btn-settlement\" type=\"button\"><svg class=\"ds-btn-settlement-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"/><path d=\"m9 12 2 2 4-4\"/></svg><span>Reserve &amp; Proceed to Payment</span></button>",
+			"css": ".ds-btn-settlement { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 340px; background: #059669; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; padding: 15px 24px; border: none; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.25); cursor: pointer; transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-settlement:hover { background: #047857; transform: scale(1.01); } .ds-btn-settlement:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.35); } .ds-btn-settlement-icon { width: 18px; height: 18px; flex-shrink: 0; }"
+		},
+		{
+			"name": "Statutory & Location Eyebrow Chips",
+			"kind": "chip",
+			"refersTo": "button-primary",
+			"description": "Pill badges used for section eyebrows, RNT/Ley 1581 compliance status, and Guest Guide headers.",
+			"html": "<div class=\"ds-chip-row\"><span class=\"ds-chip-coral\">WHY BOOK DIRECT</span><span class=\"ds-chip-emerald\"><svg class=\"ds-chip-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"/></svg>LEY 1581 PROTECTED</span></div>",
+			"css": ".ds-chip-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-family: 'Inter', sans-serif; } .ds-chip-coral { display: inline-flex; align-items: center; background: #FFF1F2; color: #FF5A5F; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 14px; border-radius: 9999px; } .ds-chip-emerald { display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 14px; border-radius: 9999px; } .ds-chip-icon { width: 13px; height: 13px; }"
+		},
+		{
+			"name": "Guest Registry Form Input Field",
+			"kind": "input",
+			"refersTo": "input-default",
+			"description": "Labeled 12px-radius text input with uppercase label, REQUIRED badge, and Coral focus ring.",
+			"html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-doc-input\"><span>Document Number</span><span class=\"ds-req\">Required</span></label><input id=\"ds-doc-input\" class=\"ds-input\" type=\"text\" placeholder=\"e.g. AB1234567\" value=\"\" /></div>",
+			"css": ".ds-field { display: flex; flex-direction: column; width: 100%; max-width: 320px; font-family: 'Inter', sans-serif; } .ds-label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #64748B; margin-bottom: 6px; } .ds-req { color: #FF5A5F; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; } .ds-input { padding: 10px 14px; border-radius: 12px; border: 1px solid #E2E8F0; background: #FFFFFF; color: #1E293B; font-family: 'Inter', sans-serif; font-size: 14px; transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1); } .ds-input::placeholder { color: #94A3B8; } .ds-input:hover { border-color: #CBD5E1; } .ds-input:focus, .ds-input:focus-visible { outline: none; border-color: #FF5A5F; box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.15); }"
+		},
+		{
+			"name": "Frosted Coastal Navigation Bar",
+			"kind": "nav",
+			"refersTo": "card-surface",
+			"description": "Scrolled glassmorphic header bar with sun-and-waves SVG mark, contact link, locale pill, and Book CTA.",
+			"html": "<nav class=\"ds-nav\"><a class=\"ds-nav-brand\" href=\"#\"><svg class=\"ds-nav-logo\" viewBox=\"0 0 96 96\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M83.52,64.09a38.86,38.86,0,1,0-2.13,4.07c.31-.5.59-1,.87-1.55l.09.06A20.48,20.48,0,0,0,83.52,64.09ZM51,57.24a13.9,13.9,0,1,1,27,4.42c-.11.24-.22.48-.34.72C70.68,59.36,61.28,57.54,51,57.24ZM48,15A33,33,0,0,1,80.88,45.26,20.1,20.1,0,0,0,79,43a19.8,19.8,0,0,0-9.77-5.34V27.2a3,3,0,0,0-6,0V37.29a19.93,19.93,0,0,0-7.08,2L50.5,30.75a3,3,0,1,0-5,3.3l5.7,8.64-.37.34A20.06,20.06,0,0,0,47,48.4l-8.32-3.2a3,3,0,1,0-2.16,5.6l8.71,3.35A19.87,19.87,0,0,0,45,57.23c-10.21.29-19.68,2.09-26.73,5.09A33,33,0,0,1,48,15Zm0,66A33.13,33.13,0,0,1,21.4,67.51c6.89-2.73,16.5-4.32,26.5-4.32,10.17,0,19.77,1.61,26.66,4.38A32.74,32.74,0,0,1,48,81Z\"/></svg><span>OceanViewFlats</span></a><div class=\"ds-nav-actions\"><span class=\"ds-nav-link\">Contact</span><span class=\"ds-nav-lang\">EN ▾</span><span class=\"ds-nav-cta\">Book Now</span></div></nav>",
+			"css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); padding: 12px 20px; border-radius: 16px; border: 1px solid #F1F5F9; box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08); font-family: 'Inter', sans-serif; } .ds-nav-brand { display: inline-flex; align-items: center; gap: 8px; color: #FF5A5F; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; transition: color 0.2s; } .ds-nav-brand:hover { color: #FF424D; } .ds-nav-logo { width: 22px; height: 22px; fill: currentColor; } .ds-nav-actions { display: flex; align-items: center; gap: 14px; } .ds-nav-link { font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; transition: color 0.2s; } .ds-nav-link:hover { color: #FF5A5F; } .ds-nav-lang { font-size: 12px; font-weight: 700; color: #1E293B; background: #F1F5F9; padding: 6px 10px; border-radius: 9999px; } .ds-nav-cta { font-size: 13px; font-weight: 700; color: #FFFFFF; background: #FF5A5F; padding: 8px 16px; border-radius: 9999px; box-shadow: 0 4px 10px rgba(255, 90, 95, 0.25); }"
+		},
+		{
+			"name": "Authoritative COP Price Breakdown Card",
+			"kind": "card",
+			"refersTo": "card-surface",
+			"description": "Itemized COP quote summary card separating Nightly Rate, Cleaning Fee, and Resort Fee from USD reference estimates.",
+			"html": "<div class=\"ds-quote-card\"><h4 class=\"ds-quote-title\">Price Breakdown</h4><div class=\"ds-quote-rows\"><div class=\"ds-quote-row\"><span>3 Nights × 520,000 COP</span><span class=\"ds-quote-val\">1,560,000 COP</span></div><div class=\"ds-quote-row\"><span>Cleaning Fee</span><span class=\"ds-quote-val\">120,000 COP</span></div><div class=\"ds-quote-row\"><span>Resort Fee</span><span class=\"ds-quote-val\">60,000 COP</span></div></div><hr class=\"ds-quote-divider\"/><div class=\"ds-quote-total-row\"><span class=\"ds-quote-total-label\">Total (COP)</span><div class=\"ds-quote-total-right\"><div class=\"ds-quote-total-cop\">1,740,000 COP</div><div class=\"ds-quote-est\">Est. ~415 USD ⓘ</div></div></div></div>",
+			"css": ".ds-quote-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 20px; width: 100%; max-width: 360px; font-family: 'Inter', sans-serif; color: #1E293B; } .ds-quote-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #1E293B; margin: 0 0 14px 0; } .ds-quote-rows { display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: #475569; } .ds-quote-row { display: flex; justify-content: space-between; align-items: center; } .ds-quote-val { font-weight: 600; color: #1E293B; } .ds-quote-divider { border: none; border-top: 1px solid #E2E8F0; margin: 12px 0; } .ds-quote-total-row { display: flex; justify-content: space-between; align-items: baseline; } .ds-quote-total-label { font-size: 14px; font-weight: 700; color: #1E293B; } .ds-quote-total-right { text-align: right; } .ds-quote-total-cop { font-size: 19px; font-weight: 800; color: #0F172A; } .ds-quote-est { font-size: 11px; color: #64748B; margin-top: 2px; }"
+		},
+		{
+			"name": "Registry-Gated Access Credential Card",
+			"kind": "custom",
+			"refersTo": "card-surface",
+			"description": "Keycard Amber smart-lock PIN container on the Guest Guide with monospace PIN well and one-click copy.",
+			"html": "<div class=\"ds-cred-card\"><div class=\"ds-cred-head\"><span class=\"ds-cred-label\">Smart-Lock Door PIN</span><span class=\"ds-cred-lock\"><svg class=\"ds-cred-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg></span></div><div class=\"ds-cred-well\"><span class=\"ds-cred-pin\">048291#</span><button class=\"ds-cred-copy\" type=\"button\" aria-label=\"Copy door code\"><svg class=\"ds-cred-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/></svg></button></div><p class=\"ds-cred-note\">Enter all 6 digits followed by # on the apartment keypad.</p></div>",
+			"css": ".ds-cred-card { background: linear-gradient(135deg, rgba(245, 158, 11, 0.10), rgba(217, 119, 6, 0.03)); border: 1px solid rgba(245, 158, 11, 0.22); border-radius: 24px; padding: 20px; width: 100%; max-width: 340px; font-family: 'Inter', sans-serif; } .ds-cred-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; } .ds-cred-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #B45309; } .ds-cred-lock { display: inline-flex; padding: 6px; border-radius: 8px; background: rgba(245, 158, 11, 0.16); color: #B45309; } .ds-cred-well { display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.80); border: 1px solid rgba(245, 158, 11, 0.16); border-radius: 16px; padding: 12px 14px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); } .ds-cred-pin { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 22px; font-weight: 900; letter-spacing: 0.08em; color: #1E293B; } .ds-cred-copy { display: inline-flex; align-items: center; justify-content: center; background: #0F172A; color: #FFFFFF; border: none; border-radius: 12px; padding: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.2s; } .ds-cred-copy:hover { background: #1E293B; transform: scale(1.05); } .ds-cred-copy:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.3); } .ds-cred-icon { width: 15px; height: 15px; } .ds-cred-note { margin: 12px 0 0 0; font-size: 12px; font-weight: 500; line-height: 1.5; color: #92400E; background: rgba(245, 158, 11, 0.06); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.12); }"
+		}
+	],
+	"narrative": {
+		"northStar": "The Sunlit Coastal Concierge",
+		"overview": "OceanViewFlats pairs the luminous warmth of 16th- and 17th-floor Caribbean beachfront living at Edificio Salguero Sunset with the calm, unmistakable precision of a private hotel concierge. Every surface balances two responsibilities: inspiring direct bookings through expansive photography and transparent Colombian Peso (`COP`) pricing, and guiding arriving international guests through mandatory statutory check-in (`Guest Registry`) and smart-lock entry (`Guest Guide`) while they are often in transit on mobile devices.\n\nThe system is luminous, hospitable, and reassuringly structured. Generous white cards float above soft coastal-mist canvases (`#F8FAFC`), punctuated by deep architectural night bands (`#0F172A` and `#1C1917`) that frame remote-work, family, and sunset experiences. Rather than hiding regulatory requirements or building surcharges in fine print, the visual hierarchy elevates them into clear, high-trust callout cards with semantic color coding—turning Colombian Law 1581 consent, minor guardian attestations, and front-desk clearance into a smooth hospitality ritual.\n\nThe visual world explicitly rejects hidden-fee OTA clutter, sterile corporate hotel templates, dark-mode-everywhere SaaS clichés, and kitschy tropical clipart. Every visual element is centralized in `src/constants/theme.ts` so React page templates remain 100% style-agnostic and ship as zero-hydration static HTML across six languages (`en`, `es`, `fr`, `it`, `de`, `ja`).",
+		"keyCharacteristics": [
+			"Dual-Property Atmospheric Tuning: Global pages and Property 1707 pair Coral Horizon with cool Deep Caribbean Slate neutrals, while Property 1606 shifts to Salguero Sunset Rose over warm Travertine Stone neutrals.",
+			"Tactile, Travel-Ready Affordances: Generous pill CTAs (9999px), large-radius cards (24px), and high-contrast inputs (12px) ensure effortless tap accuracy for older travelers and guests checking in from airport taxis or the building lobby.",
+			"Semantic Fulfillment Signaling: Color roles map strictly to guest workflow stages—Coral/Rose for exploration and booking intent, Clearance Emerald for direct COP settlement and statutory data trust, and Keycard Amber for gated access credentials and building rules.",
+			"Six-Locale Zero-Hydration Resilience: Fluid grid containers, non-clipping pill badges, and generous vertical rhythm absorb 30%+ text expansion in German, French, Spanish, and Italian alongside Japanese CJK typography without layout shift."
+		],
+		"rules": [
+			{
+				"name": "The Property Temperature Rule",
+				"body": "Property 1707 and global operational surfaces always pair Coral Horizon with cool Slate neutrals; Property 1606 always pairs Salguero Sunset Rose with warm Travertine Stone neutrals. Never mix cool slate borders into a Property 1606 card or rose accents into Property 1707.",
+				"section": "colors"
+			},
+			{
+				"name": "The Semantic Trust Rule",
+				"body": "Clearance Emerald and Keycard Amber are functional signals, never decorative fills. Emerald appears only when confirming direct COP payment, statutory data protection, or WhatsApp host assistance; Amber appears only on physical access credentials (0XXXXXX#), locked-access gates, minor guardian attestations, and mandatory building notices.",
+				"section": "colors"
+			},
+			{
+				"name": "The Monospace Credential Rule",
+				"body": "Temporal door PINs (0XXXXXX#) and statutory policy version tokens must always render in monospace with wide tracking (0.08em) inside a dedicated copyable container so digits and # terminators are never misread at the apartment door.",
+				"section": "typography"
+			},
+			{
+				"name": "The Six-Locale Measure Rule",
+				"body": "Never constrain headings, buttons, or uppercase labels to fixed pixel heights or nowrap truncation (except the horizontally scrollable mobile QuickStats strip). German compounds, French legal phrases, and Japanese characters must wrap naturally with comfortable line-height.",
+				"section": "typography"
+			},
+			{
+				"name": "The Border-Plus-Shadow Rule",
+				"body": "Never rely on a drop shadow alone to separate a white card from a light #F8FAFC background. Every elevated card pairs its ambient shadow with an explicit 1px border (border-slate-100, border-slate-200, or border-stone-100) so boundaries remain crisp on low-contrast mobile screens in bright sunlight.",
+				"section": "elevation"
+			},
+			{
+				"name": "The Frosted Chrome Rule",
+				"body": "Translucent backdrop-blur-md surfaces are reserved strictly for the scrolled fixed Navigation bar (bg-white/90), hero location/status badges (bg-white/20 or bg-amber-500/10), and dark hero photo overlays (backdrop-blur-[2px]). Never apply backdrop blur to form cards or reading panels.",
+				"section": "elevation"
+			}
+		],
+		"dos": [
+			"Do centralize every new color class, border token, and property-specific variant in src/constants/theme.ts (THEMES[\"1707\"], THEMES[\"1606\"], PRIVACY_THEME_STYLES) so React components in src/components/ and src/pages/ remain 100% style-agnostic.",
+			"Do honor the Property Temperature Rule: use Coral Horizon (#FF5A5F) + Cool Slate (#0F172A / #F8FAFC) on global pages and Property 1707, and Salguero Sunset Rose (#E11D48) + Warm Travertine Stone (#1C1917 / #FAFAF9) on Property 1606.",
+			"Do display Settlement Currency (COP) as the primary, largest typographic value in every quote and financial summary, treating foreign currency (USD) strictly as a secondary 12px muted estimate (text-slate-500) with an explicit disclaimer.",
+			"Do keep interactive tap targets at or above 40px × 40px (py-2.5 to py-4 on inputs and buttons, w-10 h-10 on desktop calendar cells) and maintain WCAG 2.1 AA+ contrast ratios so older travelers and mobile guests in transit can complete check-in effortlessly.",
+			"Do pair every white card on a light canvas with both an explicit 1px border (border-slate-100 or border-slate-200) and a soft shadow (shadow-sm to shadow-xl)."
+		],
+		"donts": [
+			"Don't embed property-conditional layout or style ternaries (e.g., propertyId === \"1707\" ? \"bg-red-50\" : \"bg-rose-50\") directly inside React component JSX; resolve them through THEMES[propertyId].",
+			"Don't hardcode UI copy or inline translation maps in components or Vanilla JS (public/js/); define all strings across all 6 locales (en, es, fr, it, de, ja) in src/i18n/dict.ts and read them on the client exclusively via window.t().",
+			"Don't use Clearance Emerald (#059669) or Keycard Amber (#F59E0B) as generic decorative colors; preserve their strict semantic association with payment settlement/legal trust and gated physical access credentials/warnings.",
+			"Don't load heavy third-party scripts (such as the Mercado Pago SDK) in the global HTML head or introduce client-side React hydration; preserve zero-hydration static HTML delivery for low-bandwidth roaming connections.",
+			"Don't use fixed-height text containers or single-line clipping (truncate / whitespace-nowrap) on localized headings, legal attestations, or CTA buttons that must expand across German, French, Spanish, Italian, and Japanese."
+		]
+	}
+}

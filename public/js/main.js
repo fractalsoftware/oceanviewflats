@@ -17,49 +17,59 @@ window.addEventListener('scroll', () => {
     const logo = document.getElementById('nav-logo');
     const toggle = document.getElementById('lang-toggle');
     const contact = document.getElementById('nav-contact');
+    const bookBtn = document.getElementById('nav-book');
     if (!nav || !logo || !toggle) return;
     
     if (window.scrollY > 50) {
         nav.classList.add('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-3');
         nav.classList.remove('bg-transparent', 'py-5');
-        logo.classList.add('text-[#FF5A5F]');
-        logo.classList.remove('text-white');
+        logo.classList.add('text-[#FF5A5F]', 'hover:text-[#FF424D]');
+        logo.classList.remove('text-white', 'hover:text-white/80');
         toggle.classList.add('bg-slate-100', 'hover:bg-slate-200', 'text-slate-700');
         toggle.classList.remove('bg-white/20', 'hover:bg-white/30', 'text-white', 'backdrop-blur-sm');
         if (contact) {
-            contact.classList.add('text-slate-600');
-            contact.classList.remove('text-white');
+            contact.classList.add('text-slate-600', 'hover:text-rose-700');
+            contact.classList.remove('text-white', 'hover:text-white/80');
+        }
+        if (bookBtn) {
+            bookBtn.classList.add('text-slate-600', 'hover:text-rose-700');
+            bookBtn.classList.remove('text-white', 'hover:text-white/80');
         }
     } else {
         nav.classList.remove('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-3');
         nav.classList.add('bg-transparent', 'py-5');
-        logo.classList.remove('text-[#FF5A5F]');
-        logo.classList.add('text-white');
+        logo.classList.remove('text-[#FF5A5F]', 'hover:text-[#FF424D]');
+        logo.classList.add('text-white', 'hover:text-white/80');
         toggle.classList.remove('bg-slate-100', 'hover:bg-slate-200', 'text-slate-700');
         toggle.classList.add('bg-white/20', 'hover:bg-white/30', 'text-white', 'backdrop-blur-sm');
         if (contact) {
-            contact.classList.remove('text-slate-600');
-            contact.classList.add('text-white');
+            contact.classList.remove('text-slate-600', 'hover:text-rose-700');
+            contact.classList.add('text-white', 'hover:text-white/80');
+        }
+        if (bookBtn) {
+            bookBtn.classList.remove('text-slate-600', 'hover:text-rose-700');
+            bookBtn.classList.add('text-white', 'hover:text-white/80');
         }
     }
 });
 
-// Language Dropdown Mobile Toggle
+// Language Dropdown Mobile & Keyboard Toggle
 document.addEventListener('DOMContentLoaded', () => {
     // Save language preference if we are on a localized page
     const currentLang = document.documentElement.lang;
-    if (currentLang) {
+    if (currentLang && typeof localStorage !== 'undefined') {
         localStorage.setItem('lang-pref', currentLang);
     }
 
     const langToggleGroup = document.getElementById('lang-toggle-group');
     if (!langToggleGroup) return;
     
+    const langToggle = document.getElementById('lang-toggle');
     // Select all language links
     const langLinks = langToggleGroup.querySelectorAll('a');
     
     // Dynamically append current query parameters if present
-    const searchParams = window.location.search;
+    const searchParams = window.location && window.location.search ? window.location.search : '';
     if (searchParams) {
         langLinks.forEach(link => {
             const href = link.getAttribute('href');
@@ -71,40 +81,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save language preference on click
     langLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            const href = link.getAttribute('href');
+        link.addEventListener('click', () => {
+            const href = link.getAttribute('href') || '';
             let clickedLang = 'en';
-            if (href.includes('.html')) {
-                clickedLang = href.replace('.html', '');
+            if (href.includes('.html') && !href.includes('index.html')) {
+                clickedLang = href.split('?')[0].replace('.html', '');
             }
-            localStorage.setItem('lang-pref', clickedLang);
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('lang-pref', clickedLang);
+            }
         });
     });
 
     // Select the dropdown menu inside the group
-    const dropdownMenu = langToggleGroup.querySelector('.absolute.right-0.top-full');
+    const dropdownMenu = document.getElementById('lang-dropdown') || langToggleGroup.querySelector('.absolute.right-0.top-full');
     if (!dropdownMenu) return;
 
-    langToggleGroup.addEventListener('click', (e) => {
-        // Toggle the opacity and visibility classes
-        const isVisible = dropdownMenu.classList.contains('opacity-100');
-        
-        if (isVisible) {
-            dropdownMenu.classList.remove('opacity-100', 'visible');
-            dropdownMenu.classList.add('opacity-0', 'invisible');
-        } else {
-            dropdownMenu.classList.remove('opacity-0', 'invisible');
-            dropdownMenu.classList.add('opacity-100', 'visible');
+    function isLangDropdownOpen() {
+        if (langToggle && langToggle.getAttribute('aria-expanded') === 'true') {
+            return true;
         }
-    });
+        return dropdownMenu.classList.contains('opacity-100') && !dropdownMenu.classList.contains('invisible');
+    }
+
+    function openLangDropdown() {
+        dropdownMenu.classList.remove('hidden', 'opacity-0', 'invisible');
+        dropdownMenu.classList.add('opacity-100', 'visible');
+        if (langToggle) {
+            langToggle.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    function closeLangDropdown(restoreFocus = false) {
+        dropdownMenu.classList.remove('opacity-100', 'visible');
+        dropdownMenu.classList.add('opacity-0', 'invisible');
+        if (langToggle) {
+            langToggle.setAttribute('aria-expanded', 'false');
+            if (restoreFocus && typeof langToggle.focus === 'function') {
+                langToggle.focus();
+            }
+        }
+    }
+
+    const handleToggleClick = (e) => {
+        if (e && typeof e.stopPropagation === 'function') {
+            e.stopPropagation();
+        }
+        if (isLangDropdownOpen()) {
+            closeLangDropdown(false);
+        } else {
+            openLangDropdown();
+        }
+    };
+
+    if (langToggle) {
+        langToggle.addEventListener('click', handleToggleClick);
+    } else {
+        langToggleGroup.addEventListener('click', handleToggleClick);
+    }
 
     // Close when clicking outside
     document.addEventListener('click', (e) => {
-        if (!langToggleGroup.contains(e.target)) {
-            dropdownMenu.classList.remove('opacity-100', 'visible');
-            dropdownMenu.classList.add('opacity-0', 'invisible');
+        const target = e && e.target ? e.target : null;
+        const clickedInside =
+            target === langToggle ||
+            target === langToggleGroup ||
+            target === dropdownMenu ||
+            (langToggleGroup && typeof langToggleGroup.contains === 'function' && langToggleGroup.contains(target)) ||
+            (dropdownMenu && typeof dropdownMenu.contains === 'function' && dropdownMenu.contains(target));
+        if (!clickedInside && isLangDropdownOpen()) {
+            closeLangDropdown(false);
         }
     });
+
+    // Close on Escape key and restore focus to #lang-toggle
+    const handleKeydown = (e) => {
+        if (e && (e.key === 'Escape' || e.key === 'Esc')) {
+            if (isLangDropdownOpen()) {
+                if (typeof e.preventDefault === 'function') {
+                    e.preventDefault();
+                }
+                closeLangDropdown(true);
+            }
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    if (langToggle) {
+        langToggle.addEventListener('keydown', handleKeydown);
+    }
+    dropdownMenu.addEventListener('keydown', handleKeydown);
 });
 
 // Calendar Logic

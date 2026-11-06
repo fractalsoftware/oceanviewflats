@@ -9,6 +9,7 @@ export const dict = {
 		seoDescription:
 			"Book your beachfront stay at Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfect for digital nomads, featuring high-speed Wi-Fi, pool, and stunning Caribbean sea sunsets. Book your direct stay now.",
 		navBook: "Book on Airbnb",
+		navBookDirect: "Book Direct",
 		heroTitle: "Oceanview Flat 1707",
 		heroSub:
 			"Work, relax, and live by the beach in Playa Salguero, Santa Marta.",
@@ -46,15 +47,17 @@ export const dict = {
 		poolNote:
 			"Pool is open daily (hours vary, closed Tuesdays). A building administration fee of COP $20,000 per person applies for the use of common areas.",
 		footer: "Hosted by Manuel Enrique • Santa Marta, Colombia",
+		footerEngineeredBy: "Engineered by",
 		nomadWifiDesc: "Reliable connection for all your meetings.",
 		nomadOceanDesc: "Find inspiration looking out at the Caribbean sea.",
 		nomadImgAlt: "Digital Nomad Workspace",
 		heroImgAlt: "Balcony Ocean View",
-		heroLocation: "Playa Salguero, Santa Marta, Colombia",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Bedroom",
 		aboutPoolAlt: "Pool",
 		footerRights: "OceanViewFlats. All rights reserved.",
-		hero1606Title: "Oceanview Flats 1606",
+		hero1606Title: "Oceanview Flat 1606",
 		hero1606Sub:
 			"A serene coastal escape for families and couples in Playa Salguero.",
 		stats1606Beds: "2 Bedrooms • 3 Beds",
@@ -88,6 +91,21 @@ export const dict = {
 			"Book your serene beachfront stay at Oceanview Flat 1606 in Playa Salguero. Perfect for couples and families, featuring stunning Caribbean sea sunsets and modern luxury. Book your direct stay now.",
 		homeWelcome: "Welcome to OceanViewFlats",
 		homeSubtitle: "Discover your perfect beachfront stay in Santa Marta.",
+		homeHeroValueProp:
+			"0% OTA Commission • Authoritative COP Quotes • Instant Online Checkout",
+		homeHeroCta: "Explore Beachfront Properties",
+		homeFeaturedPropertiesTitle: "Our Featured Beachfront Properties",
+		homeMultiPropertyNote:
+			"Traveling with a larger group of 7–12 Guests? Oceanview Flat 1707 (17th Floor) and Oceanview Flat 1606 (16th Floor) are located just one floor apart in Edificio Salguero Sunset—book both Properties together or send us an Inquiry for a coordinated multi-property family stay.",
+		homeCtaTitle: "Ready to Book Direct or Have a Question?",
+		homeCtaSub:
+			"Select a beachfront Property above to calculate an authoritative COP Quote and complete instant online checkout (Card, PSE, or Cash Voucher) with 0% OTA commission—or send a pre-booking Inquiry via our Contact page or WhatsApp for custom requests and 7–12 Guest multi-property stays.",
+		homeCtaWhatsApp: "Chat on WhatsApp",
+		homeCard1707Badge: "17th Floor • RNT #268781",
+		homeCard1606Badge: "16th Floor • RNT #270413",
+		homeCard1707Parking: "Private Parking Included",
+		homeCard1606Parking: "Private Parking Included",
+		homeCardCta: "Explore & Book Direct",
 		homeExpTitle: "Tailored Experiences",
 		homeExpNomad: "Digital Nomad Heaven",
 		homeExpNomadDesc:
@@ -125,13 +143,16 @@ export const dict = {
 		rnt1606: "RNT #270413",
 		faqQ3: "Can I book directly to avoid booking fees?",
 		faqA3:
-			"Absolutely! You can use our secure Contact form to send an inquiry directly. Booking directly guarantees you the lowest price by bypassing platform commissions.",
+			"Yes! Select your Check-in Date and Check-out Date directly on the Oceanview Flat 1707 or Oceanview Flat 1606 page to view an authoritative itemized Quote in Colombian Pesos (COP) with 0% third-party OTA commission, and complete instant online checkout via Credit/Debit Card, PSE bank transfer, or Cash Voucher (Efecty). You can also use our Contact page for pre-booking Inquiries.",
 		faqQ4: "Is the Wi-Fi fast enough for remote work?",
 		faqA4:
 			"Yes, both OceanViewFlats 1707 and 1606 are equipped with reliable, high-speed fiber optic Wi-Fi (up to 900 Mbps), perfect for Zoom video calls, streaming, and remote productivity.",
 		faqQ5: "Are these rental properties officially registered?",
 		faqA5:
 			"Yes, OceanViewFlats operates legally and is fully registered under the National Tourism Registry of Colombia. Flat 1707 is registered under RNT #268781 and Flat 1606 under RNT #270413.",
+		faqQ6: "How do check-in, the Guest Registry, and the building fee work?",
+		faqA6:
+			"Before arrival, the Primary Guest completes our mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors), which immediately unlocks your digital Guest Guide, private parking space, and temporal 0XXXXXX# smart-lock Access Credential. Upon arrival at Edificio Salguero Sunset front-desk reception, a mandatory one-time Building Registration Fee of 20,000 COP per person is payable on-site for security wristbands and access to the infinity pools (please note pools close every Tuesday for scheduled maintenance).",
 		hostTitle: "Your Host",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -561,6 +582,7 @@ export const dict = {
 		seoDescription:
 			"Reserva tu estadía frente a la playa en Oceanview Flat 1707 en Playa Salguero, Santa Marta. Ideal para nómadas digitales, con Wi-Fi de alta velocidad, piscina e increíbles atardeceres del Caribe. Reserva tu estancia directa ahora.",
 		navBook: "Reservar en Airbnb",
+		navBookDirect: "Reservar Directo",
 		heroTitle: "Apartamento Vista al Mar 1707",
 		heroSub:
 			"Trabaja, relájate y vive frente a la playa en Playa Salguero, Santa Marta.",
@@ -598,11 +620,13 @@ export const dict = {
 		poolNote:
 			"Piscina abierta todos los días (horarios varían, cerrada los martes). Aplica una tarifa de administración de COP $20.000 por persona para áreas comunes.",
 		footer: "Anfitrión: Manuel Enrique • Santa Marta, Colombia",
+		footerEngineeredBy: "Desarrollado por",
 		nomadWifiDesc: "Conexión confiable para todas tus reuniones.",
 		nomadOceanDesc: "Encuentra inspiración mirando al mar Caribe.",
 		nomadImgAlt: "Espacio de trabajo para Nómadas Digitales",
 		heroImgAlt: "Vista al mar desde el balcón",
-		heroLocation: "Playa Salguero, Santa Marta, Colombia",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Habitación",
 		aboutPoolAlt: "Piscina",
 		footerRights: "OceanViewFlats. Todos los derechos reservados.",
@@ -641,6 +665,21 @@ export const dict = {
 			"Reserva tu estancia serena frente al mar en Oceanview Flat 1606 en Playa Salguero. Perfecto para parejas y familias, con impresionantes atardeceres caribeños y lujo moderno. Reserva tu estancia directa ahora.",
 		homeWelcome: "Bienvenido a OceanViewFlats",
 		homeSubtitle: "Descubre tu estancia perfecta frente al mar en Santa Marta.",
+		homeHeroValueProp:
+			"0% Comisión de Plataformas • Cotizaciones Oficiales en COP • Reserva Inmediata en Línea",
+		homeHeroCta: "Explorar Apartamentos Frente al Mar",
+		homeFeaturedPropertiesTitle: "Nuestras Propiedades Frente al Mar",
+		homeMultiPropertyNote:
+			"¿Viajas con un grupo grande de 7–12 Huéspedes? El Apartamento 1707 (Piso 17) y el Apartamento 1606 (Piso 16) están ubicados a solo un piso de distancia en el Edificio Salguero Sunset: reserva ambas propiedades juntas o envíanos una consulta para coordinar una estadía familiar multipropiedad.",
+		homeCtaTitle: "¿Listo para Reservar Directo o Tienes Alguna Pregunta?",
+		homeCtaSub:
+			"Selecciona una Propiedad arriba para calcular una Cotización oficial en COP y completar tu pago en línea al instante (Tarjeta, PSE o Efecty) con 0% de comisión OTA, o envía una Consulta previa desde nuestra página de Contacto o por WhatsApp para solicitudes especiales y estadías multipropiedad de 7–12 Huéspedes.",
+		homeCtaWhatsApp: "Chatear por WhatsApp",
+		homeCard1707Badge: "Piso 17 • RNT #268781",
+		homeCard1606Badge: "Piso 16 • RNT #270413",
+		homeCard1707Parking: "Parqueadero Privado Incluido",
+		homeCard1606Parking: "Parqueadero Privado Incluido",
+		homeCardCta: "Explorar y Reservar Directo",
 		homeExpTitle: "Experiencias a la Medida",
 		homeExpNomad: "Paraíso para Nómadas Digitales",
 		homeExpNomadDesc:
@@ -678,7 +717,7 @@ export const dict = {
 		rnt1606: "RNT #270413",
 		faqQ3: "¿Puedo reservar directamente para evitar cargos de plataformas?",
 		faqA3:
-			"¡Por supuesto! Puedes usar nuestro formulario de Contacto seguro para enviarnos una consulta. Reservar de forma directa te garantiza la mejor tarifa al evitar las comisiones de intermediarios.",
+			"¡Sí! Selecciona tus fechas de Check-in y Check-out directamente en la página de Oceanview Flat 1707 u Oceanview Flat 1606 para consultar una Cotización detallada en Pesos Colombianos (COP) con 0% de comisión de plataformas OTA, y completa tu pago en línea al instante con Tarjeta de Crédito/Débito, transferencia PSE o cupón en efectivo (Efecty). También puedes usar nuestra página de Contacto para consultas previas.",
 		faqQ4:
 			"¿La conexión Wi-Fi es lo suficientemente rápida para trabajar a distancia?",
 		faqA4:
@@ -686,6 +725,10 @@ export const dict = {
 		faqQ5: "¿Están estos apartamentos de alquiler registrados oficialmente?",
 		faqA5:
 			"Sí, OceanViewFlats opera legalmente y cuenta con registro vigente en el Registro Nacional de Turismo de Colombia. El apartamento 1707 tiene RNT #268781 y el apartamento 1606 tiene RNT #270413.",
+		faqQ6:
+			"¿Cómo funcionan el check-in, el Registro de Huéspedes y la tarifa del edificio?",
+		faqA6:
+			"Antes de tu llegada, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea (incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores), lo cual desbloquea de inmediato tu Guía del Huésped digital, tu parqueadero privado incluido y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio obligatoria de 20,000 COP por persona por las manillas de seguridad y el acceso a las piscinas infinitas (ten en cuenta que las piscinas cierran todos los martes por mantenimiento programado).",
 		hostTitle: "Tu Anfitrión",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1129,6 +1172,7 @@ export const dict = {
 		seoDescription:
 			"Réservez votre séjour en bord de mer au Oceanview Flat 1707 à Playa Salguero, Santa Marta. Idéal pour les nomades digitaux, avec Wi-Fi haut débit, piscine et superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
 		navBook: "Réserver sur Airbnb",
+		navBookDirect: "Réserver en Direct",
 		heroTitle: "Appartement Vue Mer 1707",
 		heroSub:
 			"Travaillez, détendez-vous et vivez face à la plage à Playa Salguero, Santa Marta.",
@@ -1166,11 +1210,13 @@ export const dict = {
 		poolNote:
 			"La piscine est ouverte tous les jours (les horaires varient, fermée le mardi). Des frais d'administration de 20 000 COP par personne s'appliquent pour les espaces communs.",
 		footer: "Hôte : Manuel Enrique • Santa Marta, Colombie",
+		footerEngineeredBy: "Conçu par",
 		nomadWifiDesc: "Connexion fiable pour toutes vos réunions.",
 		nomadOceanDesc: "Trouvez l'inspiration face à la mer des Caraïbes.",
 		nomadImgAlt: "Espace de travail pour Nomades Digitaux",
 		heroImgAlt: "Vue sur l'océan depuis le balcon",
-		heroLocation: "Playa Salguero, Santa Marta, Colombie",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombie",
 		aboutBedroomAlt: "Chambre",
 		aboutPoolAlt: "Piscine",
 		footerRights: "OceanViewFlats. Tous droits réservés.",
@@ -1210,6 +1256,21 @@ export const dict = {
 		homeWelcome: "Bienvenue chez OceanViewFlats",
 		homeSubtitle:
 			"Découvrez votre séjour parfait en bord de mer à Santa Marta.",
+		homeHeroValueProp:
+			"0% de Commission OTA • Devis Officiels en COP • Paiement Direct en Ligne",
+		homeHeroCta: "Découvrir nos Appartements Vue Mer",
+		homeFeaturedPropertiesTitle: "Nos Propriétés en Bord de Mer",
+		homeMultiPropertyNote:
+			"Vous voyagez avec un grand groupe de 7–12 Voyageurs ? L'Appartement 1707 (17e étage) et l'Appartement 1606 (16e étage) sont situés à un seul étage d'écart dans l'Edificio Salguero Sunset — réservez les deux logements ensemble ou envoyez-nous une demande pour un séjour familial multi-propriétés.",
+		homeCtaTitle: "Prêt à Réserver en Direct ou Vous Avez une Question ?",
+		homeCtaSub:
+			"Sélectionnez un appartement ci-dessus pour obtenir un Devis officiel en COP et finaliser votre paiement en ligne instantané (Carte, PSE ou Efecty) avec 0 % de commission OTA — ou envoyez une Demande via notre page Contact ou sur WhatsApp pour toute question ou un séjour multi-propriétés de 7–12 Voyageurs.",
+		homeCtaWhatsApp: "Discuter sur WhatsApp",
+		homeCard1707Badge: "17e Étage • RNT #268781",
+		homeCard1606Badge: "16e Étage • RNT #270413",
+		homeCard1707Parking: "Parking Privé Inclus",
+		homeCard1606Parking: "Parking Privé Inclus",
+		homeCardCta: "Découvrir et Réserver en Direct",
 		homeExpTitle: "Expériences sur Mesure",
 		homeExpNomad: "Le Paradis des Nomades Digitaux",
 		homeExpNomadDesc:
@@ -1248,7 +1309,7 @@ export const dict = {
 		faqQ3:
 			"Puis-je réserver directement pour éviter les frais des plateformes ?",
 		faqA3:
-			"Absolument ! Vous pouvez utiliser notre formulaire de Contact sécurisé pour envoyer une demande. Réserver en direct vous garantit le tarif le plus bas en évitant les commissions de tiers.",
+			"Oui ! Sélectionnez vos dates d'arrivée et de départ directement sur la page Oceanview Flat 1707 ou Oceanview Flat 1606 pour afficher un Devis détaillé en Pesos Colombiens (COP) avec 0 % de commission OTA, et finalisez votre paiement en ligne instantanément par Carte de Crédit/Débit, virement PSE ou bon d'espèces (Efecty). Vous pouvez également utiliser notre page Contact pour toute demande préalable.",
 		faqQ4: "La connexion Wi-Fi est-elle assez rapide pour le télétravail ?",
 		faqA4:
 			"Oui, OceanViewFlats 1707 et 1606 disposent d'un Wi-Fi haut débit par fibre optique (jusqu'à 900 Mbps), parfait pour les appels vidéo Zoom, le streaming et la productivité en voyage.",
@@ -1256,6 +1317,10 @@ export const dict = {
 			"Ces propriétés de location sont-elles officiellement enregistrées ?",
 		faqA5:
 			"Oui, OceanViewFlats opère légalement et est enregistré au Registre National du Tourisme en Colombie. L'appartement 1707 est sous RNT #268781 et l'appartement 1606 sous RNT #270413.",
+		faqQ6:
+			"Comment fonctionnent l'enregistrement, le Registre des Invités et les frais d'immeuble ?",
+		faqA6:
+			"Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne (incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs), ce qui débloque immédiatement votre Guide de l'Invité numérique, votre place de parking privé incluse et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble obligatoires de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement (veuillez noter que les piscines ferment tous les mardis pour maintenance).",
 		hostTitle: "Votre Hôte",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1704,6 +1769,7 @@ export const dict = {
 		seoDescription:
 			"Prenota il tuo soggiorno di fronte al mare all'Oceanview Flat 1707 a Playa Salguero, Santa Marta. Perfetto per i nomadi digitali, con Wi-Fi ad alta velocità, piscina e splendidi tramonti sui Caraibi. Prenota ora il tuo soggiorno diretto.",
 		navBook: "Prenota su Airbnb",
+		navBookDirect: "Prenota Diretto",
 		heroTitle: "Appartamento Vista Mare 1707",
 		heroSub:
 			"Lavora, rilassati e vivi di fronte alla spiaggia a Playa Salguero, Santa Marta.",
@@ -1741,11 +1807,13 @@ export const dict = {
 		poolNote:
 			"La piscina è aperta tutti i giorni (gli orari variano, chiusa il martedì). Si applica una quota amministrativa di 20.000 COP a persona per l'uso delle aree comuni.",
 		footer: "Ospitato da Manuel Enrique • Santa Marta, Colombia",
+		footerEngineeredBy: "Sviluppato da",
 		nomadWifiDesc: "Connessione affidabile per tutte le tue riunioni.",
 		nomadOceanDesc: "Trova l'ispirazione guardando il mar dei Caraibi.",
 		nomadImgAlt: "Spazio di lavoro per Nomadi Digitali",
 		heroImgAlt: "Vista oceano dal balcone",
-		heroLocation: "Playa Salguero, Santa Marta, Colombia",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Camera da letto",
 		aboutPoolAlt: "Piscina",
 		footerRights: "OceanViewFlats. Tutti i diritti riservati.",
@@ -1784,6 +1852,21 @@ export const dict = {
 			"Prenota il tuo sereno soggiorno fronte mare all'Oceanview Flat 1606 a Playa Salguero. Perfetto per coppie e famiglie, con splendidi tramonti sul Mar dei Caraibi e lusso moderno. Prenota ora il tuo soggiorno diretto.",
 		homeWelcome: "Benvenuti a OceanViewFlats",
 		homeSubtitle: "Scopri il tuo soggiorno perfetto fronte mare a Santa Marta.",
+		homeHeroValueProp:
+			"0% Commissioni OTA • Preventivi Ufficiali in COP • Checkout Diretto Online",
+		homeHeroCta: "Esplora gli Appartamenti Fronte Mare",
+		homeFeaturedPropertiesTitle: "Le Nostre Proprietà Fronte Mare",
+		homeMultiPropertyNote:
+			"Viaggi con un gruppo numeroso di 7–12 Ospiti? L'Appartamento 1707 (17° piano) e l'Appartamento 1606 (16° piano) si trovano a un solo piano di distanza nell'Edificio Salguero Sunset: prenota entrambi gli appartamenti insieme o inviaci una richiesta per un soggiorno familiare multi-proprietà.",
+		homeCtaTitle: "Pronto a Prenotare Diretto o Hai una Domanda?",
+		homeCtaSub:
+			"Seleziona un appartamento qui sopra per calcolare un Preventivo ufficiale in COP e completare il pagamento istantaneo online (Carta, PSE o Efecty) con lo 0% di commissioni OTA, oppure invia una Richiesta tramite la pagina Contatti o su WhatsApp per domande personalizzate e soggiorni multi-proprietà da 7–12 Ospiti.",
+		homeCtaWhatsApp: "Scrivici su WhatsApp",
+		homeCard1707Badge: "17° Piano • RNT #268781",
+		homeCard1606Badge: "16° Piano • RNT #270413",
+		homeCard1707Parking: "Parcheggio Privato Incluso",
+		homeCard1606Parking: "Parcheggio Privato Incluso",
+		homeCardCta: "Esplora e Prenota Direttamente",
 		homeExpTitle: "Esperienze su Misura",
 		homeExpNomad: "Paradiso per Nomadi Digitali",
 		homeExpNomadDesc:
@@ -1822,13 +1905,17 @@ export const dict = {
 		faqQ3:
 			"Posso prenotare direttamente per evitare le commissioni delle piattaforme?",
 		faqA3:
-			"Assolutamente sì! Puoi usare il nostro modulo di Contatto sicuro per inviare direttamente una richiesta. La prenotazione diretta garantisce il prezzo più basso eliminando i costi delle piattaforme.",
+			"Certamente! Seleziona le date di Check-in e Check-out direttamente nella pagina Oceanview Flat 1707 o Oceanview Flat 1606 per visualizzare un Preventivo dettagliato in Pesos Colombiani (COP) con lo 0% di commissioni OTA e completare il pagamento istantaneo online tramite Carta di Credito/Debito, bonifico PSE o voucher in contanti (Efecty). Puoi anche utilizzare la pagina Contatti per richieste preliminari.",
 		faqQ4: "La connessione Wi-Fi è abbastanza veloce per il lavoro da remoto?",
 		faqA4:
 			"Sì, sia OceanViewFlats 1707 che 1606 sono dotati di connessione Wi-Fi a fibra ottica ad alta velocità (fino a 900 Mbps), perfetta per videochiamate Zoom, streaming e produttività per nomadi digitali.",
 		faqQ5: "Questi appartamenti in affitto sono registrati ufficialmente?",
 		faqA5:
 			"Sì, OceanViewFlats opera legalmente ed è registrato presso il Registro Nazionale del Turismo della Colombia. L'appartamento 1707 è registrato con RNT #268781 e il 1606 con RNT #270413.",
+		faqQ6:
+			"Come funzionano il check-in, il Registro Ospiti e la tariffa condominiale?",
+		faqA6:
+			"Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio (inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679), sbloccando immediatamente la Guida dell'Ospite digitale, il parcheggio privato incluso e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. All'arrivo alla reception dell'Edificio Salguero Sunset, è previsto il pagamento in loco di una Tariffa di Registrazione Condominiale obbligatoria di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro (si ricorda che le piscine chiudono ogni martedì per manutenzione programmata).",
 		hostTitle: "Il Tuo Ospite",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -2270,6 +2357,7 @@ export const dict = {
 		seoDescription:
 			"Buchen Sie Ihren Strandurlaub im Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfekt für digitale Nomaden, mit Highspeed-WLAN, Pool und atemberaubenden Sonnenuntergängen in der Karibik. Buchen Sie jetzt Ihren Aufenthalt direkt.",
 		navBook: "Auf Airbnb buchen",
+		navBookDirect: "Direkt Buchen",
 		heroTitle: "Apartment mit Meerblick 1707",
 		heroSub:
 			"Arbeiten, entspannen und direkt am Strand von Playa Salguero, Santa Marta leben.",
@@ -2307,11 +2395,13 @@ export const dict = {
 		poolNote:
 			"Der Pool ist täglich geöffnet (Zeiten variieren, dienstags geschlossen). Für die Nutzung der Gemeinschaftsbereiche fällt eine Verwaltungsgebühr des Gebäudes von 20.000 COP pro Person an.",
 		footer: "Gastgeber: Manuel Enrique • Santa Marta, Kolumbien",
+		footerEngineeredBy: "Entwickelt von",
 		nomadWifiDesc: "Zuverlässige Verbindung für all deine Meetings.",
 		nomadOceanDesc: "Finde Inspiration beim Blick auf die Karibik.",
 		nomadImgAlt: "Arbeitsplatz für Digitale Nomaden",
 		heroImgAlt: "Meerblick vom Balkon",
-		heroLocation: "Playa Salguero, Santa Marta, Kolumbien",
+		heroLocation:
+			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Kolumbien",
 		aboutBedroomAlt: "Schlafzimmer",
 		aboutPoolAlt: "Schwimmbad",
 		footerRights: "OceanViewFlats. Alle Rechte vorbehalten.",
@@ -2351,6 +2441,21 @@ export const dict = {
 		homeWelcome: "Willkommen bei OceanViewFlats",
 		homeSubtitle:
 			"Entdecken Sie Ihren perfekten Aufenthalt direkt am Strand in Santa Marta.",
+		homeHeroValueProp:
+			"0% Plattformgebühren • Verbindliche COP-Preise • Direkter Online-Checkout",
+		homeHeroCta: "Strandapartments Entdecken",
+		homeFeaturedPropertiesTitle: "Unsere Strandunterkünfte",
+		homeMultiPropertyNote:
+			"Reisen Sie mit einer größeren Gruppe von 7–12 Gästen? Das Apartment 1707 (17. Etage) und das Apartment 1606 (16. Etage) liegen nur eine Etage voneinander entfernt im Edificio Salguero Sunset – buchen Sie beide Unterkünfte zusammen oder senden Sie uns eine Anfrage für einen koordinierten Familienaufenthalt.",
+		homeCtaTitle: "Bereit für Ihre Direktbuchung oder Haben Sie Fragen?",
+		homeCtaSub:
+			"Wählen Sie oben ein Strandapartment aus, um ein verbindliches Angebot in COP zu berechnen und sofort online zu buchen (Karte, PSE oder Efecty) mit 0 % OTA-Provision – oder senden Sie uns über die Kontaktseite oder per WhatsApp eine Vorabanfrage für individuelle Wünsche und Aufenthalte für 7–12 Gäste.",
+		homeCtaWhatsApp: "Per WhatsApp Chatten",
+		homeCard1707Badge: "17. Etage • RNT #268781",
+		homeCard1606Badge: "16. Etage • RNT #270413",
+		homeCard1707Parking: "Privater Parkplatz Inklusive",
+		homeCard1606Parking: "Privater Parkplatz Inklusive",
+		homeCardCta: "Entdecken & Direkt Buchen",
 		homeExpTitle: "Maßgeschneiderte Erlebnisse",
 		homeExpNomad: "Paradies für digitale Nomaden",
 		homeExpNomadDesc:
@@ -2388,13 +2493,17 @@ export const dict = {
 		rnt1606: "RNT #270413",
 		faqQ3: "Kann ich direkt buchen, um Vermittlungsgebühren zu sparen?",
 		faqA3:
-			"Absolut! Nutzen Sie einfach unser sicheres Kontaktformular für eine Anfrage. Die Direktbuchung garantiert Ihnen den besten Preis, da keine hohen Servicegebühren anfallen.",
+			"Ja! Wählen Sie Ihr Check-in- und Check-out-Datum direkt auf der Seite von Oceanview Flat 1707 oder Oceanview Flat 1606 aus, um ein verbindliches Angebot in Kolumbianischen Pesos (COP) mit 0 % OTA-Provision einzusehen und Ihre Direktbuchung sofort online per Kredit-/Debitkarte, PSE-Überweisung oder Bargeld-Gutschein (Efecty) abzuschließen. Für Vorabanfragen steht Ihnen zudem unsere Kontaktseite zur Verfügung.",
 		faqQ4: "Ist das WLAN schnell genug für Remote-Arbeit?",
 		faqA4:
 			"Ja, sowohl OceanViewFlats 1707 als auch 1606 sind mit zuverlässigem Highspeed-Glasfaser-WLAN (bis zu 900 Mbps) ausgestattet, perfekt für Zoom-Meetings, Streaming und produktives Arbeiten.",
 		faqQ5: "Sind diese Ferienunterkünfte offiziell registriert?",
 		faqA5:
 			"Ja, OceanViewFlats arbeitet vollkommen legal und ist im nationalen Tourismusregister Kolumbiens eingetragen. Flat 1707 hat die RNT #268781 und Flat 1606 die RNT #270413.",
+		faqQ6:
+			"Wie funktionieren Check-in, Gästeregistrierung und die Gebäudegebühr?",
+		faqA6:
+			"Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus (einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen). Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr privater Parkplatz sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine obligatorische einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten (bitte beachten Sie, dass die Pools jeden Dienstag wegen planmäßiger Wartung geschlossen sind).",
 		hostTitle: "Ihr Gastgeber",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -2842,6 +2951,7 @@ export const dict = {
 		seoDescription:
 			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707で、ビーチフロントの滞在をご予約ください。デジタルノマドに最適で、高速Wi-Fi、プール、カリブ海の美しい夕日をお楽しみいただけます。今すぐ直接予約しましょう。",
 		navBook: "Airbnbで予約",
+		navBookDirect: "直接予約",
 		heroTitle: "オーシャンビューフラット 1707",
 		heroSub:
 			"サンタマルタのプラヤ・サルグエロで、ビーチの目の前で働き、リラックスし、暮らす。",
@@ -2878,13 +2988,16 @@ export const dict = {
 		poolNoteTitle: "重要なお知らせ",
 		poolNote:
 			"プールは毎日営業しています（営業時間は異なります。火曜日は休業）。共有エリアの使用には、1人あたり20,000 COPのビル管理費が適用されます。",
-		footer: "ホスト: Manuel Enrique • ガイラ、マグダレナ、コロンビア",
+		footer:
+			"ホスト: Manuel Enrique • コロンビア、サンタマルタ、プラヤ・サルグエロ",
+		footerEngineeredBy: "開発:",
 		nomadWifiDesc: "すべての会議に対応する信頼性の高い接続。",
 		nomadOceanDesc:
 			"カリブ海を眺めながらインスピレーションを見つけてください。",
 		nomadImgAlt: "デジタルノマドのワークスペース",
 		heroImgAlt: "バルコニーからのオーシャンビュー",
-		heroLocation: "コロンビア、ガイラ、プラヤ・サルグエロ",
+		heroLocation:
+			"Edificio Salguero Sunset • コロンビア、サンタマルタ、プラヤ・サルグエロ",
 		aboutBedroomAlt: "ベッドルーム",
 		aboutPoolAlt: "プール",
 		footerRights: "OceanViewFlats. 無断複写・転載を禁じます。",
@@ -2923,6 +3036,21 @@ export const dict = {
 			"プラヤ・サルグエロのオーシャンビューフラット 1606で、穏やかなビーチフロントの滞在を予約しましょう。カップルや家族に最適で、カリブ海の美しい夕日とモダンな贅沢を楽しめます。今すぐ直接予約しましょう。",
 		homeWelcome: "OceanViewFlatsへようこそ",
 		homeSubtitle: "サンタマルタで最高のビーチフロント滞在を見つけましょう。",
+		homeHeroValueProp:
+			"仲介手数料0% • 公式COP建てお見積り • オンライン即時予約",
+		homeHeroCta: "ビーチフロント物件を見る",
+		homeFeaturedPropertiesTitle: "おすすめのビーチフロント物件",
+		homeMultiPropertyNote:
+			"7–12名様のグループや大家族でのご旅行ですか？オーシャンビューフラット 1707（17階）と 1606（16階）は Edificio Salguero Sunset 内のわずか1階違いに位置しています。2部屋同時の直接予約、または複数物件での滞在についてお気軽にお問い合わせください。",
+		homeCtaTitle: "直接予約のお手続き・事前のご質問はこちら",
+		homeCtaSub:
+			"上の物件カードを選択すると、OTA手数料0%の公式COP建て見積もりを計算し、カード・PSE・現金バウチャー（Efecty）で即座にオンライン予約を完了できます。事前のご質問や7–12名様での2部屋同時滞在のご相談は、お問い合わせページまたはWhatsAppよりお気軽にご連絡ください。",
+		homeCtaWhatsApp: "WhatsAppで相談する",
+		homeCard1707Badge: "17階 • RNT #268781",
+		homeCard1606Badge: "16階 • RNT #270413",
+		homeCard1707Parking: "専用駐車場付き",
+		homeCard1606Parking: "専用駐車場付き",
+		homeCardCta: "詳細を見る・直接予約",
 		homeExpTitle: "カスタマイズされた体験",
 		homeExpNomad: "デジタルノマドの天国",
 		homeExpNomadDesc:
@@ -2960,13 +3088,17 @@ export const dict = {
 		rnt1606: "RNT番号: 270413",
 		faqQ3: "手数料を避けるために直接予約することはできますか？",
 		faqA3:
-			"もちろんです！安全な「お問い合わせ」フォームから直接ご連絡ください。仲介プラットフォームを通さない直接予約により、最もお得な価格を保証いたします。",
+			"はい！Oceanview Flat 1707またはOceanview Flat 1606のページでチェックイン日とチェックアウト日を直接選択すると、OTA仲介手数料0%のコロンビア・ペソ（COP）建て明細見積もりをご確認いただけ、クレジットカード／デビットカード、PSE銀行振込、または現金バウチャー（Efecty）で即座にオンライン決済を完了できます。予約前のご質問にはお問い合わせページもご利用いただけます。",
 		faqQ4: "Wi-Fiはリモートワークに十分な速度ですか？",
 		faqA4:
 			"はい、OceanViewFlats 1707および1606には、信頼性の高い高速光回線Wi-Fi（最大900 Mbps）が完備されており、Zoomビデオ通話や動画配信、リモートワークも快適に行えます。",
 		faqQ5: "これらの宿泊施設は公式に登録されていますか？",
 		faqA5:
 			"はい、OceanViewFlatsは合法的に運営されており、コロンビア国家観光登録に登録されています。1707号室はRNT #268781、1606号室はRNT #270413として公式登録されています。",
+		faqQ6:
+			"チェックイン、宿泊者名簿（ゲスト登録）、および建物登録料の仕組みは？",
+		faqA6:
+			"ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出いただくと、デジタルゲストガイド、専用駐車場、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。ご到着時はEdificio Salguero Sunsetのフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください（なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます）。",
 		hostTitle: "ホスト",
 		hostName: "Manuel Enrique",
 		hostBio:

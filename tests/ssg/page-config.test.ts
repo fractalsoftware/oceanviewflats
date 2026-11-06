@@ -781,3 +781,773 @@ test("registry.js and main.js encode form submissions via URLSearchParams to avo
 		"main.js contact form must wrap FormData in URLSearchParams",
 	);
 });
+
+test("Shared chrome across all 6 locales renders accessible #lang-toggle button, >=40px tap targets, relative #nav-logo assetPrefix, and compliant Footer (#237)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			rootFile: "index.html",
+			nestedFile: "Oceanview1707/index.html",
+			expectedRootLogoHref: "./",
+			expectedNestedLogoHref: "../",
+			expectedEngineeredBy: "Engineered by",
+		},
+		{
+			code: "es",
+			rootFile: "es.html",
+			nestedFile: "Oceanview1707/es.html",
+			expectedRootLogoHref: "./es.html",
+			expectedNestedLogoHref: "../es.html",
+			expectedEngineeredBy: "Desarrollado por",
+		},
+		{
+			code: "fr",
+			rootFile: "fr.html",
+			nestedFile: "Oceanview1707/fr.html",
+			expectedRootLogoHref: "./fr.html",
+			expectedNestedLogoHref: "../fr.html",
+			expectedEngineeredBy: "Conçu par",
+		},
+		{
+			code: "it",
+			rootFile: "it.html",
+			nestedFile: "Oceanview1707/it.html",
+			expectedRootLogoHref: "./it.html",
+			expectedNestedLogoHref: "../it.html",
+			expectedEngineeredBy: "Sviluppato da",
+		},
+		{
+			code: "de",
+			rootFile: "de.html",
+			nestedFile: "Oceanview1707/de.html",
+			expectedRootLogoHref: "./de.html",
+			expectedNestedLogoHref: "../de.html",
+			expectedEngineeredBy: "Entwickelt von",
+		},
+		{
+			code: "ja",
+			rootFile: "ja.html",
+			nestedFile: "Oceanview1707/ja.html",
+			expectedRootLogoHref: "./ja.html",
+			expectedNestedLogoHref: "../ja.html",
+			expectedEngineeredBy: "開発:",
+		},
+	];
+
+	for (const locale of locales) {
+		const rootHtml = fs.readFileSync(
+			path.join(distDir, locale.rootFile),
+			"utf-8",
+		);
+		const nestedHtml = fs.readFileSync(
+			path.join(distDir, locale.nestedFile),
+			"utf-8",
+		);
+
+		for (const [label, html, expectedLogoHref] of [
+			[locale.rootFile, rootHtml, locale.expectedRootLogoHref],
+			[locale.nestedFile, nestedHtml, locale.expectedNestedLogoHref],
+		] as const) {
+			// 1. Semantic #lang-toggle button with aria-haspopup="true", aria-expanded="false", and >=40px tap target
+			const langToggleMatch = html.match(/<button[^>]*id="lang-toggle"[^>]*>/);
+			assert.ok(
+				langToggleMatch,
+				`${label} must render #lang-toggle as a semantic <button>`,
+			);
+			assert.ok(
+				langToggleMatch[0].includes('type="button"'),
+				`${label} #lang-toggle must specify type="button"`,
+			);
+			assert.ok(
+				langToggleMatch[0].includes('aria-haspopup="true"') &&
+					langToggleMatch[0].includes('aria-expanded="false"'),
+				`${label} #lang-toggle must include aria-haspopup="true" and aria-expanded="false"`,
+			);
+			assert.ok(
+				langToggleMatch[0].includes("min-h-[40px]") &&
+					langToggleMatch[0].includes("min-w-[40px]"),
+				`${label} #lang-toggle must enforce >= 40px x 40px touch target`,
+			);
+
+			// 2. #nav-contact enforces >=40px x 40px touch target
+			const navContactMatch = html.match(/<a[^>]*id="nav-contact"[^>]*>/);
+			assert.ok(navContactMatch, `${label} must render #nav-contact`);
+			assert.ok(
+				navContactMatch[0].includes("min-h-[40px]") &&
+					navContactMatch[0].includes("min-w-[40px]"),
+				`${label} #nav-contact must enforce >= 40px x 40px touch target`,
+			);
+
+			// 3. Closed #lang-dropdown has invisible class (visibility: hidden) so collapsed links are not keyboard-focusable, and AA hover contrast
+			const dropdownMatch = html.match(/<div[^>]*id="lang-dropdown"[^>]*>/);
+			assert.ok(dropdownMatch, `${label} must render #lang-dropdown`);
+			assert.ok(
+				dropdownMatch[0].includes("invisible") &&
+					dropdownMatch[0].includes("opacity-0"),
+				`${label} #lang-dropdown must include 'invisible' and 'opacity-0' when collapsed so links are removed from tab order`,
+			);
+			assert.ok(
+				html.includes("hover:text-rose-700") &&
+					!html.includes("hover:text-[#FF5A5F]"),
+				`${label} language menu items must use WCAG AA hover:text-rose-700 instead of low-contrast hover:text-[#FF5A5F]`,
+			);
+
+			// 4. #nav-logo uses relative assetPrefix
+			const navLogoMatch = html.match(/<a[^>]*id="nav-logo"[^>]*>/);
+			assert.ok(navLogoMatch, `${label} must render #nav-logo`);
+			assert.ok(
+				navLogoMatch[0].includes(`href="${expectedLogoHref}"`),
+				`${label} #nav-logo must use relative assetPrefix href="${expectedLogoHref}", got: ${navLogoMatch[0]}`,
+			);
+
+			// 5. Global footer compliance: no <style>, no dark-glow, no 11px/#a1a1aa, RNT line >=4.5:1 (text-slate-300), localized attribution
+			const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
+			assert.ok(footerMatch, `${label} must render <footer>`);
+			const footerHtml = footerMatch[0];
+			assert.ok(
+				!footerHtml.includes("<style") && !footerHtml.includes("style="),
+				`${label} footer must not contain inline <style> blocks or inline style attributes`,
+			);
+			assert.ok(
+				!footerHtml.includes("#10b981") &&
+					!footerHtml.includes("11px") &&
+					!footerHtml.includes("#a1a1aa"),
+				`${label} footer must not contain #10b981 neon glow, 11px font-size, or #a1a1aa color`,
+			);
+			assert.ok(
+				!footerHtml.includes("text-slate-500") &&
+					footerHtml.includes("text-slate-300"),
+				`${label} footer RNT line must use high-contrast text-slate-300 instead of low-contrast text-slate-500`,
+			);
+			assert.ok(
+				footerHtml.includes("268781") && footerHtml.includes("270413"),
+				`${label} footer must display both statutory RNT numbers`,
+			);
+			assert.ok(
+				footerHtml.includes(`<span>${locale.expectedEngineeredBy}</span>`),
+				`${label} footer must localize developer attribution prefix as "${locale.expectedEngineeredBy}"`,
+			);
+		}
+	}
+
+	// 6. Japanese (ja) municipality standardization: サンタマルタ instead of ガイラ
+	const jaHome = fs.readFileSync(path.join(distDir, "ja.html"), "utf-8");
+	const ja1707 = fs.readFileSync(
+		path.join(distDir, "Oceanview1707", "ja.html"),
+		"utf-8",
+	);
+	assert.ok(
+		jaHome.includes("コロンビア、サンタマルタ、プラヤ・サルグエロ") &&
+			!jaHome.includes("ガイラ"),
+		"dist/ja.html must reference サンタマルタ and never ガイラ",
+	);
+	assert.ok(
+		ja1707.includes("コロンビア、サンタマルタ、プラヤ・サルグエロ") &&
+			!ja1707.includes("ガイラ"),
+		"dist/Oceanview1707/ja.html must reference サンタマルタ and never ガイラ",
+	);
+
+	// 7. Component templates use centralized CHROME_THEME without inline ternaries or style tags
+	for (const compFile of [
+		"Navigation.tsx",
+		"LanguageDropdown.tsx",
+		"Footer.tsx",
+	]) {
+		const compSource = fs.readFileSync(
+			path.join(process.cwd(), "src", "components", compFile),
+			"utf-8",
+		);
+		assert.ok(
+			compSource.includes("CHROME_THEME"),
+			`${compFile} must consume centralized CHROME_THEME from src/constants/theme.ts`,
+		);
+		assert.ok(
+			!compSource.includes("dangerouslySetInnerHTML") &&
+				!compSource.includes("style={{"),
+			`${compFile} must not embed inline <style> or style={{...}}`,
+		);
+	}
+});
+
+test("main.js #lang-toggle opens menu with aria-expanded='true', closes and restores focus on Escape, and closes on outside click (#237)", () => {
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		key?: string;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		focus: () => void;
+		blur: () => void;
+		isFocused: () => boolean;
+		appendChild: (child: MockNode) => MockNode;
+		contains: (target: unknown) => boolean;
+		querySelector: (sel: string) => MockNode | null;
+		querySelectorAll: (sel: string) => MockNode[];
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Listener[]> = {};
+		const children: MockNode[] = [];
+		let focused = false;
+
+		const node: MockNode = {
+			id,
+			tagName,
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			focus: () => {
+				focused = true;
+			},
+			blur: () => {
+				focused = false;
+			},
+			isFocused: () => focused,
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+			contains: (target: unknown) => {
+				if (target === node) return true;
+				return children.some((c) => c === target || c.contains?.(target));
+			},
+			querySelector: (sel: string) => {
+				if (sel === ".absolute.right-0.top-full") {
+					return children.find((c) => c.id === "lang-dropdown") || null;
+				}
+				return null;
+			},
+			querySelectorAll: (sel: string) => {
+				if (sel === "a") {
+					return children.filter((c) => c.tagName === "A");
+				}
+				return [];
+			},
+		};
+		return node;
+	};
+
+	const langToggleGroup = createMockNode("lang-toggle-group", "DIV", [
+		"relative",
+		"group",
+	]);
+	const langToggle = createMockNode("lang-toggle", "BUTTON", ["min-h-[40px]"], {
+		type: "button",
+		"aria-haspopup": "true",
+		"aria-expanded": "false",
+	});
+	const langDropdown = createMockNode("lang-dropdown", "DIV", [
+		"absolute",
+		"right-0",
+		"top-full",
+		"opacity-0",
+		"invisible",
+	]);
+	const esLink = createMockNode("lang-link-es", "A", [], { href: "es.html" });
+	langDropdown.appendChild(esLink);
+	langToggleGroup.appendChild(langToggle);
+	langToggleGroup.appendChild(langDropdown);
+	langToggleGroup.querySelectorAll = () => [esLink];
+
+	const outsideNode = createMockNode("outside", "DIV");
+
+	const elementsById = new Map<string, MockNode>([
+		["lang-toggle-group", langToggleGroup],
+		["lang-toggle", langToggle],
+		["lang-dropdown", langDropdown],
+	]);
+
+	const docListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			location: { search: "?property=1707", pathname: "/index.html" },
+			addEventListener: () => {},
+		},
+		document: {
+			documentElement: { lang: "en" },
+			createElement: () => ({ ...scriptStub }),
+			getElementsByTagName: () => [scriptStub],
+			getElementById: (id: string) => elementsById.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		console,
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+
+	// Trigger DOMContentLoaded
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+
+	// Verify query string propagation on language links
+	assert.equal(esLink.getAttribute("href"), "es.html?property=1707");
+
+	// 1. Initial closed state: aria-expanded="false" and invisible/opacity-0 classes present
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("invisible"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
+
+	// 2. Click #lang-toggle -> opens menu and sets aria-expanded="true"
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("invisible"), false);
+	assert.equal(langDropdown.classList.contains("opacity-100"), true);
+	assert.equal(langDropdown.classList.contains("visible"), true);
+
+	// 3. Press Escape -> closes menu, sets aria-expanded="false", and returns focus to #lang-toggle
+	langToggle.blur();
+	assert.equal(langToggle.isFocused(), false);
+	sandbox.document.dispatchEvent("keydown", { key: "Escape" });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("invisible"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
+	assert.equal(
+		langToggle.isFocused(),
+		true,
+		"Escape key must restore focus to #lang-toggle",
+	);
+
+	// 4. Re-open and click outside -> closes menu and sets aria-expanded="false"
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("invisible"), false);
+
+	sandbox.document.dispatchEvent("click", { target: outsideNode });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("invisible"), true);
+	assert.equal(langDropdown.classList.contains("opacity-0"), true);
+});
+
+test("Homepage Hero and Property 1707 / 1606 showcase cards render localized value proposition, floor/RNT/parking specs, relative assetPrefix links, and WCAG AA contrast across all 6 locales (#238)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expectedNavBookDirect: "Book Direct",
+			forbiddenNavAirbnb: "Book on Airbnb",
+			expected1707Href: "./Oceanview1707/index.html",
+			expected1606Href: "./Oceanview1606/index.html",
+			expectedHeroAlt: "Balcony Ocean View",
+			expected1707Title: "Oceanview Flat 1707",
+			expected1606Title: "Oceanview Flat 1606",
+			expected1707Badge: "17th Floor • RNT #268781",
+			expected1606Badge: "16th Floor • RNT #270413",
+			expected1707Parking: "Private Parking Included",
+			expected1606Parking: "Private Parking Included",
+			expectedBaths: "2 Baths",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expectedNavBookDirect: "Reservar Directo",
+			forbiddenNavAirbnb: "Reservar en Airbnb",
+			expected1707Href: "./Oceanview1707/es.html",
+			expected1606Href: "./Oceanview1606/es.html",
+			expectedHeroAlt: "Vista al mar desde el balcón",
+			expected1707Title: "Apartamento Vista al Mar 1707",
+			expected1606Title: "Apartamento Vista al Mar 1606",
+			expected1707Badge: "Piso 17 • RNT #268781",
+			expected1606Badge: "Piso 16 • RNT #270413",
+			expected1707Parking: "Parqueadero Privado Incluido",
+			expected1606Parking: "Parqueadero Privado Incluido",
+			expectedBaths: "2 Baños",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expectedNavBookDirect: "Réserver en Direct",
+			forbiddenNavAirbnb: "Réserver sur Airbnb",
+			expected1707Href: "./Oceanview1707/fr.html",
+			expected1606Href: "./Oceanview1606/fr.html",
+			expectedHeroAlt: "Vue sur l&#x27;océan depuis le balcon",
+			expected1707Title: "Appartement Vue Mer 1707",
+			expected1606Title: "Appartement Vue Mer 1606",
+			expected1707Badge: "17e Étage • RNT #268781",
+			expected1606Badge: "16e Étage • RNT #270413",
+			expected1707Parking: "Parking Privé Inclus",
+			expected1606Parking: "Parking Privé Inclus",
+			expectedBaths: "2 Salles de bain",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expectedNavBookDirect: "Prenota Diretto",
+			forbiddenNavAirbnb: "Prenota su Airbnb",
+			expected1707Href: "./Oceanview1707/it.html",
+			expected1606Href: "./Oceanview1606/it.html",
+			expectedHeroAlt: "Vista oceano dal balcone",
+			expected1707Title: "Appartamento Vista Mare 1707",
+			expected1606Title: "Appartamento Vista Mare 1606",
+			expected1707Badge: "17° Piano • RNT #268781",
+			expected1606Badge: "16° Piano • RNT #270413",
+			expected1707Parking: "Parcheggio Privato Incluso",
+			expected1606Parking: "Parcheggio Privato Incluso",
+			expectedBaths: "2 Bagni",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expectedNavBookDirect: "Direkt Buchen",
+			forbiddenNavAirbnb: "Auf Airbnb buchen",
+			expected1707Href: "./Oceanview1707/de.html",
+			expected1606Href: "./Oceanview1606/de.html",
+			expectedHeroAlt: "Meerblick vom Balkon",
+			expected1707Title: "Apartment mit Meerblick 1707",
+			expected1606Title: "Apartment mit Meerblick 1606",
+			expected1707Badge: "17. Etage • RNT #268781",
+			expected1606Badge: "16. Etage • RNT #270413",
+			expected1707Parking: "Privater Parkplatz Inklusive",
+			expected1606Parking: "Privater Parkplatz Inklusive",
+			expectedBaths: "2 Bäder",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expectedNavBookDirect: "直接予約",
+			forbiddenNavAirbnb: "Airbnbで予約",
+			expected1707Href: "./Oceanview1707/ja.html",
+			expected1606Href: "./Oceanview1606/ja.html",
+			expectedHeroAlt: "バルコニーからのオーシャンビュー",
+			expected1707Title: "オーシャンビューフラット 1707",
+			expected1606Title: "オーシャンビューフラット 1606",
+			expected1707Badge: "17階 • RNT #268781",
+			expected1606Badge: "16階 • RNT #270413",
+			expected1707Parking: "専用駐車場付き",
+			expected1606Parking: "専用駐車場付き",
+			expectedBaths: "2 バスルーム",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. Navbar & Hero CTA both link to #properties, and Navbar uses "Book Direct" (never "Book on Airbnb")
+		const propertiesAnchors = html.match(/<a[^>]*href="#properties"[^>]*>/g);
+		assert.ok(
+			propertiesAnchors && propertiesAnchors.length >= 2,
+			`${locale.file} must render both Navbar and Hero CTAs linking to href="#properties"`,
+		);
+		const navMatch = html.match(/<nav[\s\S]*?<\/nav>/);
+		assert.ok(navMatch, `${locale.file} must render <nav>`);
+		assert.ok(
+			navMatch[0].includes(locale.expectedNavBookDirect) &&
+				!navMatch[0].includes(locale.forbiddenNavAirbnb),
+			`${locale.file} navbar must display "${locale.expectedNavBookDirect}" instead of "${locale.forbiddenNavAirbnb}"`,
+		);
+
+		// 2. Hero image uses localized alt text (t.heroImgAlt) and Hero names Edificio Salguero Sunset
+		assert.ok(
+			html.includes(`alt="${locale.expectedHeroAlt}"`) &&
+				!html.includes('alt="OceanViewFlats"'),
+			`${locale.file} hero image must use localized alt="${locale.expectedHeroAlt}"`,
+		);
+		const headerMatch = html.match(/<header[\s\S]*?<\/header>/);
+		assert.ok(
+			headerMatch && headerMatch[0].includes("Edificio Salguero Sunset"),
+			`${locale.file} Hero header must visibly display "Edificio Salguero Sunset"`,
+		);
+
+		// 3. Featured Properties section has id="properties"
+		const propSectionMatch = html.match(
+			/<section[^>]*id="properties"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(
+			propSectionMatch,
+			`${locale.file} must render <section id="properties">`,
+		);
+		const propSectionHtml = propSectionMatch[0];
+
+		// 4. Relative assetPrefix links on both property cards (never root-relative /Oceanview1707 or /Oceanview1606)
+		assert.ok(
+			propSectionHtml.includes(`href="${locale.expected1707Href}"`) &&
+				!propSectionHtml.includes('href="/Oceanview1707'),
+			`${locale.file} Property 1707 card must use relative href="${locale.expected1707Href}"`,
+		);
+		assert.ok(
+			propSectionHtml.includes(`href="${locale.expected1606Href}"`) &&
+				!propSectionHtml.includes('href="/Oceanview1606'),
+			`${locale.file} Property 1606 card must use relative href="${locale.expected1606Href}"`,
+		);
+
+		// 5. Standardized singular English naming ("Oceanview Flat 1606", never plural "Oceanview Flats 1606" in card title)
+		assert.ok(
+			propSectionHtml.includes(locale.expected1707Title) &&
+				propSectionHtml.includes(locale.expected1606Title) &&
+				!propSectionHtml.includes("Oceanview Flats 1606"),
+			`${locale.file} must render canonical titles "${locale.expected1707Title}" and "${locale.expected1606Title}"`,
+		);
+
+		// 6. Floor + RNT badges, bath counts, assigned parking bays (Bay 95 & Bay 87), and 7–12 multi-property disclosure
+		assert.ok(
+			propSectionHtml.includes(locale.expected1707Badge) &&
+				propSectionHtml.includes(locale.expected1606Badge),
+			`${locale.file} must display floor and statutory RNT badges on both cards`,
+		);
+		assert.ok(
+			propSectionHtml.includes(locale.expected1707Parking) &&
+				propSectionHtml.includes(locale.expected1606Parking),
+			`${locale.file} must display assigned parking bays (95 and 87) on the property cards`,
+		);
+		assert.ok(
+			propSectionHtml.includes(locale.expectedBaths),
+			`${locale.file} must display bathroom count (${locale.expectedBaths}) on the property cards`,
+		);
+		assert.ok(
+			propSectionHtml.includes('id="home-multi-property-note"') &&
+				propSectionHtml.includes("7–12") &&
+				propSectionHtml.includes("Edificio Salguero Sunset"),
+			`${locale.file} #properties must display the 7–12 Guest multi-property family stay note in Edificio Salguero Sunset`,
+		);
+
+		// 7. No line-clamp-2 truncation on localized descriptions, and unified 1707/1606 card color scheme + WCAG AA contrast tokens used inside #properties
+		assert.ok(
+			!propSectionHtml.includes("line-clamp-2"),
+			`${locale.file} property cards must not truncate descriptions with line-clamp-2`,
+		);
+		assert.ok(
+			propSectionHtml.includes("text-[#B91C1C]") &&
+				!propSectionHtml.includes("text-[#FF5A5F]") &&
+				!propSectionHtml.includes("text-rose-600") &&
+				!propSectionHtml.includes("bg-rose-50"),
+			`${locale.file} property cards must share the 1707 color scheme with text-[#B91C1C] CTA and neutral spec pills`,
+		);
+	}
+
+	// 8. Verify Home.tsx source uses HOME_THEME, HOME_PROPERTY_CARDS, getPropertyPagePath, zero inline class strings, and no useState/useEffect
+	const homeSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "Home.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		homeSource.includes("HOME_THEME") &&
+			homeSource.includes("HOME_PROPERTY_CARDS") &&
+			homeSource.includes("getPropertyPagePath"),
+		"Home.tsx must consume centralized HOME_THEME, HOME_PROPERTY_CARDS, and getPropertyPagePath",
+	);
+	assert.ok(
+		!homeSource.includes('className="'),
+		"Home.tsx must not contain any hardcoded inline className strings",
+	);
+	assert.ok(
+		!homeSource.includes("useState") && !homeSource.includes("useEffect"),
+		"Home.tsx must not contain dead client-side useState/useEffect hooks in zero-hydration SSG",
+	);
+});
+
+test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive-Disclosure FAQ (<details>/<summary>), and Direct-Checkout Funnel align across all 6 locales (#239)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expectedContactHref: "./contact/index.html",
+			expectedDirectTitle: "Why Book Direct?",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expectedContactHref: "./contact/es.html",
+			expectedDirectTitle: "¿Por qué Reservar Directamente?",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expectedContactHref: "./contact/fr.html",
+			expectedDirectTitle: "Pourquoi Réserver Directement ?",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expectedContactHref: "./contact/it.html",
+			expectedDirectTitle: "Perché Prenotare Direttamente?",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expectedContactHref: "./contact/de.html",
+			expectedDirectTitle: "Warum Direkt Buchen?",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expectedContactHref: "./contact/ja.html",
+			expectedDirectTitle: "公式サイトから直接予約する理由",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. Why Book Direct section has no duplicate kicker pill above <h2>{t.directTitle}</h2> and no amber/purple icons
+		const directMatch = html.match(
+			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(
+			directMatch,
+			`${locale.file} must render <section id="why-book-direct">`,
+		);
+		const directHtml = directMatch[0];
+		const directTitleOccurrences =
+			directHtml.split(locale.expectedDirectTitle).length - 1;
+		assert.equal(
+			directTitleOccurrences,
+			1,
+			`${locale.file} must render directTitle exactly once in #why-book-direct (no duplicate kicker pill)`,
+		);
+		assert.ok(
+			!directHtml.includes("bg-amber-50") &&
+				!directHtml.includes("bg-purple-50"),
+			`${locale.file} #why-book-direct must use cohesive palette without amber/purple icon boxes`,
+		);
+
+		// 2. Editorial Lifestyle & Host Showcase section renders real photography and Host Manuel Enrique with RNT badges
+		const expMatch = html.match(
+			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(
+			expMatch,
+			`${locale.file} must render <section id="experiences">`,
+		);
+		const expHtml = expMatch[0];
+		assert.ok(
+			expHtml.includes("./images/1707-balcony-working-nomad.webp") &&
+				expHtml.includes("./images/1606-romantic-experiences.webp") &&
+				expHtml.includes("./images/host-image.webp"),
+			`${locale.file} #experiences must showcase 1707-balcony-working-nomad.webp, 1606-romantic-experiences.webp, and host-image.webp`,
+		);
+		assert.ok(
+			expHtml.includes('id="home-host-card"') &&
+				expHtml.includes("Manuel Enrique") &&
+				expHtml.includes("268781") &&
+				expHtml.includes("270413"),
+			`${locale.file} #experiences must render #home-host-card with Manuel Enrique and both RNT numbers`,
+		);
+		assert.ok(
+			!expHtml.includes("mt-10"),
+			`${locale.file} #experiences must not have an exposed mt-10 gap`,
+		);
+
+		// 3. Progressive-Disclosure FAQ section uses 6 native <details>/<summary> accordions (first open) with COP, 20,000 COP, and 0XXXXXX# disclosures
+		const faqMatch = html.match(
+			/<section[^>]*id="faq"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(faqMatch, `${locale.file} must render <section id="faq">`);
+		const faqHtml = faqMatch[0];
+		const detailsMatches = faqHtml.match(/<details/g) || [];
+		const summaryMatches = faqHtml.match(/<summary/g) || [];
+		assert.equal(
+			detailsMatches.length,
+			6,
+			`${locale.file} #faq must render 6 <details> accordion items`,
+		);
+		assert.equal(
+			summaryMatches.length,
+			6,
+			`${locale.file} #faq must render 6 <summary> headers`,
+		);
+		assert.ok(
+			/<details[^>]*open/.test(faqHtml),
+			`${locale.file} #faq must have the first <details> item open by default`,
+		);
+		assert.ok(
+			faqHtml.includes("20,000 COP") &&
+				faqHtml.includes("0XXXXXX#") &&
+				faqHtml.includes("1581") &&
+				faqHtml.includes("Efecty"),
+			`${locale.file} #faq must disclose 20,000 COP building fee, 0XXXXXX# door PIN, Law 1581 Guest Registry, and direct checkout payment rails`,
+		);
+
+		// 4. FAQPage JSON-LD structured data includes all 6 Questions
+		assert.ok(
+			html.includes('"@type":"FAQPage"') && html.includes("20,000 COP"),
+			`${locale.file} FAQPage JSON-LD must include the 6th FAQ item`,
+		);
+
+		// 5. Bottom CTA section provides #properties primary direct-checkout anchor, localized contact link, and WhatsApp link without dark-glow blur-3xl blobs
+		assert.ok(
+			html.includes(`href="${locale.expectedContactHref}"`) &&
+				html.includes('href="https://wa.me/573108155234"') &&
+				html.includes("COP"),
+			`${locale.file} bottom CTA must link to ${locale.expectedContactHref} and WhatsApp while referencing COP direct checkout`,
+		);
+		assert.ok(
+			!html.includes("blur-3xl"),
+			`${locale.file} must not contain decorative blur-3xl dark-glow blobs`,
+		);
+	}
+});
