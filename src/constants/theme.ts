@@ -146,65 +146,39 @@ export const CHROME_THEME = {
 	footerBadgeBrand: "text-white font-bold tracking-wide",
 } as const;
 
+const SHARED_HOME_CARD_THEME = {
+	card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
+	cardMedia: "h-80 relative overflow-hidden bg-slate-900",
+	cardImage:
+		"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
+	cardOverlay:
+		"absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/25 to-transparent",
+	cardBadge:
+		"absolute top-5 left-5 inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/80 text-white border border-white/20 backdrop-blur-md",
+	cardHeaderContent: "absolute bottom-6 left-6 right-6 text-white",
+	cardLocation:
+		"text-xs md:text-sm font-semibold tracking-wider uppercase mb-1 text-slate-200",
+	cardTitle: "text-2xl md:text-3xl font-bold text-white",
+	cardBody:
+		"flex-grow flex flex-col justify-between p-6 md:p-8 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors",
+	rateBadge:
+		"inline-flex items-center px-3.5 py-1.5 rounded-full text-xs md:text-sm font-bold bg-slate-900 text-white mb-4",
+	cardDesc: "text-slate-700 text-base leading-relaxed",
+	cardSpecsList:
+		"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-slate-700",
+	cardSpecPill:
+		"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
+	cardSpecHighlight:
+		"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
+	cardCtaRow:
+		"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-[#B91C1C] group-hover:text-slate-900 transition-colors",
+	cardCtaIcon:
+		"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 shrink-0",
+} as const;
+
 export const HOME_CARD_THEMES = {
-	"1707": {
-		card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
-		cardMedia: "h-80 relative overflow-hidden bg-slate-900",
-		cardImage:
-			"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
-		cardOverlay:
-			"absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/25 to-transparent",
-		cardBadge:
-			"absolute top-5 left-5 inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/80 text-white border border-white/20 backdrop-blur-md",
-		cardHeaderContent: "absolute bottom-6 left-6 right-6 text-white",
-		cardLocation:
-			"text-xs md:text-sm font-semibold tracking-wider uppercase mb-1 text-slate-200",
-		cardTitle: "text-2xl md:text-3xl font-bold text-white",
-		cardBody:
-			"flex-grow flex flex-col justify-between p-6 md:p-8 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors",
-		rateBadge:
-			"inline-flex items-center px-3.5 py-1.5 rounded-full text-xs md:text-sm font-bold bg-slate-900 text-white mb-4",
-		cardDesc: "text-slate-700 text-base leading-relaxed",
-		cardSpecsList:
-			"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-slate-700",
-		cardSpecPill:
-			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
-		cardSpecHighlight:
-			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
-		cardCtaRow:
-			"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-[#B91C1C] group-hover:text-slate-900 transition-colors",
-		cardCtaIcon:
-			"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 shrink-0",
-	},
-	"1606": {
-		card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
-		cardMedia: "h-80 relative overflow-hidden bg-slate-900",
-		cardImage:
-			"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
-		cardOverlay:
-			"absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/25 to-transparent",
-		cardBadge:
-			"absolute top-5 left-5 inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/80 text-white border border-white/20 backdrop-blur-md",
-		cardHeaderContent: "absolute bottom-6 left-6 right-6 text-white",
-		cardLocation:
-			"text-xs md:text-sm font-semibold tracking-wider uppercase mb-1 text-slate-200",
-		cardTitle: "text-2xl md:text-3xl font-bold text-white",
-		cardBody:
-			"flex-grow flex flex-col justify-between p-6 md:p-8 bg-slate-50 border-t border-slate-100 group-hover:bg-white transition-colors",
-		rateBadge:
-			"inline-flex items-center px-3.5 py-1.5 rounded-full text-xs md:text-sm font-bold bg-slate-900 text-white mb-4",
-		cardDesc: "text-slate-700 text-base leading-relaxed",
-		cardSpecsList:
-			"mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-slate-700",
-		cardSpecPill:
-			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
-		cardSpecHighlight:
-			"inline-flex items-center px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700",
-		cardCtaRow:
-			"mt-6 pt-5 border-t border-slate-200/80 flex items-center justify-between text-base font-bold text-[#B91C1C] group-hover:text-slate-900 transition-colors",
-		cardCtaIcon:
-			"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 shrink-0",
-	},
+	"1707": SHARED_HOME_CARD_THEME,
+	"1606": SHARED_HOME_CARD_THEME,
 } as const;
 
 export const HOME_THEME = {

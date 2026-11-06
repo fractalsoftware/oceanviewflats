@@ -229,3 +229,72 @@ export const IMAGES = {
 		host: "images/host-image.webp",
 	},
 };
+
+export interface HomeExperienceFeatureConfig {
+	iconId: "wifi" | "users" | "heart";
+	iconThemeKey: "editorialFeatureIconSky" | "editorialFeatureIconRose";
+	titleKey:
+		| "homeExpNomad"
+		| "homeExp1707FamilyTitle"
+		| "homeExpRomantic"
+		| "homeExpFamily";
+	descKey:
+		| "homeExpNomadDesc"
+		| "homeExp1707FamilyDesc"
+		| "homeExpRomanticDesc"
+		| "homeExpFamilyDesc";
+}
+
+export interface HomeExperienceCardConfig {
+	propertyId: "1707" | "1606";
+	imageSrc: string;
+	imageAltKey: "homeExpNomad" | "homeExpRomantic";
+	titleKey: "heroTitle" | "hero1606Title";
+	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
+	features: readonly HomeExperienceFeatureConfig[];
+}
+
+export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
+	{
+		propertyId: "1707",
+		imageSrc: IMAGES["1707"].nomad,
+		imageAltKey: "homeExpNomad",
+		titleKey: "heroTitle",
+		badgeKey: "homeCard1707Badge",
+		features: [
+			{
+				iconId: "wifi",
+				iconThemeKey: "editorialFeatureIconSky",
+				titleKey: "homeExpNomad",
+				descKey: "homeExpNomadDesc",
+			},
+			{
+				iconId: "users",
+				iconThemeKey: "editorialFeatureIconSky",
+				titleKey: "homeExp1707FamilyTitle",
+				descKey: "homeExp1707FamilyDesc",
+			},
+		],
+	},
+	{
+		propertyId: "1606",
+		imageSrc: IMAGES["1606"].romantic,
+		imageAltKey: "homeExpRomantic",
+		titleKey: "hero1606Title",
+		badgeKey: "homeCard1606Badge",
+		features: [
+			{
+				iconId: "heart",
+				iconThemeKey: "editorialFeatureIconRose",
+				titleKey: "homeExpRomantic",
+				descKey: "homeExpRomanticDesc",
+			},
+			{
+				iconId: "users",
+				iconThemeKey: "editorialFeatureIconRose",
+				titleKey: "homeExpFamily",
+				descKey: "homeExpFamilyDesc",
+			},
+		],
+	},
+];
