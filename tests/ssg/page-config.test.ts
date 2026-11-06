@@ -1522,7 +1522,7 @@ test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive
 		);
 		assert.ok(
 			/<details[^>]*open/.test(faqHtml),
-			`${locale.file} #faq must have the first <details> item open by default`,
+			`${locale.file} #faq must have a <details> item open by default`,
 		);
 		assert.ok(
 			faqHtml.includes("20,000 COP") &&
@@ -1849,4 +1849,203 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 		true,
 		"focusout outside #lang-toggle-group must hide #lang-dropdown with opacity-0 and invisible",
 	);
+});
+
+test("Homepage renders visible #properties heading, starting COP nightly rates, 900 Mbps Wi-Fi pills, badged & balanced 2-item #experiences cards, default-open #faq-3, and primary/secondary bottom CTA hierarchy across all 6 locales (#243)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expectedPropHeading: "Our Featured Beachfront Properties",
+			expected1707Rate: "From 450,000 COP / night",
+			expected1606Rate: "From 350,000 COP / night",
+			expectedWifi: "900 Mbps Wi-Fi",
+			expectedExp1707Badge: "Oceanview Flat 1707 • 17th Floor • RNT #268781",
+			expectedExp1606Badge: "Oceanview Flat 1606 • 16th Floor • RNT #270413",
+			expectedExp1707FamilyTitle: "Spacious 4-Bed Family &amp; Group Comfort",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expectedPropHeading: "Nuestras Propiedades Frente al Mar",
+			expected1707Rate: "Desde 450,000 COP / noche",
+			expected1606Rate: "Desde 350,000 COP / noche",
+			expectedWifi: "Wi-Fi 900 Mbps",
+			expectedExp1707Badge:
+				"Apartamento Vista al Mar 1707 • Piso 17 • RNT #268781",
+			expectedExp1606Badge:
+				"Apartamento Vista al Mar 1606 • Piso 16 • RNT #270413",
+			expectedExp1707FamilyTitle: "Comodidad de 4 Camas para Familias y Grupos",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expectedPropHeading: "Nos Propriétés en Bord de Mer",
+			expected1707Rate: "À partir de 450,000 COP / nuit",
+			expected1606Rate: "À partir de 350,000 COP / nuit",
+			expectedWifi: "Wi-Fi 900 Mbps",
+			expectedExp1707Badge:
+				"Appartement Vue Mer 1707 • 17e Étage • RNT #268781",
+			expectedExp1606Badge:
+				"Appartement Vue Mer 1606 • 16e Étage • RNT #270413",
+			expectedExp1707FamilyTitle: "Confort 4 Lits pour Familles et Groupes",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expectedPropHeading: "Le Nostre Proprietà Fronte Mare",
+			expected1707Rate: "Da 450,000 COP / notte",
+			expected1606Rate: "Da 350,000 COP / notte",
+			expectedWifi: "Wi-Fi 900 Mbps",
+			expectedExp1707Badge:
+				"Appartamento Vista Mare 1707 • 17° Piano • RNT #268781",
+			expectedExp1606Badge:
+				"Appartamento Vista Mare 1606 • 16° Piano • RNT #270413",
+			expectedExp1707FamilyTitle: "Comfort a 4 Letti per Famiglie e Gruppi",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expectedPropHeading: "Unsere Strandunterkünfte",
+			expected1707Rate: "Ab 450,000 COP / Nacht",
+			expected1606Rate: "Ab 350,000 COP / Nacht",
+			expectedWifi: "900 Mbps WLAN",
+			expectedExp1707Badge:
+				"Apartment mit Meerblick 1707 • 17. Etage • RNT #268781",
+			expectedExp1606Badge:
+				"Apartment mit Meerblick 1606 • 16. Etage • RNT #270413",
+			expectedExp1707FamilyTitle:
+				"Großzügiger 4-Betten-Komfort für Familien &amp; Gruppen",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expectedPropHeading: "おすすめのビーチフロント物件",
+			expected1707Rate: "1泊 450,000 COP〜",
+			expected1606Rate: "1泊 350,000 COP〜",
+			expectedWifi: "900 Mbps Wi-Fi",
+			expectedExp1707Badge:
+				"オーシャンビューフラット 1707 • 17階 • RNT #268781",
+			expectedExp1606Badge:
+				"オーシャンビューフラット 1606 • 16階 • RNT #270413",
+			expectedExp1707FamilyTitle: "家族やグループに最適なベッド4台の広々空間",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. #properties has a visible <h2> heading (not sr-only), 450,000 COP & 350,000 COP rate cues, and 900 Mbps Wi-Fi pills on both property cards
+		const propSectionMatch = html.match(
+			/<section[^>]*id="properties"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(propSectionMatch, `${locale.file} must render #properties`);
+		const propSectionHtml = propSectionMatch[0];
+		const propHeadingMatch = propSectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/);
+		assert.ok(
+			propHeadingMatch &&
+				!propHeadingMatch[0].includes("sr-only") &&
+				propHeadingMatch[1].includes(locale.expectedPropHeading),
+			`${locale.file} #properties must render a visible <h2> heading without sr-only`,
+		);
+
+		const card1707Match = propSectionHtml.match(
+			/<a[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/a>/,
+		);
+		const card1606Match = propSectionHtml.match(
+			/<a[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/a>/,
+		);
+		assert.ok(
+			card1707Match && card1606Match,
+			`${locale.file} must render both #home-card-1707 and #home-card-1606`,
+		);
+		assert.ok(
+			card1707Match[0].includes("450,000 COP") &&
+				card1707Match[0].includes(locale.expected1707Rate) &&
+				card1707Match[0].includes("900 Mbps") &&
+				card1707Match[0].includes(locale.expectedWifi),
+			`${locale.file} #home-card-1707 must display "${locale.expected1707Rate}" and "${locale.expectedWifi}"`,
+		);
+		assert.ok(
+			card1606Match[0].includes("350,000 COP") &&
+				card1606Match[0].includes(locale.expected1606Rate) &&
+				card1606Match[0].includes("900 Mbps") &&
+				card1606Match[0].includes(locale.expectedWifi),
+			`${locale.file} #home-card-1606 must display "${locale.expected1606Rate}" and "${locale.expectedWifi}"`,
+		);
+
+		// 2. #experiences cards display target Property identity badges (1707 and 1606) and render 2 balanced feature items per card
+		const expMatch = html.match(
+			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(expMatch, `${locale.file} must render #experiences`);
+		const expHtml = expMatch[0];
+		assert.ok(
+			expHtml.includes(locale.expectedExp1707Badge) &&
+				expHtml.includes(locale.expectedExp1606Badge),
+			`${locale.file} #experiences must display Property identity badges "${locale.expectedExp1707Badge}" and "${locale.expectedExp1606Badge}"`,
+		);
+		assert.ok(
+			expHtml.includes(locale.expectedExp1707FamilyTitle),
+			`${locale.file} #experiences 1707 card must include 2nd family/group feature "${locale.expectedExp1707FamilyTitle}"`,
+		);
+		const expCardMatches = expHtml.match(
+			/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>[\s\S]*?<\/a>/g,
+		);
+		assert.ok(
+			expCardMatches && expCardMatches.length === 2,
+			`${locale.file} #experiences must render 2 property lifestyle cards`,
+		);
+		for (const expCardHtml of expCardMatches) {
+			const h3Matches = expCardHtml.match(/<h3[^>]*>/g) || [];
+			assert.equal(
+				h3Matches.length,
+				2,
+				`${locale.file} each #experiences card must render 2 balanced feature items (<h3> headings)`,
+			);
+		}
+
+		// 3. #faq pre-opens #faq-3 (faqQ3) by default and leaves #faq-1 closed
+		const faq1Match = html.match(/<details[^>]*id="faq-1"[^>]*>/);
+		const faq3Match = html.match(/<details[^>]*id="faq-3"[^>]*>/);
+		assert.ok(
+			faq1Match && faq3Match,
+			`${locale.file} #faq must render #faq-1 and #faq-3`,
+		);
+		const openAttrRegex = /\bopen(?:="")?(?=\s|>)/;
+		assert.ok(
+			!openAttrRegex.test(faq1Match[0]),
+			`${locale.file} #faq-1 must NOT be open by default`,
+		);
+		assert.ok(
+			openAttrRegex.test(faq3Match[0]),
+			`${locale.file} #faq-3 must have the open attribute by default`,
+		);
+
+		// 4. Bottom CTA buttons use primary solid white pill + secondary bordered dark slate pills
+		assert.ok(
+			!html.includes("bg-rose-700") && !html.includes("bg-emerald-700"),
+			`${locale.file} bottom CTA must not render competing solid rose or emerald pills`,
+		);
+	}
+
+	// 5. Verify src/constants/theme.ts has no duplicate paired color classes
+	const themeSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "constants", "theme.ts"),
+		"utf-8",
+	);
+	for (const duplicatePair of [
+		"text-red-700 text-[#B91C1C]",
+		"bg-rose-700 bg-[#BE123C]",
+		"bg-emerald-700 bg-[#047857]",
+		"text-sky-400 text-[#38BDF8]",
+		"text-rose-400 text-[#FB7185]",
+		"text-emerald-400 text-[#34D399]",
+	]) {
+		assert.ok(
+			!themeSource.includes(duplicatePair),
+			`src/constants/theme.ts must not contain duplicate color utility pair "${duplicatePair}"`,
+		);
+	}
 });

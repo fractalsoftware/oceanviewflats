@@ -134,9 +134,11 @@ export interface HomePropertyCardConfig {
 	cardDomId: string;
 	imageKey: "1707" | "1606";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
+	rateKey: "homeCard1707Rate" | "homeCard1606Rate";
 	titleKey: "heroTitle" | "hero1606Title";
 	descKey: "nomadDesc" | "romanticDesc";
 	bedsKey: "statsBeds" | "stats1606Beds";
+	wifiKey: "homeCardWifi";
 	parkingKey: "homeCard1707Parking" | "homeCard1606Parking";
 }
 
@@ -146,9 +148,11 @@ export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
 		cardDomId: "home-card-1707",
 		imageKey: "1707",
 		badgeKey: "homeCard1707Badge",
+		rateKey: "homeCard1707Rate",
 		titleKey: "heroTitle",
 		descKey: "nomadDesc",
 		bedsKey: "statsBeds",
+		wifiKey: "homeCardWifi",
 		parkingKey: "homeCard1707Parking",
 	},
 	{
@@ -156,11 +160,29 @@ export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
 		cardDomId: "home-card-1606",
 		imageKey: "1606",
 		badgeKey: "homeCard1606Badge",
+		rateKey: "homeCard1606Rate",
 		titleKey: "hero1606Title",
 		descKey: "romanticDesc",
 		bedsKey: "stats1606Beds",
+		wifiKey: "homeCardWifi",
 		parkingKey: "homeCard1606Parking",
 	},
+];
+
+export interface HomeFaqItemConfig {
+	id: string;
+	qKey: "faqQ1" | "faqQ2" | "faqQ3" | "faqQ4" | "faqQ5" | "faqQ6";
+	aKey: "faqA1" | "faqA2" | "faqA3" | "faqA4" | "faqA5" | "faqA6";
+	defaultOpen: boolean;
+}
+
+export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
+	{ id: "faq-1", qKey: "faqQ1", aKey: "faqA1", defaultOpen: false },
+	{ id: "faq-2", qKey: "faqQ2", aKey: "faqA2", defaultOpen: false },
+	{ id: "faq-3", qKey: "faqQ3", aKey: "faqA3", defaultOpen: true },
+	{ id: "faq-4", qKey: "faqQ4", aKey: "faqA4", defaultOpen: false },
+	{ id: "faq-5", qKey: "faqQ5", aKey: "faqA5", defaultOpen: false },
+	{ id: "faq-6", qKey: "faqQ6", aKey: "faqA6", defaultOpen: false },
 ];
 
 export interface RegistryGuestSlotConfig {
