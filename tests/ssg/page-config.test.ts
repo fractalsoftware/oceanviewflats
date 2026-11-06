@@ -1858,8 +1858,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "en",
 			file: "index.html",
 			expectedPropHeading: "Our Featured Beachfront Properties",
-			expected1707Rate: "From 450,000 COP / night",
-			expected1606Rate: "From 350,000 COP / night",
+			expected1707Rate: "From 300,000 COP / night",
+			expected1606Rate: "From 300,000 COP / night",
 			expectedWifi: "900 Mbps Wi-Fi",
 			expectedExp1707Badge: "Oceanview Flat 1707 • 17th Floor • RNT #268781",
 			expectedExp1606Badge: "Oceanview Flat 1606 • 16th Floor • RNT #270413",
@@ -1869,8 +1869,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "es",
 			file: "es.html",
 			expectedPropHeading: "Nuestras Propiedades Frente al Mar",
-			expected1707Rate: "Desde 450,000 COP / noche",
-			expected1606Rate: "Desde 350,000 COP / noche",
+			expected1707Rate: "Desde 300,000 COP / noche",
+			expected1606Rate: "Desde 300,000 COP / noche",
 			expectedWifi: "Wi-Fi 900 Mbps",
 			expectedExp1707Badge:
 				"Apartamento Vista al Mar 1707 • Piso 17 • RNT #268781",
@@ -1882,8 +1882,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "fr",
 			file: "fr.html",
 			expectedPropHeading: "Nos Propriétés en Bord de Mer",
-			expected1707Rate: "À partir de 450,000 COP / nuit",
-			expected1606Rate: "À partir de 350,000 COP / nuit",
+			expected1707Rate: "À partir de 300,000 COP / nuit",
+			expected1606Rate: "À partir de 300,000 COP / nuit",
 			expectedWifi: "Wi-Fi 900 Mbps",
 			expectedExp1707Badge:
 				"Appartement Vue Mer 1707 • 17e Étage • RNT #268781",
@@ -1895,8 +1895,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "it",
 			file: "it.html",
 			expectedPropHeading: "Le Nostre Proprietà Fronte Mare",
-			expected1707Rate: "Da 450,000 COP / notte",
-			expected1606Rate: "Da 350,000 COP / notte",
+			expected1707Rate: "Da 300,000 COP / notte",
+			expected1606Rate: "Da 300,000 COP / notte",
 			expectedWifi: "Wi-Fi 900 Mbps",
 			expectedExp1707Badge:
 				"Appartamento Vista Mare 1707 • 17° Piano • RNT #268781",
@@ -1908,8 +1908,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "de",
 			file: "de.html",
 			expectedPropHeading: "Unsere Strandunterkünfte",
-			expected1707Rate: "Ab 450,000 COP / Nacht",
-			expected1606Rate: "Ab 350,000 COP / Nacht",
+			expected1707Rate: "Ab 300,000 COP / Nacht",
+			expected1606Rate: "Ab 300,000 COP / Nacht",
 			expectedWifi: "900 Mbps WLAN",
 			expectedExp1707Badge:
 				"Apartment mit Meerblick 1707 • 17. Etage • RNT #268781",
@@ -1922,8 +1922,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "ja",
 			file: "ja.html",
 			expectedPropHeading: "おすすめのビーチフロント物件",
-			expected1707Rate: "1泊 450,000 COP〜",
-			expected1606Rate: "1泊 350,000 COP〜",
+			expected1707Rate: "1泊 300,000 COP〜",
+			expected1606Rate: "1泊 300,000 COP〜",
 			expectedWifi: "900 Mbps Wi-Fi",
 			expectedExp1707Badge:
 				"オーシャンビューフラット 1707 • 17階 • RNT #268781",
@@ -1936,7 +1936,7 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. #properties has a visible <h2> heading (not sr-only), 450,000 COP & 350,000 COP rate cues, and 900 Mbps Wi-Fi pills on both property cards
+		// 1. #properties has a visible <h2> heading (not sr-only), 300,000 COP rate cues, and 900 Mbps Wi-Fi pills on both property cards
 		const propSectionMatch = html.match(
 			/<section[^>]*id="properties"[^>]*>[\s\S]*?<\/section>/,
 		);
@@ -1961,14 +1961,14 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} must render both #home-card-1707 and #home-card-1606`,
 		);
 		assert.ok(
-			card1707Match[0].includes("450,000 COP") &&
+			card1707Match[0].includes("300,000 COP") &&
 				card1707Match[0].includes(locale.expected1707Rate) &&
 				card1707Match[0].includes("900 Mbps") &&
 				card1707Match[0].includes(locale.expectedWifi),
 			`${locale.file} #home-card-1707 must display "${locale.expected1707Rate}" and "${locale.expectedWifi}"`,
 		);
 		assert.ok(
-			card1606Match[0].includes("350,000 COP") &&
+			card1606Match[0].includes("300,000 COP") &&
 				card1606Match[0].includes(locale.expected1606Rate) &&
 				card1606Match[0].includes("900 Mbps") &&
 				card1606Match[0].includes(locale.expectedWifi),
