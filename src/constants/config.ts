@@ -248,17 +248,19 @@ export interface HomeExperienceFeatureConfig {
 export interface HomeExperienceCardConfig {
 	propertyId: "1707" | "1606";
 	imageSrc: string;
-	imageAltKey: "homeExpNomad" | "homeExpRomantic";
+	imageAltKey: "nomadImgAlt" | "romanticImgAlt";
 	titleKey: "heroTitle" | "hero1606Title";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
 	features: readonly HomeExperienceFeatureConfig[];
+	reviewTextKey: "review1707Text" | "review1Text";
+	reviewAuthorKey: "review1707Author" | "review1Author";
 }
 
 export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 	{
 		propertyId: "1707",
 		imageSrc: IMAGES["1707"].nomad,
-		imageAltKey: "homeExpNomad",
+		imageAltKey: "nomadImgAlt",
 		titleKey: "heroTitle",
 		badgeKey: "homeCard1707Badge",
 		features: [
@@ -275,11 +277,13 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 				descKey: "homeExp1707FamilyDesc",
 			},
 		],
+		reviewTextKey: "review1707Text",
+		reviewAuthorKey: "review1707Author",
 	},
 	{
 		propertyId: "1606",
 		imageSrc: IMAGES["1606"].romantic,
-		imageAltKey: "homeExpRomantic",
+		imageAltKey: "romanticImgAlt",
 		titleKey: "hero1606Title",
 		badgeKey: "homeCard1606Badge",
 		features: [
@@ -296,5 +300,7 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 				descKey: "homeExpFamilyDesc",
 			},
 		],
+		reviewTextKey: "review1Text",
+		reviewAuthorKey: "review1Author",
 	},
 ];

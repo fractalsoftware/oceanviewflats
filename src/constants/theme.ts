@@ -266,6 +266,10 @@ export const HOME_THEME = {
 		"w-10 h-10 shrink-0 bg-slate-900 text-[#FB7185] border border-slate-700 rounded-xl flex items-center justify-center mt-0.5",
 	editorialFeatureTitle: "text-xl font-bold text-white mb-1",
 	editorialFeatureDesc: "text-sm text-slate-200 leading-relaxed",
+	editorialReviewBox: "mt-8 pt-6 border-t border-slate-700/80 mb-6",
+	editorialReviewText: "text-sm italic text-slate-200 leading-relaxed mb-2",
+	editorialReviewAuthor:
+		"text-xs font-bold tracking-wider uppercase text-white",
 	editorialCardCta:
 		"inline-flex items-center space-x-2 text-sm font-bold text-white group-hover:text-slate-200",
 	hostCard:

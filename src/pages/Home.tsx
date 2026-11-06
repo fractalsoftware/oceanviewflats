@@ -223,7 +223,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							</div>
 
 							<div className={HOME_THEME.directCard}>
-								<div className={HOME_THEME.directIconRose}>
+								<div className={HOME_THEME.directIconEmerald}>
 									<ShieldCheck
 										className={HOME_THEME.iconLg}
 										aria-hidden="true"
@@ -300,6 +300,14 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 														</div>
 													);
 												})}
+											</div>
+											<div className={HOME_THEME.editorialReviewBox}>
+												<p className={HOME_THEME.editorialReviewText}>
+													{t[card.reviewTextKey]}
+												</p>
+												<p className={HOME_THEME.editorialReviewAuthor}>
+													— {t[card.reviewAuthorKey]}
+												</p>
 											</div>
 											<div className={HOME_THEME.editorialCardCta}>
 												<span>{t.homeCardCta}</span>

@@ -2049,3 +2049,172 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 		);
 	}
 });
+
+test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses pool/reception fee in #faq-2, chunks #faq-6, and surfaces verified guest testimonials + descriptive alts in #experiences across all 6 locales (#246)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expectedFaq2Fee: "20,000 COP",
+			expectedFaq2Day: "Tuesday",
+			expectedNomadAlt: "Digital Nomad Workspace",
+			expectedRomanticAlt: "Romantic Sunset Terrace",
+			expected1707ReviewSnippet: "excellent view, beautiful sunsets",
+			expected1707ReviewAuthor: "Karol Ximena",
+			expected1606ReviewSnippet: "ideal for relaxation and family time",
+			expected1606ReviewAuthor: "Lina Marcela",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expectedFaq2Fee: "20.000 COP",
+			expectedFaq2Day: "martes",
+			expectedNomadAlt: "Espacio de trabajo para Nómadas Digitales",
+			expectedRomanticAlt: "Terraza Privada al Atardecer",
+			expected1707ReviewSnippet: "excelente vista, atardeceres hermosos",
+			expected1707ReviewAuthor: "Karol Ximena",
+			expected1606ReviewSnippet:
+				"ideal para el descanso y compartir en familia",
+			expected1606ReviewAuthor: "Lina Marcela",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expectedFaq2Fee: "20 000 COP",
+			expectedFaq2Day: "mardi",
+			expectedNomadAlt: "Espace de travail pour Nomades Digitaux",
+			expectedRomanticAlt: "Terrasse Privée au Coucher du Soleil",
+			expected1707ReviewSnippet:
+				"excellente vue, de magnifiques couchers de soleil",
+			expected1707ReviewAuthor: "Karol Ximena",
+			expected1606ReviewSnippet:
+				"idéal pour la détente et les moments en famille",
+			expected1606ReviewAuthor: "Lina Marcela",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expectedFaq2Fee: "20.000 COP",
+			expectedFaq2Day: "martedì",
+			expectedNomadAlt: "Spazio di lavoro per Nomadi Digitali",
+			expectedRomanticAlt: "Terrazza Privata al Tramonto",
+			expected1707ReviewSnippet: "tramonti bellissimi",
+			expected1707ReviewAuthor: "Karol Ximena",
+			expected1606ReviewSnippet: "ideale per il relax e il tempo in famiglia",
+			expected1606ReviewAuthor: "Lina Marcela",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expectedFaq2Fee: "20.000 COP",
+			expectedFaq2Day: "dienstags",
+			expectedNomadAlt: "Arbeitsplatz für Digitale Nomaden",
+			expectedRomanticAlt: "Private Terrasse bei Sonnenuntergang",
+			expected1707ReviewSnippet:
+				"hervorragenden Aussicht, wunderschönen Sonnenuntergängen",
+			expected1707ReviewAuthor: "Karol Ximena",
+			expected1606ReviewSnippet: "ideal für Entspannung und Familienzeit",
+			expected1606ReviewAuthor: "Lina Marcela",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expectedFaq2Fee: "20,000 COP",
+			expectedFaq2Day: "火曜日",
+			expectedNomadAlt: "デジタルノマドのワークスペース",
+			expectedRomanticAlt: "サンセットを望むプライベートテラス",
+			expected1707ReviewSnippet: "素晴らしい景色と美しい夕日",
+			expected1707ReviewAuthor: "Karol Ximena",
+			expected1606ReviewSnippet: "リラックスや家族との時間に最適な場所",
+			expected1606ReviewAuthor: "リナ・マルセラ",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. #why-book-direct Card 4 uses Clearance Emerald (bg-emerald-50 text-emerald-700) and never decorative Rose
+		const directMatch = html.match(
+			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(directMatch, `${locale.file} must render #why-book-direct`);
+		const directHtml = directMatch[0];
+		const emeraldBadges =
+			directHtml.match(/bg-emerald-50 text-emerald-700/g) || [];
+		assert.equal(
+			emeraldBadges.length,
+			2,
+			`${locale.file} #why-book-direct must use Clearance Emerald (bg-emerald-50 text-emerald-700) on both Card 1 and Card 4`,
+		);
+		assert.ok(
+			!directHtml.includes("bg-rose-50 text-rose-700"),
+			`${locale.file} #why-book-direct Card 4 must not use decorative Rose (bg-rose-50 text-rose-700)`,
+		);
+
+		// 2. #faq-2 discloses the per-person reception fee and Tuesday pool maintenance, and #faq-6 is structured into numbered steps
+		const faq2Match = html.match(
+			/<details[^>]*id="faq-2"[^>]*>[\s\S]*?<\/details>/,
+		);
+		assert.ok(faq2Match, `${locale.file} must render #faq-2`);
+		const faq2Html = faq2Match[0];
+		assert.ok(
+			faq2Html.includes(locale.expectedFaq2Fee) &&
+				faq2Html.includes(locale.expectedFaq2Day),
+			`${locale.file} #faq-2 must disclose "${locale.expectedFaq2Fee}" reception fee and "${locale.expectedFaq2Day}" pool maintenance`,
+		);
+
+		const faq6Match = html.match(
+			/<details[^>]*id="faq-6"[^>]*>[\s\S]*?<\/details>/,
+		);
+		assert.ok(faq6Match, `${locale.file} must render #faq-6`);
+		const faq6Html = faq6Match[0];
+		assert.ok(
+			faq6Html.includes("1.") &&
+				faq6Html.includes("2.") &&
+				faq6Html.includes("3.") &&
+				faq6Html.includes("1581") &&
+				faq6Html.includes("679") &&
+				faq6Html.includes("0XXXXXX#") &&
+				faq6Html.includes("20,000 COP"),
+			`${locale.file} #faq-6 must structure check-in, Guest Registry (Law 1581 & Law 679), 0XXXXXX# PIN, and 20,000 COP reception fee into numbered steps`,
+		);
+
+		// 3. #experiences renders verified guest testimonials (Karol Ximena on 1707, Lina Marcela on 1606) and descriptive image alts
+		const expMatch = html.match(
+			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(expMatch, `${locale.file} must render #experiences`);
+		const expHtml = expMatch[0];
+		const expCardMatches = expHtml.match(
+			/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>[\s\S]*?<\/a>/g,
+		);
+		assert.ok(
+			expCardMatches && expCardMatches.length === 2,
+			`${locale.file} #experiences must render 2 property lifestyle cards`,
+		);
+		const [card1707Html, card1606Html] = expCardMatches;
+
+		assert.ok(
+			card1707Html.includes(`alt="${locale.expectedNomadAlt}"`),
+			`${locale.file} #experiences 1707 card image must use descriptive alt="${locale.expectedNomadAlt}"`,
+		);
+		assert.ok(
+			card1707Html.includes(locale.expected1707ReviewSnippet) &&
+				card1707Html.includes(locale.expected1707ReviewAuthor) &&
+				card1707Html.includes("border-t border-slate-700/80"),
+			`${locale.file} #experiences 1707 card must render Karol Ximena's verified review`,
+		);
+
+		assert.ok(
+			card1606Html.includes(`alt="${locale.expectedRomanticAlt}"`),
+			`${locale.file} #experiences 1606 card image must use descriptive alt="${locale.expectedRomanticAlt}"`,
+		);
+		assert.ok(
+			card1606Html.includes(locale.expected1606ReviewSnippet) &&
+				card1606Html.includes(locale.expected1606ReviewAuthor) &&
+				card1606Html.includes("border-t border-slate-700/80"),
+			`${locale.file} #experiences 1606 card must render Lina Marcela's verified review`,
+		);
+	}
+});
