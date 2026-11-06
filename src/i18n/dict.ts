@@ -103,6 +103,9 @@ export const dict = {
 		homeCtaWhatsApp: "Chat on WhatsApp",
 		homeCard1707Badge: "17th Floor • RNT #268781",
 		homeCard1606Badge: "16th Floor • RNT #270413",
+		homeCard1707Rate: "From 450,000 COP / night",
+		homeCard1606Rate: "From 350,000 COP / night",
+		homeCardWifi: "900 Mbps Wi-Fi",
 		homeCard1707Parking: "Private Parking Included",
 		homeCard1606Parking: "Private Parking Included",
 		homeCardCta: "Explore & Book Direct",
@@ -110,6 +113,9 @@ export const dict = {
 		homeExpNomad: "Digital Nomad Heaven",
 		homeExpNomadDesc:
 			"High-speed Wi-Fi, dedicated workspaces, and inspiring ocean views to boost your productivity.",
+		homeExp1707FamilyTitle: "Spacious 4-Bed Family & Group Comfort",
+		homeExp1707FamilyDesc:
+			"Four comfortable beds across two bedrooms and 17th-floor ocean panoramas, giving families and groups up to 6 Guests room to unwind.",
 		homeExpFamily: "Family Escapes",
 		homeExpFamilyDesc:
 			"Spacious layouts and resort-style amenities perfect for creating lasting memories with loved ones.",
@@ -677,6 +683,9 @@ export const dict = {
 		homeCtaWhatsApp: "Chatear por WhatsApp",
 		homeCard1707Badge: "Piso 17 • RNT #268781",
 		homeCard1606Badge: "Piso 16 • RNT #270413",
+		homeCard1707Rate: "Desde 450,000 COP / noche",
+		homeCard1606Rate: "Desde 350,000 COP / noche",
+		homeCardWifi: "Wi-Fi 900 Mbps",
 		homeCard1707Parking: "Parqueadero Privado Incluido",
 		homeCard1606Parking: "Parqueadero Privado Incluido",
 		homeCardCta: "Explorar y Reservar Directo",
@@ -684,6 +693,9 @@ export const dict = {
 		homeExpNomad: "Paraíso para Nómadas Digitales",
 		homeExpNomadDesc:
 			"Wi-Fi de alta velocidad, espacios de trabajo dedicados y vistas inspiradoras al mar para aumentar tu productividad.",
+		homeExp1707FamilyTitle: "Comodidad de 4 Camas para Familias y Grupos",
+		homeExp1707FamilyDesc:
+			"Cuatro camas cómodas en dos habitaciones con vistas panorámicas desde el piso 17, ideales para familias y grupos de hasta 6 Huéspedes.",
 		homeExpFamily: "Escapadas Familiares",
 		homeExpFamilyDesc:
 			"Diseños espaciosos y comodidades estilo resort perfectas para crear recuerdos inolvidables con tus seres queridos.",
@@ -1268,6 +1280,9 @@ export const dict = {
 		homeCtaWhatsApp: "Discuter sur WhatsApp",
 		homeCard1707Badge: "17e Étage • RNT #268781",
 		homeCard1606Badge: "16e Étage • RNT #270413",
+		homeCard1707Rate: "À partir de 450,000 COP / nuit",
+		homeCard1606Rate: "À partir de 350,000 COP / nuit",
+		homeCardWifi: "Wi-Fi 900 Mbps",
 		homeCard1707Parking: "Parking Privé Inclus",
 		homeCard1606Parking: "Parking Privé Inclus",
 		homeCardCta: "Découvrir et Réserver en Direct",
@@ -1275,6 +1290,9 @@ export const dict = {
 		homeExpNomad: "Le Paradis des Nomades Digitaux",
 		homeExpNomadDesc:
 			"Wi-Fi haut débit, espaces de travail dédiés et vues inspirantes sur l'océan pour booster votre productivité.",
+		homeExp1707FamilyTitle: "Confort 4 Lits pour Familles et Groupes",
+		homeExp1707FamilyDesc:
+			"Quatre lits confortables répartis dans deux chambres au 17e étage avec vue panoramique sur l'océan pour accueillir jusqu'à 6 Voyageurs.",
 		homeExpFamily: "Escapades en Famille",
 		homeExpFamilyDesc:
 			"Des aménagements spacieux et des équipements de style complexe parfaits pour créer des souvenirs durables avec vos proches.",
@@ -1864,6 +1882,9 @@ export const dict = {
 		homeCtaWhatsApp: "Scrivici su WhatsApp",
 		homeCard1707Badge: "17° Piano • RNT #268781",
 		homeCard1606Badge: "16° Piano • RNT #270413",
+		homeCard1707Rate: "Da 450,000 COP / notte",
+		homeCard1606Rate: "Da 350,000 COP / notte",
+		homeCardWifi: "Wi-Fi 900 Mbps",
 		homeCard1707Parking: "Parcheggio Privato Incluso",
 		homeCard1606Parking: "Parcheggio Privato Incluso",
 		homeCardCta: "Esplora e Prenota Direttamente",
@@ -1871,6 +1892,9 @@ export const dict = {
 		homeExpNomad: "Paradiso per Nomadi Digitali",
 		homeExpNomadDesc:
 			"Wi-Fi ad alta velocità, spazi di lavoro dedicati e viste sull'oceano stimolanti per aumentare la tua produttività.",
+		homeExp1707FamilyTitle: "Comfort a 4 Letti per Famiglie e Gruppi",
+		homeExp1707FamilyDesc:
+			"Quattro comodi letti in due camere da letto al 17° piano con vista panoramica sull'oceano, perfetti per famiglie e gruppi fino a 6 Ospiti.",
 		homeExpFamily: "Fughe in Famiglia",
 		homeExpFamilyDesc:
 			"Ampi spazi e servizi in stile resort perfetti per creare ricordi duraturi con i propri cari.",
@@ -2453,6 +2477,9 @@ export const dict = {
 		homeCtaWhatsApp: "Per WhatsApp Chatten",
 		homeCard1707Badge: "17. Etage • RNT #268781",
 		homeCard1606Badge: "16. Etage • RNT #270413",
+		homeCard1707Rate: "Ab 450,000 COP / Nacht",
+		homeCard1606Rate: "Ab 350,000 COP / Nacht",
+		homeCardWifi: "900 Mbps WLAN",
 		homeCard1707Parking: "Privater Parkplatz Inklusive",
 		homeCard1606Parking: "Privater Parkplatz Inklusive",
 		homeCardCta: "Entdecken & Direkt Buchen",
@@ -2460,6 +2487,10 @@ export const dict = {
 		homeExpNomad: "Paradies für digitale Nomaden",
 		homeExpNomadDesc:
 			"Highspeed-WLAN, spezielle Arbeitsbereiche und inspirierender Meerblick zur Steigerung Ihrer Produktivität.",
+		homeExp1707FamilyTitle:
+			"Großzügiger 4-Betten-Komfort für Familien & Gruppen",
+		homeExp1707FamilyDesc:
+			"Vier bequeme Betten in zwei Schlafzimmern auf der 17. Etage mit weitem Meerblick bieten Familien und Gruppen bis zu 6 Gästen viel Platz.",
 		homeExpFamily: "Familienausflüge",
 		homeExpFamilyDesc:
 			"Großzügige Grundrisse und Annehmlichkeiten im Resort-Stil, perfekt um bleibende Erinnerungen mit Ihren Liebsten zu schaffen.",
@@ -3048,6 +3079,9 @@ export const dict = {
 		homeCtaWhatsApp: "WhatsAppで相談する",
 		homeCard1707Badge: "17階 • RNT #268781",
 		homeCard1606Badge: "16階 • RNT #270413",
+		homeCard1707Rate: "1泊 450,000 COP〜",
+		homeCard1606Rate: "1泊 350,000 COP〜",
+		homeCardWifi: "900 Mbps Wi-Fi",
 		homeCard1707Parking: "専用駐車場付き",
 		homeCard1606Parking: "専用駐車場付き",
 		homeCardCta: "詳細を見る・直接予約",
@@ -3055,6 +3089,9 @@ export const dict = {
 		homeExpNomad: "デジタルノマドの天国",
 		homeExpNomadDesc:
 			"高速Wi-Fi、専用のワークスペース、および生産性を高める刺激的なオーシャンビュー。",
+		homeExp1707FamilyTitle: "家族やグループに最適なベッド4台の広々空間",
+		homeExp1707FamilyDesc:
+			"17階のパノラマオーシャンビューと2ベッドルーム・ベッド4台のゆとりある間取りで、最大6名様のご家族やグループでも快適に過ごせます。",
 		homeExpFamily: "家族の旅",
 		homeExpFamilyDesc:
 			"広々としたレイアウトとリゾートスタイルのアメニティは、大切な人との思い出作りに最適です。",
