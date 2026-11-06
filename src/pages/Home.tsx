@@ -19,6 +19,7 @@ import {
 	DATA_CONTROLLER,
 	getContactPagePath,
 	getPropertyPagePath,
+	HOME_EXPERIENCE_CARDS,
 	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
 	IMAGES,
@@ -27,10 +28,14 @@ import { HOME_CARD_THEMES, HOME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
+const EXPERIENCE_FEATURE_ICONS = {
+	wifi: Wifi,
+	users: Users,
+	heart: Heart,
+} as const;
+
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const t = dict[lang];
-	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
-	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
 	const contactHref = getContactPagePath(lang, assetPrefix);
 
 	return (
@@ -243,119 +248,70 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 						</div>
 
 						<div className={HOME_THEME.editorialGrid}>
-							<a href={property1707Href} className={HOME_THEME.editorialCard}>
-								<div className={HOME_THEME.editorialCardMedia}>
-									<img
-										src={`${assetPrefix}${IMAGES["1707"].nomad}`}
-										alt={t.homeExpNomad}
-										className={HOME_THEME.editorialCardImage}
-										loading="lazy"
-									/>
-									<span className={HOME_THEME.experiencesCardBadge}>
-										{t.heroTitle} • {t.homeCard1707Badge}
-									</span>
-								</div>
-								<div className={HOME_THEME.editorialCardBody}>
-									<div className={HOME_THEME.editorialFeatureList}>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconSky}>
-												<Wifi
-													className={HOME_THEME.iconMd}
+							{HOME_EXPERIENCE_CARDS.map((card) => {
+								const cardHref = getPropertyPagePath(
+									card.propertyId,
+									lang,
+									assetPrefix,
+								);
+								return (
+									<a
+										key={card.propertyId}
+										href={cardHref}
+										className={HOME_THEME.editorialCard}
+									>
+										<div className={HOME_THEME.editorialCardMedia}>
+											<img
+												src={`${assetPrefix}${card.imageSrc}`}
+												alt={t[card.imageAltKey]}
+												className={HOME_THEME.editorialCardImage}
+												loading="lazy"
+											/>
+											<span className={HOME_THEME.experiencesCardBadge}>
+												{t[card.titleKey]} • {t[card.badgeKey]}
+											</span>
+										</div>
+										<div className={HOME_THEME.editorialCardBody}>
+											<div className={HOME_THEME.editorialFeatureList}>
+												{card.features.map((feature) => {
+													const FeatureIcon =
+														EXPERIENCE_FEATURE_ICONS[feature.iconId];
+													return (
+														<div
+															key={feature.titleKey}
+															className={HOME_THEME.editorialFeatureItem}
+														>
+															<div className={HOME_THEME[feature.iconThemeKey]}>
+																<FeatureIcon
+																	className={HOME_THEME.iconMd}
+																	aria-hidden="true"
+																/>
+															</div>
+															<div>
+																<h3
+																	className={HOME_THEME.editorialFeatureTitle}
+																>
+																	{t[feature.titleKey]}
+																</h3>
+																<p className={HOME_THEME.editorialFeatureDesc}>
+																	{t[feature.descKey]}
+																</p>
+															</div>
+														</div>
+													);
+												})}
+											</div>
+											<div className={HOME_THEME.editorialCardCta}>
+												<span>{t.homeCardCta}</span>
+												<ArrowRight
+													className={HOME_THEME.iconSm}
 													aria-hidden="true"
 												/>
 											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExpNomad}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExpNomadDesc}
-												</p>
-											</div>
 										</div>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconSky}>
-												<Users
-													className={HOME_THEME.iconMd}
-													aria-hidden="true"
-												/>
-											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExp1707FamilyTitle}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExp1707FamilyDesc}
-												</p>
-											</div>
-										</div>
-									</div>
-									<div className={HOME_THEME.editorialCardCta}>
-										<span>{t.homeCardCta}</span>
-										<ArrowRight
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-									</div>
-								</div>
-							</a>
-
-							<a href={property1606Href} className={HOME_THEME.editorialCard}>
-								<div className={HOME_THEME.editorialCardMedia}>
-									<img
-										src={`${assetPrefix}${IMAGES["1606"].romantic}`}
-										alt={t.homeExpRomantic}
-										className={HOME_THEME.editorialCardImage}
-										loading="lazy"
-									/>
-									<span className={HOME_THEME.experiencesCardBadge}>
-										{t.hero1606Title} • {t.homeCard1606Badge}
-									</span>
-								</div>
-								<div className={HOME_THEME.editorialCardBody}>
-									<div className={HOME_THEME.editorialFeatureList}>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconRose}>
-												<Heart
-													className={HOME_THEME.iconMd}
-													aria-hidden="true"
-												/>
-											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExpRomantic}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExpRomanticDesc}
-												</p>
-											</div>
-										</div>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconRose}>
-												<Users
-													className={HOME_THEME.iconMd}
-													aria-hidden="true"
-												/>
-											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExpFamily}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExpFamilyDesc}
-												</p>
-											</div>
-										</div>
-									</div>
-									<div className={HOME_THEME.editorialCardCta}>
-										<span>{t.homeCardCta}</span>
-										<ArrowRight
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-									</div>
-								</div>
-							</a>
+									</a>
+								);
+							})}
 						</div>
 
 						{/* Host & Data Controller Showcase Card */}
