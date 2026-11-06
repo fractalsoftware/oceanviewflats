@@ -1383,7 +1383,7 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			propSectionHtml.includes("text-[#B91C1C]") &&
 				!propSectionHtml.includes("text-[#FF5A5F]") &&
 				!propSectionHtml.includes("text-rose-600") &&
-				!propSectionHtml.includes("bg-rose-50"),
+				!propSectionHtml.includes("bg-stone-50"),
 			`${locale.file} property cards must share the 1707 color scheme with text-[#B91C1C] CTA and neutral spec pills`,
 		);
 	}
@@ -2217,4 +2217,164 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			`${locale.file} #experiences 1606 card must render Lina Marcela's verified review`,
 		);
 	}
+});
+
+test("Homepage highlights bed-capacity pills on #home-card-1707 and #home-card-1606, exposes mobile #nav-book, enforces focus-visible:ring-4 on interactive controls across all 6 locales, and includes prefers-reduced-motion in dist/css/style.css (#247)", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expected1707Beds: "2 Bedrooms • 4 Beds",
+			expected1606Beds: "2 Bedrooms • 3 Beds",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expected1707Beds: "2 Habitaciones • 4 Camas",
+			expected1606Beds: "2 Habitaciones • 3 Camas",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expected1707Beds: "2 Chambres • 4 Lits",
+			expected1606Beds: "2 Chambres • 3 Lits",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expected1707Beds: "2 Camere • 4 Letti",
+			expected1606Beds: "2 Camere • 3 Letti",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expected1707Beds: "2 Schlafzimmer • 4 Betten",
+			expected1606Beds: "2 Schlafzimmer • 3 Betten",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expected1707Beds: "2 寝室 • 4 ベッド",
+			expected1606Beds: "2 寝室 • 3 ベッド",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. #home-card-1707 and #home-card-1606 render cardSpecHighlight (bg-rose-50 border-rose-200 text-slate-900 font-bold) on the bedroom/bed count pill
+		const card1707Match = html.match(
+			/<a[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/a>/,
+		);
+		const card1606Match = html.match(
+			/<a[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/a>/,
+		);
+		assert.ok(
+			card1707Match && card1606Match,
+			`${locale.file} must render #home-card-1707 and #home-card-1606`,
+		);
+		const card1707Html = card1707Match[0];
+		const card1606Html = card1606Match[0];
+
+		const highlightPillRegex1707 = new RegExp(
+			`<span[^>]*class="[^"]*bg-rose-50[^"]*border-rose-200[^"]*text-slate-900[^"]*font-bold[^"]*"[^>]*>${locale.expected1707Beds}<\\/span>`,
+		);
+		const highlightPillRegex1606 = new RegExp(
+			`<span[^>]*class="[^"]*bg-rose-50[^"]*border-rose-200[^"]*text-slate-900[^"]*font-bold[^"]*"[^>]*>${locale.expected1606Beds}<\\/span>`,
+		);
+		assert.ok(
+			highlightPillRegex1707.test(card1707Html),
+			`${locale.file} #home-card-1707 must highlight "${locale.expected1707Beds}" with bg-rose-50 border-rose-200 text-slate-900 font-bold`,
+		);
+		assert.ok(
+			highlightPillRegex1606.test(card1606Html),
+			`${locale.file} #home-card-1606 must highlight "${locale.expected1606Beds}" with bg-rose-50 border-rose-200 text-slate-900 font-bold`,
+		);
+
+		// 2. #nav-book is visible on mobile viewports (uses inline-flex without hidden md:inline-flex) and includes focus-visible:ring-4
+		const navBookMatch = html.match(/<a[^>]*id="nav-book"[^>]*>/);
+		assert.ok(navBookMatch, `${locale.file} must render #nav-book`);
+		assert.ok(
+			navBookMatch[0].includes("inline-flex") &&
+				!navBookMatch[0].includes("hidden md:inline-flex") &&
+				navBookMatch[0].includes("focus-visible:ring-4"),
+			`${locale.file} #nav-book must use inline-flex without hidden md:inline-flex and include focus-visible:ring-4`,
+		);
+
+		// 3. Primary interactive homepage elements include focus-visible:ring-4, and Hero CTA icon uses text-[#FF5A5F]
+		const card1707OpenTag = card1707Html.match(/^<a[^>]*>/)?.[0] || "";
+		const card1606OpenTag = card1606Html.match(/^<a[^>]*>/)?.[0] || "";
+		assert.ok(
+			card1707OpenTag.includes("focus-visible:ring-4") &&
+				card1606OpenTag.includes("focus-visible:ring-4"),
+			`${locale.file} #home-card-1707 and #home-card-1606 must include focus-visible:ring-4`,
+		);
+
+		const headerMatch = html.match(/<header[\s\S]*?<\/header>/);
+		assert.ok(headerMatch, `${locale.file} must render <header>`);
+		const heroCtaMatch = headerMatch[0].match(
+			/<a[^>]*href="#properties"[^>]*>/,
+		);
+		assert.ok(
+			heroCtaMatch?.[0].includes("focus-visible:ring-4"),
+			`${locale.file} Hero CTA must include focus-visible:ring-4`,
+		);
+		assert.ok(
+			headerMatch[0].includes("text-[#FF5A5F]"),
+			`${locale.file} Hero CTA icon must use text-[#FF5A5F] per DESIGN.md`,
+		);
+
+		const multiPropMatch = html.match(
+			/<div[^>]*id="home-multi-property-note"[^>]*>[\s\S]*?<\/div>\s*<\/section>/,
+		);
+		assert.ok(
+			multiPropMatch?.[0].includes("focus-visible:ring-4"),
+			`${locale.file} #home-multi-property-note CTA must include focus-visible:ring-4`,
+		);
+
+		const expMatch = html.match(
+			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(expMatch, `${locale.file} must render #experiences`);
+		const expCardTags =
+			expMatch[0].match(/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>/g) ||
+			[];
+		assert.equal(expCardTags.length, 2);
+		for (const tag of expCardTags) {
+			assert.ok(
+				tag.includes("focus-visible:ring-4"),
+				`${locale.file} #experiences card must include focus-visible:ring-4`,
+			);
+		}
+
+		const faqSummaries = html.match(/<summary[^>]*>/g) || [];
+		assert.equal(faqSummaries.length, 6);
+		for (const summaryTag of faqSummaries) {
+			assert.ok(
+				summaryTag.includes("focus-visible:ring-4"),
+				`${locale.file} FAQ <summary> must include focus-visible:ring-4`,
+			);
+		}
+
+		const whatsappBtnMatch = html.match(
+			/<a[^>]*href="https:\/\/wa\.me\/573108155234"[^>]*>/,
+		);
+		assert.ok(
+			whatsappBtnMatch?.[0].includes("focus-visible:ring-4"),
+			`${locale.file} Bottom WhatsApp CTA must include focus-visible:ring-4`,
+		);
+	}
+
+	// 4. Compiled dist/css/style.css includes @media (prefers-reduced-motion: reduce) safeguard
+	const compiledCss = fs.readFileSync(
+		path.join(distDir, "css", "style.css"),
+		"utf-8",
+	);
+	assert.ok(
+		/prefers-reduced-motion:\s*reduce/.test(compiledCss) &&
+			/scroll-behavior:\s*auto\s*!important/.test(compiledCss) &&
+			/transition-duration:\s*0?\.01ms\s*!important/.test(compiledCss),
+		"dist/css/style.css must include @media (prefers-reduced-motion: reduce) with scroll-behavior: auto !important and transition-duration safeguard",
+	);
 });

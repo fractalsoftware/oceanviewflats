@@ -124,7 +124,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											</span>
 											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
 											<div className={cardTheme.cardSpecsList}>
-												<span className={cardTheme.cardSpecPill}>
+												<span className={cardTheme.cardSpecHighlight}>
 													{t[card.bedsKey]}
 												</span>
 												<span className={cardTheme.cardSpecPill}>
@@ -136,7 +136,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												<span className={cardTheme.cardSpecPill}>
 													{t[card.wifiKey]}
 												</span>
-												<span className={cardTheme.cardSpecHighlight}>
+												<span className={cardTheme.cardSpecPill}>
 													{t[card.parkingKey]}
 												</span>
 											</div>
