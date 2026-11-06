@@ -1551,3 +1551,302 @@ test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive
 		);
 	}
 });
+
+test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar on DOMContentLoaded and closes #lang-dropdown on focusout (#242)", () => {
+	// 1. Verify compiled dist/css/style.css binds --font-sans to Inter without Apple Color Emoji
+	const compiledCssPath = path.join(process.cwd(), "dist", "css", "style.css");
+	assert.ok(
+		fs.existsSync(compiledCssPath),
+		"Compiled dist/css/style.css must exist",
+	);
+	const compiledCss = fs.readFileSync(compiledCssPath, "utf-8");
+	const fontSansMatch = compiledCss.match(/--font-sans:\s*([^;}\n]+)/);
+	assert.ok(fontSansMatch, "dist/css/style.css must define --font-sans");
+	assert.ok(
+		fontSansMatch[1].includes("Inter") &&
+			fontSansMatch[1].includes("-apple-system") &&
+			fontSansMatch[1].includes("BlinkMacSystemFont") &&
+			fontSansMatch[1].includes("sans-serif") &&
+			!fontSansMatch[1].includes("Apple Color Emoji"),
+		`--font-sans must bind to Inter stack without Apple Color Emoji, got: ${fontSansMatch[1]}`,
+	);
+
+	// 2. Verify main.js in node:vm syncs navbar scroll state immediately on DOMContentLoaded when window.scrollY > 50, and closes #lang-dropdown on focusout outside #lang-toggle-group
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		relatedTarget?: MockNode | null;
+		key?: string;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		focus: () => void;
+		blur: () => void;
+		appendChild: (child: MockNode) => MockNode;
+		contains: (target: unknown) => boolean;
+		querySelector: (sel: string) => MockNode | null;
+		querySelectorAll: (sel: string) => MockNode[];
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Listener[]> = {};
+		const children: MockNode[] = [];
+
+		const node: MockNode = {
+			id,
+			tagName,
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			focus: () => {},
+			blur: () => {},
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+			contains: (target: unknown) => {
+				if (target === node) return true;
+				return children.some((c) => c === target || c.contains?.(target));
+			},
+			querySelector: (sel: string) => {
+				if (sel === ".absolute.right-0.top-full") {
+					return children.find((c) => c.id === "lang-dropdown") || null;
+				}
+				return null;
+			},
+			querySelectorAll: (sel: string) => {
+				if (sel === "a") {
+					return children.filter((c) => c.tagName === "A");
+				}
+				return [];
+			},
+		};
+		return node;
+	};
+
+	const navbar = createMockNode("navbar", "NAV", ["bg-transparent", "py-5"]);
+	const navLogo = createMockNode("nav-logo", "A", [
+		"text-white",
+		"hover:text-white/80",
+	]);
+	const langToggleGroup = createMockNode("lang-toggle-group", "DIV", [
+		"relative",
+		"group",
+	]);
+	const langToggle = createMockNode(
+		"lang-toggle",
+		"BUTTON",
+		["bg-white/20", "hover:bg-white/30", "text-white", "backdrop-blur-sm"],
+		{
+			type: "button",
+			"aria-haspopup": "true",
+			"aria-expanded": "false",
+		},
+	);
+	const navContact = createMockNode("nav-contact", "A", [
+		"text-white",
+		"hover:text-white/80",
+	]);
+	const navBook = createMockNode("nav-book", "A", [
+		"text-white",
+		"hover:text-white/80",
+	]);
+	const langDropdown = createMockNode("lang-dropdown", "DIV", [
+		"absolute",
+		"right-0",
+		"top-full",
+		"opacity-0",
+		"invisible",
+	]);
+	const esLink = createMockNode("lang-link-es", "A", [], { href: "es.html" });
+	langDropdown.appendChild(esLink);
+	langToggleGroup.appendChild(langToggle);
+	langToggleGroup.appendChild(langDropdown);
+	langToggleGroup.querySelectorAll = () => [esLink];
+
+	const outsideFocusableNode = createMockNode("hero-cta", "A");
+
+	const elementsById = new Map<string, MockNode>([
+		["navbar", navbar],
+		["nav-logo", navLogo],
+		["lang-toggle-group", langToggleGroup],
+		["lang-toggle", langToggle],
+		["nav-contact", navContact],
+		["nav-book", navBook],
+		["lang-dropdown", langDropdown],
+	]);
+
+	const docListeners: Record<string, Listener[]> = {};
+	const winListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 120, // Pre-scrolled past 50px at page load (e.g. /#faq anchor)
+			location: { search: "", pathname: "/index.html" },
+			addEventListener: (evt: string, fn: Listener) => {
+				winListeners[evt] = winListeners[evt] || [];
+				winListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of winListeners[evt] || []) {
+					fn(payload);
+				}
+			},
+		},
+		document: {
+			documentElement: { lang: "en" },
+			createElement: () => ({ ...scriptStub }),
+			getElementsByTagName: () => [scriptStub],
+			getElementById: (id: string) => elementsById.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		console,
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+
+	// Trigger DOMContentLoaded while window.scrollY === 120 (> 50) without firing a scroll event
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+
+	assert.equal(
+		navbar.classList.contains("bg-white/90") &&
+			navbar.classList.contains("backdrop-blur-md") &&
+			navbar.classList.contains("shadow-sm") &&
+			navbar.classList.contains("py-3") &&
+			!navbar.classList.contains("bg-transparent") &&
+			!navbar.classList.contains("py-5"),
+		true,
+		"#navbar must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+	);
+	assert.equal(
+		navLogo.classList.contains("text-[#FF5A5F]") &&
+			!navLogo.classList.contains("text-white"),
+		true,
+		"#nav-logo must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+	);
+	assert.equal(
+		langToggle.classList.contains("bg-slate-100") &&
+			langToggle.classList.contains("text-slate-700") &&
+			!langToggle.classList.contains("text-white"),
+		true,
+		"#lang-toggle must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+	);
+	assert.equal(
+		navContact.classList.contains("text-slate-600") &&
+			!navContact.classList.contains("text-white"),
+		true,
+		"#nav-contact must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+	);
+	assert.equal(
+		navBook.classList.contains("text-slate-600") &&
+			!navBook.classList.contains("text-white"),
+		true,
+		"#nav-book must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+	);
+
+	// Verify scrolling back to top (scrollY = 0) restores transparent classes
+	sandbox.window.scrollY = 0;
+	sandbox.window.dispatchEvent("scroll");
+	assert.equal(navbar.classList.contains("bg-transparent"), true);
+	assert.equal(navLogo.classList.contains("text-white"), true);
+
+	// 3. Verify #lang-toggle-group focusout closes #lang-dropdown when relatedTarget is outside the group
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("visible"), true);
+	assert.equal(langDropdown.classList.contains("invisible"), false);
+
+	// Focus moving inside the group (e.g., from #lang-toggle to esLink) must keep dropdown open
+	langToggleGroup.dispatchEvent("focusout", { relatedTarget: esLink });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("invisible"), false);
+
+	// Focus tabbing out of #lang-toggle-group to an external element must close dropdown and reset aria-expanded="false"
+	langToggleGroup.dispatchEvent("focusout", {
+		relatedTarget: outsideFocusableNode,
+	});
+	assert.equal(
+		langToggle.getAttribute("aria-expanded"),
+		"false",
+		"focusout outside #lang-toggle-group must reset aria-expanded='false'",
+	);
+	assert.equal(
+		langDropdown.classList.contains("invisible") &&
+			langDropdown.classList.contains("opacity-0") &&
+			!langDropdown.classList.contains("visible") &&
+			!langDropdown.classList.contains("opacity-100"),
+		true,
+		"focusout outside #lang-toggle-group must hide #lang-dropdown with opacity-0 and invisible",
+	);
+});
