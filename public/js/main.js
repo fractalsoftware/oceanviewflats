@@ -12,7 +12,7 @@ _paq.push(['enableLinkTracking']);
 })();
 
 // Simple scroll effect for navbar
-window.addEventListener('scroll', () => {
+function syncNavbarScrollState() {
     const nav = document.getElementById('navbar');
     const logo = document.getElementById('nav-logo');
     const toggle = document.getElementById('lang-toggle');
@@ -51,7 +51,10 @@ window.addEventListener('scroll', () => {
             bookBtn.classList.add('text-white', 'hover:text-white/80');
         }
     }
-});
+}
+
+window.addEventListener('scroll', syncNavbarScrollState);
+document.addEventListener('DOMContentLoaded', syncNavbarScrollState);
 
 // Language Dropdown Mobile & Keyboard Toggle
 document.addEventListener('DOMContentLoaded', () => {
@@ -171,6 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
         langToggle.addEventListener('keydown', handleKeydown);
     }
     dropdownMenu.addEventListener('keydown', handleKeydown);
+
+    // Close when keyboard focus tabs out of #lang-toggle-group
+    langToggleGroup.addEventListener('focusout', (e) => {
+        const relatedTarget = e && e.relatedTarget ? e.relatedTarget : null;
+        if (
+            relatedTarget &&
+            typeof langToggleGroup.contains === 'function' &&
+            !langToggleGroup.contains(relatedTarget)
+        ) {
+            closeLangDropdown(false);
+        }
+    });
 });
 
 // Calendar Logic
