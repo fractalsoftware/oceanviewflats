@@ -19,6 +19,8 @@ import {
 	DATA_CONTROLLER,
 	getContactPagePath,
 	getPropertyPagePath,
+	HOME_EXPERIENCE_CARDS,
+	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
 	IMAGES,
 } from "../constants/config";
@@ -26,19 +28,15 @@ import { HOME_CARD_THEMES, HOME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
+const EXPERIENCE_FEATURE_ICONS = {
+	wifi: Wifi,
+	users: Users,
+	heart: Heart,
+} as const;
+
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const t = dict[lang];
-	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
-	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
 	const contactHref = getContactPagePath(lang, assetPrefix);
-	const faqItems = [
-		{ q: t.faqQ1, a: t.faqA1, defaultOpen: true },
-		{ q: t.faqQ2, a: t.faqA2, defaultOpen: false },
-		{ q: t.faqQ3, a: t.faqA3, defaultOpen: false },
-		{ q: t.faqQ4, a: t.faqA4, defaultOpen: false },
-		{ q: t.faqQ5, a: t.faqA5, defaultOpen: false },
-		{ q: t.faqQ6, a: t.faqA6, defaultOpen: false },
-	];
 
 	return (
 		<div className={HOME_THEME.pageWrapper}>
@@ -87,7 +85,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 			<main className={HOME_THEME.main}>
 				{/* Properties Section */}
 				<section id="properties" className={HOME_THEME.propertiesSection}>
-					<h2 className={HOME_THEME.propertiesSrHeading}>
+					<h2 className={HOME_THEME.propertiesHeading}>
 						{t.homeFeaturedPropertiesTitle}
 					</h2>
 					<div className={HOME_THEME.propertiesGrid}>
@@ -121,6 +119,9 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									</div>
 									<div className={cardTheme.cardBody}>
 										<div>
+											<span className={cardTheme.rateBadge}>
+												{t[card.rateKey]}
+											</span>
 											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
 											<div className={cardTheme.cardSpecsList}>
 												<span className={cardTheme.cardSpecPill}>
@@ -131,6 +132,9 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												</span>
 												<span className={cardTheme.cardSpecPill}>
 													{t.statsGuests}
+												</span>
+												<span className={cardTheme.cardSpecPill}>
+													{t[card.wifiKey]}
 												</span>
 												<span className={cardTheme.cardSpecHighlight}>
 													{t[card.parkingKey]}
@@ -244,97 +248,70 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 						</div>
 
 						<div className={HOME_THEME.editorialGrid}>
-							<a href={property1707Href} className={HOME_THEME.editorialCard}>
-								<div className={HOME_THEME.editorialCardMedia}>
-									<img
-										src={`${assetPrefix}${IMAGES["1707"].nomad}`}
-										alt={t.homeExpNomad}
-										className={HOME_THEME.editorialCardImage}
-										loading="lazy"
-									/>
-								</div>
-								<div className={HOME_THEME.editorialCardBody}>
-									<div className={HOME_THEME.editorialFeatureList}>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconSky}>
-												<Wifi
-													className={HOME_THEME.iconMd}
+							{HOME_EXPERIENCE_CARDS.map((card) => {
+								const cardHref = getPropertyPagePath(
+									card.propertyId,
+									lang,
+									assetPrefix,
+								);
+								return (
+									<a
+										key={card.propertyId}
+										href={cardHref}
+										className={HOME_THEME.editorialCard}
+									>
+										<div className={HOME_THEME.editorialCardMedia}>
+											<img
+												src={`${assetPrefix}${card.imageSrc}`}
+												alt={t[card.imageAltKey]}
+												className={HOME_THEME.editorialCardImage}
+												loading="lazy"
+											/>
+											<span className={HOME_THEME.experiencesCardBadge}>
+												{t[card.titleKey]} • {t[card.badgeKey]}
+											</span>
+										</div>
+										<div className={HOME_THEME.editorialCardBody}>
+											<div className={HOME_THEME.editorialFeatureList}>
+												{card.features.map((feature) => {
+													const FeatureIcon =
+														EXPERIENCE_FEATURE_ICONS[feature.iconId];
+													return (
+														<div
+															key={feature.titleKey}
+															className={HOME_THEME.editorialFeatureItem}
+														>
+															<div className={HOME_THEME[feature.iconThemeKey]}>
+																<FeatureIcon
+																	className={HOME_THEME.iconMd}
+																	aria-hidden="true"
+																/>
+															</div>
+															<div>
+																<h3
+																	className={HOME_THEME.editorialFeatureTitle}
+																>
+																	{t[feature.titleKey]}
+																</h3>
+																<p className={HOME_THEME.editorialFeatureDesc}>
+																	{t[feature.descKey]}
+																</p>
+															</div>
+														</div>
+													);
+												})}
+											</div>
+											<div className={HOME_THEME.editorialCardCta}>
+												<span>{t.homeCardCta}</span>
+												<ArrowRight
+													className={HOME_THEME.iconSm}
 													aria-hidden="true"
 												/>
 											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExpNomad}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExpNomadDesc}
-												</p>
-											</div>
 										</div>
-									</div>
-									<div className={HOME_THEME.editorialCardCta}>
-										<span>{t.homeCardCta}</span>
-										<ArrowRight
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-									</div>
-								</div>
-							</a>
-
-							<a href={property1606Href} className={HOME_THEME.editorialCard}>
-								<div className={HOME_THEME.editorialCardMedia}>
-									<img
-										src={`${assetPrefix}${IMAGES["1606"].romantic}`}
-										alt={t.homeExpRomantic}
-										className={HOME_THEME.editorialCardImage}
-										loading="lazy"
-									/>
-								</div>
-								<div className={HOME_THEME.editorialCardBody}>
-									<div className={HOME_THEME.editorialFeatureList}>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconRose}>
-												<Heart
-													className={HOME_THEME.iconMd}
-													aria-hidden="true"
-												/>
-											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExpRomantic}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExpRomanticDesc}
-												</p>
-											</div>
-										</div>
-										<div className={HOME_THEME.editorialFeatureItem}>
-											<div className={HOME_THEME.editorialFeatureIconRose}>
-												<Users
-													className={HOME_THEME.iconMd}
-													aria-hidden="true"
-												/>
-											</div>
-											<div>
-												<h3 className={HOME_THEME.editorialFeatureTitle}>
-													{t.homeExpFamily}
-												</h3>
-												<p className={HOME_THEME.editorialFeatureDesc}>
-													{t.homeExpFamilyDesc}
-												</p>
-											</div>
-										</div>
-									</div>
-									<div className={HOME_THEME.editorialCardCta}>
-										<span>{t.homeCardCta}</span>
-										<ArrowRight
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-									</div>
-								</div>
-							</a>
+									</a>
+								);
+							})}
 						</div>
 
 						{/* Host & Data Controller Showcase Card */}
@@ -373,21 +350,22 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				<section id="faq" className={HOME_THEME.faqSection}>
 					<h2 className={HOME_THEME.faqTitle}>{t.faqTitle}</h2>
 					<div className={HOME_THEME.faqList}>
-						{faqItems.map((item, idx) => (
+						{HOME_FAQ_ITEMS.map((item) => (
 							<details
-								key={idx}
+								key={item.id}
+								id={item.id}
 								className={HOME_THEME.faqDetails}
 								open={item.defaultOpen}
 							>
 								<summary className={HOME_THEME.faqSummary}>
-									<span>{item.q}</span>
+									<span>{t[item.qKey]}</span>
 									<ChevronDown
 										className={HOME_THEME.faqChevron}
 										aria-hidden="true"
 									/>
 								</summary>
 								<div className={HOME_THEME.faqAnswerWrapper}>
-									<p className={HOME_THEME.faqAnswer}>{item.a}</p>
+									<p className={HOME_THEME.faqAnswer}>{t[item.aKey]}</p>
 								</div>
 							</details>
 						))}

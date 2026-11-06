@@ -4,16 +4,22 @@ description: Direct booking platform and self-service coastal concierge for beac
 colors:
   coral-horizon: "#FF5A5F"
   coral-horizon-deep: "#FF424D"
+  coral-horizon-ink: "#B91C1C"
   coral-wash: "#FEF2F2"
   salguero-sunset-rose: "#E11D48"
   salguero-sunset-rose-deep: "#BE123C"
+  salguero-sunset-rose-light: "#FB7185"
   rose-wash: "#FFF1F2"
   clearance-emerald: "#059669"
   clearance-emerald-deep: "#047857"
+  clearance-emerald-light: "#34D399"
+  clearance-emerald-tint: "#6EE7B7"
+  clearance-emerald-night: "#022C22"
   emerald-wash: "#ECFDF5"
   keycard-amber: "#F59E0B"
   amber-wash: "#FFFBEB"
   nomad-sky: "#0EA5E9"
+  nomad-sky-light: "#38BDF8"
   sky-wash: "#F0F9FF"
   pure-white: "#FFFFFF"
   coastal-mist: "#F8FAFC"
@@ -144,26 +150,26 @@ The visual world explicitly rejects hidden-fee OTA clutter, sterile corporate ho
 The palette pairs sun-warmed coastal accents (Coral Horizon and Salguero Sunset Rose) with semantic concierge status hues (Clearance Emerald, Keycard Amber, and Nomad Sky) anchored by cool Slate and warm Travertine neutral ramps.
 
 ### Primary
-- **Coral Horizon** (`coral-horizon` / `#FF5A5F`, hover `coral-horizon-deep` / `#FF424D`, soft wash `coral-wash` / `#FEF2F2`): The global brand signature and Property 1707 primary accent. Used on the scrolled brand wordmark, primary navigation "Book Now" pills, Property 1707 calendar active date cells, `Guest Registry` submission CTAs, and high-priority `Guest Guide` unlock banners.
+- **Coral Horizon** (`coral-horizon` / `#FF5A5F`, hover `coral-horizon-deep` / `#FF424D`, high-contrast text/icon ink `coral-horizon-ink` / `#B91C1C`, soft wash `coral-wash` / `#FEF2F2`): The global brand signature and Property 1707 primary accent. Used on the scrolled brand wordmark, primary navigation "Book Direct" pills, homepage property comparison card CTAs (`#B91C1C` on light card surfaces for WCAG AA+ contrast), Property 1707 calendar active date cells, `Guest Registry` submission CTAs, and high-priority `Guest Guide` unlock banners.
 
 ### Secondary
-- **Salguero Sunset Rose** (`salguero-sunset-rose` / `#E11D48`, hover `salguero-sunset-rose-deep` / `#BE123C`, soft wash `rose-wash` / `#FFF1F2`): The dedicated Property 1606 primary accent, evoking 16th-floor sunset views over Playa Salguero. Replaces Coral Horizon across Property 1606's quick-stats icons, amenity badges, interactive calendar selection states, and booking form focus rings.
+- **Salguero Sunset Rose** (`salguero-sunset-rose` / `#E11D48`, hover `salguero-sunset-rose-deep` / `#BE123C`, dark-surface icon accent `salguero-sunset-rose-light` / `#FB7185`, soft wash `rose-wash` / `#FFF1F2`): The dedicated Property 1606 page primary accent, evoking 16th-floor sunset views over Playa Salguero. Replaces Coral Horizon across `/Oceanview1606` quick-stats icons, amenity badges, interactive calendar selection states, and booking form focus rings, as well as the Property 1606 editorial lifestyle icons on dark slate bands.
 
 ### Tertiary
-- **Clearance Emerald** (`clearance-emerald` / `#059669`, hover `clearance-emerald-deep` / `#047857`, soft wash `emerald-wash` / `#ECFDF5`): Reserved for verified financial settlement, statutory legal trust (Colombian Law 1581 & RNT compliance badges), step-by-step arrival checkmarks, and direct WhatsApp host support actions.
+- **Clearance Emerald** (`clearance-emerald` / `#059669`, hover `clearance-emerald-deep` / `#047857`, dark-surface badge/CTA accents `clearance-emerald-light` / `#34D399` and `clearance-emerald-tint` / `#6EE7B7` over `clearance-emerald-night` / `#022C22`, soft wash `emerald-wash` / `#ECFDF5`): Reserved for verified financial settlement, statutory legal trust (Colombian Law 1581 & RNT compliance badges), step-by-step arrival checkmarks, and direct WhatsApp host support actions.
 - **Keycard Amber** (`keycard-amber` / `#F59E0B`, soft wash `amber-wash` / `#FFFBEB`): Signals physical access credentials (`0XXXXXX#` smart-lock door PIN container), locked-credential warnings prior to `Guest Registry` completion, reactive `Minor Guardian Attestation` callouts, and mandatory condominium notices (such as the `20,000 COP` per-person `Building Registration Fee` and pool maintenance schedules).
-- **Nomad Sky** (`nomad-sky` / `#0EA5E9`, soft wash `sky-wash` / `#F0F9FF`): Highlights high-speed fiber Wi-Fi credentials, remote-work features in Property 1707, and unlocked `Guest Guide` navigation actions.
+- **Nomad Sky** (`nomad-sky` / `#0EA5E9`, dark-surface icon accent `nomad-sky-light` / `#38BDF8`, soft wash `sky-wash` / `#F0F9FF`): Highlights high-speed fiber Wi-Fi credentials, remote-work features in Property 1707, and unlocked `Guest Guide` navigation actions.
 
 ### Neutral
 - **Pure White** (`pure-white` / `#FFFFFF`): Primary elevated surface for property showcase cards, booking modules, `Guest Registry` occupant cards, and `Guest Guide` instruction panels.
-- **Coastal Mist & Slate Surface** (`coastal-mist` / `#F8FAFC`, `slate-surface` / `#F1F5F9`): Default page canvas (`bg-slate-50`) and secondary recessed container fill (`bg-slate-100`) for global pages and Property 1707.
+- **Coastal Mist & Slate Surface** (`coastal-mist` / `#F8FAFC`, `slate-surface` / `#F1F5F9`): Default page canvas (`bg-slate-50`) and secondary recessed container fill (`bg-slate-100`) for global pages, homepage comparison cards, and Property 1707.
 - **Slate Border & Muted Label** (`slate-border` / `#E2E8F0`, `slate-muted` / `#94A3B8`): Crisp 1px structural borders (`border-slate-200` on inputs, `border-slate-100` on cards) and uppercase field labels (`text-slate-400`).
 - **Slate Body & Slate Ink** (`slate-body` / `#475569`, `slate-ink` / `#1E293B`): Primary reading copy (`text-slate-600` to `text-slate-800`) calibrated to exceed WCAG 2.1 AA+ contrast ratios against light canvases.
-- **Deep Caribbean Slate** (`deep-caribbean-slate` / `#0F172A`): High-contrast headings (`text-slate-900`) and full-bleed dark editorial bands (Home Experiences section, Property 1707 Digital Nomad section, Host Bio banner, Legal Trust card, and global Footer).
-- **Warm Travertine Stone Ramp** (`travertine-mist` / `#FAFAF9`, `travertine-surface` / `#F5F5F4`, `travertine-border` / `#E7E5E4`, `travertine-ink` / `#292524`, `warm-travertine-stone` / `#1C1917`): Property 1606's warm architectural neutral scale, substituting cool slate with sun-baked stone tones across backgrounds, borders, body copy, and dark feature sections.
+- **Deep Caribbean Slate** (`deep-caribbean-slate` / `#0F172A`): High-contrast headings (`text-slate-900`), starting `COP` rate pills on homepage property cards, and full-bleed dark editorial bands (Home Experiences section, Property 1707 Digital Nomad section, Host Bio banner, Legal Trust card, and global Footer).
+- **Warm Travertine Stone Ramp** (`travertine-mist` / `#FAFAF9`, `travertine-surface` / `#F5F5F4`, `travertine-border` / `#E7E5E4`, `travertine-ink` / `#292524`, `warm-travertine-stone` / `#1C1917`): Property 1606's dedicated page neutral scale on `/Oceanview1606`, substituting cool slate with sun-baked stone tones across backgrounds, borders, body copy, and dark feature sections.
 
 ### Named Rules
-**The Property Temperature Rule.** Property 1707 and global operational surfaces always pair **Coral Horizon** with cool **Slate** neutrals; Property 1606 always pairs **Salguero Sunset Rose** with warm **Travertine Stone** neutrals. Never mix cool slate borders into a Property 1606 card or rose accents into Property 1707.
+**The Property Temperature Rule.** On dedicated property pages, `/Oceanview1707` and global operational surfaces pair **Coral Horizon** with cool **Slate** neutrals, while `/Oceanview1606` expresses the full Property Temperature split by pairing **Salguero Sunset Rose** with warm **Travertine Stone** neutrals. On the homepage (`/`), side-by-side comparison cards (`#home-card-1707` and `#home-card-1606`) intentionally share a unified neutral **Slate** + deep **Coral** (`#B91C1C`) frame so prospective guests compare floor level, bed count, and starting `COP` rates without competing card chrome.
 
 **The Semantic Trust Rule.** **Clearance Emerald** and **Keycard Amber** are functional signals, never decorative fills. Emerald appears only when confirming direct COP payment, statutory data protection, or WhatsApp host assistance; Amber appears only on physical access credentials (`0XXXXXX#`), locked-access gates, minor guardian attestations, and mandatory building notices.
 

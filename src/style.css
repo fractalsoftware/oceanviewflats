@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+	--font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 @utility scrollbar-none {
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
