@@ -146,12 +146,8 @@ export const CHROME_THEME = {
 	footerBadgeBrand: "text-white font-bold tracking-wide",
 } as const;
 
-const SHARED_HOME_CARD_WRAPPER =
-	"group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40";
-
 const SHARED_HOME_CARD_THEME = {
-	card: SHARED_HOME_CARD_WRAPPER,
-	cardWrapper: SHARED_HOME_CARD_WRAPPER,
+	card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	cardMedia: "h-80 relative overflow-hidden bg-slate-900",
 	cardImage:
 		"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
