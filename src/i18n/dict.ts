@@ -51,6 +51,7 @@ export const dict = {
 		nomadWifiDesc: "Reliable connection for all your meetings.",
 		nomadOceanDesc: "Find inspiration looking out at the Caribbean sea.",
 		nomadImgAlt: "Digital Nomad Workspace",
+		romanticImgAlt: "Romantic Sunset Terrace",
 		heroImgAlt: "Balcony Ocean View",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
@@ -128,7 +129,7 @@ export const dict = {
 			"We are located in the exclusive Playa Salguero area of Santa Marta, Colombia, just one block from the beach.",
 		faqQ2: "What amenities are included?",
 		faqA2:
-			"All flats include high-speed Wi-Fi, fully equipped kitchens, air conditioning, and access to the building's swimming pool.",
+			"All flats include high-speed Wi-Fi, a fully equipped kitchen, air conditioning, private parking, and access to the building's swimming pools and common areas (a one-time 20,000 COP per-person Building Registration Fee is paid at reception for security wristbands; swimming pools close on Tuesdays for maintenance).",
 		directTitle: "Why Book Direct?",
 		directSubtitle:
 			"Save money and enjoy a personalized, premium experience without platform service fees.",
@@ -158,7 +159,7 @@ export const dict = {
 			"Yes, OceanViewFlats operates legally and is fully registered under the National Tourism Registry of Colombia. Flat 1707 is registered under RNT #268781 and Flat 1606 under RNT #270413.",
 		faqQ6: "How do check-in, the Guest Registry, and the building fee work?",
 		faqA6:
-			"Before arrival, the Primary Guest completes our mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors), which immediately unlocks your digital Guest Guide, private parking space, and temporal 0XXXXXX# smart-lock Access Credential. Upon arrival at Edificio Salguero Sunset front-desk reception, a mandatory one-time Building Registration Fee of 20,000 COP per person is payable on-site for security wristbands and access to the infinity pools (please note pools close every Tuesday for scheduled maintenance).",
+			"1. Pre-Arrival Guest Registry: Before check-in, the Primary Guest completes our mandatory online Guest Registry, including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors. 2. Smart-Lock & Parking Unlock: Submitting the registry immediately unlocks your digital Guest Guide, private parking space, and temporary 0XXXXXX# smart-lock Access Credential. 3. Reception Fee & Pool Schedule: Upon arrival at Edificio Salguero Sunset front-desk reception, a one-time Building Registration Fee of 20,000 COP per person is paid on-site for security wristbands and infinity pool access; swimming pools close every Tuesday for scheduled maintenance.",
 		hostTitle: "Your Host",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -630,6 +631,7 @@ export const dict = {
 		nomadWifiDesc: "Conexión confiable para todas tus reuniones.",
 		nomadOceanDesc: "Encuentra inspiración mirando al mar Caribe.",
 		nomadImgAlt: "Espacio de trabajo para Nómadas Digitales",
+		romanticImgAlt: "Terraza Privada al Atardecer",
 		heroImgAlt: "Vista al mar desde el balcón",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
@@ -708,7 +710,7 @@ export const dict = {
 			"Estamos ubicados en la exclusiva zona de Playa Salguero en Santa Marta, Colombia, a solo una cuadra de la playa.",
 		faqQ2: "¿Qué comodidades están incluidas?",
 		faqA2:
-			"Todos los apartamentos incluyen Wi-Fi de alta velocidad, cocina totalmente equipada, aire acondicionado y acceso a la piscina del edificio.",
+			"Todos los apartamentos incluyen Wi-Fi de alta velocidad, cocina totalmente equipada, aire acondicionado, parqueadero privado y acceso a las piscinas y áreas comunes del edificio (aplica una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera en recepción para las manillas; las piscinas cierran los martes por mantenimiento).",
 		directTitle: "¿Por qué Reservar Directamente?",
 		directSubtitle:
 			"Ahorra dinero y disfruta de una experiencia premium personalizada sin tarifas de servicio de plataformas.",
@@ -740,7 +742,7 @@ export const dict = {
 		faqQ6:
 			"¿Cómo funcionan el check-in, el Registro de Huéspedes y la tarifa del edificio?",
 		faqA6:
-			"Antes de tu llegada, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea (incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores), lo cual desbloquea de inmediato tu Guía del Huésped digital, tu parqueadero privado incluido y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio obligatoria de 20,000 COP por persona por las manillas de seguridad y el acceso a las piscinas infinitas (ten en cuenta que las piscinas cierran todos los martes por mantenimiento programado).",
+			"1. Registro Previo en Línea: Antes del check-in, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea, incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores. 2. Clave Digital y Parqueadero: Al enviar el registro se desbloquean de inmediato tu Guía del Huésped digital, tu parqueadero privado incluido y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. 3. Recepción y Horario de Piscinas: Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio única de 20,000 COP por persona para las manillas de seguridad y el acceso a las piscinas infinitas; las piscinas cierran todos los martes por mantenimiento programado.",
 		hostTitle: "Tu Anfitrión",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1226,6 +1228,7 @@ export const dict = {
 		nomadWifiDesc: "Connexion fiable pour toutes vos réunions.",
 		nomadOceanDesc: "Trouvez l'inspiration face à la mer des Caraïbes.",
 		nomadImgAlt: "Espace de travail pour Nomades Digitaux",
+		romanticImgAlt: "Terrasse Privée au Coucher du Soleil",
 		heroImgAlt: "Vue sur l'océan depuis le balcon",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombie",
@@ -1305,7 +1308,7 @@ export const dict = {
 			"Nous sommes situés dans le quartier exclusif de Playa Salguero à Santa Marta, en Colombie, à seulement un pâté de maisons de la plage.",
 		faqQ2: "Quels sont les équipements inclus ?",
 		faqA2:
-			"Tous les appartements comprennent un Wi-Fi haut débit, une cuisine entièrement équipée, la climatisation et l'accès à la piscine de l'immeuble.",
+			"Tous les appartements comprennent un Wi-Fi haut débit, une cuisine entièrement équipée, la climatisation, un parking privé et l'accès aux piscines et espaces communs de l'immeuble (des Frais d'Enregistrement d'Immeuble uniques de 20 000 COP par personne sont payables à la réception pour les bracelets ; les piscines sont fermées le mardi pour maintenance).",
 		directTitle: "Pourquoi Réserver Directement ?",
 		directSubtitle:
 			"Économisez de l'argent et profitez d'une expérience premium personnalisée sans frais de service de plateforme.",
@@ -1338,7 +1341,7 @@ export const dict = {
 		faqQ6:
 			"Comment fonctionnent l'enregistrement, le Registre des Invités et les frais d'immeuble ?",
 		faqA6:
-			"Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne (incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs), ce qui débloque immédiatement votre Guide de l'Invité numérique, votre place de parking privé incluse et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble obligatoires de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement (veuillez noter que les piscines ferment tous les mardis pour maintenance).",
+			"1. Registre des Invités en Ligne : Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne, incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs. 2. Serrure Connectée et Parking : Cette étape débloque immédiatement votre Guide de l'Invité numérique, votre place de parking privé incluse et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. 3. Frais de Réception et Piscines : À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble uniques de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement ; les piscines ferment tous les mardis pour maintenance.",
 		hostTitle: "Votre Hôte",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1829,6 +1832,7 @@ export const dict = {
 		nomadWifiDesc: "Connessione affidabile per tutte le tue riunioni.",
 		nomadOceanDesc: "Trova l'ispirazione guardando il mar dei Caraibi.",
 		nomadImgAlt: "Spazio di lavoro per Nomadi Digitali",
+		romanticImgAlt: "Terrazza Privata al Tramonto",
 		heroImgAlt: "Vista oceano dal balcone",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
@@ -1907,7 +1911,7 @@ export const dict = {
 			"Ci troviamo nell'esclusiva zona di Playa Salguero a Santa Marta, Colombia, a solo un isolato dalla spiaggia.",
 		faqQ2: "Quali servizi sono inclusi?",
 		faqA2:
-			"Tutti gli appartamenti includono Wi-Fi ad alta velocità, cucina completamente attrezzata, aria condizionata e accesso alla piscina dell'edificio.",
+			"Tutti gli appartamenti includono Wi-Fi ad alta velocità, cucina completamente attrezzata, aria condizionata, parcheggio privato e accesso alle piscine e alle aree comuni dell'edificio (è prevista una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona da pagare alla reception per i braccialetti; le piscine sono chiuse il martedì per manutenzione).",
 		directTitle: "Perché Prenotare Direttamente?",
 		directSubtitle:
 			"Risparmia e goditi un'esperienza premium personalizzata senza costi di servizio delle piattaforme.",
@@ -1939,7 +1943,7 @@ export const dict = {
 		faqQ6:
 			"Come funzionano il check-in, il Registro Ospiti e la tariffa condominiale?",
 		faqA6:
-			"Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio (inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679), sbloccando immediatamente la Guida dell'Ospite digitale, il parcheggio privato incluso e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. All'arrivo alla reception dell'Edificio Salguero Sunset, è previsto il pagamento in loco di una Tariffa di Registrazione Condominiale obbligatoria di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro (si ricorda che le piscine chiudono ogni martedì per manutenzione programmata).",
+			"1. Registro Ospiti Online: Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio, inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679. 2. Serratura Smart e Parcheggio: L'invio del modulo sblocca immediatamente la Guida dell'Ospite digitale, il parcheggio privato incluso e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. 3. Tariffa Reception e Piscine: All'arrivo alla reception dell'Edificio Salguero Sunset, si paga in loco una Tariffa di Registrazione Condominiale una tantum di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro; le piscine chiudono ogni martedì per manutenzione programmata.",
 		hostTitle: "Il Tuo Ospite",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -2423,6 +2427,7 @@ export const dict = {
 		nomadWifiDesc: "Zuverlässige Verbindung für all deine Meetings.",
 		nomadOceanDesc: "Finde Inspiration beim Blick auf die Karibik.",
 		nomadImgAlt: "Arbeitsplatz für Digitale Nomaden",
+		romanticImgAlt: "Private Terrasse bei Sonnenuntergang",
 		heroImgAlt: "Meerblick vom Balkon",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Kolumbien",
@@ -2503,7 +2508,7 @@ export const dict = {
 			"Wir befinden uns in der exklusiven Gegend Playa Salguero in Santa Marta, Kolumbien, nur einen Block vom Strand entfernt.",
 		faqQ2: "Welche Annehmlichkeiten sind inbegriffen?",
 		faqA2:
-			"Alle Wohnungen verfügen über Highspeed-WLAN, eine voll ausgestattete Küche, Klimaanlage und Zugang zum Gemeinschaftspool des Gebäudes.",
+			"Alle Wohnungen verfügen über Highspeed-WLAN, eine voll ausgestattete Küche, Klimaanlage, einen privaten Parkplatz und Zugang zu den Schwimmbädern und Gemeinschaftsbereichen des Gebäudes (an der Rezeption fällt eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für die Armbänder an; dienstags sind die Pools wegen Wartung geschlossen).",
 		directTitle: "Warum Direkt Buchen?",
 		directSubtitle:
 			"Sparen Sie Geld und genießen Sie ein erstklassiges, personalisiertes Erlebnis ohne Buchungsgebühren der Plattformen.",
@@ -2534,7 +2539,7 @@ export const dict = {
 		faqQ6:
 			"Wie funktionieren Check-in, Gästeregistrierung und die Gebäudegebühr?",
 		faqA6:
-			"Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus (einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen). Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr privater Parkplatz sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine obligatorische einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten (bitte beachten Sie, dass die Pools jeden Dienstag wegen planmäßiger Wartung geschlossen sind).",
+			"1. Online-Gästeregistrierung: Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus, einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen. 2. Smart-Lock & Parkplatz: Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr privater Parkplatz sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. 3. Rezeptionsgebühr & Poolzeiten: Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten; die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
 		hostTitle: "Ihr Gastgeber",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -3026,6 +3031,7 @@ export const dict = {
 		nomadOceanDesc:
 			"カリブ海を眺めながらインスピレーションを見つけてください。",
 		nomadImgAlt: "デジタルノマドのワークスペース",
+		romanticImgAlt: "サンセットを望むプライベートテラス",
 		heroImgAlt: "バルコニーからのオーシャンビュー",
 		heroLocation:
 			"Edificio Salguero Sunset • コロンビア、サンタマルタ、プラヤ・サルグエロ",
@@ -3104,7 +3110,7 @@ export const dict = {
 			"コロンビアのサンタマルタ、プラヤ・サルグエロという高級エリアに位置しており、ビーチからわずか1ブロックです。",
 		faqQ2: "どのようなアメニティが含まれていますか？",
 		faqA2:
-			"すべてのフラットに高速Wi-Fi、設備の整ったキッチン、エアコン、建物のスイミングプールへのアクセスが含まれています。",
+			"すべてのフラットに高速Wi-Fi、設備の整ったキッチン、エアコン、専用駐車場、および建物のスイミングプールと共用エリアへのアクセスが含まれています（受付にてリストバンド発行のためお一人様20,000 COPの建物登録料（1回限り）のお支払いが必要です。また、プールは毎週火曜日にメンテナンスのため休業します）。",
 		directTitle: "公式サイトから直接予約する理由",
 		directSubtitle:
 			"プラットフォームの手数料を節約し、個別対応のプレミアムな体験を最安値で提供します。",
@@ -3135,7 +3141,7 @@ export const dict = {
 		faqQ6:
 			"チェックイン、宿泊者名簿（ゲスト登録）、および建物登録料の仕組みは？",
 		faqA6:
-			"ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出いただくと、デジタルゲストガイド、専用駐車場、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。ご到着時はEdificio Salguero Sunsetのフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください（なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます）。",
+			"1. 事前の宿泊者名簿登録：ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意、および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出ください。 2. スマートロック暗証番号と駐車場の開示：名簿の提出後、デジタルゲストガイド、専用駐車場、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。 3. フロント受付とプール営業日：Edificio Salguero Sunset到着時はフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください。なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます。",
 		hostTitle: "ホスト",
 		hostName: "Manuel Enrique",
 		hostBio:

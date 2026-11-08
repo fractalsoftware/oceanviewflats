@@ -11,3 +11,26 @@
 		display: none; /* Chrome, Safari and Opera */
 	}
 }
+
+@media (prefers-reduced-motion: reduce) {
+	html,
+	.scroll-smooth {
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		scroll-behavior: auto !important;
+	}
+
+	*,
+	*::before,
+	*::after {
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		animation-duration: 0.01ms !important;
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		animation-iteration-count: 1 !important;
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		transition-duration: 0.01ms !important;
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		scroll-behavior: auto !important;
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		transform: none !important;
+	}
+}
