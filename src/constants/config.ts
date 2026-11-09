@@ -132,6 +132,7 @@ export const getOceanview1606Path = (
 export interface HomePropertyCardConfig {
 	id: "1707" | "1606";
 	cardDomId: string;
+	rateBadgeDomId: string;
 	imageKey: "1707" | "1606";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
 	rateKey: "homeCard1707Rate" | "homeCard1606Rate";
@@ -146,6 +147,7 @@ export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
 	{
 		id: "1707",
 		cardDomId: "home-card-1707",
+		rateBadgeDomId: "home-rate-badge-1707",
 		imageKey: "1707",
 		badgeKey: "homeCard1707Badge",
 		rateKey: "homeCard1707Rate",
@@ -158,6 +160,7 @@ export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
 	{
 		id: "1606",
 		cardDomId: "home-card-1606",
+		rateBadgeDomId: "home-rate-badge-1606",
 		imageKey: "1606",
 		badgeKey: "homeCard1606Badge",
 		rateKey: "homeCard1606Rate",

@@ -1858,8 +1858,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "en",
 			file: "index.html",
 			expectedPropHeading: "Our Featured Beachfront Properties",
-			expected1707Rate: "From 300,000 COP / night",
-			expected1606Rate: "From 300,000 COP / night",
+			expected1707Rate: "From 450,000 COP / night",
+			expected1606Rate: "From 350,000 COP / night",
 			expectedWifi: "900 Mbps Wi-Fi",
 			expectedExp1707Badge: "Oceanview Flat 1707 • 17th Floor • RNT #268781",
 			expectedExp1606Badge: "Oceanview Flat 1606 • 16th Floor • RNT #270413",
@@ -1869,8 +1869,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "es",
 			file: "es.html",
 			expectedPropHeading: "Nuestras Propiedades Frente al Mar",
-			expected1707Rate: "Desde 300,000 COP / noche",
-			expected1606Rate: "Desde 300,000 COP / noche",
+			expected1707Rate: "Desde 450.000 COP / noche",
+			expected1606Rate: "Desde 350.000 COP / noche",
 			expectedWifi: "Wi-Fi 900 Mbps",
 			expectedExp1707Badge:
 				"Apartamento Vista al Mar 1707 • Piso 17 • RNT #268781",
@@ -1882,8 +1882,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "fr",
 			file: "fr.html",
 			expectedPropHeading: "Nos Propriétés en Bord de Mer",
-			expected1707Rate: "À partir de 300,000 COP / nuit",
-			expected1606Rate: "À partir de 300,000 COP / nuit",
+			expected1707Rate: "À partir de 450 000 COP / nuit",
+			expected1606Rate: "À partir de 350 000 COP / nuit",
 			expectedWifi: "Wi-Fi 900 Mbps",
 			expectedExp1707Badge:
 				"Appartement Vue Mer 1707 • 17e Étage • RNT #268781",
@@ -1895,8 +1895,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "it",
 			file: "it.html",
 			expectedPropHeading: "Le Nostre Proprietà Fronte Mare",
-			expected1707Rate: "Da 300,000 COP / notte",
-			expected1606Rate: "Da 300,000 COP / notte",
+			expected1707Rate: "Da 450.000 COP / notte",
+			expected1606Rate: "Da 350.000 COP / notte",
 			expectedWifi: "Wi-Fi 900 Mbps",
 			expectedExp1707Badge:
 				"Appartamento Vista Mare 1707 • 17° Piano • RNT #268781",
@@ -1908,8 +1908,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "de",
 			file: "de.html",
 			expectedPropHeading: "Unsere Strandunterkünfte",
-			expected1707Rate: "Ab 300,000 COP / Nacht",
-			expected1606Rate: "Ab 300,000 COP / Nacht",
+			expected1707Rate: "Ab 450.000 COP / Nacht",
+			expected1606Rate: "Ab 350.000 COP / Nacht",
 			expectedWifi: "900 Mbps WLAN",
 			expectedExp1707Badge:
 				"Apartment mit Meerblick 1707 • 17. Etage • RNT #268781",
@@ -1922,8 +1922,8 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			code: "ja",
 			file: "ja.html",
 			expectedPropHeading: "おすすめのビーチフロント物件",
-			expected1707Rate: "1泊 300,000 COP〜",
-			expected1606Rate: "1泊 300,000 COP〜",
+			expected1707Rate: "1泊 450,000 COP〜",
+			expected1606Rate: "1泊 350,000 COP〜",
 			expectedWifi: "900 Mbps Wi-Fi",
 			expectedExp1707Badge:
 				"オーシャンビューフラット 1707 • 17階 • RNT #268781",
@@ -1936,7 +1936,7 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. #properties has a visible <h2> heading (not sr-only), 300,000 COP rate cues, and 900 Mbps Wi-Fi pills on both property cards
+		// 1. #properties has a visible <h2> heading (not sr-only), canonical 450k/350k COP rate cues, and 900 Mbps Wi-Fi pills on both property cards
 		const propSectionMatch = html.match(
 			/<section[^>]*id="properties"[^>]*>[\s\S]*?<\/section>/,
 		);
@@ -1961,15 +1961,13 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} must render both #home-card-1707 and #home-card-1606`,
 		);
 		assert.ok(
-			card1707Match[0].includes("300,000 COP") &&
-				card1707Match[0].includes(locale.expected1707Rate) &&
+			card1707Match[0].includes(locale.expected1707Rate) &&
 				card1707Match[0].includes("900 Mbps") &&
 				card1707Match[0].includes(locale.expectedWifi),
 			`${locale.file} #home-card-1707 must display "${locale.expected1707Rate}" and "${locale.expectedWifi}"`,
 		);
 		assert.ok(
-			card1606Match[0].includes("300,000 COP") &&
-				card1606Match[0].includes(locale.expected1606Rate) &&
+			card1606Match[0].includes(locale.expected1606Rate) &&
 				card1606Match[0].includes("900 Mbps") &&
 				card1606Match[0].includes(locale.expectedWifi),
 			`${locale.file} #home-card-1606 must display "${locale.expected1606Rate}" and "${locale.expectedWifi}"`,
@@ -2848,4 +2846,630 @@ test("main.js #calendar-widget fetches blocked dates via pageConfig.apiBase and 
 			getDayButton(14).className.includes("bg-[#FF5A5F]/10"),
 		"Intermediate nights 13 and 14 must render in-range highlight",
 	);
+});
+
+test("Home Page across all 6 locales renders 450k (1707) and 350k (1606) baseline COP rates inside #home-rate-badge-1707 and #home-rate-badge-1606 and hydrates live rates via quote.php?action=rates (#255)", async () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "index.html",
+			expected1707: "From 450,000 COP / night",
+			expected1606: "From 350,000 COP / night",
+			expectedFormat: "From {rate} COP / night",
+			hydrated1707: "From 520,000 COP / night",
+			hydrated1606: "From 390,000 COP / night",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			expected1707: "Desde 450.000 COP / noche",
+			expected1606: "Desde 350.000 COP / noche",
+			expectedFormat: "Desde {rate} COP / noche",
+			hydrated1707: "Desde 520.000 COP / noche",
+			hydrated1606: "Desde 390.000 COP / noche",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			expected1707: "À partir de 450 000 COP / nuit",
+			expected1606: "À partir de 350 000 COP / nuit",
+			expectedFormat: "À partir de {rate} COP / nuit",
+			hydrated1707: "À partir de 520 000 COP / nuit",
+			hydrated1606: "À partir de 390 000 COP / nuit",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			expected1707: "Da 450.000 COP / notte",
+			expected1606: "Da 350.000 COP / notte",
+			expectedFormat: "Da {rate} COP / notte",
+			hydrated1707: "Da 520.000 COP / notte",
+			hydrated1606: "Da 390.000 COP / notte",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			expected1707: "Ab 450.000 COP / Nacht",
+			expected1606: "Ab 350.000 COP / Nacht",
+			expectedFormat: "Ab {rate} COP / Nacht",
+			hydrated1707: "Ab 520.000 COP / Nacht",
+			hydrated1606: "Ab 390.000 COP / Nacht",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			expected1707: "1泊 450,000 COP〜",
+			expected1606: "1泊 350,000 COP〜",
+			expectedFormat: "1泊 {rate} COP〜",
+			hydrated1707: "1泊 520,000 COP〜",
+			hydrated1606: "1泊 390,000 COP〜",
+		},
+	];
+
+	const pageConfigCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "page-config.js"),
+		"utf-8",
+	);
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		// 1. Never renders outdated 300,000 / 300.000 / 300 000 COP rate
+		assert.ok(
+			!html.includes("300,000") &&
+				!html.includes("300.000") &&
+				!html.includes("300 000"),
+			`${locale.file} must never render outdated 300,000 COP starting rate`,
+		);
+
+		// 2. Renders #home-rate-badge-1707 and #home-rate-badge-1606 with 450k and 350k baseline rates
+		const badge1707Match = html.match(
+			/<span[^>]*id="home-rate-badge-1707"[^>]*>([\s\S]*?)<\/span>/,
+		);
+		const badge1606Match = html.match(
+			/<span[^>]*id="home-rate-badge-1606"[^>]*>([\s\S]*?)<\/span>/,
+		);
+		assert.ok(
+			badge1707Match && badge1707Match[1] === locale.expected1707,
+			`${locale.file} #home-rate-badge-1707 must equal "${locale.expected1707}"`,
+		);
+		assert.ok(
+			badge1606Match && badge1606Match[1] === locale.expected1606,
+			`${locale.file} #home-rate-badge-1606 must equal "${locale.expected1606}"`,
+		);
+
+		// 3. Page config includes homeCardRateFormat in i18n slice
+		const configMatch = html.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatch, `${locale.file} must embed #ovf-page-config`);
+		const parsedConfig = JSON.parse(configMatch[1]);
+		assert.equal(parsedConfig.i18n.homeCardRateFormat, locale.expectedFormat);
+
+		// 4. VM execution hydrates #home-rate-badge-1707 and #home-rate-badge-1606 via quote.php?action=rates
+		const badge1707Node = {
+			id: "home-rate-badge-1707",
+			textContent: locale.expected1707,
+		};
+		const badge1606Node = {
+			id: "home-rate-badge-1606",
+			textContent: locale.expected1606,
+		};
+		const fetchedUrls: string[] = [];
+		const docListeners: Record<string, Array<() => void>> = {};
+		const scriptStub = {
+			async: false,
+			src: "",
+			parentNode: { insertBefore: () => {} },
+		};
+
+		const sandbox = {
+			window: {
+				_paq: [] as unknown[],
+				scrollY: 0,
+				location: { search: "", pathname: `/${locale.file}` },
+				addEventListener: () => {},
+			} as Record<string, unknown>,
+			document: {
+				documentElement: { lang: locale.code },
+				createElement: () => ({ ...scriptStub }),
+				getElementsByTagName: () => [scriptStub],
+				getElementById: (id: string) => {
+					if (id === "ovf-page-config") return { textContent: configMatch[1] };
+					if (id === "home-rate-badge-1707") return badge1707Node;
+					if (id === "home-rate-badge-1606") return badge1606Node;
+					return null;
+				},
+				addEventListener: (evt: string, fn: () => void) => {
+					docListeners[evt] = docListeners[evt] || [];
+					docListeners[evt].push(fn);
+				},
+			},
+			localStorage: {
+				getItem: () => null,
+				setItem: () => {},
+			},
+			fetch: async (url: string) => {
+				fetchedUrls.push(url);
+				return {
+					ok: true,
+					json: async () => ({
+						success: true,
+						data: {
+							properties: {
+								"1707": {
+									property_id: "1707",
+									current_nightly_rate_cop: 520000,
+								},
+								"1606": {
+									property_id: "1606",
+									current_nightly_rate_cop: 390000,
+								},
+							},
+						},
+					}),
+				};
+			},
+			console: { error: () => {}, warn: () => {}, log: () => {} },
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(pageConfigCode, sandbox);
+		vm.runInContext(mainJsCode, sandbox);
+		for (const fn of docListeners.DOMContentLoaded || []) {
+			fn();
+		}
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		assert.ok(
+			fetchedUrls.includes("./api/quote.php?action=rates"),
+			`${locale.file} must fetch "./api/quote.php?action=rates", got: ${JSON.stringify(fetchedUrls)}`,
+		);
+		assert.equal(badge1707Node.textContent, locale.hydrated1707);
+		assert.equal(badge1606Node.textContent, locale.hydrated1606);
+	}
+});
+
+test("Property Page #calendar-widget fetches authoritative Quote from quote.php via pageConfig.apiBase, enforces minimum_stay_required with localized #min-stay-warning, and enables checkout when valid (#255)", async () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const propHtmlEn = fs.readFileSync(
+		path.join(distDir, "Oceanview1707", "index.html"),
+		"utf-8",
+	);
+	assert.ok(
+		propHtmlEn.includes('id="min-stay-warning"'),
+		"Oceanview1707/index.html must render #min-stay-warning inside #price-breakdown-card",
+	);
+	const configMatch = propHtmlEn.match(
+		/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+	);
+	assert.ok(
+		configMatch,
+		"Oceanview1707/index.html must embed #ovf-page-config",
+	);
+	const parsedConfig = JSON.parse(configMatch[1]);
+	assert.equal(
+		parsedConfig.i18n.dbMinStayNotice,
+		"A minimum stay of {minStay} nights is required for the selected dates.",
+	);
+
+	const pageConfigCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "page-config.js"),
+		"utf-8",
+	);
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		textContent: string;
+		innerHTML: string;
+		className: string;
+		value: string;
+		href: string;
+		disabled: boolean;
+		children: MockNode[];
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		removeAttribute: (k: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		appendChild: (child: MockNode) => MockNode;
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Listener[]> = {};
+		let children: MockNode[] = [];
+		let innerHTMLVal = "";
+
+		const node: MockNode = {
+			id,
+			tagName,
+			textContent: "",
+			get innerHTML() {
+				return innerHTMLVal;
+			},
+			set innerHTML(val: string) {
+				innerHTMLVal = val;
+				if (val === "") {
+					children = [];
+				}
+			},
+			className: initialClasses.join(" "),
+			value: "",
+			href: "",
+			disabled: false,
+			get children() {
+				return children;
+			},
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+				if (k === "href") node.href = "";
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+		};
+		return node;
+	};
+
+	const monthNames = {
+		en: [
+			"January",
+			"February",
+			"March",
+			"April",
+			"May",
+			"June",
+			"July",
+			"August",
+			"September",
+			"October",
+			"November",
+			"December",
+		],
+	};
+	const dayNames = {
+		en: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+	};
+
+	const calendarWidget = createMockNode("calendar-widget", "DIV", [], {
+		"data-lang": "en",
+		"data-month-names": JSON.stringify(monthNames),
+		"data-day-names": JSON.stringify(dayNames),
+	});
+	const btnPrevMonth = createMockNode("btn-prev-month", "BUTTON");
+	const btnNextMonth = createMockNode("btn-next-month", "BUTTON");
+	const monthLabel = createMockNode("month-label", "SPAN");
+	const calendarGrid = createMockNode("calendar-grid", "DIV");
+	const checkInDisplay = createMockNode("check-in-display", "DIV", [], {
+		"data-text-add-date": "Add date",
+	});
+	const checkOutDisplay = createMockNode("check-out-display", "DIV", [], {
+		"data-text-add-date": "Add date",
+	});
+	const btnBook = createMockNode("btn-book", "A", [], {
+		"data-airbnb-url": "https://airbnb.com/rooms/1707",
+		"data-text-ready": "Check Selected Dates on Airbnb",
+		"data-text-default": "Check Selected Dates on Airbnb",
+	});
+	const btnBookText = createMockNode("btn-book-text", "SPAN");
+	const priceBreakdownCard = createMockNode("price-breakdown-card", "DIV", [
+		"hidden",
+	]);
+	const minStayWarning = createMockNode("min-stay-warning", "DIV", ["hidden"]);
+	const directBookingForm = createMockNode("direct-booking-form", "FORM", [
+		"hidden",
+	]);
+	const btnDirectSubmit = createMockNode("btn-direct-submit", "BUTTON");
+	const formCheckIn = createMockNode("form-check-in-date", "INPUT");
+	const formCheckOut = createMockNode("form-check-out-date", "INPUT");
+	const formTotalPrice = createMockNode("form-total-price-cop", "INPUT");
+	const rateBreakdownValue = createMockNode(
+		"rate-breakdown-value",
+		"SPAN",
+		[],
+		{
+			"data-nights-format": "{nights} nights",
+		},
+	);
+	const cleaningFeeValue = createMockNode("cleaning-fee-value", "SPAN");
+	const totalCopValue = createMockNode("total-cop-value", "SPAN");
+	const convertedCurrencyBox = createMockNode("converted-currency-box", "DIV", [
+		"hidden",
+	]);
+	const convertedCurrencyValue = createMockNode(
+		"converted-currency-value",
+		"SPAN",
+	);
+
+	const elementsById = new Map<string, MockNode>([
+		["calendar-widget", calendarWidget],
+		["btn-prev-month", btnPrevMonth],
+		["btn-next-month", btnNextMonth],
+		["month-label", monthLabel],
+		["calendar-grid", calendarGrid],
+		["check-in-display", checkInDisplay],
+		["check-out-display", checkOutDisplay],
+		["btn-book", btnBook],
+		["btn-book-text", btnBookText],
+		["price-breakdown-card", priceBreakdownCard],
+		["min-stay-warning", minStayWarning],
+		["direct-booking-form", directBookingForm],
+		["btn-direct-submit", btnDirectSubmit],
+		["form-check-in-date", formCheckIn],
+		["form-check-out-date", formCheckOut],
+		["form-total-price-cop", formTotalPrice],
+		["rate-breakdown-value", rateBreakdownValue],
+		["cleaning-fee-value", cleaningFeeValue],
+		["total-cop-value", totalCopValue],
+		["converted-currency-box", convertedCurrencyBox],
+		["converted-currency-value", convertedCurrencyValue],
+	]);
+
+	const now = new Date();
+	const targetMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+	const ym = `${targetMonthDate.getFullYear()}-${String(targetMonthDate.getMonth() + 1).padStart(2, "0")}`;
+
+	const fetchedUrls: string[] = [];
+	const docListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		onload: null as (() => void) | null,
+		onerror: null as (() => void) | null,
+		addEventListener: () => {},
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			MercadoPago: () => {},
+			location: {
+				search: "",
+				pathname: "/Oceanview1707/index.html",
+			},
+			addEventListener: () => {},
+		} as Record<string, unknown>,
+		document: {
+			documentElement: { lang: "en" },
+			head: { appendChild: () => {} },
+			createElement: (tag: string) => {
+				if (tag.toLowerCase() === "script") {
+					return { ...scriptStub };
+				}
+				return createMockNode("", tag.toUpperCase());
+			},
+			getElementsByTagName: () => [scriptStub],
+			querySelector: () => null,
+			querySelectorAll: () => [],
+			getElementById: (id: string) => {
+				if (id === "ovf-page-config") {
+					return { textContent: configMatch[1] };
+				}
+				return elementsById.get(id) || null;
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		localStorage: {
+			getItem: (key: string) => {
+				if (key === "cop_exchange_rates")
+					return JSON.stringify({ USD: 0.00025 });
+				if (key === "cop_exchange_rates_time") return String(Date.now());
+				return null;
+			},
+			setItem: () => {},
+		},
+		fetch: async (url: string) => {
+			fetchedUrls.push(url);
+			if (url.includes("availability.php")) {
+				return {
+					ok: true,
+					json: async () => [],
+				};
+			}
+			if (url.includes("quote.php") && url.includes(`check_out=${ym}-12`)) {
+				// 2-night stay in a 4-night minimum stay seasonal tier -> invalid!
+				return {
+					ok: true,
+					json: async () => ({
+						success: true,
+						data: {
+							property_id: "1707",
+							check_in: `${ym}-10`,
+							check_out: `${ym}-12`,
+							nights_count: 2,
+							accommodation_total_cop: 1100000,
+							cleaning_fee_cop: 100000,
+							total_cop: 1200000,
+							minimum_stay_required: 4,
+							is_valid: false,
+							violation_reason: "min_stay",
+						},
+					}),
+				};
+			}
+			if (url.includes("quote.php") && url.includes(`check_out=${ym}-14`)) {
+				// 4-night stay in a 4-night minimum stay seasonal tier -> valid!
+				return {
+					ok: true,
+					json: async () => ({
+						success: true,
+						data: {
+							property_id: "1707",
+							check_in: `${ym}-10`,
+							check_out: `${ym}-14`,
+							nights_count: 4,
+							accommodation_total_cop: 2200000,
+							cleaning_fee_cop: 100000,
+							total_cop: 2300000,
+							minimum_stay_required: 4,
+							is_valid: true,
+							violation_reason: null,
+						},
+					}),
+				};
+			}
+			return {
+				ok: true,
+				json: async () => [],
+			};
+		},
+		Intl,
+		Date,
+		URLSearchParams,
+		FormData: class {},
+		console: { log: () => {}, warn: () => {}, error: () => {} },
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(pageConfigCode, sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+	await new Promise((resolve) => setTimeout(resolve, 10));
+
+	// Navigate to next month
+	btnNextMonth.dispatchEvent("click");
+
+	const getDayButton = (dayNum: number): MockNode => {
+		const dateStr = `${ym}-${String(dayNum).padStart(2, "0")}`;
+		const found = calendarGrid.children.find(
+			(child) => child.getAttribute("data-date") === dateStr,
+		);
+		assert.ok(found, `Day button for ${dateStr} must exist`);
+		return found;
+	};
+
+	// 1. Select 2-night range (day 10 to day 12) which violates minimum_stay_required = 4
+	getDayButton(10).dispatchEvent("click");
+	getDayButton(12).dispatchEvent("click");
+	await new Promise((resolve) => setTimeout(resolve, 15));
+
+	assert.ok(
+		fetchedUrls.includes(
+			`../api/quote.php?property_id=1707&check_in=${ym}-10&check_out=${ym}-12`,
+		),
+		`Expected "../api/quote.php?property_id=1707&check_in=${ym}-10&check_out=${ym}-12" in ${JSON.stringify(fetchedUrls)}`,
+	);
+	assert.equal(priceBreakdownCard.classList.contains("hidden"), false);
+	assert.equal(String(formTotalPrice.value), "1200000");
+	assert.ok(rateBreakdownValue.textContent.includes("2 nights"));
+	assert.ok(totalCopValue.textContent.includes("COP"));
+	assert.ok(convertedCurrencyValue.textContent.includes("300.00 USD"));
+
+	// Minimum-stay warning is visible, checkout form is hidden/disabled, Airbnb button is disabled
+	assert.equal(
+		minStayWarning.classList.contains("hidden"),
+		false,
+		"#min-stay-warning must be visible when is_valid === false",
+	);
+	assert.equal(
+		minStayWarning.textContent,
+		"A minimum stay of 4 nights is required for the selected dates.",
+	);
+	assert.equal(
+		directBookingForm.classList.contains("hidden"),
+		true,
+		"#direct-booking-form must remain hidden when is_valid === false",
+	);
+	assert.equal(btnDirectSubmit.disabled, true);
+	assert.equal(btnBook.getAttribute("aria-disabled"), "true");
+	assert.equal(btnBook.classList.contains("pointer-events-none"), true);
+
+	// 2. Select valid 4-night range (day 10 to day 14) -> warning clears and checkout form + Airbnb button enable
+	getDayButton(10).dispatchEvent("click");
+	getDayButton(14).dispatchEvent("click");
+	await new Promise((resolve) => setTimeout(resolve, 15));
+
+	assert.ok(
+		fetchedUrls.includes(
+			`../api/quote.php?property_id=1707&check_in=${ym}-10&check_out=${ym}-14`,
+		),
+		`Expected "../api/quote.php?property_id=1707&check_in=${ym}-10&check_out=${ym}-14" in ${JSON.stringify(fetchedUrls)}`,
+	);
+	assert.equal(String(formTotalPrice.value), "2300000");
+	assert.ok(rateBreakdownValue.textContent.includes("4 nights"));
+	assert.ok(convertedCurrencyValue.textContent.includes("575.00 USD"));
+	assert.equal(
+		minStayWarning.classList.contains("hidden"),
+		true,
+		"#min-stay-warning must hide when is_valid === true",
+	);
+	assert.equal(minStayWarning.textContent, "");
+	assert.equal(
+		directBookingForm.classList.contains("hidden"),
+		false,
+		"#direct-booking-form must be revealed when is_valid === true",
+	);
+	assert.equal(btnDirectSubmit.disabled, false);
+	assert.equal(btnBook.getAttribute("aria-disabled"), "false");
+	assert.equal(btnBook.classList.contains("pointer-events-none"), false);
 });
