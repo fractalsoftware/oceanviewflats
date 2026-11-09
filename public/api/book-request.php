@@ -147,15 +147,14 @@ if ($pdo === null && !empty($config['db']['host']) && !empty($config['db']['dbna
 }
 
 $icalFeeds = isset($config['ical_feeds']) && is_array($config['ical_feeds']) ? $config['ical_feeds'] : [];
-$defaultCacheDir = PathResolver::resolveDirectory('cache');
+$defaultCacheDir = $GLOBALS['TEST_CACHE_DIR'] ?? PathResolver::resolveDirectory('cache');
 if (!file_exists($defaultCacheDir)) {
     mkdir($defaultCacheDir, 0755, true);
 }
 
 /** @var InboundChannelSyncServiceInterface $syncService */
 $syncService = $GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] ?? new InboundChannelSyncService($icalFeeds, $defaultCacheDir);
-$cacheDir = $GLOBALS['TEST_CACHE_DIR']
-    ?? (($syncService instanceof InboundChannelSyncService) ? $syncService->getCacheDir() : $defaultCacheDir);
+$cacheDir = ($syncService instanceof InboundChannelSyncService) ? $syncService->getCacheDir() : $defaultCacheDir;
 if (!file_exists($cacheDir)) {
     mkdir($cacheDir, 0755, true);
 }
