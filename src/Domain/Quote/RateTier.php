@@ -89,6 +89,30 @@ final class RateTier implements ArrayAccess
         ];
     }
 
+    /**
+     * Serializes this tier into a compact public rate summary entry.
+     *
+     * @return array{
+     *     property_id: string,
+     *     start_date: string,
+     *     end_date: string,
+     *     nightly_rate_cop: int,
+     *     minimum_stay: int,
+     *     season_name: string
+     * }
+     */
+    public function toSummaryArray(): array
+    {
+        return [
+            'property_id' => $this->propertyId,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'nightly_rate_cop' => (int) round($this->nightlyRateCop),
+            'minimum_stay' => $this->minimumStay,
+            'season_name' => $this->seasonName,
+        ];
+    }
+
     public function offsetExists(mixed $offset): bool
     {
         return array_key_exists((string) $offset, $this->toArray());

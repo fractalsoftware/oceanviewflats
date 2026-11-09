@@ -175,6 +175,10 @@ export const BookingSection = ({
 										</div>
 									</div>
 								</div>
+								<div
+									id="min-stay-warning"
+									className={theme.bookingMinStayWarning}
+								></div>
 							</div>
 
 							{/* Direct Booking Inquiry Form */}

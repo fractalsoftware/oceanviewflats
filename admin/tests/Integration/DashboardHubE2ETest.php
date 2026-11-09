@@ -838,6 +838,99 @@ final class DashboardHubE2ETest extends TestCase
         $this->assertStringContainsString('Guest registry incomplete (Bob Arriving)', $hubAfterEditorReset->getBody());
     }
 
+    public function testUnonboardedChannelBlockInHeatmapAndDaySummaryDrawerAndAbsorptionEndToEnd(): void
+    {
+        $inElevenDays = date('Y-m-d', strtotime('+11 days'));
+        $inFourteenDays = date('Y-m-d', strtotime('+14 days'));
+        $blockUid = md5("1707_{$inElevenDays}_{$inFourteenDays}_airbnb");
+
+        $syncStatus1606 = new ChannelSyncStatus(
+            propertyId: '1606',
+            status: ChannelSyncStatus::STATUS_HEALTHY,
+            lastSyncedAt: date('c'),
+            lastAttemptedAt: date('c'),
+            httpCode: 200,
+            blockedNightsCount: 0
+        );
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn(['1606' => $syncStatus1606]);
+
+        $unonboardedBlock = new ChannelBlock('1707', $inElevenDays, $inFourteenDays, 'airbnb', 'Airbnb (Not available)');
+        $ledger = $this->createMock(ReservationLedgerInterface::class);
+        $ledger->method('getChannelBlocks')->willReturnCallback(
+            static fn(string $pid): array => $pid === '1707' ? [$unonboardedBlock] : []
+        );
+
+        $app = AdminApp::createDefault($this->pdo, [
+            'channel_sync_service' => $syncService,
+            'ledger' => $ledger,
+        ]);
+
+        $session = [
+            'admin_user_id' => 1,
+            'admin_user_name' => 'Manuel Admin',
+            'admin_user_email' => 'admin@oceanviewflats.com',
+            'admin_user_role' => 'admin',
+            'csrf_token' => 'csrf_token_253',
+        ];
+
+        // 1. GET /dashboard/hub: Heatmap cell for $inElevenDays has un-onboarded Airbnb Channel Block tooltip & routes to /dashboard/day
+        $hubResp = $app->handle(new Request('GET', '/dashboard/hub', ['property_id' => 'all'], [], ['HTTP_HX_REQUEST' => 'true']), $session);
+        $this->assertSame(200, $hubResp->getStatusCode());
+        $hubHtml = $hubResp->getBody();
+
+        $this->assertStringContainsString('Airbnb Channel Block (Un-onboarded)', $hubHtml);
+        $this->assertStringContainsString('Channel Block (Airbnb)', $hubHtml);
+        $this->assertStringContainsString('hx-get="/dashboard/day?date=' . $inElevenDays . '&property_id=all"', $hubHtml);
+
+        // 2. GET /dashboard/day?date=$inElevenDays: Renders Channel Block card with Un-onboarded badge, date range, and Onboard Guest button
+        $dayResp = $app->handle(new Request('GET', '/dashboard/day', ['date' => $inElevenDays, 'property_id' => 'all']), $session);
+        $this->assertSame(200, $dayResp->getStatusCode());
+        $dayHtml = $dayResp->getBody();
+
+        $this->assertStringContainsString('Partial (1/2)', $dayHtml);
+        $this->assertStringContainsString('$800,000 COP', $dayHtml);
+        $this->assertStringContainsString('$350,000', $dayHtml);
+        $this->assertStringContainsString('$450,000', $dayHtml);
+        $this->assertStringContainsString('Channel Block', $dayHtml);
+        $this->assertStringContainsString('Un-onboarded', $dayHtml);
+        $this->assertStringContainsString($inElevenDays . ' &rarr; ' . $inFourteenDays, $dayHtml);
+        $expectedOnboardUrl = '/reservations/new?property_id=1707&amp;check_in=' . $inElevenDays . '&amp;check_out=' . $inFourteenDays . '&amp;source=airbnb&amp;channel_block_uid=' . $blockUid;
+        $this->assertStringContainsString('hx-get="' . $expectedOnboardUrl . '"', $dayHtml);
+        $this->assertStringContainsString('Onboard Guest', $dayHtml);
+
+        // 3. Onboard the Airbnb Channel Block into an External Reservation (res-abnb-onboarded)
+        $stmt = $this->pdo->prepare('
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, channel_block_uid, registry_completed, door_code
+            ) VALUES (
+                "res-abnb-onboarded", "1707", "Sofia Onboarded", "sofia@airbnb.com", "+573009998877",
+                :checkIn, :checkOut, 1350000, "confirmed", "airbnb", :blockUid, 1, "0445566#"
+            )
+        ');
+        $stmt->execute([
+            ':checkIn' => $inElevenDays,
+            ':checkOut' => $inFourteenDays,
+            ':blockUid' => $blockUid,
+        ]);
+
+        // 4. Verify Day Summary Drawer now shows the Confirmed Reservation (Sofia Onboarded) and does not double-count occupancy
+        $dayAfterResp = $app->handle(new Request('GET', '/dashboard/day', ['date' => $inElevenDays, 'property_id' => 'all']), $session);
+        $this->assertSame(200, $dayAfterResp->getStatusCode());
+        $dayAfterHtml = $dayAfterResp->getBody();
+
+        $this->assertStringContainsString('Partial (1/2)', $dayAfterHtml);
+        $this->assertStringContainsString('Sofia Onboarded', $dayAfterHtml);
+        $this->assertStringContainsString('res-abnb-onboarded', $dayAfterHtml);
+        $this->assertStringNotContainsString('No guest profile onboarded yet.', $dayAfterHtml);
+
+        // 5. Verify Heatmap cell now routes directly to /reservations/res-abnb-onboarded
+        $hubAfterResp = $app->handle(new Request('GET', '/dashboard/hub', ['property_id' => 'all'], [], ['HTTP_HX_REQUEST' => 'true']), $session);
+        $this->assertSame(200, $hubAfterResp->getStatusCode());
+        $this->assertStringContainsString('hx-get="/reservations/res-abnb-onboarded"', $hubAfterResp->getBody());
+    }
+
     private function seedOperationalDatabase(): void
     {
         $today = date('Y-m-d');

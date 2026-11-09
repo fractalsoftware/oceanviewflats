@@ -67,6 +67,26 @@ export const getClientDictionaryForPage = (
 		contactDateError: t.contactDateError || "",
 	};
 
+	if (pageId === "home") {
+		return {
+			...common,
+			homeCardRateFormat: t.homeCardRateFormat || "",
+		};
+	}
+
+	if (
+		pageId === "Oceanview1707" ||
+		pageId === "Oceanview1606" ||
+		pageId === "oceanview1707" ||
+		pageId === "oceanview1606"
+	) {
+		return {
+			...common,
+			dbMinStayNotice: t.dbMinStayNotice || "",
+			dbNightsFormat: t.dbNightsFormat || "",
+		};
+	}
+
 	if (pageId === "registry") {
 		return {
 			...common,

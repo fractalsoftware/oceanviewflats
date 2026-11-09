@@ -149,6 +149,8 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Turnover</span>
                                     <?php elseif ($prop->status === 'Maintenance'): ?>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Maintenance</span>
+                                    <?php elseif ($prop->status === 'Channel Block'): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">Channel Block</span>
                                     <?php elseif ($prop->status === 'Pending'): ?>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">Pending</span>
                                     <?php else: ?>
@@ -255,116 +257,154 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                     <?php endif; ?>
                                 </div>
 
-                            <!-- Case C: Single Reservation (Active / Arriving / Departing) -->
-                            <?php elseif ($prop->activeReservation !== null || $prop->arrivingReservation !== null || $prop->departingReservation !== null): ?>
-                                <?php
-                                $res = $prop->activeReservation ?? $prop->arrivingReservation ?? $prop->departingReservation;
-                                $resUid = (string) ($res['reservation_uid'] ?? '');
-                                $resName = (string) ($res['guest_name'] ?? 'Guest');
-                                $resEmail = (string) ($res['guest_email'] ?? '');
-                                $resPhone = (string) ($res['guest_phone'] ?? '');
-                                $resCheckIn = (string) ($res['check_in'] ?? '');
-                                $resCheckOut = (string) ($res['check_out'] ?? '');
-                                $resDoorCode = (string) ($res['door_code'] ?? '');
-                                $resRegistryCompleted = (int) ($res['registry_completed'] ?? 0) === 1;
-                                $resClearanceStatus = (string) ($res['clearance_status'] ?? '');
-                                $resSource = (string) ($res['source'] ?? 'web');
-                                $resPayStatus = (string) ($res['payment_status'] ?? '');
-                                ?>
-                                <div class="bg-gray-50/80 p-3.5 rounded-lg border border-gray-100 text-xs space-y-2.5">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                                                <span class="font-semibold text-gray-900 text-sm">
-                                                    <?= htmlspecialchars($resName, ENT_QUOTES, 'UTF-8') ?>
-                                                </span>
-                                                <?php if ($resPayStatus !== ''): ?>
-                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium <?= match ($resPayStatus) {
-                                                        'paid', 'approved' => 'bg-emerald-100 text-emerald-800',
-                                                        'refunded', 'partially_refunded' => 'bg-amber-100 text-amber-800',
-                                                        default => 'bg-slate-100 text-slate-700',
+                            <!-- Case C & D: Single Reservation (Active / Arriving / Departing) and/or Un-onboarded External Channel Block -->
+                            <?php elseif ($prop->activeReservation !== null || $prop->arrivingReservation !== null || $prop->departingReservation !== null || $prop->channelBlock !== null): ?>
+                                <?php if ($prop->activeReservation !== null || $prop->arrivingReservation !== null || $prop->departingReservation !== null): ?>
+                                    <?php
+                                    $res = $prop->activeReservation ?? $prop->arrivingReservation ?? $prop->departingReservation;
+                                    $resUid = (string) ($res['reservation_uid'] ?? '');
+                                    $resName = (string) ($res['guest_name'] ?? 'Guest');
+                                    $resEmail = (string) ($res['guest_email'] ?? '');
+                                    $resPhone = (string) ($res['guest_phone'] ?? '');
+                                    $resCheckIn = (string) ($res['check_in'] ?? '');
+                                    $resCheckOut = (string) ($res['check_out'] ?? '');
+                                    $resDoorCode = (string) ($res['door_code'] ?? '');
+                                    $resRegistryCompleted = (int) ($res['registry_completed'] ?? 0) === 1;
+                                    $resClearanceStatus = (string) ($res['clearance_status'] ?? '');
+                                    $resSource = (string) ($res['source'] ?? 'web');
+                                    $resPayStatus = (string) ($res['payment_status'] ?? '');
+                                    ?>
+                                    <div class="bg-gray-50/80 p-3.5 rounded-lg border border-gray-100 text-xs space-y-2.5">
+                                        <div class="flex items-start justify-between">
+                                            <div>
+                                                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                                    <span class="font-semibold text-gray-900 text-sm">
+                                                        <?= htmlspecialchars($resName, ENT_QUOTES, 'UTF-8') ?>
+                                                    </span>
+                                                    <?php if ($resPayStatus !== ''): ?>
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium <?= match ($resPayStatus) {
+                                                            'paid', 'approved' => 'bg-emerald-100 text-emerald-800',
+                                                            'refunded', 'partially_refunded' => 'bg-amber-100 text-amber-800',
+                                                            default => 'bg-slate-100 text-slate-700',
+                                                        } ?>">
+                                                            <?= htmlspecialchars(ucwords(str_replace('_', ' ', $resPayStatus)), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="text-[11px] text-gray-500 font-mono mt-0.5">
+                                                    UID: <?= htmlspecialchars($resUid, ENT_QUOTES, 'UTF-8') ?>
+                                                </div>
+                                            </div>
+                                            <button type="button"
+                                                    hx-get="/reservations/<?= urlencode($resUid) ?>"
+                                                    hx-target="#drawer-container"
+                                                    hx-swap="innerHTML"
+                                                    class="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition cursor-pointer">
+                                                View Stay &rarr;
+                                            </button>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2 text-[11px] text-gray-600 pt-1">
+                                            <div>
+                                                <span class="text-gray-400 block">Check-in &rarr; Out</span>
+                                                <span class="font-medium text-gray-800"><?= htmlspecialchars($resCheckIn) ?> &rarr; <?= htmlspecialchars($resCheckOut) ?></span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-400 block">Booking Channel</span>
+                                                <span class="font-medium text-gray-800 uppercase"><?= htmlspecialchars($resSource) ?></span>
+                                            </div>
+                                            <?php if ($resEmail !== ''): ?>
+                                                <div>
+                                                    <span class="text-gray-400 block">Email</span>
+                                                    <span class="truncate block font-mono text-gray-700" title="<?= htmlspecialchars($resEmail) ?>"><?= htmlspecialchars($resEmail) ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if ($resPhone !== ''): ?>
+                                                <div>
+                                                    <span class="text-gray-400 block">Phone</span>
+                                                    <span class="text-gray-700"><?= htmlspecialchars($resPhone) ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if ($resPayStatus !== ''): ?>
+                                                <div>
+                                                    <span class="text-gray-400 block">Payment</span>
+                                                    <span class="font-medium <?= match ($resPayStatus) {
+                                                        'paid', 'approved' => 'text-emerald-700',
+                                                        'refunded', 'partially_refunded' => 'text-amber-700',
+                                                        default => 'text-gray-700',
                                                     } ?>">
                                                         <?= htmlspecialchars(ucwords(str_replace('_', ' ', $resPayStatus)), ENT_QUOTES, 'UTF-8') ?>
                                                     </span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <!-- Credentials & Clearances -->
+                                        <div class="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[11px]">
+                                            <div class="flex items-center space-x-1">
+                                                <span class="text-gray-500">PIN:</span>
+                                                <?php if ($resDoorCode !== ''): ?>
+                                                    <span class="font-mono font-bold text-indigo-700"><?= htmlspecialchars($resDoorCode) ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-amber-600 font-medium">Not Assigned</span>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="text-[11px] text-gray-500 font-mono mt-0.5">
-                                                UID: <?= htmlspecialchars($resUid, ENT_QUOTES, 'UTF-8') ?>
-                                            </div>
-                                        </div>
-                                        <button type="button"
-                                                hx-get="/reservations/<?= urlencode($resUid) ?>"
-                                                hx-target="#drawer-container"
-                                                hx-swap="innerHTML"
-                                                class="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition cursor-pointer">
-                                            View Stay &rarr;
-                                        </button>
-                                    </div>
+                                            <div class="flex items-center space-x-2">
+                                                <?php if ($resRegistryCompleted): ?>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800">Registry Complete</span>
+                                                <?php else: ?>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">Registry Pending</span>
+                                                <?php endif; ?>
 
-                                    <div class="grid grid-cols-2 gap-2 text-[11px] text-gray-600 pt-1">
-                                        <div>
-                                            <span class="text-gray-400 block">Check-in &rarr; Out</span>
-                                            <span class="font-medium text-gray-800"><?= htmlspecialchars($resCheckIn) ?> &rarr; <?= htmlspecialchars($resCheckOut) ?></span>
-                                        </div>
-                                        <div>
-                                            <span class="text-gray-400 block">Booking Channel</span>
-                                            <span class="font-medium text-gray-800 uppercase"><?= htmlspecialchars($resSource) ?></span>
-                                        </div>
-                                        <?php if ($resEmail !== ''): ?>
-                                            <div>
-                                                <span class="text-gray-400 block">Email</span>
-                                                <span class="truncate block font-mono text-gray-700" title="<?= htmlspecialchars($resEmail) ?>"><?= htmlspecialchars($resEmail) ?></span>
+                                                <?php if ($resClearanceStatus === 'synced'): ?>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800" title="<?= htmlspecialchars((string) ($res['clearance_number'] ?? '')) ?>">Clearance OK<?= !empty($res['clearance_number']) ? ' #' . htmlspecialchars((string) $res['clearance_number']) : '' ?></span>
+                                                <?php elseif ($resClearanceStatus === 'failed'): ?>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-100 text-rose-800">Clearance Failed</span>
+                                                <?php elseif ($resClearanceStatus === 'pending'): ?>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">Clearance Pending</span>
+                                                <?php endif; ?>
                                             </div>
-                                        <?php endif; ?>
-                                        <?php if ($resPhone !== ''): ?>
-                                            <div>
-                                                <span class="text-gray-400 block">Phone</span>
-                                                <span class="text-gray-700"><?= htmlspecialchars($resPhone) ?></span>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($resPayStatus !== ''): ?>
-                                            <div>
-                                                <span class="text-gray-400 block">Payment</span>
-                                                <span class="font-medium <?= match ($resPayStatus) {
-                                                    'paid', 'approved' => 'text-emerald-700',
-                                                    'refunded', 'partially_refunded' => 'text-amber-700',
-                                                    default => 'text-gray-700',
-                                                } ?>">
-                                                    <?= htmlspecialchars(ucwords(str_replace('_', ' ', $resPayStatus)), ENT_QUOTES, 'UTF-8') ?>
-                                                </span>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <!-- Credentials & Clearances -->
-                                    <div class="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[11px]">
-                                        <div class="flex items-center space-x-1">
-                                            <span class="text-gray-500">PIN:</span>
-                                            <?php if ($resDoorCode !== ''): ?>
-                                                <span class="font-mono font-bold text-indigo-700"><?= htmlspecialchars($resDoorCode) ?></span>
-                                            <?php else: ?>
-                                                <span class="text-amber-600 font-medium">Not Assigned</span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="flex items-center space-x-2">
-                                            <?php if ($resRegistryCompleted): ?>
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800">Registry Complete</span>
-                                            <?php else: ?>
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">Registry Pending</span>
-                                            <?php endif; ?>
-
-                                            <?php if ($resClearanceStatus === 'synced'): ?>
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800" title="<?= htmlspecialchars((string) ($res['clearance_number'] ?? '')) ?>">Clearance OK<?= !empty($res['clearance_number']) ? ' #' . htmlspecialchars((string) $res['clearance_number']) : '' ?></span>
-                                            <?php elseif ($resClearanceStatus === 'failed'): ?>
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-100 text-rose-800">Clearance Failed</span>
-                                            <?php elseif ($resClearanceStatus === 'pending'): ?>
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">Clearance Pending</span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
-                                </div>
+                                <?php endif; ?>
 
-                            <!-- Case D: Vacant -->
+                                <?php if ($prop->channelBlock !== null): ?>
+                                    <?php
+                                    $cb = $prop->channelBlock;
+                                    $cbUid = $prop->channelBlockUid ?? $cb->uid();
+                                    $onboardHref = '/reservations/new?property_id=' . urlencode($prop->propertyId)
+                                        . '&check_in=' . urlencode($cb->startDate)
+                                        . '&check_out=' . urlencode($cb->endDate)
+                                        . '&source=' . urlencode($cb->source)
+                                        . '&channel_block_uid=' . urlencode($cbUid);
+                                    ?>
+                                    <div class="p-3.5 bg-rose-50/70 rounded-lg border border-rose-200 text-rose-900 space-y-2.5 text-xs">
+                                        <div class="flex items-center justify-between">
+                                            <div class="font-bold flex items-center gap-1.5">
+                                                <span>Airbnb Channel Block</span>
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-800">Un-onboarded</span>
+                                            </div>
+                                            <span class="font-mono text-[10px] text-rose-700 uppercase"><?= htmlspecialchars($cb->source, ENT_QUOTES, 'UTF-8') ?></span>
+                                        </div>
+                                        <div class="text-[11px] text-rose-800">
+                                            <span class="text-rose-700">Stay Dates:</span>
+                                            <strong><?= htmlspecialchars($cb->startDate, ENT_QUOTES, 'UTF-8') ?> &rarr; <?= htmlspecialchars($cb->endDate, ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                        <div class="pt-1 flex items-center justify-between border-t border-rose-200/60">
+                                            <span class="text-[11px] text-rose-700">No guest profile onboarded yet.</span>
+                                            <button type="button"
+                                                    hx-get="<?= htmlspecialchars($onboardHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                    hx-target="#modal-container"
+                                                    hx-swap="innerHTML"
+                                                    onclick="closeReservationDrawer();"
+                                                    class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition cursor-pointer">
+                                                Onboard Guest
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                            <!-- Case E: Vacant -->
                             <?php else: ?>
                                 <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-center space-y-2.5">
                                     <p class="text-xs text-gray-500">Property is vacant on this calendar date.</p>

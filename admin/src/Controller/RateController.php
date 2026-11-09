@@ -11,6 +11,7 @@ use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
 use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
+use OceanViewFlats\Domain\Quote\QuoteEngine;
 use OceanViewFlats\Domain\Quote\RateRepositoryInterface;
 use OceanViewFlats\Domain\Quote\RateTier;
 use OceanViewFlats\Domain\Support\PathResolver;
@@ -27,7 +28,8 @@ final class RateController
         private readonly ViewRenderer $viewRenderer,
         private readonly AuditLogger $auditLogger,
         private readonly PropertyRatesConfig $ratesConfig,
-        private readonly string $csvPath = 'public/data/prices.csv'
+        private readonly string $csvPath = 'public/data/prices.csv',
+        private readonly ?string $cacheDir = null
     ) {
     }
 
@@ -171,6 +173,7 @@ final class RateController
         );
         $savedTier = $this->rateRepository->save($newTier, adminUserId: $currentUser['id']);
         $tierId = (int) $savedTier->id;
+        $this->syncPricesCache();
 
         // 4. Audit Trail Recording
         $this->auditLogger->record(
@@ -332,6 +335,7 @@ final class RateController
             createdBy: isset($existing['created_by']) ? (int) $existing['created_by'] : null
         );
         $this->rateRepository->save($updatedTier);
+        $this->syncPricesCache();
 
         // 4. Audit Trail Recording
         $currentUser = $this->buildCurrentUser($session);
@@ -411,6 +415,7 @@ final class RateController
 
         // 2. Delete Record
         $this->rateRepository->delete($id);
+        $this->syncPricesCache();
 
         // 3. Re-render View Container & Header Actions
         $flashMessage = "Seasonal tier '{$existing['season_name']}' deleted successfully. Dates will use property base pricing.";
@@ -461,6 +466,7 @@ final class RateController
 
         try {
             $seededCount = $this->rateRepository->seedFromCsv($csvFullPath, $currentUser['id']);
+            $this->syncPricesCache();
 
             $this->auditLogger->record(
                 action: 'rate_tiers_seeded',
@@ -709,6 +715,35 @@ final class RateController
     {
         $val = (int) $year;
         return ($val >= 2020 && $val <= 2040) ? $val : (int) date('Y');
+    }
+
+    /**
+     * Atomically writes active property rate summaries and seasonal rate tiers to prices.json in the shared cache directory.
+     */
+    private function syncPricesCache(): void
+    {
+        try {
+            $targetCacheDir = $this->cacheDir ?? PathResolver::resolveDirectory('cache');
+            if (!is_dir($targetCacheDir)) {
+                mkdir($targetCacheDir, 0755, true);
+            }
+
+            $quoteEngine = new QuoteEngine($this->rateRepository, $this->ratesConfig);
+            $summary = $quoteEngine->getRateSummary(includeFallbackTiers: false);
+
+            $json = json_encode($summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if ($json === false) {
+                return;
+            }
+
+            $targetFile = rtrim($targetCacheDir, '/\\') . '/prices.json';
+            $tmpFile = $targetFile . '.tmp.' . uniqid('', true);
+            if (file_put_contents($tmpFile, $json, LOCK_EX) !== false) {
+                rename($tmpFile, $targetFile);
+            }
+        } catch (Throwable $e) {
+            error_log('[RateController Cache Sync Warning] ' . $e->getMessage());
+        }
     }
 
     /**

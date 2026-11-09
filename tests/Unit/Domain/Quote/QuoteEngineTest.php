@@ -250,4 +250,32 @@ final class QuoteEngineTest extends TestCase
         $this->assertTrue($tier->coversDate('2026-05-20'));
         $this->assertFalse($tier->coversDate('2026-05-21'));
     }
+
+    public function testGetRateSummaryComputesActivePropertyRatesAndTiers(): void
+    {
+        $now = new \DateTimeImmutable('2026-12-20');
+        $summary = $this->engine->getRateSummary(null, $now);
+
+        $this->assertArrayHasKey('properties', $summary);
+        $this->assertArrayHasKey('tiers', $summary);
+
+        // On 2026-12-20, 1606 is in the 550k tier (2026-12-15 to 2027-01-15)
+        $this->assertSame(550000, $summary['properties']['1606']['current_nightly_rate_cop']);
+        $this->assertSame(350000, $summary['properties']['1606']['default_nightly_rate_cop']);
+        $this->assertSame(80000, $summary['properties']['1606']['cleaning_fee_cop']);
+        $this->assertTrue($summary['properties']['1606']['is_seasonal_tier_active']);
+        $this->assertSame('2027-01-15', $summary['properties']['1606']['active_tier_end_date']);
+
+        // On 2026-12-20, 1707 is in the 450k tier (2026-01-01 to 2026-12-31)
+        $this->assertSame(450000, $summary['properties']['1707']['current_nightly_rate_cop']);
+        $this->assertSame(450000, $summary['properties']['1707']['default_nightly_rate_cop']);
+        $this->assertSame(100000, $summary['properties']['1707']['cleaning_fee_cop']);
+
+        $this->assertCount(3, $summary['tiers']);
+
+        // Filtered by property 1707
+        $summary1707 = $this->engine->getRateSummary('1707', $now);
+        $this->assertCount(1, $summary1707['tiers']);
+        $this->assertSame('1707', $summary1707['tiers'][0]['property_id']);
+    }
 }

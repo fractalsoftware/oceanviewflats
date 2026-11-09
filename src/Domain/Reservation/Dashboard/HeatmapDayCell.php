@@ -7,6 +7,7 @@ namespace OceanViewFlats\Domain\Reservation\Dashboard;
 final class HeatmapDayCell
 {
     public readonly bool $hasWarning;
+    public readonly bool $hasChannelBlock;
     public readonly int $totalUnits;
     public readonly int $occupiedUnits;
     public readonly int $totalProperties;
@@ -43,7 +44,8 @@ final class HeatmapDayCell
         ?bool $hasWarning = null,
         ?int $totalProperties = null,
         ?int $occupiedProperties = null,
-        array $propertyDetails = []
+        array $propertyDetails = [],
+        bool $hasChannelBlock = false
     ) {
         $effTotal = $totalProperties ?? $totalUnits;
         $effOccupied = $occupiedProperties ?? $occupiedUnits;
@@ -56,6 +58,17 @@ final class HeatmapDayCell
         $this->flatDetails = $effProps;
         $this->propertyDetails = $effProps;
         $this->hasWarning = $hasWarning ?? ($this->hasRiskAlert || count($this->warningMessages) > 0);
+
+        $detectedChannelBlock = $hasChannelBlock;
+        if (!$detectedChannelBlock) {
+            foreach ($effProps as $detail) {
+                if (is_array($detail) && isset($detail['status']) && str_starts_with((string) $detail['status'], 'Channel Block')) {
+                    $detectedChannelBlock = true;
+                    break;
+                }
+            }
+        }
+        $this->hasChannelBlock = $detectedChannelBlock;
     }
 
     /**
@@ -79,17 +92,26 @@ final class HeatmapDayCell
      * Returns the click navigation action for state-adaptive HTMX routing:
      * - 'vacant': 0 reservations, no maintenance -> opens New Reservation modal
      * - 'single_reservation': exactly 1 reservation, no turnover, no maintenance -> opens Reservation detail drawer
-     * - 'day_drawer': multi-stay, turnover, or maintenance block -> opens Day Summary drawer
+     * - 'day_drawer': multi-stay, turnover, maintenance block, or un-onboarded channel block -> opens Day Summary drawer
      *
      * @return 'vacant'|'single_reservation'|'day_drawer'
      */
     public function getClickAction(): string
     {
-        if ($this->hasMaintenance || $this->hasTurnover || count($this->reservationUids) > 1) {
+        if (
+            $this->hasMaintenance
+            || $this->hasTurnover
+            || $this->hasChannelBlock
+            || count($this->reservationUids) > 1
+            || $this->occupiedProperties > count($this->reservationUids)
+        ) {
             return 'day_drawer';
         }
         if (count($this->reservationUids) === 1 && $this->singleReservationUid !== null) {
             return 'single_reservation';
+        }
+        if ($this->occupiedProperties > 0) {
+            return 'day_drawer';
         }
         return 'vacant';
     }
@@ -132,6 +154,11 @@ final class HeatmapDayCell
     public function hasPendingHold(): bool
     {
         return $this->hasPendingHold;
+    }
+
+    public function hasChannelBlock(): bool
+    {
+        return $this->hasChannelBlock;
     }
 
     public function hasRiskAlert(): bool

@@ -119,7 +119,11 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									</div>
 									<div className={cardTheme.cardBody}>
 										<div>
-											<span className={cardTheme.rateBadge}>
+											<span
+												id={card.rateBadgeDomId}
+												data-property-rate={card.id}
+												className={cardTheme.rateBadge}
+											>
 												{t[card.rateKey]}
 											</span>
 											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>

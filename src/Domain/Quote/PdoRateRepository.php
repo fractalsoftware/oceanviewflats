@@ -32,15 +32,22 @@ class PdoRateRepository implements RateRepositoryInterface
      */
     public function getTiersForProperty(string $propertyId): array
     {
-        $stmt = $this->pdo->prepare('
-            SELECT *
-            FROM property_rates 
-            WHERE property_id = :property_id 
-            ORDER BY start_date ASC
-        ');
-        $stmt->execute(['property_id' => $propertyId]);
-        /** @var list<array<string, mixed>> $rows */
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT *
+                FROM property_rates 
+                WHERE property_id = :property_id 
+                ORDER BY start_date ASC
+            ');
+            $stmt->execute(['property_id' => $propertyId]);
+            /** @var list<array<string, mixed>> $rows */
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Throwable) {
+            if ($this->fallbackSource !== null) {
+                return $this->fallbackSource->getTiersForProperty($propertyId);
+            }
+            return [];
+        }
 
         if (empty($rows)) {
             if ($this->fallbackSource !== null) {

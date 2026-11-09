@@ -13,6 +13,7 @@ require_once __DIR__ . '/utils.php';
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncService;
 use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
 use OceanViewFlats\Domain\Reservation\ReservationLedger;
+use OceanViewFlats\Domain\Support\PathResolver;
 
 // Enforce security headers & CORS policy dynamically
 enforce_security_headers_and_cors(['GET', 'OPTIONS']);
@@ -39,15 +40,21 @@ if (!isset($icalFeeds[$propertyId])) {
 }
 
 // Define caching directory for upstream Airbnb calendar blocks (ADR 0002)
-$cacheDir = __DIR__ . '/../cache';
-if (!file_exists($cacheDir)) {
-    mkdir($cacheDir, 0755, true);
+$defaultCacheDir = PathResolver::resolveDirectory('cache');
+if (!file_exists($defaultCacheDir)) {
+    mkdir($defaultCacheDir, 0755, true);
 }
 
 try {
     /** @var InboundChannelSyncServiceInterface $syncService */
-    $syncService = $GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] ?? new InboundChannelSyncService($icalFeeds, $cacheDir);
-    $cacheLifetime = 15 * 60; // 15 minutes (in seconds)
+    $syncService = $GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] ?? new InboundChannelSyncService($icalFeeds, $defaultCacheDir);
+    $cacheDir = $GLOBALS['TEST_CACHE_DIR']
+        ?? (($syncService instanceof InboundChannelSyncService) ? $syncService->getCacheDir() : $defaultCacheDir);
+    if (!file_exists($cacheDir)) {
+        mkdir($cacheDir, 0755, true);
+    }
+
+    $cacheLifetime = 5 * 60; // 5 minutes (300 seconds)
 
     if ($syncService->isCacheStale($propertyId, $cacheLifetime)) {
         $syncResult = $syncService->sync($propertyId, force: false, initiatedBy: 'public_traffic');

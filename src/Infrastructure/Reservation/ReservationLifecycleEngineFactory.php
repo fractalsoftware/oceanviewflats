@@ -103,7 +103,8 @@ final class ReservationLifecycleEngineFactory
         $quoteEngine = isset($options['quoteEngine']) && $options['quoteEngine'] instanceof QuoteEngineInterface
             ? $options['quoteEngine']
             : QuoteEngine::createDefault(
-                csvPath: isset($options['csvPath']) && is_string($options['csvPath']) ? $options['csvPath'] : null
+                csvPath: isset($options['csvPath']) && is_string($options['csvPath']) ? $options['csvPath'] : null,
+                pdo: $pdo
             );
 
         return new ReservationLifecycleEngine(
