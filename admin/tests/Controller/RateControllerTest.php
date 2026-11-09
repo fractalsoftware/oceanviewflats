@@ -23,6 +23,7 @@ final class RateControllerTest extends TestCase
     private PropertyRatesConfig $ratesConfig;
     private RateController $controller;
     private string $tempCsvPath;
+    private string $tempCacheDir;
 
     /**
      * @var array<string, mixed>
@@ -46,12 +47,16 @@ final class RateControllerTest extends TestCase
             '1707,2026-01-01,2026-12-31,450000,2',
         ]));
 
+        $this->tempCacheDir = sys_get_temp_dir() . '/test_rate_cache_' . uniqid();
+        mkdir($this->tempCacheDir, 0755, true);
+
         $this->controller = new RateController(
             rateRepository: $this->rateRepository,
             viewRenderer: $this->viewRenderer,
             auditLogger: $this->auditLogger,
             ratesConfig: $this->ratesConfig,
-            csvPath: $this->tempCsvPath
+            csvPath: $this->tempCsvPath,
+            cacheDir: $this->tempCacheDir
         );
 
         $this->session = [
@@ -67,6 +72,12 @@ final class RateControllerTest extends TestCase
     {
         if (file_exists($this->tempCsvPath)) {
             unlink($this->tempCsvPath);
+        }
+        if (is_dir($this->tempCacheDir)) {
+            foreach (glob($this->tempCacheDir . '/*') ?: [] as $f) {
+                @unlink($f);
+            }
+            @rmdir($this->tempCacheDir);
         }
     }
 
@@ -496,6 +507,16 @@ final class RateControllerTest extends TestCase
         $this->assertNotFalse($log);
         $after = json_decode((string) $log['payload_after'], true);
         $this->assertSame(3, $after['seeded_count']);
+
+        // Verify prices.json cache was atomically synchronized
+        $cacheFile = $this->tempCacheDir . '/prices.json';
+        $this->assertFileExists($cacheFile);
+        $cachedPrices = json_decode((string) file_get_contents($cacheFile), true);
+        $this->assertIsArray($cachedPrices);
+        $this->assertCount(3, $cachedPrices);
+        $this->assertSame('1606', $cachedPrices[0]['property_id']);
+        $this->assertSame(350000, $cachedPrices[0]['nightly_rate_cop']);
+        $this->assertSame(2, $cachedPrices[0]['minimum_stay']);
     }
 
     public function testModalTriggersAndFormExplicitlyDeclareInnerHTMLSwap(): void

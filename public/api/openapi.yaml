@@ -601,15 +601,33 @@ paths:
     get:
       tags:
         - Quotation
-      summary: 'Calculate authoritative stay quotation'
-      description: 'Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays, and includes centralized cleaning fees per ADR 0004.'
+      summary: 'Calculate authoritative stay quotation or fetch active property rate summaries'
+      description: 'Computes night-by-night seasonal pricing from the database-backed rate repository (PdoRateSource with CSV and baseline configuration fallback), enforces strict multi-tier maximum minimum stays, and includes centralized cleaning fees per ADR 0004. When called with action=rates (or summary=1), returns active nightly rates and seasonal rate tiers for Properties 1606 and 1707.'
       operationId: getQuote
       parameters:
+        -
+          name: action
+          in: query
+          description: 'Optional action selector; pass "rates" to retrieve active rate summaries and seasonal tiers'
+          required: false
+          schema:
+            type: string
+            enum:
+              - rates
+        -
+          name: summary
+          in: query
+          description: 'Optional summary flag ("1") to retrieve active rate summaries and seasonal tiers'
+          required: false
+          schema:
+            type: string
+            enum:
+              - '1'
         -
           name: property_id
           in: query
           description: 'Property identifier (1606 or 1707)'
-          required: true
+          required: false
           schema:
             type: string
             enum:
@@ -619,8 +637,8 @@ paths:
         -
           name: check_in
           in: query
-          description: 'Check-in date in YYYY-MM-DD format'
-          required: true
+          description: 'Check-in date in YYYY-MM-DD format (required for stay quotation)'
+          required: false
           schema:
             type: string
             format: date
@@ -628,15 +646,15 @@ paths:
         -
           name: check_out
           in: query
-          description: 'Check-out date in YYYY-MM-DD format'
-          required: true
+          description: 'Check-out date in YYYY-MM-DD format (required for stay quotation)'
+          required: false
           schema:
             type: string
             format: date
             example: '2026-06-04'
       responses:
         '200':
-          description: 'Authoritative quotation calculation result'
+          description: 'Authoritative quotation calculation or active rate summary result'
           content:
             application/json:
               schema:

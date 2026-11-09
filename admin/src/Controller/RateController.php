@@ -27,7 +27,8 @@ final class RateController
         private readonly ViewRenderer $viewRenderer,
         private readonly AuditLogger $auditLogger,
         private readonly PropertyRatesConfig $ratesConfig,
-        private readonly string $csvPath = 'public/data/prices.csv'
+        private readonly string $csvPath = 'public/data/prices.csv',
+        private readonly ?string $cacheDir = null
     ) {
     }
 
@@ -171,6 +172,7 @@ final class RateController
         );
         $savedTier = $this->rateRepository->save($newTier, adminUserId: $currentUser['id']);
         $tierId = (int) $savedTier->id;
+        $this->syncPricesCache();
 
         // 4. Audit Trail Recording
         $this->auditLogger->record(
@@ -332,6 +334,7 @@ final class RateController
             createdBy: isset($existing['created_by']) ? (int) $existing['created_by'] : null
         );
         $this->rateRepository->save($updatedTier);
+        $this->syncPricesCache();
 
         // 4. Audit Trail Recording
         $currentUser = $this->buildCurrentUser($session);
@@ -411,6 +414,7 @@ final class RateController
 
         // 2. Delete Record
         $this->rateRepository->delete($id);
+        $this->syncPricesCache();
 
         // 3. Re-render View Container & Header Actions
         $flashMessage = "Seasonal tier '{$existing['season_name']}' deleted successfully. Dates will use property base pricing.";
@@ -461,6 +465,7 @@ final class RateController
 
         try {
             $seededCount = $this->rateRepository->seedFromCsv($csvFullPath, $currentUser['id']);
+            $this->syncPricesCache();
 
             $this->auditLogger->record(
                 action: 'rate_tiers_seeded',
@@ -709,6 +714,47 @@ final class RateController
     {
         $val = (int) $year;
         return ($val >= 2020 && $val <= 2040) ? $val : (int) date('Y');
+    }
+
+    /**
+     * Atomically writes active seasonal rate tiers to prices.json in the shared cache directory.
+     */
+    private function syncPricesCache(): void
+    {
+        try {
+            $targetCacheDir = $this->cacheDir ?? PathResolver::resolveDirectory('cache');
+            if (!is_dir($targetCacheDir)) {
+                mkdir($targetCacheDir, 0755, true);
+            }
+
+            $prices = [];
+            foreach (['1606', '1707'] as $propId) {
+                $tiers = $this->rateRepository->getRatesForProperty($propId);
+                foreach ($tiers as $tier) {
+                    $prices[] = [
+                        'property_id' => $tier->propertyId,
+                        'start_date' => $tier->startDate,
+                        'end_date' => $tier->endDate,
+                        'nightly_rate_cop' => (int) round($tier->nightlyRateCop),
+                        'minimum_stay' => $tier->minimumStay,
+                        'season_name' => $tier->seasonName,
+                    ];
+                }
+            }
+
+            $json = json_encode($prices, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if ($json === false) {
+                return;
+            }
+
+            $targetFile = rtrim($targetCacheDir, '/\\') . '/prices.json';
+            $tmpFile = $targetFile . '.tmp.' . uniqid('', true);
+            if (file_put_contents($tmpFile, $json, LOCK_EX) !== false) {
+                rename($tmpFile, $targetFile);
+            }
+        } catch (Throwable $e) {
+            error_log('[RateController Cache Sync Warning] ' . $e->getMessage());
+        }
     }
 
     /**

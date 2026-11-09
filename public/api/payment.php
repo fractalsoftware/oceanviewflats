@@ -66,10 +66,17 @@ if ($captchaCheck !== true) {
 
 // Connect to database and delegate to domain processor
 try {
-    $pdo = get_db_connection($config['db']);
+    $pdo = $GLOBALS['TEST_PDO'] ?? get_db_connection($config['db']);
 
     $request = BookingPaymentRequest::fromArray($data, $lang, $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
-    $processor = BookingPaymentProcessor::createDefault($pdo);
+    $processorOptions = [];
+    if (isset($GLOBALS['TEST_PAYMENT_GATEWAY'])) {
+        $processorOptions['gateway'] = $GLOBALS['TEST_PAYMENT_GATEWAY'];
+    }
+    if (isset($GLOBALS['TEST_EMAIL_SENDER'])) {
+        $processorOptions['emailSender'] = $GLOBALS['TEST_EMAIL_SENDER'];
+    }
+    $processor = BookingPaymentProcessor::createDefault($pdo, $processorOptions);
     $result = $processor->processBookingPayment($request);
 
     http_response_code($result->httpStatusCode);

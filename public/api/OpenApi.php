@@ -643,36 +643,50 @@ class QuoteEndpoints
     #[OA\Get(
         path: '/quote.php',
         operationId: 'getQuote',
-        summary: 'Calculate authoritative stay quotation',
-        description: 'Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays, and includes centralized cleaning fees per ADR 0004.',
+        summary: 'Calculate authoritative stay quotation or fetch active property rate summaries',
+        description: 'Computes night-by-night seasonal pricing from the database-backed rate repository (PdoRateSource with CSV and baseline configuration fallback), enforces strict multi-tier maximum minimum stays, and includes centralized cleaning fees per ADR 0004. When called with action=rates (or summary=1), returns active nightly rates and seasonal rate tiers for Properties 1606 and 1707.',
         tags: ['Quotation'],
         parameters: [
+            new OA\Parameter(
+                name: 'action',
+                in: 'query',
+                description: 'Optional action selector; pass "rates" to retrieve active rate summaries and seasonal tiers',
+                required: false,
+                schema: new OA\Schema(type: 'string', enum: ['rates'])
+            ),
+            new OA\Parameter(
+                name: 'summary',
+                in: 'query',
+                description: 'Optional summary flag ("1") to retrieve active rate summaries and seasonal tiers',
+                required: false,
+                schema: new OA\Schema(type: 'string', enum: ['1'])
+            ),
             new OA\Parameter(
                 name: 'property_id',
                 in: 'query',
                 description: 'Property identifier (1606 or 1707)',
-                required: true,
+                required: false,
                 schema: new OA\Schema(type: 'string', enum: ['1606', '1707'], example: '1606')
             ),
             new OA\Parameter(
                 name: 'check_in',
                 in: 'query',
-                description: 'Check-in date in YYYY-MM-DD format',
-                required: true,
+                description: 'Check-in date in YYYY-MM-DD format (required for stay quotation)',
+                required: false,
                 schema: new OA\Schema(type: 'string', format: 'date', example: '2026-06-01')
             ),
             new OA\Parameter(
                 name: 'check_out',
                 in: 'query',
-                description: 'Check-out date in YYYY-MM-DD format',
-                required: true,
+                description: 'Check-out date in YYYY-MM-DD format (required for stay quotation)',
+                required: false,
                 schema: new OA\Schema(type: 'string', format: 'date', example: '2026-06-04')
             )
         ],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Authoritative quotation calculation result',
+                description: 'Authoritative quotation calculation or active rate summary result',
                 content: new OA\JsonContent(ref: '#/components/schemas/QuoteResponse')
             ),
             new OA\Response(
