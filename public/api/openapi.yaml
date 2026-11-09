@@ -658,7 +658,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuoteResponse'
+                oneOf:
+                  - { $ref: '#/components/schemas/QuoteResponse' }
+                  - { $ref: '#/components/schemas/RateSummaryResponse' }
         '400':
           description: 'Invalid date parameters, inverted date span, or unknown property'
           content:
@@ -898,6 +900,113 @@ components:
           example: true
         data:
           $ref: '#/components/schemas/QuoteData'
+      type: object
+    PropertyRateSummary:
+      description: 'Active rate and fee summary for a property'
+      properties:
+        property_id:
+          type: string
+          enum:
+            - '1606'
+            - '1707'
+          example: '1606'
+        current_nightly_rate_cop:
+          type: integer
+          example: 350000
+        currentNightlyRate:
+          type: integer
+          example: 350000
+        default_nightly_rate_cop:
+          type: integer
+          example: 350000
+        defaultNightlyRate:
+          type: integer
+          example: 350000
+        cleaning_fee_cop:
+          type: integer
+          example: 80000
+        cleaningFeeCop:
+          type: integer
+          example: 80000
+        default_minimum_stay:
+          type: integer
+          example: 2
+        defaultMinimumStay:
+          type: integer
+          example: 2
+        is_seasonal_tier_active:
+          type: boolean
+          example: true
+        isSeasonalTierActive:
+          type: boolean
+          example: true
+        active_tier_name:
+          type: string
+          example: 'Standard Rate'
+        activeTierName:
+          type: string
+          example: 'Standard Rate'
+        active_tier_end_date:
+          type: string
+          format: date
+          example: '2026-12-14'
+          nullable: true
+        activeTierEndDate:
+          type: string
+          format: date
+          example: '2026-12-14'
+          nullable: true
+      type: object
+    SeasonalRateTierSummary:
+      description: 'Seasonal rate tier entry'
+      properties:
+        property_id:
+          type: string
+          enum:
+            - '1606'
+            - '1707'
+          example: '1606'
+        start_date:
+          type: string
+          format: date
+          example: '2026-01-01'
+        end_date:
+          type: string
+          format: date
+          example: '2026-12-14'
+        nightly_rate_cop:
+          type: integer
+          example: 350000
+        minimum_stay:
+          type: integer
+          example: 2
+        season_name:
+          type: string
+          example: 'Standard Rate'
+      type: object
+    RateSummaryData:
+      description: 'Active property rate summaries and seasonal rate tiers for Properties 1606 and 1707'
+      properties:
+        properties:
+          properties:
+            '1606':
+              $ref: '#/components/schemas/PropertyRateSummary'
+            '1707':
+              $ref: '#/components/schemas/PropertyRateSummary'
+          type: object
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonalRateTierSummary'
+      type: object
+    RateSummaryResponse:
+      description: 'Successful active rate summary response envelope (when action=rates or summary=1)'
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/RateSummaryData'
       type: object
 tags:
   -
