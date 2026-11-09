@@ -617,7 +617,7 @@ if (!function_exists('formatCopCompactCurrency')) {
             'scope' => '1606',
             'title' => 'Property 1606 (RNT #' . ($report->property1606Slice->rntNumber ?? '270413') . ')',
             'badge' => 'RNT #' . ($report->property1606Slice->rntNumber ?? '270413'),
-            'surchargeNote' => 'Direct Flat Surcharge: $ 100.000 COP / stay',
+            'surchargeNote' => 'Direct Flat Surcharge: $ 80.000 COP / stay',
             'slice' => $report->property1606Slice,
             'isPortfolio' => false,
         ];
@@ -628,7 +628,7 @@ if (!function_exists('formatCopCompactCurrency')) {
             'scope' => '1707',
             'title' => 'Property 1707 (RNT #' . ($report->property1707Slice->rntNumber ?? '268781') . ')',
             'badge' => 'RNT #' . ($report->property1707Slice->rntNumber ?? '268781'),
-            'surchargeNote' => 'Direct Flat Surcharge: $ 120.000 COP / stay',
+            'surchargeNote' => 'Direct Flat Surcharge: $ 100.000 COP / stay',
             'slice' => $report->property1707Slice,
             'isPortfolio' => false,
         ];
@@ -688,7 +688,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                                 <dd class="font-semibold text-gray-900"><?= formatCopCurrency($pSlice->activeStayRevenue) ?></dd>
                             </div>
                             <div class="flex items-center justify-between gap-2" data-parafiscal-line="deducted-direct-fees">
-                                <dt class="text-gray-600">Prorated Direct Cleaning &amp; Resort Fees Deducted</dt>
+                                <dt class="text-gray-600">Prorated Direct Cleaning Fees Deducted</dt>
                                 <dd class="font-medium text-rose-700">- <?= formatCopCurrency($pSlice->parafiscalDeductedFees) ?></dd>
                             </div>
                             <div class="flex items-center justify-between gap-2 text-[11px]" data-parafiscal-line="excluded-policy-retention">

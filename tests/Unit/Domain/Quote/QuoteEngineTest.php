@@ -60,8 +60,7 @@ final class QuoteEngineTest extends TestCase
         $this->assertSame(2, $quote->minimumStayRequired());
         $this->assertSame(1050000.0, $quote->accommodationTotalCop());
         $this->assertSame(80000.0, $quote->cleaningFeeCop());
-        $this->assertSame(20000.0, $quote->resortFeeCop());
-        $this->assertSame(1150000.0, $quote->totalCop());
+        $this->assertSame(1130000.0, $quote->totalCop());
 
         $this->assertCount(3, $quote->nights);
         $this->assertSame('2026-06-01', $quote->nights[0]['date']);
@@ -82,8 +81,7 @@ final class QuoteEngineTest extends TestCase
         // 2 nights @ 350k + 2 nights @ 550k = 700k + 1100k = 1,800,000 COP
         $this->assertSame(1800000.0, $quote->accommodationTotalCop());
         $this->assertSame(80000.0, $quote->cleaningFeeCop());
-        $this->assertSame(20000.0, $quote->resortFeeCop());
-        $this->assertSame(1900000.0, $quote->totalCop());
+        $this->assertSame(1880000.0, $quote->totalCop());
     }
 
     public function testMultiTierSpanViolatingStrictMaximumMinimumStayFlagsInvalid(): void
@@ -100,8 +98,7 @@ final class QuoteEngineTest extends TestCase
         // 1 night @ 350k + 1 night @ 550k = 900,000 COP
         $this->assertSame(900000.0, $quote->accommodationTotalCop());
         $this->assertSame(80000.0, $quote->cleaningFeeCop());
-        $this->assertSame(20000.0, $quote->resortFeeCop());
-        $this->assertSame(1000000.0, $quote->totalCop());
+        $this->assertSame(980000.0, $quote->totalCop());
     }
 
     public function testUnlistedDatesFallbackToPropertyDefaultBaseRate(): void
@@ -116,8 +113,7 @@ final class QuoteEngineTest extends TestCase
         // 1707 default base rate is 450,000 COP per night
         $this->assertSame(900000.0, $quote->accommodationTotalCop());
         $this->assertSame(100000.0, $quote->cleaningFeeCop());
-        $this->assertSame(20000.0, $quote->resortFeeCop());
-        $this->assertSame(1020000.0, $quote->totalCop());
+        $this->assertSame(1000000.0, $quote->totalCop());
 
         $this->assertNull($quote->nights[0]['tier']);
         $this->assertSame(450000.0, $quote->nights[0]['rateCop']);
@@ -131,10 +127,6 @@ final class QuoteEngineTest extends TestCase
         // Cleaning fee differs by property
         $this->assertSame(100000.0, $quote1707->cleaningFeeCop());
         $this->assertSame(80000.0, $quote1606->cleaningFeeCop());
-
-        // Resort fee is identical
-        $this->assertSame(20000.0, $quote1707->resortFeeCop());
-        $this->assertSame(20000.0, $quote1606->resortFeeCop());
     }
 
     public function testUnknownPropertyThrowsException(): void
@@ -198,7 +190,7 @@ final class QuoteEngineTest extends TestCase
         $this->assertArrayHasKey('nights', $array);
         $this->assertArrayHasKey('accommodation_total_cop', $array);
         $this->assertArrayHasKey('cleaning_fee_cop', $array);
-        $this->assertArrayHasKey('resort_fee_cop', $array);
+        $this->assertArrayNotHasKey('resort_fee_cop', $array);
         $this->assertArrayHasKey('total_cop', $array);
         $this->assertArrayHasKey('minimum_stay_required', $array);
         $this->assertArrayHasKey('is_valid', $array);
@@ -218,7 +210,7 @@ final class QuoteEngineTest extends TestCase
         $this->assertTrue($quote->isValid());
         $this->assertSame(30, $quote->nightsCount());
         $this->assertSame(30 * 350000.0, $quote->accommodationTotalCop());
-        $this->assertSame(30 * 350000.0 + 80000.0 + 20000.0, $quote->totalCop());
+        $this->assertSame(30 * 350000.0 + 80000.0, $quote->totalCop());
     }
 
     public function testCustomPropertyRatesConfigCanOverrideFeesAndBaselines(): void
@@ -227,7 +219,6 @@ final class QuoteEngineTest extends TestCase
             '1707' => [
                 'default_rate' => 500000.0,
                 'cleaning_fee' => 120000.0,
-                'resort_fee' => 25000.0,
                 'default_min_stay' => 3,
             ],
         ]);
@@ -240,8 +231,7 @@ final class QuoteEngineTest extends TestCase
         $this->assertSame(3, $quote->minimumStayRequired());
         $this->assertSame(1500000.0, $quote->accommodationTotalCop());
         $this->assertSame(120000.0, $quote->cleaningFeeCop());
-        $this->assertSame(25000.0, $quote->resortFeeCop());
-        $this->assertSame(1645000.0, $quote->totalCop());
+        $this->assertSame(1620000.0, $quote->totalCop());
     }
 
     public function testRateTierCoversDateBoundaryInclusivity(): void

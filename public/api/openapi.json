@@ -916,7 +916,7 @@
                     "Quotation"
                 ],
                 "summary": "Calculate authoritative stay quotation",
-                "description": "Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays, and includes centralized cleaning and resort fees per ADR 0004.",
+                "description": "Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays, and includes centralized cleaning fees per ADR 0004.",
                 "operationId": "getQuote",
                 "parameters": [
                     {
@@ -1256,15 +1256,10 @@
                         "format": "float",
                         "example": 80000
                     },
-                    "resort_fee_cop": {
-                        "type": "number",
-                        "format": "float",
-                        "example": 20000
-                    },
                     "total_cop": {
                         "type": "number",
                         "format": "float",
-                        "example": 1150000
+                        "example": 1130000
                     },
                     "minimum_stay_required": {
                         "type": "integer",

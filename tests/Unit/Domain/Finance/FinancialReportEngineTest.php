@@ -861,9 +861,9 @@ final class FinancialReportEngineTest extends TestCase
         $engine = $harness['engine'];
         $refClock = new DateTimeImmutable('2026-10-17 12:00:00', new DateTimeZone('America/Bogota'));
 
-        // 1. Property 1606 (RNT #270413, flat surcharge = 100,000 COP):
-        // 1a. Full in-period Direct Online ('web'): Oct 02 -> Oct 06 (4 nights), total 2,100,000 COP
-        //     netContract = 2,100,000, surcharge = 100,000 => taxableBase = 2,000,000 COP
+        // 1. Property 1606 (RNT #270413, flat surcharge = 80,000 COP):
+        // 1a. Full in-period Direct Online ('web'): Oct 02 -> Oct 06 (4 nights), total 2,080,000 COP
+        //     netContract = 2,080,000, surcharge = 80,000 => taxableBase = 2,000,000 COP
         $resRepo->save(Reservation::create(
             reservationUid: 'ovf_pf_1606_web_full',
             propertyId: '1606',
@@ -872,7 +872,7 @@ final class FinancialReportEngineTest extends TestCase
             guestPhone: '+573001110001',
             checkIn: '2026-10-02',
             checkOut: '2026-10-06',
-            totalPrice: 2100000.0,
+            totalPrice: 2080000.0,
             status: ReservationStatus::CONFIRMED,
             paymentStatus: 'approved',
             source: 'web'
@@ -880,11 +880,11 @@ final class FinancialReportEngineTest extends TestCase
 
         // 1b. Cross-period straddling Direct Manual ('bank_transfer') on 1606:
         //     Sep 28 -> Oct 03 (5 nights total: 3 in Sep [60%], 2 in Oct [40%])
-        //     Total: 1,850,000 COP, Refunded: 250,000 COP => netContract = 1,600,000 COP
-        //     Deduct 100,000 surcharge before proration => eligibleContractBase = 1,500,000 COP
+        //     Total: 1,830,000 COP, Refunded: 250,000 COP => netContract = 1,580,000 COP
+        //     Deduct 80,000 surcharge before proration => eligibleContractBase = 1,500,000 COP
         //     In Oct (2/5 = 0.4):
-        //       activeStayRevenue = 1,600,000 * 0.4 = 640,000 COP
-        //       deductedDirectFees = 100,000 * 0.4 = 40,000 COP
+        //       activeStayRevenue = 1,580,000 * 0.4 = 632,000 COP
+        //       deductedDirectFees = 80,000 * 0.4 = 32,000 COP
         //       taxableBase = 1,500,000 * 0.4 = 600,000 COP
         $resRepo->save(Reservation::create(
             reservationUid: 'res-man-pf-1606-cross',
@@ -894,7 +894,7 @@ final class FinancialReportEngineTest extends TestCase
             guestPhone: '+573001110002',
             checkIn: '2026-09-28',
             checkOut: '2026-10-03',
-            totalPrice: 1850000.0,
+            totalPrice: 1830000.0,
             status: ReservationStatus::CONFIRMED,
             paymentStatus: 'partially_refunded',
             source: 'bank_transfer',
@@ -932,9 +932,9 @@ final class FinancialReportEngineTest extends TestCase
             source: 'owner_stay'
         ));
 
-        // 2. Property 1707 (RNT #268781, flat surcharge = 120,000 COP):
-        // 2a. Full in-period Direct Manual ('cash'): Oct 04 -> Oct 08 (4 nights), total 2,520,000 COP
-        //     netContract = 2,520,000, surcharge = 120,000 => taxableBase = 2,400,000 COP
+        // 2. Property 1707 (RNT #268781, flat surcharge = 100,000 COP):
+        // 2a. Full in-period Direct Manual ('cash'): Oct 04 -> Oct 08 (4 nights), total 2,500,000 COP
+        //     netContract = 2,500,000, surcharge = 100,000 => taxableBase = 2,400,000 COP
         $resRepo->save(Reservation::create(
             reservationUid: 'res-man-pf-1707-full',
             propertyId: '1707',
@@ -943,15 +943,15 @@ final class FinancialReportEngineTest extends TestCase
             guestPhone: '+573002220001',
             checkIn: '2026-10-04',
             checkOut: '2026-10-08',
-            totalPrice: 2520000.0,
+            totalPrice: 2500000.0,
             status: ReservationStatus::CONFIRMED,
             paymentStatus: 'approved',
             source: 'cash'
         ));
 
-        // 2b. Heavily refunded Direct Online ('web') on 1707 where netContract < 120,000 surcharge:
+        // 2b. Heavily refunded Direct Online ('web') on 1707 where netContract < 100,000 surcharge:
         //     Oct 10 -> Oct 12 (2 nights), totalPrice = 900,000, refundedAmount = 850,000 => netContract = 50,000 COP
-        //     max(0, 50,000 - 120,000) = 0 COP taxable base (floored at 0 COP; deductedDirectFees = 50,000 COP)
+        //     max(0, 50,000 - 100,000) = 0 COP taxable base (floored at 0 COP; deductedDirectFees = 50,000 COP)
         $resRepo->save(Reservation::create(
             reservationUid: 'ovf_pf_1707_heavy_refund',
             propertyId: '1707',
@@ -1008,62 +1008,62 @@ final class FinancialReportEngineTest extends TestCase
         $sAll = $octReport->portfolioSlice;
 
         // Property 1606 in Oct:
-        // activeStayRevenue = 2,100,000 + 640,000 + 1,400,200 = 4,140,200 COP
-        // parafiscalDeductedFees = 100,000 + 40,000 + 0 = 140,000 COP
+        // activeStayRevenue = 2,080,000 + 632,000 + 1,400,200 = 4,112,200 COP
+        // parafiscalDeductedFees = 80,000 + 32,000 + 0 = 112,000 COP
         // policyRetention (excluded) = 0 COP
         // parafiscalTaxableBase = 2,000,000 + 600,000 + 1,400,200 = 4,000,200 COP
         // parafiscalContribution = round(4,000,200 * 0.0025, 0) = round(10000.5, 0) = 10,001 COP
         $this->assertSame('270413', $s1606->rntNumber);
-        $this->assertSame(4140200.0, $s1606->activeStayRevenue);
-        $this->assertSame(140000.0, $s1606->parafiscalDeductedFees);
-        $this->assertSame(140000.0, $s1606->deductedDirectFees);
+        $this->assertSame(4112200.0, $s1606->activeStayRevenue);
+        $this->assertSame(112000.0, $s1606->parafiscalDeductedFees);
+        $this->assertSame(112000.0, $s1606->deductedDirectFees);
         $this->assertSame(0.0, $s1606->policyRetention);
         $this->assertSame(0.0, $s1606->excludedPolicyRetention);
         $this->assertSame(4000200.0, $s1606->parafiscalTaxableBase);
         $this->assertSame(10001.0, $s1606->parafiscalContribution);
 
         // Property 1707 in Oct:
-        // activeStayRevenue = 2,520,000 + 50,000 + 900,000 = 3,470,000 COP
-        // parafiscalDeductedFees = 120,000 + 50,000 (floored at 0 base) + 0 = 170,000 COP
+        // activeStayRevenue = 2,500,000 + 50,000 + 900,000 = 3,450,000 COP
+        // parafiscalDeductedFees = 100,000 + 50,000 (floored at 0 base) + 0 = 150,000 COP
         // policyRetention (excluded) = 600,000 COP
         // parafiscalTaxableBase = 2,400,000 + 0 + 900,000 = 3,300,000 COP
         // parafiscalContribution = round(3,300,000 * 0.0025, 0) = 8,250 COP
         $this->assertSame('268781', $s1707->rntNumber);
-        $this->assertSame(3470000.0, $s1707->activeStayRevenue);
-        $this->assertSame(170000.0, $s1707->parafiscalDeductedFees);
+        $this->assertSame(3450000.0, $s1707->activeStayRevenue);
+        $this->assertSame(150000.0, $s1707->parafiscalDeductedFees);
         $this->assertSame(600000.0, $s1707->policyRetention);
         $this->assertSame(600000.0, $s1707->excludedPolicyRetention);
         $this->assertSame(3300000.0, $s1707->parafiscalTaxableBase);
         $this->assertSame(8250.0, $s1707->parafiscalContribution);
 
         // Portfolio Total in Oct:
-        // activeStayRevenue = 4,140,200 + 3,470,000 = 7,610,200 COP
-        // parafiscalDeductedFees = 140,000 + 170,000 = 310,000 COP
+        // activeStayRevenue = 4,112,200 + 3,450,000 = 7,562,200 COP
+        // parafiscalDeductedFees = 112,000 + 150,000 = 262,000 COP
         // policyRetention (excluded) = 600,000 COP
         // parafiscalTaxableBase = 4,000,200 + 3,300,000 = 7,300,200 COP
         // parafiscalContribution = round(7,300,200 * 0.0025, 0) = round(18250.5, 0) = 18,251 COP
         $this->assertNull($sAll->rntNumber);
-        $this->assertSame(7610200.0, $sAll->activeStayRevenue);
-        $this->assertSame(310000.0, $sAll->parafiscalDeductedFees);
+        $this->assertSame(7562200.0, $sAll->activeStayRevenue);
+        $this->assertSame(262000.0, $sAll->parafiscalDeductedFees);
         $this->assertSame(600000.0, $sAll->policyRetention);
         $this->assertSame(7300200.0, $sAll->parafiscalTaxableBase);
         $this->assertSame(18251.0, $sAll->parafiscalContribution);
 
         // Verify cross-period straddling reconciliation with September 2026 ('last_month'):
         // In Sep (3/5 = 0.6 of res-man-pf-1606-cross):
-        // activeStayRevenue = 1,600,000 * 0.6 = 960,000 COP
-        // parafiscalDeductedFees = 100,000 * 0.6 = 60,000 COP
+        // activeStayRevenue = 1,580,000 * 0.6 = 948,000 COP
+        // parafiscalDeductedFees = 80,000 * 0.6 = 48,000 COP
         // parafiscalTaxableBase = 1,500,000 * 0.6 = 900,000 COP
         // parafiscalContribution = round(900,000 * 0.0025, 0) = 2,250 COP
         $sepReport = $engine->generate(new FinancialReportFilter(propertyId: '1606', period: 'last_month'), $refClock);
         $sep1606 = $sepReport->current;
-        $this->assertSame(960000.0, $sep1606->activeStayRevenue);
-        $this->assertSame(60000.0, $sep1606->parafiscalDeductedFees);
+        $this->assertSame(948000.0, $sep1606->activeStayRevenue);
+        $this->assertSame(48000.0, $sep1606->parafiscalDeductedFees);
         $this->assertSame(900000.0, $sep1606->parafiscalTaxableBase);
         $this->assertSame(2250.0, $sep1606->parafiscalContribution);
 
-        // Sep (60,000) + Oct (40,000 from cross stay) = 100,000 full flat surcharge for res-man-pf-1606-cross
-        $this->assertSame(100000.0, $sep1606->parafiscalDeductedFees + ($s1606->parafiscalDeductedFees - 100000.0));
+        // Sep (48,000) + Oct (32,000 from cross stay) = 80,000 full flat surcharge for res-man-pf-1606-cross
+        $this->assertSame(80000.0, $sep1606->parafiscalDeductedFees + ($s1606->parafiscalDeductedFees - 80000.0));
     }
 
     #[DataProvider('adapterModeProvider')]
@@ -1110,7 +1110,7 @@ final class FinancialReportEngineTest extends TestCase
             guestPhone: '+573001112222',
             checkIn: '2025-11-10',
             checkOut: '2025-11-15',
-            totalPrice: 2100000.0, // 2,100,000 - 100,000 = 2,000,000 base => 5,000 COP contribution
+            totalPrice: 2080000.0, // 2,080,000 - 80,000 = 2,000,000 base => 5,000 COP contribution
             status: ReservationStatus::CONFIRMED,
             paymentStatus: 'approved',
             source: 'web'
@@ -1125,7 +1125,7 @@ final class FinancialReportEngineTest extends TestCase
             guestPhone: '+573003334444',
             checkIn: '2026-08-10',
             checkOut: '2026-08-14',
-            totalPrice: 4120000.0, // 4,120,000 - 120,000 = 4,000,000 base => 10,000 COP contribution
+            totalPrice: 4100000.0, // 4,100,000 - 100,000 = 4,000,000 base => 10,000 COP contribution
             status: ReservationStatus::CONFIRMED,
             paymentStatus: 'approved',
             source: 'web'

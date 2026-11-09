@@ -461,8 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Compute direct booking subtotals
             const details = calculateStayDetails(checkIn, checkOut);
             const cleaningFee = propertyId === '1707' ? 100000 : 80000;
-            const resortFee = 20000;
-            const totalCOP = details.accommodationTotal + cleaningFee + resortFee;
+            const totalCOP = details.accommodationTotal + cleaningFee;
 
             // Form bindings
             const formCheckIn = document.getElementById('form-check-in-date');
@@ -475,7 +474,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Populate Breakdown UI
             const accommodationValue = document.getElementById('rate-breakdown-value');
             const cleaningValue = document.getElementById('cleaning-fee-value');
-            const resortValue = document.getElementById('resort-fee-value');
             const totalValue = document.getElementById('total-cop-value');
 
             const copFormatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
@@ -485,7 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 accommodationValue.textContent = copFormatter.format(details.accommodationTotal) + ' ' + nightsFormat.replace('{nights}', details.nights);
             }
             if (cleaningValue) cleaningValue.textContent = copFormatter.format(cleaningFee);
-            if (resortValue) resortValue.textContent = copFormatter.format(resortFee);
             if (totalValue) totalValue.textContent = copFormatter.format(totalCOP) + ' COP';
 
             // Convert to selected language's suggested currency

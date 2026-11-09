@@ -189,7 +189,6 @@ $uid = $reservation->reservationUid;
 $datesCount = $quote->nightsCount();
 $accommodationTotal = $quote->accommodationTotalCop();
 $cleaningFee = $quote->cleaningFeeCop();
-$resortFee = $quote->resortFeeCop();
 $serverTotalCop = $quote->totalCop();
 
 // Security verification: compare computed total against client total
@@ -204,7 +203,6 @@ $dbLogged = $pdo !== null;
 $copFormatter = "$ " . number_format($serverTotalCop, 0, ',', '.') . " COP";
 $accommodationFormatted = "$ " . number_format($accommodationTotal, 0, ',', '.') . " COP";
 $cleaningFormatted = "$ " . number_format($cleaningFee, 0, ',', '.') . " COP";
-$resortFormatted = "$ " . number_format($resortFee, 0, ',', '.') . " COP";
 
 $stayNightsLabel = sprintf($t['email_nights'], $datesCount);
 
@@ -251,7 +249,6 @@ $html_message = "
         <table width='100%' class='table'>
           <tr><td>{$t['email_accommodation']}:</td><td class='text-right'>{$accommodationFormatted}</td></tr>
           <tr><td>{$t['email_cleaning']}:</td><td class='text-right'>{$cleaningFormatted}</td></tr>
-          <tr><td>{$t['email_resort']}:</td><td class='text-right'>{$resortFormatted}</td></tr>
           <tr style='font-size:18px;font-weight:bold;'><td style='border-bottom:none;'>{$t['email_total']}:</td><td class='text-right' style='border-bottom:none;color:#059669;'>{$copFormatter}</td></tr>
         </table>
       </div>

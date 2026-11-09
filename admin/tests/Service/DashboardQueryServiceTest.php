@@ -1146,7 +1146,7 @@ final class DashboardQueryServiceTest extends TestCase
                 check_in, check_out, total_price, status, source, registry_completed
             ) VALUES (
                 'res-q3-1606', '1606', 'Q3 Guest 1606', 'q3@test.com', '+573001112222',
-                '2026-08-10', '2026-08-14', 4100000, 'confirmed', 'web', 1
+                '2026-08-10', '2026-08-14', 4080000, 'confirmed', 'web', 1
             );
         ");
 

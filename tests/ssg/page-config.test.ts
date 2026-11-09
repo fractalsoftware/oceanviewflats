@@ -2480,6 +2480,15 @@ test("Property 1707 and 1606 pages render 'Book with us' header links and place 
 					!btnBookHtml.includes(locale.forbiddenDefaultAirbnbCta),
 				`${relFile} #btn-book must be disabled by default and display "${locale.expectedAirbnbCta}"`,
 			);
+
+			// 3. #price-breakdown-card renders Accommodation and Cleaning Fee only, without Lobby Register / Resort Fee
+			assert.ok(
+				html.includes('id="rate-breakdown-label"') &&
+					html.includes('id="cleaning-fee-label"') &&
+					!html.includes('id="resort-fee-label"') &&
+					!html.includes('id="resort-fee-value"'),
+				`${relFile} #price-breakdown-card must omit #resort-fee-label and #resort-fee-value`,
+			);
 		}
 	}
 });

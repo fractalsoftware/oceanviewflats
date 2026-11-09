@@ -5,7 +5,7 @@
  *
  * Provides real-time, authoritative stay quotations for apartments 1606 and 1707.
  * Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays,
- * and incorporates centralized cleaning and resort fees per ADR 0004.
+ * and incorporates centralized cleaning fees per ADR 0004.
  */
 
 declare(strict_types=1);

@@ -307,8 +307,7 @@ final class ReservationControllerTest extends TestCase
             nightsCount: 3,
             accommodationTotalCop: 1500000.0,
             cleaningFeeCop: 150000.0,
-            resortFeeCop: 100000.0,
-            totalCop: 1750000.0,
+            totalCop: 1650000.0,
             minimumStayRequired: 2,
             isValid: true
         );
@@ -329,12 +328,13 @@ final class ReservationControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
         $this->assertStringContainsString('Available (3 Nights)', $body);
-        $this->assertStringContainsString('$1,750,000 COP', $body);
+        $this->assertStringContainsString('$1,650,000 COP', $body);
         $this->assertStringContainsString('$1,500,000', $body);
+        $this->assertStringNotContainsString('Building Fee', $body);
         $this->assertStringContainsString('data-available="true"', $body);
         $this->assertStringContainsString('availabilityChecked', $body);
         $this->assertStringContainsString('"available":true', $body);
-        $this->assertStringContainsString('"defaultPrice":1750000', $body);
+        $this->assertStringContainsString('"defaultPrice":1650000', $body);
     }
 
     public function testQuotePreviewForOwnerStayZeroesTotal(): void
@@ -348,8 +348,7 @@ final class ReservationControllerTest extends TestCase
             nightsCount: 3,
             accommodationTotalCop: 1500000.0,
             cleaningFeeCop: 150000.0,
-            resortFeeCop: 100000.0,
-            totalCop: 1750000.0,
+            totalCop: 1650000.0,
             minimumStayRequired: 2,
             isValid: true
         );
@@ -1466,8 +1465,7 @@ final class ReservationControllerTest extends TestCase
             nightsCount: 5,
             accommodationTotalCop: 2000000.0,
             cleaningFeeCop: 100000.0,
-            resortFeeCop: 50000.0,
-            totalCop: 2150000.0,
+            totalCop: 2100000.0,
             minimumStayRequired: 2,
             isValid: true
         );

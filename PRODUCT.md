@@ -25,7 +25,7 @@ It exists to let guests book directly without third-party OTA commissions while 
 ## Positioning
 
 Unlike generic OTA listings or brochure rental sites that punt check-in logistics to WhatsApp threads, OceanViewFlats unifies commission-free `Direct Reservations` in `COP` with a compliance-gated fulfillment pipeline purpose-built for Colombian tourism law and Edificio Salguero Sunset's front-desk procedures:
-- **Authoritative COP Quote Engine**: Evaluates night-by-night `Seasonal Rate Tiers`, enforces minimum stay rules, and itemizes per-property `Cleaning Fees` and `Resort Fees` separately from the on-site `Building Registration Fee` (`20,000 COP` per person payable at reception).
+- **Authoritative COP Quote Engine**: Evaluates night-by-night `Seasonal Rate Tiers`, enforces minimum stay rules, and itemizes per-property `Cleaning Fees` separately from the on-site `Building Registration Fee` (`20,000 COP` per person payable at reception).
 - **Hold-Window Checkout Protection**: Coordinates concurrency-safe `Pending Reservations` with a 30-minute `Standard Hold Window` for interactive digital checkouts (`Card`, `PSE`) and a 72-hour `Voucher Hold Window` for offline `Cash Vouchers` (e.g., Efecty), backed by `Resurrection Defense`.
 - **Registry-Gated Access Fulfillment**: Hardware-agnostic temporal `Access Credentials` (`0XXXXXX#` door PIN, Wi-Fi credentials, and deeded parking bay instructions) remain cryptographically and server-side locked until the `Guest Registry` is submitted and cleared, then automatically suppress and redact after `23:59:59 COT` on the `Check-out Date` (`Concluded Reservation`).
 
@@ -46,7 +46,7 @@ Unlike generic OTA listings or brochure rental sites that punt check-in logistic
   - Relative `assetPrefix` (`./` or `../`) must propagate to every local link and asset reference.
 - **On-Demand Third-Party SDKs**: External payment scripts (`sdk.mercadopago.com/js/v2`) are never loaded in global HTML shells; they load asynchronously on active checkout intent.
 - **Theme & Configuration Centralization**: React components in `src/components/` and `src/pages/` remain style-agnostic; visual tokens, layout classes, and endpoint/asset constants live in `src/constants/theme.ts` and `src/constants/config.ts`.
-- **Canonical Domain Language**: Copy, identifiers, and documentation must honor the ubiquitous language defined in `CONTEXT.md` (e.g., `Property` as the canonical domain entity, `Check-in Date`, `Check-out Date`, `Nightly Rate`, `Quote`, `Cleaning Fee`, `Resort Fee`, `Building Registration Fee`, `Settlement Currency`, `Guest Registry`, `Guest Guide`, `Access Credential`, `Primary Guest`, `Maximum Occupancy` of 6 Guests unless an `Occupancy Override` is active).
+- **Canonical Domain Language**: Copy, identifiers, and documentation must honor the ubiquitous language defined in `CONTEXT.md` (e.g., `Property` as the canonical domain entity, `Check-in Date`, `Check-out Date`, `Nightly Rate`, `Quote`, `Cleaning Fee`, `Building Registration Fee`, `Settlement Currency`, `Guest Registry`, `Guest Guide`, `Access Credential`, `Primary Guest`, `Maximum Occupancy` of 6 Guests unless an `Occupancy Override` is active).
 
 ## Brand Commitments
 
@@ -69,7 +69,7 @@ Unlike generic OTA listings or brochure rental sites that punt check-in logistic
 
 ## Product Principles
 
-1. **Radical Transparency Before Commitment**: Every fee (`Nightly Rate`, `Cleaning Fee`, `Resort Fee`, and the on-site `20,000 COP` per-person `Building Registration Fee`), hold window, and statutory registration requirement is disclosed clearly before a guest pays or arrives.
+1. **Radical Transparency Before Commitment**: Every fee (`Nightly Rate`, `Cleaning Fee`, and the on-site `20,000 COP` per-person `Building Registration Fee`), hold window, and statutory registration requirement is disclosed clearly before a guest pays or arrives.
 2. **Compliance as Frictionless Hospitality**: Mandatory Colombian legal steps (`Guest Registry`, `Personal Data Authorization`, `Minor Guardian Attestation`, and `Condominium Clearance Sync`) should feel like a reassuring, well-guided concierge check-in rather than bureaucratic red tape.
 3. **Zero-Hydration Speed on Travel Connections**: Guest-facing surfaces must load fast and work reliably on roaming mobile connections in transit—shipping static HTML, minimal Vanilla JS, and on-demand payment SDKs only when needed.
 4. **Six-Language Parity Without Drift**: Every guest-facing flow, validation message, and legal notice works with equal clarity across English, Spanish, French, Italian, German, and Japanese from a single build-time translation contract.

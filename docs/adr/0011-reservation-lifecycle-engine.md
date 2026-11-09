@@ -27,7 +27,7 @@ We establish an authoritative, deep **Reservation Lifecycle Engine** (`Reservati
      ▼                                 ▼                                ▼
 [Authoritative Quote]        [PaymentRefundPort]             [ReservationPersistencePort]
 - Dynamic night rates        - Mercado Pago client           - Atomic hold locks (FOR UPDATE)
-- Cleaning & Resort Fees     - Deterministic idempotency     - State machine validation
+- Mandatory Cleaning Fee     - Deterministic idempotency     - State machine validation
 - Seasonal minimum stay      - Pre-DB commit dispatch        - Terminal status defense
      │                                 │                                │
      ▼                                 ▼                                ▼

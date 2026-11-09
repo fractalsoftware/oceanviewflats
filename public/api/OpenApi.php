@@ -172,8 +172,7 @@ class QuoteNightBreakdownSchema {}
         ),
         new OA\Property(property: 'accommodation_total_cop', type: 'number', format: 'float', example: 1050000),
         new OA\Property(property: 'cleaning_fee_cop', type: 'number', format: 'float', example: 80000),
-        new OA\Property(property: 'resort_fee_cop', type: 'number', format: 'float', example: 20000),
-        new OA\Property(property: 'total_cop', type: 'number', format: 'float', example: 1150000),
+        new OA\Property(property: 'total_cop', type: 'number', format: 'float', example: 1130000),
         new OA\Property(property: 'minimum_stay_required', type: 'integer', example: 2),
         new OA\Property(property: 'is_valid', type: 'boolean', example: true),
         new OA\Property(property: 'violation_reason', type: 'string', nullable: true, example: null)
@@ -645,7 +644,7 @@ class QuoteEndpoints
         path: '/quote.php',
         operationId: 'getQuote',
         summary: 'Calculate authoritative stay quotation',
-        description: 'Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays, and includes centralized cleaning and resort fees per ADR 0004.',
+        description: 'Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays, and includes centralized cleaning fees per ADR 0004.',
         tags: ['Quotation'],
         parameters: [
             new OA\Parameter(

@@ -272,7 +272,7 @@ Every component is tactile, generous, and travel-ready—engineered with unmista
 ### Interactive Booking & Quote Module (`BookingSection` & `CalendarWidget`)
 - **Split-Card Architecture:** A `24px`-radius card divided into a recessed left calendar column (`bg-slate-50/50`, `border-r border-slate-200`) and a white right checkout column.
 - **Calendar Day Cells:** `32px × 32px` mobile / `40px × 40px` desktop circular buttons (`rounded-full`). Selected Check-in/Check-out dates fill with solid `#FF5A5F` (`#E11D48` on 1606) and white text; intermediate stay nights fill with a `10%` tint (`bg-[#FF5A5F]/10 text-[#FF5A5F]` or `bg-rose-600/10 text-rose-600`).
-- **Authoritative COP Quote Breakdown (`#price-breakdown-card`):** Recessed `16px`-radius card itemizing Nightly Rate × Nights, Cleaning Fee, and Resort Fee in `COP`, separated by a `1px` horizontal rule above an `ExtraBold 20px` total in `COP` and a muted `12px` non-authoritative USD reference estimate with an `ⓘ` disclaimer tooltip.
+- **Authoritative COP Quote Breakdown (`#price-breakdown-card`):** Recessed `16px`-radius card itemizing Nightly Rate × Nights and Cleaning Fee in `COP`, separated by a `1px` horizontal rule above an `ExtraBold 20px` total in `COP` and a muted `12px` non-authoritative USD reference estimate with an `ⓘ` disclaimer tooltip.
 
 ### Registry-Gated Access Credential Card (`#door-code-card`)
 - **Structure:** Located on `/guide`, styled with a warm amber gradient tint (`from-amber-500/10 to-amber-600/[0.03]`), `24px` radius, and `1px solid rgba(245, 158, 11, 0.15)` border.
