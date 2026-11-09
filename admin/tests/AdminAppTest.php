@@ -133,7 +133,7 @@ final class AdminAppTest extends TestCase
         $quoteResponse = $app->handle($quoteRequest, $quoteSession);
         $this->assertSame(200, $quoteResponse->getStatusCode());
         $this->assertStringContainsString('1,777,554', $quoteResponse->getBody());
-        $this->assertStringContainsString('1897554', $quoteResponse->getBody());
+        $this->assertStringContainsString('1877554', $quoteResponse->getBody());
 
         // Verify public site URL override behavior: registry link contains custom site domain
         $this->pdo->exec("

@@ -329,7 +329,6 @@ final class RateController
             id: $id,
             seasonName: $seasonName,
             cleaningFeeCop: (float) ($existing['cleaning_fee'] ?? 0.0),
-            resortFeeCop: (float) ($existing['resort_fee'] ?? 0.0),
             createdBy: isset($existing['created_by']) ? (int) $existing['created_by'] : null
         );
         $this->rateRepository->save($updatedTier);

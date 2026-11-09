@@ -31,5 +31,8 @@ use OceanViewFlats\Domain\Support\EnvLoader;
 $root = dirname(__DIR__);
 EnvLoader::load($root);
 
-$exitCode = SyncChannelsCommand::run($argv);
+$rawArgs = $argv ?? ($_SERVER['argv'] ?? []);
+$cliArgs = is_array($rawArgs) ? array_values(array_filter($rawArgs, 'is_string')) : [];
+
+$exitCode = SyncChannelsCommand::run($cliArgs);
 exit($exitCode);

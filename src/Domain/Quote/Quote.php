@@ -23,7 +23,6 @@ final class Quote implements JsonSerializable
         public readonly int $nightsCount,
         public readonly float $accommodationTotalCop,
         public readonly float $cleaningFeeCop,
-        public readonly float $resortFeeCop,
         public readonly float $totalCop,
         public readonly int $minimumStayRequired,
         public readonly bool $isValid,
@@ -49,11 +48,6 @@ final class Quote implements JsonSerializable
     public function cleaningFeeCop(): float
     {
         return $this->cleaningFeeCop;
-    }
-
-    public function resortFeeCop(): float
-    {
-        return $this->resortFeeCop;
     }
 
     public function nightsCount(): int
@@ -84,7 +78,6 @@ final class Quote implements JsonSerializable
             'nights' => $this->nights,
             'accommodation_total_cop' => $this->accommodationTotalCop,
             'cleaning_fee_cop' => $this->cleaningFeeCop,
-            'resort_fee_cop' => $this->resortFeeCop,
             'total_cop' => $this->totalCop,
             'minimum_stay_required' => $this->minimumStayRequired,
             'is_valid' => $this->isValid,

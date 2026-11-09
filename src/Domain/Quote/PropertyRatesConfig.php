@@ -7,7 +7,7 @@ namespace OceanViewFlats\Domain\Quote;
 use InvalidArgumentException;
 
 /**
- * Configuration holder for Property baseline rates, mandatory cleaning fees, and resort fees.
+ * Configuration holder for Property baseline rates and mandatory cleaning fees.
  * Enforces central configuration rules per ADR 0004.
  */
 final class PropertyRatesConfig
@@ -18,7 +18,7 @@ final class PropertyRatesConfig
     ];
 
     /**
-     * @param array<array-key, array{default_rate: float, cleaning_fee: float, resort_fee: float, default_min_stay: int, rnt_number?: string}> $properties
+     * @param array<array-key, array{default_rate: float, cleaning_fee: float, default_min_stay: int, rnt_number?: string}> $properties
      */
     public function __construct(
         private readonly array $properties
@@ -31,14 +31,12 @@ final class PropertyRatesConfig
             '1707' => [
                 'default_rate' => 450000.0,
                 'cleaning_fee' => 100000.0,
-                'resort_fee' => 20000.0,
                 'default_min_stay' => 2,
                 'rnt_number' => self::DEFAULT_RNT_NUMBERS['1707'],
             ],
             '1606' => [
                 'default_rate' => 350000.0,
                 'cleaning_fee' => 80000.0,
-                'resort_fee' => 20000.0,
                 'default_min_stay' => 2,
                 'rnt_number' => self::DEFAULT_RNT_NUMBERS['1606'],
             ],
@@ -62,12 +60,6 @@ final class PropertyRatesConfig
         return $this->properties[$propertyId]['cleaning_fee'];
     }
 
-    public function getResortFee(string $propertyId): float
-    {
-        $this->assertPropertyExists($propertyId);
-        return $this->properties[$propertyId]['resort_fee'];
-    }
-
     public function getDefaultMinimumStay(string $propertyId): int
     {
         $this->assertPropertyExists($propertyId);
@@ -77,7 +69,7 @@ final class PropertyRatesConfig
     public function getFlatSurcharges(string $propertyId): float
     {
         $this->assertPropertyExists($propertyId);
-        return $this->properties[$propertyId]['cleaning_fee'] + $this->properties[$propertyId]['resort_fee'];
+        return $this->properties[$propertyId]['cleaning_fee'];
     }
 
     public function getRntNumber(string $propertyId): string

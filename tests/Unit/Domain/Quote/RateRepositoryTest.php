@@ -60,7 +60,6 @@ final class RateRepositoryTest extends TestCase
             id: 42,
             seasonName: 'Summer High',
             cleaningFeeCop: 50000.0,
-            resortFeeCop: 25000.0,
             createdBy: 1,
             createdByName: 'Admin User',
             createdAt: '2026-01-01 10:00:00',
@@ -70,7 +69,6 @@ final class RateRepositoryTest extends TestCase
         $this->assertSame(42, $tier->id);
         $this->assertSame('Summer High', $tier->seasonName);
         $this->assertSame(50000.0, $tier->cleaningFeeCop);
-        $this->assertSame(25000.0, $tier->resortFeeCop);
         $this->assertSame(1, $tier->createdBy);
         $this->assertSame('Admin User', $tier->createdByName);
         $this->assertSame('2026-01-01 10:00:00', $tier->createdAt);
@@ -87,7 +85,6 @@ final class RateRepositoryTest extends TestCase
         $this->assertSame(3, $tier['minimum_stay']);
         $this->assertSame(3, $tier['min_stay']);
         $this->assertSame(50000.0, $tier['cleaning_fee']);
-        $this->assertSame(25000.0, $tier['resort_fee']);
         $this->assertSame('Summer High', $tier['season_name']);
         $this->assertSame('Admin User', $tier['created_by_name']);
 
@@ -220,7 +217,6 @@ final class RateRepositoryTest extends TestCase
             minimumStay: 3,
             seasonName: 'October Festival',
             cleaningFeeCop: 60000.0,
-            resortFeeCop: 30000.0,
             createdBy: 7
         );
         $saved = $repo->save($tier, adminUserId: 7);
@@ -244,8 +240,7 @@ final class RateRepositoryTest extends TestCase
             minimumStay: 4,
             id: $id,
             seasonName: 'Updated October Festival',
-            cleaningFeeCop: 65000.0,
-            resortFeeCop: 35000.0
+            cleaningFeeCop: 65000.0
         );
         $updated = $repo->save($updateTier);
         $this->assertSame($id, $updated->id);

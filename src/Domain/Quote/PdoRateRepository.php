@@ -125,9 +125,9 @@ class PdoRateRepository implements RateRepositoryInterface
         if ($tier->id === null) {
             $stmt = $this->pdo->prepare('
                 INSERT INTO property_rates (
-                    property_id, start_date, end_date, season_name, price_per_night, min_stay, cleaning_fee, resort_fee, created_by
+                    property_id, start_date, end_date, season_name, price_per_night, min_stay, cleaning_fee, created_by
                 ) VALUES (
-                    :property_id, :start_date, :end_date, :season_name, :price_per_night, :min_stay, :cleaning_fee, :resort_fee, :created_by
+                    :property_id, :start_date, :end_date, :season_name, :price_per_night, :min_stay, :cleaning_fee, :created_by
                 )
             ');
 
@@ -139,7 +139,6 @@ class PdoRateRepository implements RateRepositoryInterface
                 'price_per_night' => $tier->nightlyRateCop,
                 'min_stay' => $tier->minimumStay,
                 'cleaning_fee' => $tier->cleaningFeeCop,
-                'resort_fee' => $tier->resortFeeCop,
                 'created_by' => $adminUserId ?? $tier->createdBy,
             ]);
 
@@ -158,7 +157,6 @@ class PdoRateRepository implements RateRepositoryInterface
                 id: $id,
                 seasonName: $tier->seasonName,
                 cleaningFeeCop: $tier->cleaningFeeCop,
-                resortFeeCop: $tier->resortFeeCop,
                 createdBy: $adminUserId ?? $tier->createdBy,
             );
         }
@@ -172,7 +170,6 @@ class PdoRateRepository implements RateRepositoryInterface
                 price_per_night = :price_per_night,
                 min_stay = :min_stay,
                 cleaning_fee = :cleaning_fee,
-                resort_fee = :resort_fee,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :id
         ');
@@ -186,7 +183,6 @@ class PdoRateRepository implements RateRepositoryInterface
             'price_per_night' => $tier->nightlyRateCop,
             'min_stay' => $tier->minimumStay,
             'cleaning_fee' => $tier->cleaningFeeCop,
-            'resort_fee' => $tier->resortFeeCop,
         ]);
 
         $saved = $this->findById($tier->id);
@@ -454,7 +450,6 @@ class PdoRateRepository implements RateRepositoryInterface
             id: isset($row['id']) ? (int) $row['id'] : null,
             seasonName: (string) ($row['season_name'] ?? 'Standard Rate'),
             cleaningFeeCop: (float) ($row['cleaning_fee'] ?? $row['cleaning_fee_cop'] ?? 0.0),
-            resortFeeCop: (float) ($row['resort_fee'] ?? $row['resort_fee_cop'] ?? 0.0),
             createdBy: isset($row['created_by']) ? (int) $row['created_by'] : null,
             createdByName: isset($row['created_by_name']) ? (string) $row['created_by_name'] : null,
             createdAt: isset($row['created_at']) ? (string) $row['created_at'] : null,

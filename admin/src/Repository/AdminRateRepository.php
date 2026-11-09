@@ -82,8 +82,7 @@ class AdminRateRepository implements RateRepositoryInterface
      *     season_name: string,
      *     price_per_night: float,
      *     min_stay?: int,
-     *     cleaning_fee?: float,
-     *     resort_fee?: float
+     *     cleaning_fee?: float
      * } $data
      */
     public function createRate(array $data, ?int $adminUserId = null): int
@@ -96,7 +95,6 @@ class AdminRateRepository implements RateRepositoryInterface
             minimumStay: (int) ($data['min_stay'] ?? 1),
             seasonName: $data['season_name'],
             cleaningFeeCop: (float) ($data['cleaning_fee'] ?? 0.0),
-            resortFeeCop: (float) ($data['resort_fee'] ?? 0.0),
             createdBy: $adminUserId
         );
 
@@ -115,8 +113,7 @@ class AdminRateRepository implements RateRepositoryInterface
      *     price_per_night: float,
      *     min_stay?: int,
      *     property_id?: string,
-     *     cleaning_fee?: float,
-     *     resort_fee?: float
+     *     cleaning_fee?: float
      * } $data
      */
     public function updateRate(int $id, array $data): bool
@@ -124,7 +121,6 @@ class AdminRateRepository implements RateRepositoryInterface
         $existing = $this->inner->findById($id);
         $propertyId = (string) ($data['property_id'] ?? ($existing !== null ? $existing->propertyId : '1606'));
         $cleaningFee = (float) ($data['cleaning_fee'] ?? ($existing !== null ? $existing->cleaningFeeCop : 0.0));
-        $resortFee = (float) ($data['resort_fee'] ?? ($existing !== null ? $existing->resortFeeCop : 0.0));
 
         $tier = new RateTier(
             propertyId: $propertyId,
@@ -135,7 +131,6 @@ class AdminRateRepository implements RateRepositoryInterface
             id: $id,
             seasonName: (string) $data['season_name'],
             cleaningFeeCop: $cleaningFee,
-            resortFeeCop: $resortFee,
             createdBy: $existing?->createdBy
         );
 

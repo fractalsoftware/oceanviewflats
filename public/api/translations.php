@@ -76,7 +76,6 @@ return [
             'email_breakdown' => 'Price Breakdown',
             'email_accommodation' => 'Accommodation',
             'email_cleaning' => 'Cleaning Fee',
-            'email_resort' => 'Lobby Register',
             'email_total' => 'Total',
             'email_footer' => 'We will contact you in the next few minutes to specify authorized direct payment options.'
         ],
@@ -232,7 +231,6 @@ return [
             'email_breakdown' => 'Detalle del Precio',
             'email_accommodation' => 'Hospedaje',
             'email_cleaning' => 'Limpieza',
-            'email_resort' => 'Registro Lobby',
             'email_total' => 'Total',
             'email_footer' => 'Nos contactaremos con usted en los próximos minutos para indicarle los canales de pago directo autorizados.'
         ],
@@ -388,7 +386,6 @@ return [
             'email_breakdown' => 'Détail du Prix',
             'email_accommodation' => 'Hébergement',
             'email_cleaning' => 'Frais de Ménage',
-            'email_resort' => 'Enregistrement Hall',
             'email_total' => 'Total',
             'email_footer' => 'Nous vous contacterons sous peu pour vous indiquer les modes de paiement direct autorisés.'
         ],
@@ -544,7 +541,6 @@ return [
             'email_breakdown' => 'Dettaglio Prezzo',
             'email_accommodation' => 'Alloggio',
             'email_cleaning' => 'Spese di pulizia',
-            'email_resort' => 'Registrazione Hall',
             'email_total' => 'Totale',
             'email_footer' => 'Ti contatteremo nei prossimi minuti per indicarti le modalità di pagamento diretto autorizzate.'
         ],
@@ -700,7 +696,6 @@ return [
             'email_breakdown' => 'Preisaufschlüsselung',
             'email_accommodation' => 'Unterkunft',
             'email_cleaning' => 'Reinigungsgebühr',
-            'email_resort' => 'Lobby-Registrierung',
             'email_total' => 'Gesamt',
             'email_footer' => 'Wir werden uns in den nächsten Minuten mit Ihnen in Verbindung setzen, um Ihnen die autorisierten Direktzahlungsmöglichkeiten mitzuteilen.'
         ],
@@ -856,7 +851,6 @@ return [
             'email_breakdown' => '料金明細',
             'email_accommodation' => '宿泊料金',
             'email_cleaning' => '清掃料金',
-            'email_resort' => 'ロビー登録料',
             'email_total' => '合計金額',
             'email_footer' => 'お支払い方法のご案内について、まもなくホストより直接ご連絡いたします。今しばらくお待ちください。'
         ],

@@ -10,7 +10,7 @@ use InvalidArgumentException;
 /**
  * Authoritative in-process quotation engine.
  * Computes night-by-night seasonal pricing, enforces strict multi-tier maximum minimum stays,
- * and incorporates centralized cleaning and resort fees per ADR 0004.
+ * and incorporates centralized cleaning fees per ADR 0004.
  */
 final class QuoteEngine implements QuoteEngineInterface
 {
@@ -92,8 +92,7 @@ final class QuoteEngine implements QuoteEngineInterface
 
         $nightsCount = count($nights);
         $cleaningFee = $this->config->getCleaningFee($propertyId);
-        $resortFee = $this->config->getResortFee($propertyId);
-        $totalCop = $accommodationTotal + $cleaningFee + $resortFee;
+        $totalCop = $accommodationTotal + $cleaningFee;
 
         $isValid = true;
         $violationReason = null;
@@ -111,7 +110,6 @@ final class QuoteEngine implements QuoteEngineInterface
             nightsCount: $nightsCount,
             accommodationTotalCop: $accommodationTotal,
             cleaningFeeCop: $cleaningFee,
-            resortFeeCop: $resortFee,
             totalCop: $totalCop,
             minimumStayRequired: $minimumStayRequired,
             isValid: $isValid,

@@ -38,8 +38,8 @@ final class QuoteEndpointTest extends TestCase
         $this->assertTrue($data['is_valid']);
         $this->assertSame(1050000, $data['accommodation_total_cop']);
         $this->assertSame(80000, $data['cleaning_fee_cop']);
-        $this->assertSame(20000, $data['resort_fee_cop']);
-        $this->assertSame(1150000, $data['total_cop']);
+        $this->assertArrayNotHasKey('resort_fee_cop', $data);
+        $this->assertSame(1130000, $data['total_cop']);
         $this->assertSame(2, $data['minimum_stay_required']);
     }
 
@@ -61,8 +61,8 @@ final class QuoteEndpointTest extends TestCase
         $this->assertTrue($data['is_valid']);
         $this->assertSame(1350000, $data['accommodation_total_cop']);
         $this->assertSame(100000, $data['cleaning_fee_cop']);
-        $this->assertSame(20000, $data['resort_fee_cop']);
-        $this->assertSame(1470000, $data['total_cop']);
+        $this->assertArrayNotHasKey('resort_fee_cop', $data);
+        $this->assertSame(1450000, $data['total_cop']);
     }
 
     public function testQuoteEndpointReturns400OnMissingParameters(): void

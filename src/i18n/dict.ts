@@ -423,7 +423,6 @@ export const dict = {
 		dbPriceBreakdown: "Price Breakdown",
 		dbAccommodation: "Accommodation",
 		dbCleaning: "Cleaning Fee",
-		dbResort: "Lobby Register",
 		dbTotal: "Total",
 		dbEst: "Est.",
 		dbDisclaimer:
@@ -1018,7 +1017,6 @@ export const dict = {
 		dbPriceBreakdown: "Desglose de Precio",
 		dbAccommodation: "Hospedaje",
 		dbCleaning: "Limpieza",
-		dbResort: "Registro Lobby",
 		dbTotal: "Total",
 		dbEst: "Est.",
 		dbDisclaimer:
@@ -1620,7 +1618,6 @@ export const dict = {
 		dbPriceBreakdown: "Détail du Prix",
 		dbAccommodation: "Hébergement",
 		dbCleaning: "Frais de ménage",
-		dbResort: "Enregistrement Hall",
 		dbTotal: "Total",
 		dbEst: "Est.",
 		dbDisclaimer:
@@ -2218,7 +2215,6 @@ export const dict = {
 		dbPriceBreakdown: "Dettaglio Prezzo",
 		dbAccommodation: "Alloggio",
 		dbCleaning: "Spese di pulizia",
-		dbResort: "Registrazione Hall",
 		dbTotal: "Totale",
 		dbEst: "Est.",
 		dbDisclaimer:
@@ -2817,7 +2813,6 @@ export const dict = {
 		dbPriceBreakdown: "Preisaufschlüsselung",
 		dbAccommodation: "Unterkunft",
 		dbCleaning: "Reinigungsgebühr",
-		dbResort: "Lobby-Registrierung",
 		dbTotal: "Gesamt",
 		dbEst: "Geschätzt",
 		dbDisclaimer:
@@ -3415,7 +3410,6 @@ export const dict = {
 		dbPriceBreakdown: "料金明細",
 		dbAccommodation: "宿泊料金",
 		dbCleaning: "清掃料金",
-		dbResort: "ロビー登録料",
 		dbTotal: "合計",
 		dbEst: "概算",
 		dbDisclaimer:

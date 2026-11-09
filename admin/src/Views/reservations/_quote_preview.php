@@ -79,7 +79,7 @@ $eventDetail = [
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-emerald-200/70 text-[11px] text-emerald-700">
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-200/70 text-[11px] text-emerald-700">
                 <div>
                     <span class="block text-emerald-600 text-[10px] uppercase font-semibold">Nightly Stay</span>
                     <span class="font-medium">$<?= number_format($quote->accommodationTotalCop, 0, '.', ',') ?></span>
@@ -87,10 +87,6 @@ $eventDetail = [
                 <div>
                     <span class="block text-emerald-600 text-[10px] uppercase font-semibold">Cleaning Fee</span>
                     <span class="font-medium">$<?= number_format($quote->cleaningFeeCop, 0, '.', ',') ?></span>
-                </div>
-                <div>
-                    <span class="block text-emerald-600 text-[10px] uppercase font-semibold">Building Fee</span>
-                    <span class="font-medium">$<?= number_format($quote->resortFeeCop, 0, '.', ',') ?></span>
                 </div>
             </div>
 

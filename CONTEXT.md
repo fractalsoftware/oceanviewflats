@@ -35,20 +35,16 @@ The base monetary charge for a single Night at a specific Property, dynamically 
 _Avoid_: Daily Price, Base Fee, Night Cost
 
 **Quote**:
-The calculated, authoritative monetary assessment for a specific Reservation, consisting of the itemized aggregation of each Night's Nightly Rate, plus the mandatory Cleaning Fee and Resort Fee, settling in Settlement Currency (COP).
+The calculated, authoritative monetary assessment for a specific Reservation, consisting of the itemized aggregation of each Night's Nightly Rate plus the mandatory Cleaning Fee, settling in Settlement Currency (COP).
 _Avoid_: Estimate, Bill, Total Price, Cost
 
 **Cleaning Fee**:
 A mandatory, flat per-reservation surcharge assessed on every Direct Reservation to cover property preparation and sanitation between Guest stays, established per Property.
 _Avoid_: Sanitation Charge, Maid Fee, Turnover Fee
 
-**Resort Fee**:
-A mandatory, flat per-reservation administrative and amenities surcharge assessed on every Direct Reservation for building and common-area facilities maintenance.
-_Avoid_: Community Fee, Building Fee, Service Surcharge
-
 **Building Registration Fee**:
 The mandatory statutory fee of 20,000 COP per person assessed by the Edificio Salguero Sunset condominium administration for guest registration and common area amenities access, payable directly at the front-desk reception upon arrival.
-_Avoid_: Resort Fee (reserved strictly for direct booking platform surcharge), Common Area Surcharge, Reception Tax, Porter Fee
+_Avoid_: Lobby Register, Resort Fee, Building Fee, Common Area Surcharge, Reception Tax, Porter Fee
 
 **Settlement Currency**:
 The authoritative currency for all pricing, quotations, and financial transactions, which is Colombian Pesos (COP). Any foreign currencies presented in interfaces are non-authoritative reference conversions.
@@ -176,7 +172,7 @@ The net financial performance of a Property or portfolio over a period in Settle
 _Avoid_: Net Profit, Net Earnings, Bottom Line, Take-home Pay
 
 **Parafiscal Taxable Base**:
-The net commercial accommodation revenue for a Property over a period in Settlement Currency (COP) subject to the Parafiscal Contribution, consisting of realized revenue from Confirmed and Concluded commercial Reservations (excluding Policy Retention from Cancelled Reservations) after deducting the Property's prorated Cleaning Fee and Resort Fee surcharges on Direct Reservations (`web` and `direct_manual`) while retaining full net host payouts on External OTA (`airbnb`) Reservations.
+The net commercial accommodation revenue for a Property over a period in Settlement Currency (COP) subject to the Parafiscal Contribution, consisting of realized revenue from Confirmed and Concluded commercial Reservations (excluding Policy Retention from Cancelled Reservations) after deducting the Property's prorated Cleaning Fee surcharge on Direct Reservations (`web` and `direct_manual`) while retaining full net host payouts on External OTA (`airbnb`) Reservations.
 _Avoid_: Taxable Earnings, Net Tourism Income, FONTUR Base
 
 **Parafiscal Contribution**:

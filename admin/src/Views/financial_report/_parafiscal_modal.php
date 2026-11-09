@@ -95,7 +95,7 @@ if (!function_exists('formatModalCopCurrency')) {
                     <span class="font-semibold text-gray-900"><?= formatModalCopCurrency($parafiscalPeriod->activeStayRevenue) ?></span>
                 </div>
                 <div class="flex items-center justify-between text-gray-600">
-                    <span>Prorated Direct Cleaning &amp; Resort Fees Deducted</span>
+                    <span>Prorated Direct Cleaning Fees Deducted</span>
                     <span class="font-medium text-rose-700">- <?= formatModalCopCurrency($parafiscalPeriod->deductedDirectFees) ?></span>
                 </div>
                 <div class="pt-1.5 border-t border-indigo-200/70 flex items-center justify-between font-bold text-gray-900">

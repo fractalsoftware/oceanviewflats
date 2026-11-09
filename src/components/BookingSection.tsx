@@ -146,15 +146,6 @@ export const BookingSection = ({
 											0 COP
 										</span>
 									</div>
-									<div className="flex justify-between text-slate-600">
-										<span id="resort-fee-label">{t.dbResort}</span>
-										<span
-											id="resort-fee-value"
-											className={`font-semibold ${theme.textColor}`}
-										>
-											0 COP
-										</span>
-									</div>
 									<hr className={`${theme.bookingInputContainerBorder} my-2`} />
 									<div className="flex justify-between items-baseline">
 										<span className={`font-bold ${theme.textColor}`}>
