@@ -45,6 +45,7 @@ export interface PropertyTheme {
 	bookingConsentBoxBg: string;
 	bookingConsentText: string;
 	bookingConsentLink: string;
+	bookingMinStayWarning: string;
 
 	// CalendarWidget centralized styles
 	calendarDayText: string;
@@ -393,6 +394,8 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		bookingConsentBoxBg: "bg-slate-50 border border-slate-200",
 		bookingConsentText: "text-slate-600",
 		bookingConsentLink: "text-[#FF5A5F] hover:text-[#FF424D]",
+		bookingMinStayWarning:
+			"hidden mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold leading-relaxed",
 
 		// CalendarWidget
 		calendarDayText: "text-slate-700",
@@ -454,6 +457,8 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		bookingConsentBoxBg: "bg-stone-50 border border-stone-200",
 		bookingConsentText: "text-stone-600",
 		bookingConsentLink: "text-rose-600 hover:text-rose-700",
+		bookingMinStayWarning:
+			"hidden mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold leading-relaxed",
 
 		// CalendarWidget
 		calendarDayText: "text-stone-700",

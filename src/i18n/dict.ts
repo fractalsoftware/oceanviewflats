@@ -104,8 +104,9 @@ export const dict = {
 		homeCtaWhatsApp: "Chat on WhatsApp",
 		homeCard1707Badge: "17th Floor • RNT #268781",
 		homeCard1606Badge: "16th Floor • RNT #270413",
-		homeCard1707Rate: "From 300,000 COP / night",
-		homeCard1606Rate: "From 300,000 COP / night",
+		homeCard1707Rate: "From 450,000 COP / night",
+		homeCard1606Rate: "From 350,000 COP / night",
+		homeCardRateFormat: "From {rate} COP / night",
 		homeCardWifi: "900 Mbps Wi-Fi",
 		homeCard1707Parking: "Private Parking Included",
 		homeCard1606Parking: "Private Parking Included",
@@ -444,6 +445,8 @@ export const dict = {
 		dbGatewayError:
 			"Unable to load the payment gateway. Please check your internet connection or try again.",
 		dbNightsFormat: "{nights} nights",
+		dbMinStayNotice:
+			"A minimum stay of {minStay} nights is required for the selected dates.",
 		dbSuccessTitle: "Booking Confirmed - OceanViewFlats",
 		dbSuccessHeader: "Booking Confirmed!",
 		dbSuccessSubtitle:
@@ -684,8 +687,9 @@ export const dict = {
 		homeCtaWhatsApp: "Chatear por WhatsApp",
 		homeCard1707Badge: "Piso 17 • RNT #268781",
 		homeCard1606Badge: "Piso 16 • RNT #270413",
-		homeCard1707Rate: "Desde 300,000 COP / noche",
-		homeCard1606Rate: "Desde 300,000 COP / noche",
+		homeCard1707Rate: "Desde 450.000 COP / noche",
+		homeCard1606Rate: "Desde 350.000 COP / noche",
+		homeCardRateFormat: "Desde {rate} COP / noche",
 		homeCardWifi: "Wi-Fi 900 Mbps",
 		homeCard1707Parking: "Parqueadero Privado Incluido",
 		homeCard1606Parking: "Parqueadero Privado Incluido",
@@ -1040,6 +1044,8 @@ export const dict = {
 		dbGatewayError:
 			"No se pudo cargar la pasarela de pagos. Por favor verifique su conexión a internet o intente de nuevo.",
 		dbNightsFormat: "{nights} noches",
+		dbMinStayNotice:
+			"Se requiere una estadía mínima de {minStay} noches para las fechas seleccionadas.",
 		dbSuccessTitle: "Reserva Confirmada - OceanViewFlats",
 		dbSuccessHeader: "¡Reserva Confirmada!",
 		dbSuccessSubtitle:
@@ -1281,8 +1287,9 @@ export const dict = {
 		homeCtaWhatsApp: "Discuter sur WhatsApp",
 		homeCard1707Badge: "17e Étage • RNT #268781",
 		homeCard1606Badge: "16e Étage • RNT #270413",
-		homeCard1707Rate: "À partir de 300,000 COP / nuit",
-		homeCard1606Rate: "À partir de 300,000 COP / nuit",
+		homeCard1707Rate: "À partir de 450 000 COP / nuit",
+		homeCard1606Rate: "À partir de 350 000 COP / nuit",
+		homeCardRateFormat: "À partir de {rate} COP / nuit",
 		homeCardWifi: "Wi-Fi 900 Mbps",
 		homeCard1707Parking: "Parking Privé Inclus",
 		homeCard1606Parking: "Parking Privé Inclus",
@@ -1641,6 +1648,8 @@ export const dict = {
 		dbGatewayError:
 			"Impossible de charger la passerelle de paiement. Veuillez vérifier votre connexion internet ou réessayer.",
 		dbNightsFormat: "{nights} nuits",
+		dbMinStayNotice:
+			"Un séjour minimum de {minStay} nuits est requis pour les dates sélectionnées.",
 		dbSuccessTitle: "Réservation Confirmée - OceanViewFlats",
 		dbSuccessHeader: "Réservation Confirmée !",
 		dbSuccessSubtitle:
@@ -1883,8 +1892,9 @@ export const dict = {
 		homeCtaWhatsApp: "Scrivici su WhatsApp",
 		homeCard1707Badge: "17° Piano • RNT #268781",
 		homeCard1606Badge: "16° Piano • RNT #270413",
-		homeCard1707Rate: "Da 300,000 COP / notte",
-		homeCard1606Rate: "Da 300,000 COP / notte",
+		homeCard1707Rate: "Da 450.000 COP / notte",
+		homeCard1606Rate: "Da 350.000 COP / notte",
+		homeCardRateFormat: "Da {rate} COP / notte",
 		homeCardWifi: "Wi-Fi 900 Mbps",
 		homeCard1707Parking: "Parcheggio Privato Incluso",
 		homeCard1606Parking: "Parcheggio Privato Incluso",
@@ -2237,6 +2247,8 @@ export const dict = {
 		dbGatewayError:
 			"Impossibile caricare il gateway di pagamento. Si prega di verificare la connessione a internet o riprovare.",
 		dbNightsFormat: "{nights} notti",
+		dbMinStayNotice:
+			"È richiesto un soggiorno minimo di {minStay} notti per le date selezionate.",
 		dbSuccessTitle: "Prenotazione Confermata - OceanViewFlats",
 		dbSuccessHeader: "Prenotazione Confermata!",
 		dbSuccessSubtitle:
@@ -2478,8 +2490,9 @@ export const dict = {
 		homeCtaWhatsApp: "Per WhatsApp Chatten",
 		homeCard1707Badge: "17. Etage • RNT #268781",
 		homeCard1606Badge: "16. Etage • RNT #270413",
-		homeCard1707Rate: "Ab 300,000 COP / Nacht",
-		homeCard1606Rate: "Ab 300,000 COP / Nacht",
+		homeCard1707Rate: "Ab 450.000 COP / Nacht",
+		homeCard1606Rate: "Ab 350.000 COP / Nacht",
+		homeCardRateFormat: "Ab {rate} COP / Nacht",
 		homeCardWifi: "900 Mbps WLAN",
 		homeCard1707Parking: "Privater Parkplatz Inklusive",
 		homeCard1606Parking: "Privater Parkplatz Inklusive",
@@ -2836,6 +2849,8 @@ export const dict = {
 		dbGatewayError:
 			"Das Zahlungsgateway konnte nicht geladen werden. Bitte überprüfen Sie Ihre Internetverbindung oder versuchen Sie es erneut.",
 		dbNightsFormat: "{nights} Nächte",
+		dbMinStayNotice:
+			"Für die ausgewählten Daten ist ein Mindestaufenthalt von {minStay} Nächten erforderlich.",
 		dbSuccessTitle: "Buchung Bestätigt - OceanViewFlats",
 		dbSuccessHeader: "Buchung Bestätigt!",
 		dbSuccessSubtitle:
@@ -3080,8 +3095,9 @@ export const dict = {
 		homeCtaWhatsApp: "WhatsAppで相談する",
 		homeCard1707Badge: "17階 • RNT #268781",
 		homeCard1606Badge: "16階 • RNT #270413",
-		homeCard1707Rate: "1泊 300,000 COP〜",
-		homeCard1606Rate: "1泊 300,000 COP〜",
+		homeCard1707Rate: "1泊 450,000 COP〜",
+		homeCard1606Rate: "1泊 350,000 COP〜",
+		homeCardRateFormat: "1泊 {rate} COP〜",
 		homeCardWifi: "900 Mbps Wi-Fi",
 		homeCard1707Parking: "専用駐車場付き",
 		homeCard1606Parking: "専用駐車場付き",
@@ -3432,6 +3448,7 @@ export const dict = {
 		dbGatewayError:
 			"決済ゲートウェイを読み込めませんでした。インターネット接続を確認してもう一度お試しください。",
 		dbNightsFormat: "{nights} 泊",
+		dbMinStayNotice: "選択された日程には最低{minStay}泊のご宿泊が必要です。",
 		dbSuccessTitle: "予約完了 - OceanViewFlats",
 		dbSuccessHeader: "ご予約が完了しました！",
 		dbSuccessSubtitle:
