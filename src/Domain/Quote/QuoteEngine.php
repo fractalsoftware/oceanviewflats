@@ -124,6 +124,128 @@ final class QuoteEngine implements QuoteEngineInterface
         );
     }
 
+    /**
+     * Computes active nightly rate summaries for Properties 1606 and 1707 alongside seasonal rate tiers.
+     *
+     * @return array{
+     *     properties: array{
+     *         1606: array{
+     *             property_id: string,
+     *             current_nightly_rate_cop: int,
+     *             currentNightlyRate: int,
+     *             default_nightly_rate_cop: int,
+     *             defaultNightlyRate: int,
+     *             cleaning_fee_cop: int,
+     *             cleaningFeeCop: int,
+     *             default_minimum_stay: int,
+     *             defaultMinimumStay: int,
+     *             is_seasonal_tier_active: bool,
+     *             isSeasonalTierActive: bool,
+     *             active_tier_name: string,
+     *             activeTierName: string,
+     *             active_tier_end_date: ?string,
+     *             activeTierEndDate: ?string
+     *         },
+     *         1707: array{
+     *             property_id: string,
+     *             current_nightly_rate_cop: int,
+     *             currentNightlyRate: int,
+     *             default_nightly_rate_cop: int,
+     *             defaultNightlyRate: int,
+     *             cleaning_fee_cop: int,
+     *             cleaningFeeCop: int,
+     *             default_minimum_stay: int,
+     *             defaultMinimumStay: int,
+     *             is_seasonal_tier_active: bool,
+     *             isSeasonalTierActive: bool,
+     *             active_tier_name: string,
+     *             activeTierName: string,
+     *             active_tier_end_date: ?string,
+     *             activeTierEndDate: ?string
+     *         }
+     *     },
+     *     tiers: list<array{
+     *         property_id: string,
+     *         start_date: string,
+     *         end_date: string,
+     *         nightly_rate_cop: int,
+     *         minimum_stay: int,
+     *         season_name: string
+     *     }>
+     * }
+     */
+    public function getRateSummary(
+        ?string $propertyId = null,
+        ?DateTimeImmutable $now = null,
+        bool $includeFallbackTiers = true
+    ): array {
+        $propertyId = $propertyId !== null ? trim($propertyId) : '';
+        if ($propertyId !== '' && !$this->config->isValidProperty($propertyId)) {
+            throw new InvalidArgumentException("Unknown property identifier: '{$propertyId}'");
+        }
+
+        $today = ($now ?? new DateTimeImmutable('today'))->format('Y-m-d');
+        $propertiesPayload = [];
+
+        foreach (['1606', '1707'] as $pid) {
+            $tiers = (!$includeFallbackTiers && $this->rateSource instanceof RateRepositoryInterface)
+                ? $this->rateSource->getRatesForProperty($pid)
+                : $this->rateSource->getTiersForProperty($pid);
+            usort($tiers, static fn(RateTier $a, RateTier $b): int => strcmp($a->startDate, $b->startDate));
+
+            $activeTier = null;
+            foreach ($tiers as $tier) {
+                if ($tier->coversDate($today)) {
+                    $activeTier = $tier;
+                    break;
+                }
+            }
+
+            $defaultRate = $this->config->getDefaultNightlyRate($pid);
+            $cleaningFee = $this->config->getCleaningFee($pid);
+            $defaultMinStay = $this->config->getDefaultMinimumStay($pid);
+
+            $currentNightlyRate = $activeTier !== null ? $activeTier->nightlyRateCop : $defaultRate;
+            $isSeasonalTierActive = $activeTier !== null;
+            $activeTierName = $activeTier !== null ? $activeTier->seasonName : 'Baseline Rate';
+            $activeTierEndDate = $activeTier?->endDate;
+
+            $propertiesPayload[$pid] = [
+                'property_id' => $pid,
+                'current_nightly_rate_cop' => (int) round($currentNightlyRate),
+                'currentNightlyRate' => (int) round($currentNightlyRate),
+                'default_nightly_rate_cop' => (int) round($defaultRate),
+                'defaultNightlyRate' => (int) round($defaultRate),
+                'cleaning_fee_cop' => (int) round($cleaningFee),
+                'cleaningFeeCop' => (int) round($cleaningFee),
+                'default_minimum_stay' => $defaultMinStay,
+                'defaultMinimumStay' => $defaultMinStay,
+                'is_seasonal_tier_active' => $isSeasonalTierActive,
+                'isSeasonalTierActive' => $isSeasonalTierActive,
+                'active_tier_name' => $activeTierName,
+                'activeTierName' => $activeTierName,
+                'active_tier_end_date' => $activeTierEndDate,
+                'activeTierEndDate' => $activeTierEndDate,
+            ];
+        }
+
+        $tierProperties = $propertyId !== '' ? [$propertyId] : ['1606', '1707'];
+        $tiersPayload = [];
+        foreach ($tierProperties as $pid) {
+            $propTiers = (!$includeFallbackTiers && $this->rateSource instanceof RateRepositoryInterface)
+                ? $this->rateSource->getRatesForProperty($pid)
+                : $this->rateSource->getTiersForProperty($pid);
+            foreach ($propTiers as $tier) {
+                $tiersPayload[] = $tier->toSummaryArray();
+            }
+        }
+
+        return [
+            'properties' => $propertiesPayload,
+            'tiers' => $tiersPayload,
+        ];
+    }
+
     private function parseDate(string $dateStr, string $label): DateTimeImmutable
     {
         $dateStr = trim($dateStr);

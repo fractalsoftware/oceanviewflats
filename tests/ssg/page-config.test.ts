@@ -3057,6 +3057,18 @@ test("Property Page #calendar-widget fetches authoritative Quote from quote.php 
 		parsedConfig.i18n.dbMinStayNotice,
 		"A minimum stay of {minStay} nights is required for the selected dates.",
 	);
+	assert.equal(parsedConfig.i18n.dbNightsFormat, "{nights} nights");
+
+	const homeHtmlEn = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
+	const homeConfigMatch = homeHtmlEn.match(
+		/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+	);
+	assert.ok(homeConfigMatch, "index.html must embed #ovf-page-config");
+	assert.equal(
+		JSON.parse(homeConfigMatch[1]).i18n.dbMinStayNotice,
+		undefined,
+		"dbMinStayNotice must be scoped to property pages and omitted from common/home i18n slice",
+	);
 
 	const pageConfigCode = fs.readFileSync(
 		path.join(process.cwd(), "public", "js", "page-config.js"),
@@ -3411,6 +3423,11 @@ test("Property Page #calendar-widget fetches authoritative Quote from quote.php 
 	// 1. Select 2-night range (day 10 to day 12) which violates minimum_stay_required = 4
 	getDayButton(10).dispatchEvent("click");
 	getDayButton(12).dispatchEvent("click");
+	assert.equal(
+		directBookingForm.classList.contains("hidden"),
+		true,
+		"#direct-booking-form must not flash visible before authoritative quote resolves",
+	);
 	await new Promise((resolve) => setTimeout(resolve, 15));
 
 	assert.ok(

@@ -1381,6 +1381,33 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertNull($prop1707After->channelBlock);
         $this->assertNotNull($prop1707After->activeReservation);
         $this->assertSame('res-abnb-1707', $prop1707After->activeReservation['reservation_uid']);
+
+        // 4. Verify Pending Hold on 1606 + un-onboarded Channel Block on 1707 still routes cell clickAction to 'day_drawer'
+        $this->pdo->exec("DELETE FROM reservations;");
+        $this->pdo->exec("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source
+            ) VALUES (
+                'res-pending-1606', '1606', 'Pending Guest', 'pending@test.com', '+57300999',
+                '2026-10-12', '2026-10-15', 1050000, 'pending_payment', 'web'
+            )
+        ");
+
+        $heatmapMixed = $service->buildOccupancyHeatmap('all', $now);
+        $cellsMixed = [];
+        foreach ($heatmapMixed->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cellsMixed[$cell->date] = $cell;
+                }
+            }
+        }
+        $cellMixedOct12 = $cellsMixed['2026-10-12'];
+        $this->assertSame(1, $cellMixedOct12->occupiedProperties);
+        $this->assertCount(1, $cellMixedOct12->reservationUids);
+        $this->assertTrue($cellMixedOct12->hasChannelBlock());
+        $this->assertSame('day_drawer', $cellMixedOct12->getClickAction());
     }
 }
 

@@ -190,6 +190,74 @@ class QuoteDataSchema {}
 )]
 class QuoteResponseSchema {}
 
+#[OA\Schema(
+    schema: 'PropertyRateSummary',
+    description: 'Active rate and fee summary for a property',
+    properties: [
+        new OA\Property(property: 'property_id', type: 'string', enum: ['1606', '1707'], example: '1606'),
+        new OA\Property(property: 'current_nightly_rate_cop', type: 'integer', example: 350000),
+        new OA\Property(property: 'currentNightlyRate', type: 'integer', example: 350000),
+        new OA\Property(property: 'default_nightly_rate_cop', type: 'integer', example: 350000),
+        new OA\Property(property: 'defaultNightlyRate', type: 'integer', example: 350000),
+        new OA\Property(property: 'cleaning_fee_cop', type: 'integer', example: 80000),
+        new OA\Property(property: 'cleaningFeeCop', type: 'integer', example: 80000),
+        new OA\Property(property: 'default_minimum_stay', type: 'integer', example: 2),
+        new OA\Property(property: 'defaultMinimumStay', type: 'integer', example: 2),
+        new OA\Property(property: 'is_seasonal_tier_active', type: 'boolean', example: true),
+        new OA\Property(property: 'isSeasonalTierActive', type: 'boolean', example: true),
+        new OA\Property(property: 'active_tier_name', type: 'string', example: 'Standard Rate'),
+        new OA\Property(property: 'activeTierName', type: 'string', example: 'Standard Rate'),
+        new OA\Property(property: 'active_tier_end_date', type: 'string', format: 'date', nullable: true, example: '2026-12-14'),
+        new OA\Property(property: 'activeTierEndDate', type: 'string', format: 'date', nullable: true, example: '2026-12-14')
+    ]
+)]
+class PropertyRateSummarySchema {}
+
+#[OA\Schema(
+    schema: 'SeasonalRateTierSummary',
+    description: 'Seasonal rate tier entry',
+    properties: [
+        new OA\Property(property: 'property_id', type: 'string', enum: ['1606', '1707'], example: '1606'),
+        new OA\Property(property: 'start_date', type: 'string', format: 'date', example: '2026-01-01'),
+        new OA\Property(property: 'end_date', type: 'string', format: 'date', example: '2026-12-14'),
+        new OA\Property(property: 'nightly_rate_cop', type: 'integer', example: 350000),
+        new OA\Property(property: 'minimum_stay', type: 'integer', example: 2),
+        new OA\Property(property: 'season_name', type: 'string', example: 'Standard Rate')
+    ]
+)]
+class SeasonalRateTierSummarySchema {}
+
+#[OA\Schema(
+    schema: 'RateSummaryData',
+    description: 'Active property rate summaries and seasonal rate tiers for Properties 1606 and 1707',
+    properties: [
+        new OA\Property(
+            property: 'properties',
+            type: 'object',
+            properties: [
+                new OA\Property(property: '1606', ref: '#/components/schemas/PropertyRateSummary'),
+                new OA\Property(property: '1707', ref: '#/components/schemas/PropertyRateSummary')
+            ]
+        ),
+        new OA\Property(
+            property: 'tiers',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/SeasonalRateTierSummary')
+        )
+    ]
+)]
+class RateSummaryDataSchema {}
+
+#[OA\Schema(
+    schema: 'RateSummaryResponse',
+    description: 'Successful active rate summary response envelope (when action=rates or summary=1)',
+    properties: [
+        new OA\Property(property: 'success', type: 'boolean', example: true),
+        new OA\Property(property: 'data', ref: '#/components/schemas/RateSummaryData')
+    ]
+)]
+class RateSummaryResponseSchema {}
+
 // =============================================================================
 // API Endpoints Specification
 // =============================================================================
@@ -687,7 +755,12 @@ class QuoteEndpoints
             new OA\Response(
                 response: 200,
                 description: 'Authoritative quotation calculation or active rate summary result',
-                content: new OA\JsonContent(ref: '#/components/schemas/QuoteResponse')
+                content: new OA\JsonContent(
+                    oneOf: [
+                        new OA\Schema(ref: '#/components/schemas/QuoteResponse'),
+                        new OA\Schema(ref: '#/components/schemas/RateSummaryResponse')
+                    ]
+                )
             ),
             new OA\Response(
                 response: 400,

@@ -229,11 +229,13 @@ final class AdminRateRoutesTest extends TestCase
         $cacheFile = $this->tempCacheDir . '/prices.json';
         $this->assertFileExists($cacheFile);
         $cachedAfterCreate = json_decode((string) file_get_contents($cacheFile), true);
-        $this->assertCount(1, $cachedAfterCreate);
-        $this->assertSame('1606', $cachedAfterCreate[0]['property_id']);
-        $this->assertSame(420000, $cachedAfterCreate[0]['nightly_rate_cop']);
-        $this->assertSame(3, $cachedAfterCreate[0]['minimum_stay']);
-        $this->assertSame('Mid-Year Vacation', $cachedAfterCreate[0]['season_name']);
+        $this->assertArrayHasKey('properties', $cachedAfterCreate);
+        $this->assertArrayHasKey('tiers', $cachedAfterCreate);
+        $this->assertCount(1, $cachedAfterCreate['tiers']);
+        $this->assertSame('1606', $cachedAfterCreate['tiers'][0]['property_id']);
+        $this->assertSame(420000, $cachedAfterCreate['tiers'][0]['nightly_rate_cop']);
+        $this->assertSame(3, $cachedAfterCreate['tiers'][0]['minimum_stay']);
+        $this->assertSame('Mid-Year Vacation', $cachedAfterCreate['tiers'][0]['season_name']);
 
         // 3. GET /rates/{id}/edit
         $reqEdit = new Request('GET', "/rates/{$tierId}/edit");
@@ -264,10 +266,10 @@ final class AdminRateRoutesTest extends TestCase
         $this->assertSame('Mid-Year Vacation Renamed', $updatedTier['season_name']);
 
         $cachedAfterUpdate = json_decode((string) file_get_contents($cacheFile), true);
-        $this->assertCount(1, $cachedAfterUpdate);
-        $this->assertSame(460000, $cachedAfterUpdate[0]['nightly_rate_cop']);
-        $this->assertSame(4, $cachedAfterUpdate[0]['minimum_stay']);
-        $this->assertSame('Mid-Year Vacation Renamed', $cachedAfterUpdate[0]['season_name']);
+        $this->assertCount(1, $cachedAfterUpdate['tiers']);
+        $this->assertSame(460000, $cachedAfterUpdate['tiers'][0]['nightly_rate_cop']);
+        $this->assertSame(4, $cachedAfterUpdate['tiers'][0]['minimum_stay']);
+        $this->assertSame('Mid-Year Vacation Renamed', $cachedAfterUpdate['tiers'][0]['season_name']);
 
         // 5. DELETE /rates/{id} with CSRF header
         $reqDelete = new Request(
@@ -284,7 +286,8 @@ final class AdminRateRoutesTest extends TestCase
         $this->assertNull($this->rateRepo->findRateById($tierId));
 
         $cachedAfterDelete = json_decode((string) file_get_contents($cacheFile), true);
-        $this->assertSame([], $cachedAfterDelete);
+        $this->assertSame([], $cachedAfterDelete['tiers']);
+        $this->assertSame(350000, $cachedAfterDelete['properties']['1606']['current_nightly_rate_cop']);
     }
 
     public function testSeedFromCsvThroughRouter(): void

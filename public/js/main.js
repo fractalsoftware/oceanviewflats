@@ -188,6 +188,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function resolveApiBase(pageConfig) {
+    const base = (pageConfig && pageConfig.apiBase) ? pageConfig.apiBase : `${(pageConfig && pageConfig.assetPrefix) || ''}api/`;
+    return base.endsWith('/') ? base : `${base}/`;
+}
+
 // Home Page Property Card Rate Hydration
 document.addEventListener('DOMContentLoaded', () => {
     const badge1707 = document.getElementById('home-rate-badge-1707');
@@ -212,8 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function hydrateHomeRateBadges() {
         try {
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const quoteBase = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+            const quoteBase = resolveApiBase(pageConfig);
             const response = await fetch(`${quoteBase}quote.php?action=rates`);
             if (!response.ok) return;
             const result = await response.json();
@@ -224,7 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const rateVal = propInfo && (propInfo.current_nightly_rate_cop || propInfo.currentNightlyRate || propInfo.default_nightly_rate_cop);
                     if (badgeEl && rateVal) {
                         const formattedRate = formatRateNumber(rateVal, lang);
-                        badgeEl.textContent = t('homeCardRateFormat', { rate: formattedRate }, `From ${formattedRate} COP / night`);
+                        const localizedBadge = t('homeCardRateFormat', { rate: formattedRate }, '');
+                        if (localizedBadge) {
+                            badgeEl.textContent = localizedBadge;
+                        }
                     }
                 });
             }
@@ -272,8 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch live blocked dates from local caching proxy
     async function fetchBlockedDates() {
         try {
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const availBase = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+            const availBase = resolveApiBase(pageConfig);
             const response = await fetch(`${availBase}availability.php?property=${propertyId}`);
             if (response.ok) {
                 blockedDates = await response.json();
@@ -432,8 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (payload && payload.data && Array.isArray(payload.data.tiers)) {
                     pricesData = payload.data.tiers;
                 }
-                if (checkIn && checkOut) {
-                    updateBookingDisplay();
+                if (checkIn && checkOut && lastQuoteDetails && lastQuoteDetails.source === 'fallback') {
+                    const fallbackDetails = calculateStayDetails(checkIn, checkOut);
+                    lastQuoteDetails = fallbackDetails;
+                    renderQuoteDetails(fallbackDetails);
                 }
             }
         } catch (err) {
@@ -486,8 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!bookingCaptchaLabel) return;
         try {
             const currentLang = pageConfig.lang || document.documentElement.lang || 'en';
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const bookBase = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+            const bookBase = resolveApiBase(pageConfig);
             const response = await fetch(`${bookBase}book-request.php?action=captcha&lang=${encodeURIComponent(currentLang)}`);
             if (response.ok) {
                 const data = await response.json();
@@ -540,7 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
             totalCOP,
             minimumStayRequired: maxMinStay,
             isValid,
-            violationReason: isValid ? null : 'min_stay'
+            violationReason: isValid ? null : 'min_stay',
+            source: 'fallback'
         };
     }
 
@@ -566,8 +574,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const copFormatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 
         if (accommodationValue) {
-            const nightsFormat = accommodationValue.getAttribute('data-nights-format') || '({nights} nights)';
-            accommodationValue.textContent = copFormatter.format(details.accommodationTotal) + ' ' + nightsFormat.replace('{nights}', details.nights);
+            const nightsText = t(
+                'dbNightsFormat',
+                { nights: details.nights },
+                accommodationValue.getAttribute('data-nights-format') || ''
+            );
+            accommodationValue.textContent = copFormatter.format(details.accommodationTotal) + (nightsText ? ' ' + nightsText : '');
         }
         if (cleaningValue) cleaningValue.textContent = copFormatter.format(details.cleaningFee);
         if (totalValue) totalValue.textContent = copFormatter.format(details.totalCOP) + ' COP';
@@ -606,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 minStayWarning.textContent = t(
                     'dbMinStayNotice',
                     { minStay: minStayVal },
-                    `A minimum stay of ${minStayVal} nights is required for the selected dates.`
+                    ''
                 );
                 minStayWarning.classList.remove('hidden');
             }
@@ -650,30 +662,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const requestId = ++activeQuoteRequestId;
         const checkInStr = formatDate(start);
         const checkOutStr = formatDate(end);
+
+        if (typeof fetch !== 'function') {
+            const fallbackDetails = calculateStayDetails(start, end);
+            lastQuoteDetails = fallbackDetails;
+            renderQuoteDetails(fallbackDetails);
+            return;
+        }
+
         try {
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const quoteBase = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+            const quoteBase = resolveApiBase(pageConfig);
             const url = `${quoteBase}quote.php?property_id=${encodeURIComponent(propertyId)}&check_in=${encodeURIComponent(checkInStr)}&check_out=${encodeURIComponent(checkOutStr)}`;
             const response = await fetch(url);
-            if (!response.ok || requestId !== activeQuoteRequestId) return;
-            const result = await response.json();
             if (requestId !== activeQuoteRequestId || !checkIn || !checkOut) return;
-            const data = (result && result.success && result.data) ? result.data : (result && typeof result.total_cop === 'number' ? result : null);
-            if (data && typeof data.total_cop === 'number') {
-                const authoritativeDetails = {
-                    nights: Number(data.nights_count ?? data.nightsCount ?? 0),
-                    accommodationTotal: Number(data.accommodation_total_cop ?? data.accommodationTotalCop ?? 0),
-                    cleaningFee: Number(data.cleaning_fee_cop ?? data.cleaningFeeCop ?? 0),
-                    totalCOP: Number(data.total_cop ?? data.totalCop ?? 0),
-                    minimumStayRequired: Number(data.minimum_stay_required ?? data.minimumStayRequired ?? 2),
-                    isValid: data.is_valid !== undefined ? Boolean(data.is_valid) : (data.isValid !== undefined ? Boolean(data.isValid) : true),
-                    violationReason: data.violation_reason ?? data.violationReason ?? null
-                };
-                lastQuoteDetails = authoritativeDetails;
-                renderQuoteDetails(authoritativeDetails);
+            if (response && response.ok) {
+                const result = await response.json();
+                if (requestId !== activeQuoteRequestId || !checkIn || !checkOut) return;
+                const data = (result && result.success && result.data) ? result.data : (result && typeof result.total_cop === 'number' ? result : null);
+                if (data && typeof data.total_cop === 'number') {
+                    const authoritativeDetails = {
+                        nights: Number(data.nights_count ?? data.nightsCount ?? 0),
+                        accommodationTotal: Number(data.accommodation_total_cop ?? data.accommodationTotalCop ?? 0),
+                        cleaningFee: Number(data.cleaning_fee_cop ?? data.cleaningFeeCop ?? 0),
+                        totalCOP: Number(data.total_cop ?? data.totalCop ?? 0),
+                        minimumStayRequired: Number(data.minimum_stay_required ?? data.minimumStayRequired ?? 2),
+                        isValid: data.is_valid !== undefined ? Boolean(data.is_valid) : (data.isValid !== undefined ? Boolean(data.isValid) : true),
+                        violationReason: data.violation_reason ?? data.violationReason ?? null,
+                        source: 'authoritative'
+                    };
+                    lastQuoteDetails = authoritativeDetails;
+                    renderQuoteDetails(authoritativeDetails);
+                    return;
+                }
             }
+            const fallbackDetails = calculateStayDetails(start, end);
+            lastQuoteDetails = fallbackDetails;
+            renderQuoteDetails(fallbackDetails);
         } catch (err) {
             console.error('Error fetching authoritative quote:', err);
+            if (requestId === activeQuoteRequestId && checkIn && checkOut) {
+                const fallbackDetails = calculateStayDetails(start, end);
+                lastQuoteDetails = fallbackDetails;
+                renderQuoteDetails(fallbackDetails);
+            }
         }
     }
 
@@ -693,9 +724,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const minStayWarning = document.getElementById('min-stay-warning');
 
         if (checkIn && checkOut) {
-            const fallbackDetails = calculateStayDetails(checkIn, checkOut);
-            lastQuoteDetails = fallbackDetails;
-            renderQuoteDetails(fallbackDetails);
+            const formCheckIn = document.getElementById('form-check-in-date');
+            const formCheckOut = document.getElementById('form-check-out-date');
+            if (formCheckIn) formCheckIn.value = formatDate(checkIn);
+            if (formCheckOut) formCheckOut.value = formatDate(checkOut);
             fetchAuthoritativeQuote(checkIn, checkOut);
         } else {
             activeQuoteRequestId++;
@@ -873,8 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const msgDeclined = t('dbDeclined', {}, "Your payment was declined. Please try another payment option or verify your details.");
 
         try {
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const paymentEndpoint = apiBase.endsWith('/') ? `${apiBase}payment.php` : `${apiBase}/payment.php`;
+            const paymentEndpoint = `${resolveApiBase(pageConfig)}payment.php`;
             const response = await fetch(paymentEndpoint, {
                 method: 'POST',
                 headers: {
@@ -975,8 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('captcha_signature', bookingCaptchaSignature);
                 formData.append('captcha_response', captchaVal);
 
-                const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-                const bookEndpoint = apiBase.endsWith('/') ? `${apiBase}book-request.php` : `${apiBase}/book-request.php`;
+                const bookEndpoint = `${resolveApiBase(pageConfig)}book-request.php`;
                 const response = await fetch(bookEndpoint, {
                     method: 'POST',
                     body: formData
@@ -1131,8 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let captchaSignature = '';
     async function loadCaptcha() {
         try {
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const processorBase = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+            const processorBase = resolveApiBase(pageConfig);
             
             const currentLang = pageConfig.lang || document.documentElement.lang || 'en';
             const response = await fetch(`${processorBase}contact-processor.php?action=captcha&lang=${encodeURIComponent(currentLang)}`);
@@ -1203,8 +1232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
 
         try {
-            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
-            const actionUrl = apiBase.endsWith('/') ? `${apiBase}contact-processor.php` : `${apiBase}/contact-processor.php`;
+            const actionUrl = `${resolveApiBase(pageConfig)}contact-processor.php`;
             const response = await fetch(actionUrl, {
                 method: 'POST',
                 body: formData,

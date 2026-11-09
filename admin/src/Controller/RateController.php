@@ -11,6 +11,7 @@ use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
 use OceanViewFlats\Admin\Views\ViewRenderer;
 use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
+use OceanViewFlats\Domain\Quote\QuoteEngine;
 use OceanViewFlats\Domain\Quote\RateRepositoryInterface;
 use OceanViewFlats\Domain\Quote\RateTier;
 use OceanViewFlats\Domain\Support\PathResolver;
@@ -717,7 +718,7 @@ final class RateController
     }
 
     /**
-     * Atomically writes active seasonal rate tiers to prices.json in the shared cache directory.
+     * Atomically writes active property rate summaries and seasonal rate tiers to prices.json in the shared cache directory.
      */
     private function syncPricesCache(): void
     {
@@ -727,22 +728,10 @@ final class RateController
                 mkdir($targetCacheDir, 0755, true);
             }
 
-            $prices = [];
-            foreach (['1606', '1707'] as $propId) {
-                $tiers = $this->rateRepository->getRatesForProperty($propId);
-                foreach ($tiers as $tier) {
-                    $prices[] = [
-                        'property_id' => $tier->propertyId,
-                        'start_date' => $tier->startDate,
-                        'end_date' => $tier->endDate,
-                        'nightly_rate_cop' => (int) round($tier->nightlyRateCop),
-                        'minimum_stay' => $tier->minimumStay,
-                        'season_name' => $tier->seasonName,
-                    ];
-                }
-            }
+            $quoteEngine = new QuoteEngine($this->rateRepository, $this->ratesConfig);
+            $summary = $quoteEngine->getRateSummary(includeFallbackTiers: false);
 
-            $json = json_encode($prices, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $json = json_encode($summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             if ($json === false) {
                 return;
             }

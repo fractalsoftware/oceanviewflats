@@ -59,4 +59,36 @@ final class ChannelBlock
 
         return $nights;
     }
+
+    /**
+     * Computes the deterministic MD5 identifier for this channel block.
+     */
+    public function uid(): string
+    {
+        return md5("{$this->propertyId}_{$this->startDate}_{$this->endDate}_{$this->source}");
+    }
+
+    /**
+     * Determines whether an active (non-cancelled) reservation record absorbs/matches this channel block.
+     *
+     * @param array<string, mixed> $reservationRow
+     */
+    public function isAbsorbedByRow(array $reservationRow): bool
+    {
+        if ((string) ($reservationRow['property_id'] ?? '') !== $this->propertyId) {
+            return false;
+        }
+        $status = (string) ($reservationRow['status'] ?? '');
+        if ($status === 'cancelled') {
+            return false;
+        }
+        $resBlockUid = (string) ($reservationRow['channel_block_uid'] ?? '');
+        $cin = (string) ($reservationRow['check_in'] ?? '');
+        $cout = (string) ($reservationRow['check_out'] ?? '');
+        $source = (string) ($reservationRow['source'] ?? '');
+
+        return ($resBlockUid !== '' && $resBlockUid === $this->uid())
+            || ($cin === $this->startDate && $cout === $this->endDate)
+            || ($cin < $this->endDate && $cout > $this->startDate && strtolower($source) === strtolower($this->source));
+    }
 }
