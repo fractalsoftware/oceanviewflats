@@ -48,7 +48,7 @@ jobs:
 
       - name: Inject MercadoPago Public Key into Config
         run: |
-          sed -i 's|export const MERCADOPAGO_PUBLIC_KEY = ".*";|export const MERCADOPAGO_PUBLIC_KEY = "${{ secrets.MERCADOPAGO_PUBLIC_KEY }}";|g' src/constants/config.ts
+          perl -0777 -pi -e 's/export const MERCADOPAGO_PUBLIC_KEY\s*=\s*"[^"]*";/export const MERCADOPAGO_PUBLIC_KEY = "${{ secrets.MERCADOPAGO_PUBLIC_KEY }}";/g' src/constants/config.ts
 
       - name: Build Project
         run: npm run build
