@@ -669,7 +669,7 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertFalse($summary->hasTurnover);
         $this->assertFalse($summary->hasMaintenance);
         $this->assertFalse($summary->hasWarning);
-        $this->assertSame(230, $summary->combinedRate); // Base rates: 110 (1606) + 120 (1707) = 230
+        $this->assertSame(800000, $summary->combinedRate); // Base rates: 350000 (1606) + 450000 (1707) = 800000
         $this->assertEmpty($summary->movements);
         $this->assertEmpty($summary->maintenanceBlocks);
         $this->assertEmpty($summary->warnings);
@@ -682,7 +682,7 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertSame('1606', $p1606->propertyId);
         $this->assertSame('Vacant', $p1606->status);
         $this->assertFalse($p1606->isOccupied);
-        $this->assertSame(110, $p1606->nightlyRate);
+        $this->assertSame(350000, $p1606->nightlyRate);
         $this->assertNull($p1606->activeReservation);
         $this->assertNull($p1606->departingReservation);
         $this->assertNull($p1606->arrivingReservation);
@@ -694,7 +694,7 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertSame('1707', $p1707->propertyId);
         $this->assertSame('Vacant', $p1707->status);
         $this->assertFalse($p1707->isOccupied);
-        $this->assertSame(120, $p1707->nightlyRate);
+        $this->assertSame(450000, $p1707->nightlyRate);
     }
 
     public function testGetDaySummaryPropertyFilter(): void
@@ -717,7 +717,7 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertCount(1, $summary1606->properties);
         $this->assertArrayHasKey('1606', $summary1606->properties);
         $this->assertArrayNotHasKey('1707', $summary1606->properties);
-        $this->assertSame(110, $summary1606->combinedRate);
+        $this->assertSame(350000, $summary1606->combinedRate);
 
         $summary1707 = $service->getDaySummary('2026-11-20', '1707');
         $this->assertSame('1707', $summary1707->propertyFilter);
@@ -725,7 +725,7 @@ final class DashboardQueryServiceTest extends TestCase
         $this->assertCount(1, $summary1707->properties);
         $this->assertArrayHasKey('1707', $summary1707->properties);
         $this->assertArrayNotHasKey('1606', $summary1707->properties);
-        $this->assertSame(120, $summary1707->combinedRate);
+        $this->assertSame(450000, $summary1707->combinedRate);
     }
 
     public function testGetDaySummaryConfirmedReservation(): void
@@ -1222,6 +1222,165 @@ final class DashboardQueryServiceTest extends TestCase
         $dismissalRepo->dismiss('parafiscal_2026-Q3_1606', AlertType::PENDING_PARAFISCAL_SETTLEMENT->value, '1606', null, 1);
         $hubAfterDismiss = $service->getDashboardHubData('1606', $nowNov02);
         $this->assertEmpty($hubAfterDismiss->alerts);
+    }
+
+    public function testUnonboardedChannelBlocksAppearInOccupancyHeatmapAndDaySummaryUntilAbsorbed(): void
+    {
+        $now = new DateTimeImmutable('2026-10-10');
+        $this->pdo->exec('DELETE FROM reservations; DELETE FROM calendar_blocks; DELETE FROM property_rates;');
+
+        $block1707 = new ChannelBlock('1707', '2026-10-12', '2026-10-15', 'airbnb', 'Airbnb (Not available)');
+        $block1606 = new ChannelBlock('1606', '2026-10-20', '2026-10-23', 'airbnb', 'Airbnb (Reserved)');
+        $block1707Uid = md5('1707_2026-10-12_2026-10-15_airbnb');
+        $block1606Uid = md5('1606_2026-10-20_2026-10-23_airbnb');
+
+        $ledger = $this->createMock(ReservationLedgerInterface::class);
+        $ledger->method('getChannelBlocks')->willReturnCallback(
+            static function (string $pid) use ($block1606, $block1707): array {
+                if ($pid === '1606') {
+                    return [$block1606];
+                }
+                if ($pid === '1707') {
+                    return [$block1707];
+                }
+                return [];
+            }
+        );
+
+        $syncService = $this->createMock(InboundChannelSyncServiceInterface::class);
+        $syncService->method('getAllStatuses')->willReturn([]);
+
+        $service = new DashboardQueryService(
+            reservationRepo: $this->reservationRepo,
+            calendarBlockRepo: $this->calendarBlockRepo,
+            rateRepo: $this->rateRepo,
+            channelSyncService: $syncService,
+            ledger: $ledger
+        );
+
+        // 1. Occupancy Heatmap with un-onboarded Channel Blocks
+        $heatmapAll = $service->buildOccupancyHeatmap('all', $now);
+        $cellsAll = [];
+        foreach ($heatmapAll->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cellsAll[$cell->date] = $cell;
+                }
+            }
+        }
+
+        // Check fallback COP rates on vacant cell (2026-10-11: 350000 + 450000 = 800000)
+        $cellOct11 = $cellsAll['2026-10-11'];
+        $this->assertSame(0, $cellOct11->occupiedProperties);
+        $this->assertSame('vacant', $cellOct11->getCapacityLevel());
+        $this->assertSame('vacant', $cellOct11->getClickAction());
+        $this->assertSame(800000, $cellOct11->effectiveRate);
+        $this->assertSame(350000, $cellOct11->flatDetails['1606']['rate']);
+        $this->assertSame(450000, $cellOct11->flatDetails['1707']['rate']);
+
+        // Check un-onboarded Channel Block start date (2026-10-12 on 1707)
+        $cellOct12 = $cellsAll['2026-10-12'];
+        $this->assertSame(1, $cellOct12->occupiedProperties);
+        $this->assertSame('partial', $cellOct12->getCapacityLevel());
+        $this->assertEmpty($cellOct12->reservationUids);
+        $this->assertSame('day_drawer', $cellOct12->getClickAction());
+        $this->assertTrue($cellOct12->isClickActionDayDrawer());
+        $this->assertSame('Channel Block (Airbnb)', $cellOct12->flatDetails['1707']['status']);
+        $this->assertSame('Airbnb Channel Block (Un-onboarded)', $cellOct12->flatDetails['1707']['guest']);
+        $this->assertSame('Check-in', $cellOct12->flatDetails['1707']['movement']);
+
+        // Check middle night of Channel Block (2026-10-13 on 1707)
+        $cellOct13 = $cellsAll['2026-10-13'];
+        $this->assertSame(1, $cellOct13->occupiedProperties);
+        $this->assertSame('day_drawer', $cellOct13->getClickAction());
+        $this->assertSame('Channel Block (Airbnb)', $cellOct13->flatDetails['1707']['status']);
+        $this->assertSame('Airbnb Channel Block (Un-onboarded)', $cellOct13->flatDetails['1707']['guest']);
+        $this->assertSame('Channel Block', $cellOct13->flatDetails['1707']['movement']);
+
+        // Check endDate (2026-10-15) is NOT occupied by the Channel Block
+        $cellOct15 = $cellsAll['2026-10-15'];
+        $this->assertSame(0, $cellOct15->occupiedProperties);
+        $this->assertSame('vacant', $cellOct15->getClickAction());
+
+        // Scoped heatmap for 1707 shows 'full' (1/1) on 2026-10-12
+        $heatmap1707 = $service->buildOccupancyHeatmap('1707', $now);
+        $cells1707 = [];
+        foreach ($heatmap1707->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cells1707[$cell->date] = $cell;
+                }
+            }
+        }
+        $this->assertSame(1, $cells1707['2026-10-12']->occupiedProperties);
+        $this->assertSame('full', $cells1707['2026-10-12']->getCapacityLevel());
+        $this->assertSame('day_drawer', $cells1707['2026-10-12']->getClickAction());
+        $this->assertSame(450000, $cells1707['2026-10-12']->effectiveRate);
+
+        // 2. Day Summary for 2026-10-12 with un-onboarded Channel Block on 1707
+        $daySummary = $service->getDaySummary('2026-10-12', 'all', $now);
+        $this->assertSame(1, $daySummary->occupiedUnits);
+        $this->assertSame('partial', $daySummary->capacityLevel);
+        $this->assertSame(800000, $daySummary->combinedRate);
+
+        $prop1707 = $daySummary->properties['1707'];
+        $this->assertSame('Channel Block', $prop1707->status);
+        $this->assertTrue($prop1707->isOccupied);
+        $this->assertTrue($prop1707->hasChannelBlock());
+        $this->assertNotNull($prop1707->channelBlock);
+        $this->assertSame('2026-10-12', $prop1707->channelBlock->startDate);
+        $this->assertSame('2026-10-15', $prop1707->channelBlock->endDate);
+        $this->assertSame($block1707Uid, $prop1707->channelBlockUid);
+
+        $prop1606 = $daySummary->properties['1606'];
+        $this->assertSame('Vacant', $prop1606->status);
+        $this->assertFalse($prop1606->isOccupied);
+        $this->assertFalse($prop1606->hasChannelBlock());
+        $this->assertNull($prop1606->channelBlock);
+
+        // 3. Onboard the Airbnb Channel Block on 1707 into an External Reservation (res-abnb-1707)
+        //    and onboard 1606 via channel_block_uid match (res-abnb-1606)
+        $stmt = $this->pdo->prepare("
+            INSERT INTO reservations (
+                reservation_uid, property_id, guest_name, guest_email, guest_phone,
+                check_in, check_out, total_price, status, source, channel_block_uid, registry_completed
+            ) VALUES
+            ('res-abnb-1707', '1707', 'Onboarded Airbnb Guest', 'abnb1707@test.com', '+57300111', '2026-10-12', '2026-10-15', 1350000, 'confirmed', 'airbnb', :uid1707, 1),
+            ('res-abnb-1606', '1606', 'Onboarded 1606 Guest', 'abnb1606@test.com', '+57300222', '2026-10-20', '2026-10-23', 1050000, 'confirmed', 'airbnb', :uid1606, 1)
+        ");
+        $stmt->execute([
+            ':uid1707' => $block1707Uid,
+            ':uid1606' => $block1606Uid,
+        ]);
+
+        // Verify absorption on Heatmap: no double-counting, status is Reserved (Confirmed), click action is single_reservation
+        $heatmapAbsorbed = $service->buildOccupancyHeatmap('all', $now);
+        $cellsAbsorbed = [];
+        foreach ($heatmapAbsorbed->columns as $col) {
+            foreach ($col->days as $cell) {
+                if ($cell !== null) {
+                    $cellsAbsorbed[$cell->date] = $cell;
+                }
+            }
+        }
+
+        $cellOct12After = $cellsAbsorbed['2026-10-12'];
+        $this->assertSame(1, $cellOct12After->occupiedProperties);
+        $this->assertSame('single_reservation', $cellOct12After->getClickAction());
+        $this->assertSame('res-abnb-1707', $cellOct12After->singleReservationUid);
+        $this->assertSame('Reserved (Confirmed)', $cellOct12After->flatDetails['1707']['status']);
+        $this->assertSame('Onboarded Airbnb Guest', $cellOct12After->flatDetails['1707']['guest']);
+
+        // Verify absorption on Day Summary: status is Occupied, channelBlock is null, activeReservation is populated
+        $daySummaryAfter = $service->getDaySummary('2026-10-12', 'all', $now);
+        $this->assertSame(1, $daySummaryAfter->occupiedUnits);
+        $prop1707After = $daySummaryAfter->properties['1707'];
+        $this->assertSame('Occupied', $prop1707After->status);
+        $this->assertTrue($prop1707After->isOccupied);
+        $this->assertFalse($prop1707After->hasChannelBlock());
+        $this->assertNull($prop1707After->channelBlock);
+        $this->assertNotNull($prop1707After->activeReservation);
+        $this->assertSame('res-abnb-1707', $prop1707After->activeReservation['reservation_uid']);
     }
 }
 

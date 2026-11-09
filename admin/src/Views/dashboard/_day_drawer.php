@@ -149,6 +149,8 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Turnover</span>
                                     <?php elseif ($prop->status === 'Maintenance'): ?>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Maintenance</span>
+                                    <?php elseif ($prop->status === 'Channel Block'): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">Channel Block</span>
                                     <?php elseif ($prop->status === 'Pending'): ?>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">Pending</span>
                                     <?php else: ?>
@@ -256,7 +258,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                 </div>
 
                             <!-- Case C: Single Reservation (Active / Arriving / Departing) -->
-                            <?php elseif ($prop->activeReservation !== null || $prop->arrivingReservation !== null || $prop->departingReservation !== null): ?>
+                            <?php elseif ($prop->activeReservation !== null || $prop->arrivingReservation !== null || ($prop->departingReservation !== null && $prop->channelBlock === null)): ?>
                                 <?php
                                 $res = $prop->activeReservation ?? $prop->arrivingReservation ?? $prop->departingReservation;
                                 $resUid = (string) ($res['reservation_uid'] ?? '');
@@ -364,7 +366,43 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                     </div>
                                 </div>
 
-                            <!-- Case D: Vacant -->
+                            <!-- Case D: Un-onboarded External Channel Block -->
+                            <?php elseif ($prop->channelBlock !== null): ?>
+                                <?php
+                                $cb = $prop->channelBlock;
+                                $cbUid = $prop->channelBlockUid ?? md5("{$cb->propertyId}_{$cb->startDate}_{$cb->endDate}_{$cb->source}");
+                                $onboardHref = '/reservations/new?property_id=' . urlencode($prop->propertyId)
+                                    . '&check_in=' . urlencode($cb->startDate)
+                                    . '&check_out=' . urlencode($cb->endDate)
+                                    . '&source=' . urlencode($cb->source)
+                                    . '&channel_block_uid=' . urlencode($cbUid);
+                                ?>
+                                <div class="p-3.5 bg-rose-50/70 rounded-lg border border-rose-200 text-rose-900 space-y-2.5 text-xs">
+                                    <div class="flex items-center justify-between">
+                                        <div class="font-bold flex items-center gap-1.5">
+                                            <span>Airbnb Channel Block</span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-800">Un-onboarded</span>
+                                        </div>
+                                        <span class="font-mono text-[10px] text-rose-700 uppercase"><?= htmlspecialchars($cb->source, ENT_QUOTES, 'UTF-8') ?></span>
+                                    </div>
+                                    <div class="text-[11px] text-rose-800">
+                                        <span class="text-rose-700">Stay Dates:</span>
+                                        <strong><?= htmlspecialchars($cb->startDate, ENT_QUOTES, 'UTF-8') ?> &rarr; <?= htmlspecialchars($cb->endDate, ENT_QUOTES, 'UTF-8') ?></strong>
+                                    </div>
+                                    <div class="pt-1 flex items-center justify-between border-t border-rose-200/60">
+                                        <span class="text-[11px] text-rose-700">No guest profile onboarded yet.</span>
+                                        <button type="button"
+                                                hx-get="<?= htmlspecialchars($onboardHref, ENT_QUOTES, 'UTF-8') ?>"
+                                                hx-target="#modal-container"
+                                                hx-swap="innerHTML"
+                                                onclick="closeReservationDrawer();"
+                                                class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition cursor-pointer">
+                                            Onboard Guest
+                                        </button>
+                                    </div>
+                                </div>
+
+                            <!-- Case E: Vacant -->
                             <?php else: ?>
                                 <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-center space-y-2.5">
                                     <p class="text-xs text-gray-500">Property is vacant on this calendar date.</p>
