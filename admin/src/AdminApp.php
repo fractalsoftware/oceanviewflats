@@ -277,12 +277,17 @@ final class AdminApp
                 ? $rateSource
                 : new PdoRateRepository($pdo, $ratesConfig, $rateSource));
 
+        $cacheDir = isset($options['cache_dir']) && is_string($options['cache_dir'])
+            ? $options['cache_dir']
+            : (isset($options['cacheDir']) && is_string($options['cacheDir']) ? $options['cacheDir'] : null);
+
         $rateController = new RateController(
             rateRepository: $rateRepo,
             viewRenderer: $viewRenderer,
             auditLogger: $auditLogger,
             ratesConfig: $ratesConfig,
-            csvPath: $csvPath
+            csvPath: $csvPath,
+            cacheDir: $cacheDir
         );
 
         // 7. Channel Sync & Calendar Blocks Controllers

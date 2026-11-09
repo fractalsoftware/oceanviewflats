@@ -6,6 +6,7 @@ namespace OceanViewFlats\Domain\Quote;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use PDO;
 
 /**
  * Authoritative in-process quotation engine.
@@ -24,13 +25,19 @@ final class QuoteEngine implements QuoteEngineInterface
     }
 
     /**
-     * Factory to instantiate engine with standard configuration and CSV rate table.
+     * Factory to instantiate engine with standard configuration and database/CSV rate table.
      */
-    public static function createDefault(?string $csvPath = null): self
+    public static function createDefault(?string $csvPath = null, ?PDO $pdo = null): self
     {
+        $config = PropertyRatesConfig::createDefault();
+        $csvRateSource = new CsvRateSource($csvPath);
+        $rateSource = $pdo !== null
+            ? new PdoRateSource($pdo, $csvRateSource, $config)
+            : $csvRateSource;
+
         return new self(
-            rateSource: new CsvRateSource($csvPath),
-            config: PropertyRatesConfig::createDefault()
+            rateSource: $rateSource,
+            config: $config
         );
     }
 

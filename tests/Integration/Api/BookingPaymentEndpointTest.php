@@ -112,6 +112,20 @@ final class BookingPaymentEndpointTest extends TestCase
                 created_by INTEGER DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE property_rates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                property_id TEXT NOT NULL,
+                start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                season_name TEXT NOT NULL,
+                price_per_night REAL NOT NULL,
+                min_stay INTEGER NOT NULL DEFAULT 2,
+                cleaning_fee REAL NOT NULL DEFAULT 0.0,
+                created_by INTEGER DEFAULT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
         ");
     }
 
@@ -731,6 +745,161 @@ PHP;
             $this->assertIsArray($res['json']);
             $this->assertTrue($res['json']['success'], (string) ($res['json']['error'] ?? ''));
             $this->assertNotEmpty($res['json']['reservation_uid'] ?? '');
+        } finally {
+            foreach (glob($tempCacheDir . '/*') ?: [] as $f) {
+                @unlink($f);
+            }
+            @rmdir($tempCacheDir);
+        }
+    }
+
+    public function testBookRequestAndPaymentProcessorUseDatabaseSeasonalRateTiersAndMinimumStay(): void
+    {
+        // Insert a database Seasonal Rate Tier for 1606 in November 2026: 500,000 COP/night, 4-night minimum stay
+        $this->pdo->exec("
+            INSERT INTO property_rates (property_id, start_date, end_date, season_name, price_per_night, min_stay)
+            VALUES ('1606', '2026-11-01', '2026-11-30', 'November Special Tier', 500000, 4)
+        ");
+
+        // 1. BookingPaymentProcessor rejects a 3-night stay (violating DB 4-night min_stay)
+        $shortPaymentReq = $this->createValidRequest([
+            'property_id' => '1606',
+            'check_in' => '2026-11-10',
+            'check_out' => '2026-11-13',
+        ]);
+        $shortResult = $this->processor->processBookingPayment($shortPaymentReq);
+        $this->assertFalse($shortResult->success);
+        $this->assertSame(422, $shortResult->httpStatusCode);
+        $this->assertStringContainsString('4', $shortResult->message);
+
+        // 2. BookingPaymentProcessor charges exact DB seasonal rate for a 4-night stay (4 * 500,000 + 80,000 = 2,080,000 COP)
+        $this->gateway->stageCreateResult(new PaymentGatewayResult(
+            success: true,
+            paymentId: 'pay_db_tier_101',
+            status: 'approved',
+            statusDetail: 'accredited',
+            paymentMethodId: 'visa',
+            transactionAmount: 2080000.0,
+            externalResourceUrl: null,
+            barcode: null,
+            verificationCode: null,
+            rawResponse: ['id' => 'pay_db_tier_101', 'status' => 'approved']
+        ));
+
+        $validPaymentReq = $this->createValidRequest([
+            'property_id' => '1606',
+            'check_in' => '2026-11-10',
+            'check_out' => '2026-11-14',
+        ]);
+        $validResult = $this->processor->processBookingPayment($validPaymentReq);
+        $this->assertTrue($validResult->success);
+        $intents = $this->gateway->getRecordedIntents();
+        $this->assertCount(1, $intents);
+        $this->assertSame(2080000.0, $intents[0]->transactionAmount);
+
+        // 3. Direct Reservation hold endpoint (book-request.php) enforces DB tier pricing and min_stay
+        $tempCacheDir = sys_get_temp_dir() . '/ovf_book_db_rate_' . bin2hex(random_bytes(6));
+        mkdir($tempCacheDir, 0755, true);
+        file_put_contents($tempCacheDir . '/avail_1606.json', json_encode([]));
+
+        $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
+        $cacheDirExport = var_export($tempCacheDir, true);
+        $prependCode = <<<PHP
+require_once {$autoloadPath};
+\$pdo = new PDO('sqlite::memory:');
+\$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+\$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+\$pdo->exec("CREATE TABLE reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_uid TEXT UNIQUE,
+    property_id TEXT,
+    guest_name TEXT,
+    guest_email TEXT,
+    guest_phone TEXT,
+    check_in TEXT,
+    check_out TEXT,
+    total_price REAL,
+    refunded_amount REAL DEFAULT 0.0,
+    status TEXT,
+    payment_method_id TEXT,
+    mercadopago_preference_id TEXT,
+    mercadopago_payment_id TEXT,
+    payment_status TEXT,
+    payment_detail TEXT,
+    notes TEXT,
+    source TEXT DEFAULT 'web',
+    external_confirmation_code TEXT DEFAULT NULL,
+    channel_block_uid TEXT DEFAULT NULL,
+    lang TEXT,
+    registry_completed INTEGER DEFAULT 0,
+    registry_completed_at TEXT,
+    door_code TEXT,
+    privacy_policy_version TEXT DEFAULT NULL,
+    privacy_consent_at TEXT DEFAULT NULL,
+    privacy_consent_ip TEXT DEFAULT NULL,
+    pii_redacted_at TEXT DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE calendar_blocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    created_by INTEGER DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE admin_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_user_id INTEGER,
+    action TEXT,
+    entity_type TEXT,
+    entity_id TEXT,
+    payload_before TEXT,
+    payload_after TEXT,
+    ip_address TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE property_rates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    season_name TEXT NOT NULL,
+    price_per_night REAL NOT NULL,
+    min_stay INTEGER NOT NULL DEFAULT 2,
+    cleaning_fee REAL NOT NULL DEFAULT 0.0,
+    created_by INTEGER DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("
+    INSERT INTO property_rates (property_id, start_date, end_date, season_name, price_per_night, min_stay)
+    VALUES ('1606', '2026-11-01', '2026-11-30', 'November Special Tier', 500000, 4)
+");
+\$GLOBALS['TEST_PDO'] = \$pdo;
+\$GLOBALS['TEST_CACHE_DIR'] = {$cacheDirExport};
+\$GLOBALS['TEST_EMAIL_SENDER'] = new \\OceanViewFlats\\Domain\\Fulfillment\\InMemoryEmailSender();
+PHP;
+
+        try {
+            $resHold = $this->callBookRequestEndpoint([
+                'property_id' => '1606',
+                'check_in' => '2026-11-20',
+                'check_out' => '2026-11-24',
+                'guest_name' => 'Carlos Rodriguez',
+                'guest_email' => 'carlos@example.com',
+                'guest_phone' => '+573001234567',
+                'privacy_consent' => '1',
+                'privacy_policy_version' => '2026-10',
+                'lang' => 'en',
+            ], $prependCode);
+
+            $this->assertSame(0, $resHold['exitCode'], $resHold['stderr']);
+            $this->assertIsArray($resHold['json']);
+            $this->assertTrue($resHold['json']['success'], (string) ($resHold['json']['error'] ?? ''));
+            $this->assertSame(2080000, $resHold['json']['total_price']);
         } finally {
             foreach (glob($tempCacheDir . '/*') ?: [] as $f) {
                 @unlink($f);

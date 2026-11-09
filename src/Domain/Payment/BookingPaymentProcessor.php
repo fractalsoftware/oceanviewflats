@@ -109,7 +109,10 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
         );
 
         $ledger = $options['ledger'] ?? ReservationLedger::createDefault($pdo, $options['cacheDir'] ?? null);
-        $quoteEngine = $options['quoteEngine'] ?? QuoteEngine::createDefault($options['csvPath'] ?? null);
+        $quoteEngine = $options['quoteEngine'] ?? QuoteEngine::createDefault(
+            csvPath: isset($options['csvPath']) && is_string($options['csvPath']) ? $options['csvPath'] : null,
+            pdo: $pdo
+        );
         $repository = $options['repository'] ?? new PdoReservationRepository($pdo);
         $emailSender = $options['emailSender'] ?? new PhpMailSender();
         $fulfillment = $options['fulfillment'] ?? BookingFulfillment::createDefault($hostNotificationEmail, $emailSender);
