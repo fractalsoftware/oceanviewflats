@@ -2492,3 +2492,360 @@ test("Property 1707 and 1606 pages render 'Book with us' header links and place 
 		}
 	}
 });
+
+test("main.js #calendar-widget fetches blocked dates via pageConfig.apiBase and enables same-day Turnover Check-out selection (#252)", async () => {
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		textContent: string;
+		innerHTML: string;
+		className: string;
+		value: string;
+		href: string;
+		disabled: boolean;
+		children: MockNode[];
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		removeAttribute: (k: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		appendChild: (child: MockNode) => MockNode;
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Listener[]> = {};
+		let children: MockNode[] = [];
+		let innerHTMLVal = "";
+
+		const node: MockNode = {
+			id,
+			tagName,
+			textContent: "",
+			get innerHTML() {
+				return innerHTMLVal;
+			},
+			set innerHTML(val: string) {
+				innerHTMLVal = val;
+				if (val === "") {
+					children = [];
+				}
+			},
+			className: initialClasses.join(" "),
+			value: "",
+			href: "",
+			disabled: false,
+			get children() {
+				return children;
+			},
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+		};
+		return node;
+	};
+
+	const monthNames = {
+		en: [
+			"January",
+			"February",
+			"March",
+			"April",
+			"May",
+			"June",
+			"July",
+			"August",
+			"September",
+			"October",
+			"November",
+			"December",
+		],
+	};
+	const dayNames = {
+		en: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+	};
+
+	const calendarWidget = createMockNode("calendar-widget", "DIV", [], {
+		"data-lang": "en",
+		"data-month-names": JSON.stringify(monthNames),
+		"data-day-names": JSON.stringify(dayNames),
+	});
+	const btnPrevMonth = createMockNode("btn-prev-month", "BUTTON");
+	const btnNextMonth = createMockNode("btn-next-month", "BUTTON");
+	const monthLabel = createMockNode("month-label", "SPAN");
+	const calendarGrid = createMockNode("calendar-grid", "DIV");
+	const checkInDisplay = createMockNode("check-in-display", "DIV", [], {
+		"data-text-add-date": "Add date",
+	});
+	const checkOutDisplay = createMockNode("check-out-display", "DIV", [], {
+		"data-text-add-date": "Add date",
+	});
+	const btnBook = createMockNode("btn-book", "A", [], {
+		"data-airbnb-url": "https://airbnb.com/rooms/1606",
+		"data-text-ready": "Check Selected Dates on Airbnb",
+		"data-text-default": "Check Selected Dates on Airbnb",
+	});
+	const btnBookText = createMockNode("btn-book-text", "SPAN");
+	const priceBreakdownCard = createMockNode("price-breakdown-card", "DIV", [
+		"hidden",
+	]);
+	const directBookingForm = createMockNode("direct-booking-form", "FORM", [
+		"hidden",
+	]);
+	const formCheckIn = createMockNode("form-check-in-date", "INPUT");
+	const formCheckOut = createMockNode("form-check-out-date", "INPUT");
+	const formTotalPrice = createMockNode("form-total-price-cop", "INPUT");
+	const rateBreakdownValue = createMockNode(
+		"rate-breakdown-value",
+		"SPAN",
+		[],
+		{
+			"data-nights-format": "({nights} nights)",
+		},
+	);
+	const cleaningFeeValue = createMockNode("cleaning-fee-value", "SPAN");
+	const totalCopValue = createMockNode("total-cop-value", "SPAN");
+
+	const elementsById = new Map<string, MockNode>([
+		["calendar-widget", calendarWidget],
+		["btn-prev-month", btnPrevMonth],
+		["btn-next-month", btnNextMonth],
+		["month-label", monthLabel],
+		["calendar-grid", calendarGrid],
+		["check-in-display", checkInDisplay],
+		["check-out-display", checkOutDisplay],
+		["btn-book", btnBook],
+		["btn-book-text", btnBookText],
+		["price-breakdown-card", priceBreakdownCard],
+		["direct-booking-form", directBookingForm],
+		["form-check-in-date", formCheckIn],
+		["form-check-out-date", formCheckOut],
+		["form-total-price-cop", formTotalPrice],
+		["rate-breakdown-value", rateBreakdownValue],
+		["cleaning-fee-value", cleaningFeeValue],
+		["total-cop-value", totalCopValue],
+	]);
+
+	// Compute next month dynamically so all dates in the target month are in the future relative to Date()
+	const now = new Date();
+	const targetMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+	const ym = `${targetMonthDate.getFullYear()}-${String(targetMonthDate.getMonth() + 1).padStart(2, "0")}`;
+	const blockedList = [`${ym}-10`, `${ym}-15`, `${ym}-16`];
+
+	const fetchedUrls: string[] = [];
+	const docListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		onload: null as (() => void) | null,
+		onerror: null as (() => void) | null,
+		addEventListener: () => {},
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			MercadoPago: () => {},
+			location: {
+				search: "",
+				pathname: "/Oceanview1606/index.html",
+			},
+			getPageConfig: () => ({
+				pageId: "Oceanview1606",
+				lang: "en",
+				assetPrefix: "../",
+				apiBase: "../api/",
+				i18n: {},
+			}),
+			t: (key: string, _params?: Record<string, unknown>, fallback?: string) =>
+				fallback ?? key,
+			addEventListener: () => {},
+		},
+		document: {
+			documentElement: { lang: "en" },
+			head: { appendChild: () => {} },
+			createElement: (tag: string) => {
+				if (tag.toLowerCase() === "script") {
+					return { ...scriptStub };
+				}
+				return createMockNode("", tag.toUpperCase());
+			},
+			getElementsByTagName: () => [scriptStub],
+			querySelector: () => null,
+			querySelectorAll: () => [],
+			getElementById: (id: string) => elementsById.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		fetch: async (url: string) => {
+			fetchedUrls.push(url);
+			if (url.includes("availability.php")) {
+				return {
+					ok: true,
+					json: async () => blockedList,
+				};
+			}
+			return {
+				ok: true,
+				json: async () => [],
+			};
+		},
+		Intl,
+		Date,
+		URLSearchParams,
+		FormData: class {},
+		console: {
+			log: () => {},
+			warn: () => {},
+			error: () => {},
+		},
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+
+	// Allow async fetchBlockedDates() promise microtasks to settle
+	await new Promise((resolve) => setTimeout(resolve, 10));
+
+	// 1. Verify availability endpoint was resolved via pageConfig.apiBase ("../api/availability.php?property=1606")
+	assert.ok(
+		fetchedUrls.includes("../api/availability.php?property=1606"),
+		`Expected "../api/availability.php?property=1606" in fetched URLs, got: ${JSON.stringify(fetchedUrls)}`,
+	);
+
+	// Navigate to next month so all days are in the future
+	btnNextMonth.dispatchEvent("click");
+
+	const getDayButton = (dayNum: number): MockNode => {
+		const dateStr = `${ym}-${String(dayNum).padStart(2, "0")}`;
+		const found = calendarGrid.children.find(
+			(child) => child.getAttribute("data-date") === dateStr,
+		);
+		assert.ok(found, `Day button for ${dateStr} must exist`);
+		return found;
+	};
+
+	// 2. In Check-in selection mode: blocked dates (10, 15, 16) are disabled and have line-through
+	assert.equal(getDayButton(10).disabled, true);
+	assert.ok(getDayButton(10).className.includes("line-through"));
+	assert.equal(getDayButton(12).disabled, false);
+	assert.equal(getDayButton(15).disabled, true);
+	assert.ok(getDayButton(15).className.includes("line-through"));
+	assert.equal(getDayButton(16).disabled, true);
+	assert.equal(getDayButton(17).disabled, false);
+
+	// 3. Click day 12 as Check-in Date -> enters Check-out selection mode
+	getDayButton(12).dispatchEvent("click");
+	assert.ok(getDayButton(12).className.includes("bg-[#FF5A5F]"));
+
+	// Blocked date <= checkIn (day 10) remains disabled
+	assert.equal(getDayButton(10).disabled, true);
+	// Available days 13 and 14 are enabled
+	assert.equal(getDayButton(13).disabled, false);
+	assert.equal(getDayButton(14).disabled, false);
+	// First blocked Night after checkIn (day 15) is enabled as same-day Turnover Check-out candidate without line-through
+	assert.equal(
+		getDayButton(15).disabled,
+		false,
+		"First blocked Night after checkIn (day 15) must be enabled for same-day Turnover check-out",
+	);
+	assert.ok(
+		!getDayButton(15).className.includes("line-through"),
+		"Turnover check-out candidate must not render line-through while in Check-out selection mode",
+	);
+	// Dates strictly after firstBlockedAfterCheckIn (days 16, 17, 18) are disabled
+	assert.equal(getDayButton(16).disabled, true);
+	assert.equal(
+		getDayButton(17).disabled,
+		true,
+		"Unblocked date beyond firstBlockedAfterCheckIn (day 17) must be disabled in Check-out selection mode",
+	);
+	assert.equal(getDayButton(18).disabled, true);
+
+	// 4. Click day 15 (the same-day Turnover candidate) -> sets checkOut to day 15
+	getDayButton(15).dispatchEvent("click");
+	assert.equal(formCheckIn.value, `${ym}-12`);
+	assert.equal(formCheckOut.value, `${ym}-15`);
+	assert.ok(
+		getDayButton(15).className.includes(
+			"bg-[#FF5A5F] text-white font-medium",
+		) && !getDayButton(15).className.includes("line-through"),
+		"Selected Turnover checkOut date must render bg-[#FF5A5F] text-white font-medium without strikethrough",
+	);
+	assert.ok(
+		getDayButton(13).className.includes("bg-[#FF5A5F]/10") &&
+			getDayButton(14).className.includes("bg-[#FF5A5F]/10"),
+		"Intermediate nights 13 and 14 must render in-range highlight",
+	);
+});

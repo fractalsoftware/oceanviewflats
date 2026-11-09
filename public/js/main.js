@@ -224,7 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch live blocked dates from local caching proxy
     async function fetchBlockedDates() {
         try {
-            const response = await fetch(`/api/availability.php?property=${propertyId}`);
+            const apiBase = pageConfig.apiBase || `${pageConfig.assetPrefix || ''}api/`;
+            const availBase = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+            const response = await fetch(`${availBase}availability.php?property=${propertyId}`);
             if (response.ok) {
                 blockedDates = await response.json();
                 renderCalendar();
@@ -252,6 +254,15 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(empty);
         }
 
+        const isCheckoutSelectionMode = Boolean(checkIn && !checkOut);
+        const checkInDateStr = checkIn ? formatDate(checkIn) : null;
+        const firstBlockedAfterCheckIn = isCheckoutSelectionMode
+            ? blockedDates
+                .slice()
+                .sort()
+                .find(dStr => dStr > checkInDateStr) || null
+            : null;
+
         for (let i = 1; i <= daysInMonth; i++) {
             const btn = document.createElement('button');
             const thisDate = new Date(year, month, i);
@@ -259,32 +270,50 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const isPast = thisDate < today;
             const isBlocked = blockedDates.includes(dateStr);
-            const isCheckIn = checkIn && thisDate.getTime() === checkIn.getTime();
-            const isCheckOut = checkOut && thisDate.getTime() === checkOut.getTime();
-            const isBetween = checkIn && checkOut && thisDate > checkIn && thisDate < checkOut;
+            const isCheckIn = Boolean(checkIn && thisDate.getTime() === checkIn.getTime());
+            const isCheckOut = Boolean(checkOut && thisDate.getTime() === checkOut.getTime());
+            const isBetween = Boolean(checkIn && checkOut && thisDate > checkIn && thisDate < checkOut);
+            const isTurnoverCheckoutCandidate = Boolean(
+                isCheckoutSelectionMode &&
+                firstBlockedAfterCheckIn &&
+                dateStr === firstBlockedAfterCheckIn
+            );
+            const isBeyondFirstBlocked = Boolean(
+                isCheckoutSelectionMode &&
+                firstBlockedAfterCheckIn &&
+                dateStr > firstBlockedAfterCheckIn
+            );
+            const isDisabled = isCheckoutSelectionMode
+                ? (isPast || (isBlocked && !isTurnoverCheckoutCandidate) || isBeyondFirstBlocked)
+                : (isPast || isBlocked);
 
             let bgClass = "bg-white hover:bg-slate-100 text-slate-700";
             if (isPast) {
                 bgClass = "bg-transparent text-slate-300 cursor-not-allowed";
-            } else if (isBlocked) {
-                bgClass = "bg-slate-50 text-slate-300 cursor-not-allowed line-through relative after:content-[''] after:absolute after:w-full after:h-[1px] after:bg-slate-300 after:rotate-[-45deg]";
             } else if (isCheckIn || isCheckOut) {
                 bgClass = "bg-[#FF5A5F] text-white font-medium";
+            } else if (isTurnoverCheckoutCandidate) {
+                bgClass = "bg-white hover:bg-slate-100 text-slate-700";
+            } else if (isBlocked) {
+                bgClass = "bg-slate-50 text-slate-300 cursor-not-allowed line-through relative after:content-[''] after:absolute after:w-full after:h-[1px] after:bg-slate-300 after:rotate-[-45deg]";
+            } else if (isBeyondFirstBlocked) {
+                bgClass = "bg-transparent text-slate-300 cursor-not-allowed";
             } else if (isBetween) {
                 bgClass = "bg-[#FF5A5F]/10 text-[#FF5A5F] font-medium";
             }
 
             btn.className = "calendar-day w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm transition-all relative overflow-hidden " + bgClass;
             btn.textContent = i;
-            btn.disabled = isPast || isBlocked;
+            btn.disabled = isDisabled;
+            btn.setAttribute('data-date', dateStr);
             
             // Accessible label for screen readers
-            if (isBlocked) {
+            if (isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut) {
                 btn.setAttribute('title', 'Already Booked');
                 btn.setAttribute('aria-label', `${i} ${monthNames[lang][month]}, Booked`);
             }
 
-            if (!isPast && !isBlocked) {
+            if (!isDisabled) {
                 btn.addEventListener('click', () => {
                     if (!checkIn || (checkIn && checkOut)) {
                         checkIn = thisDate;
@@ -310,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else {
                         checkIn = thisDate;
+                        checkOut = null;
                     }
                     renderCalendar();
                     updateBookingDisplay();

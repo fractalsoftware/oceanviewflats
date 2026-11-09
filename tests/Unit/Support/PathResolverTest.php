@@ -81,6 +81,29 @@ final class PathResolverTest extends TestCase
         $this->assertSame($file, $resolved);
     }
 
+    public function testPrefersPublicHtmlOverPublicWhenBothExist(): void
+    {
+        $root = $this->createTempDirectory();
+        $localFile = $root . '/public/cache/avail_1606.json';
+        $cpanelFile = $root . '/public_html/cache/avail_1606.json';
+        mkdir(dirname($localFile), 0755, true);
+        mkdir(dirname($cpanelFile), 0755, true);
+        file_put_contents($localFile, '["2026-11-01"]');
+        file_put_contents($cpanelFile, '["2026-11-10"]');
+
+        $this->assertSame($cpanelFile, PathResolver::resolve('cache/avail_1606.json', $root));
+        $this->assertSame($root . '/public_html/cache', PathResolver::resolveDirectory('cache', $root));
+    }
+
+    public function testResolveDirectoryPrefersPublicHtmlWhenPublicHtmlRootExists(): void
+    {
+        $root = $this->createTempDirectory();
+        mkdir($root . '/public/cache', 0755, true);
+        mkdir($root . '/public_html', 0755, true);
+
+        $this->assertSame($root . '/public_html/cache', PathResolver::resolveDirectory('cache', $root));
+    }
+
     public function testStripsLeadingPublicAndPublicHtmlPrefixes(): void
     {
         $root = $this->createTempDirectory();
@@ -102,7 +125,7 @@ final class PathResolverTest extends TestCase
         $root = $this->createTempDirectory();
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage("Resource 'data/missing.csv' not found. Checked: '{$root}/public/data/missing.csv' and '{$root}/public_html/data/missing.csv'.");
+        $this->expectExceptionMessage("Resource 'data/missing.csv' not found. Checked: '{$root}/public_html/data/missing.csv' and '{$root}/public/data/missing.csv'.");
 
         PathResolver::resolve('data/missing.csv', $root);
     }
