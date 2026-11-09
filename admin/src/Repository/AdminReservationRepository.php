@@ -427,34 +427,11 @@ final class AdminReservationRepository
                 continue;
             }
 
-            $blockIdentifier = md5("{$block->propertyId}_{$block->startDate}_{$block->endDate}_{$block->source}");
-
-            $stmt = $this->pdo->prepare('
-                SELECT reservation_uid, guest_name
-                FROM reservations
-                WHERE property_id = :prop
-                  AND status != "cancelled"
-                  AND (
-                      channel_block_uid = :block_uid
-                      OR (check_in = :exact_start AND check_out = :exact_end)
-                      OR (check_in < :overlap_end AND check_out > :overlap_start AND source = :source)
-                  )
-                LIMIT 1
-            ');
-            $stmt->execute([
-                'prop' => $block->propertyId,
-                'block_uid' => $blockIdentifier,
-                'exact_start' => $block->startDate,
-                'exact_end' => $block->endDate,
-                'overlap_end' => $block->endDate,
-                'overlap_start' => $block->startDate,
-                'source' => $block->source,
-            ]);
-            $matched = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($matched !== false) {
+            if ($this->isChannelBlockAbsorbed($block)) {
                 continue;
             }
+
+            $blockIdentifier = $block->uid();
 
             $isUrgent = $block->startDate <= $warningLimit;
             $severity = $isUrgent ? AlertSeverity::WARNING : AlertSeverity::INFO;
@@ -483,6 +460,36 @@ final class AdminReservationRepository
         usort($alerts, static fn(OperationalAlert $a, OperationalAlert $b): int => strcmp($a->dueDate, $b->dueDate));
 
         return $alerts;
+    }
+
+    /**
+     * Checks whether the given external channel block has already been onboarded/absorbed into a non-cancelled reservation.
+     */
+    public function isChannelBlockAbsorbed(ChannelBlock $block): bool
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT 1
+            FROM reservations
+            WHERE property_id = :prop
+              AND status != "cancelled"
+              AND (
+                  channel_block_uid = :block_uid
+                  OR (check_in = :exact_start AND check_out = :exact_end)
+                  OR (check_in < :overlap_end AND check_out > :overlap_start AND LOWER(source) = LOWER(:source))
+              )
+            LIMIT 1
+        ');
+        $stmt->execute([
+            'prop' => $block->propertyId,
+            'block_uid' => $block->uid(),
+            'exact_start' => $block->startDate,
+            'exact_end' => $block->endDate,
+            'overlap_end' => $block->endDate,
+            'overlap_start' => $block->startDate,
+            'source' => $block->source,
+        ]);
+
+        return $stmt->fetchColumn() !== false;
     }
 
     /**

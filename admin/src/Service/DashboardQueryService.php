@@ -407,6 +407,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $dayHasTurnover = false;
             $dayHasMaintenance = false;
             $dayHasPendingHold = false;
+            $dayHasChannelBlock = false;
             /** @var list<string> $warningMessages */
             $warningMessages = [];
             /** @var list<string> $reservationUids */
@@ -458,6 +459,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                     }
                 } elseif ($mBlock === null && $channelBlock !== null) {
                     $occupiedUnits++;
+                    $dayHasChannelBlock = true;
                 }
 
                 if ($pendingRes !== null) {
@@ -554,7 +556,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 hasWarning: $dayHasWarning,
                 totalProperties: $totalUnits,
                 occupiedProperties: $occupiedUnits,
-                propertyDetails: $flatDetails
+                propertyDetails: $flatDetails,
+                hasChannelBlock: $dayHasChannelBlock
             );
 
             $currentWeekDays[$rowIndex] = $cell;
@@ -642,60 +645,17 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
      */
     private function isChannelBlockAbsorbed(ChannelBlock $block, array $reservations = []): bool
     {
-        $blockIdentifier = self::computeChannelBlockUid($block);
         foreach ($reservations as $res) {
-            if ((string) ($res['property_id'] ?? '') !== $block->propertyId) {
-                continue;
-            }
-            $status = (string) ($res['status'] ?? '');
-            if ($status === 'cancelled') {
-                continue;
-            }
-            $resBlockUid = (string) ($res['channel_block_uid'] ?? '');
-            $cin = (string) ($res['check_in'] ?? '');
-            $cout = (string) ($res['check_out'] ?? '');
-            $source = (string) ($res['source'] ?? '');
-            if (
-                ($resBlockUid !== '' && $resBlockUid === $blockIdentifier)
-                || ($cin === $block->startDate && $cout === $block->endDate)
-                || ($cin < $block->endDate && $cout > $block->startDate && strtolower($source) === strtolower($block->source))
-            ) {
+            if ($block->isAbsorbedByRow($res)) {
                 return true;
             }
         }
 
         try {
-            $pdo = $this->reservationRepo->getPdo();
-            $stmt = $pdo->prepare('
-                SELECT 1
-                FROM reservations
-                WHERE property_id = :prop
-                  AND status != "cancelled"
-                  AND (
-                      channel_block_uid = :block_uid
-                      OR (check_in = :exact_start AND check_out = :exact_end)
-                      OR (check_in < :overlap_end AND check_out > :overlap_start AND LOWER(source) = LOWER(:source))
-                  )
-                LIMIT 1
-            ');
-            $stmt->execute([
-                'prop' => $block->propertyId,
-                'block_uid' => $blockIdentifier,
-                'exact_start' => $block->startDate,
-                'exact_end' => $block->endDate,
-                'overlap_end' => $block->endDate,
-                'overlap_start' => $block->startDate,
-                'source' => $block->source,
-            ]);
-            return $stmt->fetchColumn() !== false;
+            return $this->reservationRepo->isChannelBlockAbsorbed($block);
         } catch (\Throwable) {
             return false;
         }
-    }
-
-    private static function computeChannelBlockUid(ChannelBlock $block): string
-    {
-        return md5("{$block->propertyId}_{$block->startDate}_{$block->endDate}_{$block->source}");
     }
 
     /**
@@ -882,7 +842,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $cBlock = null;
             /** @var ?string $cBlockUid */
             $cBlockUid = null;
-            if ($this->ledger !== null) {
+            if ($this->ledger !== null && $mBlock === null && $actRes === null) {
                 try {
                     $propChannelBlocks = $this->ledger->getChannelBlocks($pid);
                 } catch (\Throwable) {
@@ -891,7 +851,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 foreach ($propChannelBlocks as $cb) {
                     if ($cb->startDate <= $date && $date < $cb->endDate && !$this->isChannelBlockAbsorbed($cb, $rangeReservations)) {
                         $cBlock = $cb;
-                        $cBlockUid = self::computeChannelBlockUid($cb);
+                        $cBlockUid = $cb->uid();
                         break;
                     }
                 }

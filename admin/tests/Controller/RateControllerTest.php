@@ -508,15 +508,19 @@ final class RateControllerTest extends TestCase
         $after = json_decode((string) $log['payload_after'], true);
         $this->assertSame(3, $after['seeded_count']);
 
-        // Verify prices.json cache was atomically synchronized
+        // Verify prices.json cache was atomically synchronized with property summaries and tiers
         $cacheFile = $this->tempCacheDir . '/prices.json';
         $this->assertFileExists($cacheFile);
         $cachedPrices = json_decode((string) file_get_contents($cacheFile), true);
         $this->assertIsArray($cachedPrices);
-        $this->assertCount(3, $cachedPrices);
-        $this->assertSame('1606', $cachedPrices[0]['property_id']);
-        $this->assertSame(350000, $cachedPrices[0]['nightly_rate_cop']);
-        $this->assertSame(2, $cachedPrices[0]['minimum_stay']);
+        $this->assertArrayHasKey('properties', $cachedPrices);
+        $this->assertArrayHasKey('tiers', $cachedPrices);
+        $this->assertArrayHasKey('1606', $cachedPrices['properties']);
+        $this->assertArrayHasKey('1707', $cachedPrices['properties']);
+        $this->assertCount(3, $cachedPrices['tiers']);
+        $this->assertSame('1606', $cachedPrices['tiers'][0]['property_id']);
+        $this->assertSame(350000, $cachedPrices['tiers'][0]['nightly_rate_cop']);
+        $this->assertSame(2, $cachedPrices['tiers'][0]['minimum_stay']);
     }
 
     public function testModalTriggersAndFormExplicitlyDeclareInnerHTMLSwap(): void

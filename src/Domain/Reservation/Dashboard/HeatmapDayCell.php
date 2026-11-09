@@ -7,6 +7,7 @@ namespace OceanViewFlats\Domain\Reservation\Dashboard;
 final class HeatmapDayCell
 {
     public readonly bool $hasWarning;
+    public readonly bool $hasChannelBlock;
     public readonly int $totalUnits;
     public readonly int $occupiedUnits;
     public readonly int $totalProperties;
@@ -43,7 +44,8 @@ final class HeatmapDayCell
         ?bool $hasWarning = null,
         ?int $totalProperties = null,
         ?int $occupiedProperties = null,
-        array $propertyDetails = []
+        array $propertyDetails = [],
+        bool $hasChannelBlock = false
     ) {
         $effTotal = $totalProperties ?? $totalUnits;
         $effOccupied = $occupiedProperties ?? $occupiedUnits;
@@ -56,6 +58,17 @@ final class HeatmapDayCell
         $this->flatDetails = $effProps;
         $this->propertyDetails = $effProps;
         $this->hasWarning = $hasWarning ?? ($this->hasRiskAlert || count($this->warningMessages) > 0);
+
+        $detectedChannelBlock = $hasChannelBlock;
+        if (!$detectedChannelBlock) {
+            foreach ($effProps as $detail) {
+                if (is_array($detail) && isset($detail['status']) && str_starts_with((string) $detail['status'], 'Channel Block')) {
+                    $detectedChannelBlock = true;
+                    break;
+                }
+            }
+        }
+        $this->hasChannelBlock = $detectedChannelBlock;
     }
 
     /**
@@ -88,6 +101,7 @@ final class HeatmapDayCell
         if (
             $this->hasMaintenance
             || $this->hasTurnover
+            || $this->hasChannelBlock
             || count($this->reservationUids) > 1
             || $this->occupiedProperties > count($this->reservationUids)
         ) {
@@ -140,6 +154,11 @@ final class HeatmapDayCell
     public function hasPendingHold(): bool
     {
         return $this->hasPendingHold;
+    }
+
+    public function hasChannelBlock(): bool
+    {
+        return $this->hasChannelBlock;
     }
 
     public function hasRiskAlert(): bool

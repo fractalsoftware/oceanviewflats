@@ -14,9 +14,6 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once __DIR__ . '/utils.php';
 $config = require __DIR__ . '/config.php';
 
-use OceanViewFlats\Domain\Quote\CsvRateSource;
-use OceanViewFlats\Domain\Quote\PdoRateRepository;
-use OceanViewFlats\Domain\Quote\PropertyRatesConfig;
 use OceanViewFlats\Domain\Quote\QuoteEngine;
 
 // Enforce security headers & CORS policy dynamically
@@ -50,66 +47,13 @@ $checkOut = clean_input($_GET['check_out'] ?? '');
 
 if ($action === 'rates' || $summary === '1') {
     try {
-        $ratesConfig = PropertyRatesConfig::createDefault();
-        if ($propertyId !== '' && !$ratesConfig->isValidProperty($propertyId)) {
-            throw new InvalidArgumentException("Unknown property identifier: '{$propertyId}'");
-        }
-
-        $csvRateSource = new CsvRateSource();
-        $rateRepository = new PdoRateRepository(
-            pdo: $pdo ?? new PDO('sqlite::memory:'),
-            ratesConfig: $ratesConfig,
-            fallbackSource: $csvRateSource
-        );
-
-        $propertiesPayload = [];
-        foreach (['1606', '1707'] as $pid) {
-            $status = $rateRepository->getPropertyRateStatus($pid);
-            $defaultRate = $ratesConfig->getDefaultNightlyRate($pid);
-            $cleaningFee = $ratesConfig->getCleaningFee($pid);
-            $defaultMinStay = $ratesConfig->getDefaultMinimumStay($pid);
-
-            $propertiesPayload[$pid] = [
-                'property_id' => $pid,
-                'current_nightly_rate_cop' => (int) round($status->currentNightlyRate),
-                'currentNightlyRate' => (int) round($status->currentNightlyRate),
-                'default_nightly_rate_cop' => (int) round($defaultRate),
-                'defaultNightlyRate' => (int) round($defaultRate),
-                'cleaning_fee_cop' => (int) round($cleaningFee),
-                'cleaningFeeCop' => (int) round($cleaningFee),
-                'default_minimum_stay' => $defaultMinStay,
-                'defaultMinimumStay' => $defaultMinStay,
-                'is_seasonal_tier_active' => $status->isSeasonalTierActive,
-                'isSeasonalTierActive' => $status->isSeasonalTierActive,
-                'active_tier_name' => $status->activeTierName,
-                'activeTierName' => $status->activeTierName,
-                'active_tier_end_date' => $status->activeTierEndDate,
-                'activeTierEndDate' => $status->activeTierEndDate,
-            ];
-        }
-
-        $tierProperties = $propertyId !== '' ? [$propertyId] : ['1606', '1707'];
-        $tiersPayload = [];
-        foreach ($tierProperties as $pid) {
-            foreach ($rateRepository->getTiersForProperty($pid) as $tier) {
-                $tiersPayload[] = [
-                    'property_id' => $tier->propertyId,
-                    'start_date' => $tier->startDate,
-                    'end_date' => $tier->endDate,
-                    'nightly_rate_cop' => (int) round($tier->nightlyRateCop),
-                    'minimum_stay' => $tier->minimumStay,
-                    'season_name' => $tier->seasonName,
-                ];
-            }
-        }
+        $quoteEngine = QuoteEngine::createDefault(pdo: $pdo);
+        $summaryData = $quoteEngine->getRateSummary($propertyId !== '' ? $propertyId : null);
 
         header('Content-Type: application/json; charset=UTF-8');
         echo json_encode([
             'success' => true,
-            'data' => [
-                'properties' => $propertiesPayload,
-                'tiers' => $tiersPayload,
-            ],
+            'data' => $summaryData,
         ]);
     } catch (InvalidArgumentException $e) {
         http_response_code(400);

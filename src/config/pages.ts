@@ -59,7 +59,6 @@ export const getClientDictionaryForPage = (
 		dbSubmit: t.dbSubmit || "",
 		dbNetworkError: t.dbNetworkError || "",
 		dbGatewayError: t.dbGatewayError || "",
-		dbMinStayNotice: t.dbMinStayNotice || "",
 		contactSuccess: t.contactSuccess || "",
 		contactError: t.contactError || "",
 		contactErrPrivacyConsent: t.contactErrPrivacyConsent || "",
@@ -84,6 +83,7 @@ export const getClientDictionaryForPage = (
 		return {
 			...common,
 			dbMinStayNotice: t.dbMinStayNotice || "",
+			dbNightsFormat: t.dbNightsFormat || "",
 		};
 	}
 
