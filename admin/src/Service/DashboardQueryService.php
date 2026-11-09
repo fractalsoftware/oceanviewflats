@@ -47,6 +47,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
     private readonly CondominiumClearanceRepositoryInterface $clearanceRepo;
     private readonly OperationalAlertDismissalRepositoryInterface $dismissalRepo;
     private readonly FinancialReportEngine $financialReportEngine;
+    private readonly PropertyRatesConfig $ratesConfig;
     private readonly bool $parafiscalAlertsEnabled;
     /** @var array<string, list<RateTier>> */
     private array $cachedRateTiers = [];
@@ -67,12 +68,13 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
         $pdo = $this->reservationRepo->getPdo();
         $this->clearanceRepo = $clearanceRepo ?? new PdoCondominiumClearanceRepository($pdo);
         $this->dismissalRepo = $dismissalRepo ?? new PdoOperationalAlertDismissalRepository($pdo);
+        $this->ratesConfig = $ratesConfig ?? PropertyRatesConfig::createDefault();
         $this->parafiscalAlertsEnabled = $parafiscalRepo !== null || self::hasParafiscalTable($pdo);
         $this->financialReportEngine = new FinancialReportEngine(
             reservationRepository: $domainReservationRepo ?? new PdoReservationRepository($pdo),
             maintenanceBlockSource: new InMemoryMaintenanceBlockSource(),
             expenseRepository: $expenseRepo ?? new PdoOperationalExpenseRepository($pdo),
-            ratesConfig: $ratesConfig ?? PropertyRatesConfig::createDefault(),
+            ratesConfig: $this->ratesConfig,
             parafiscalRepository: $parafiscalRepo ?? new PdoParafiscalSettlementRepository($pdo)
         );
     }
@@ -361,6 +363,36 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
 
         $propertiesToEval = ($propertyId === 'all') ? ['1606', '1707'] : [$propertyId];
 
+        // Fetch un-onboarded external channel blocks in the horizon
+        /** @var array<string, array<string, ChannelBlock>> $channelBlocksByDate */
+        $channelBlocksByDate = [];
+        if ($this->ledger !== null) {
+            foreach ($propertiesToEval as $pid) {
+                try {
+                    $propBlocks = $this->ledger->getChannelBlocks($pid);
+                } catch (\Throwable) {
+                    $propBlocks = [];
+                }
+                foreach ($propBlocks as $block) {
+                    if ($this->isChannelBlockAbsorbed($block, $reservations)) {
+                        continue;
+                    }
+                    $cbStart = max($block->startDate, $startStr);
+                    $cbEnd = min($block->endDate, $endDate->modify('+1 day')->format('Y-m-d'));
+                    if ($cbStart >= $cbEnd) {
+                        continue;
+                    }
+                    $currCb = new DateTimeImmutable($cbStart);
+                    $cbEndDt = new DateTimeImmutable($cbEnd);
+                    while ($currCb < $cbEndDt && $currCb->format('Y-m-d') <= $endStr) {
+                        $d = $currCb->format('Y-m-d');
+                        $channelBlocksByDate[$d][$block->propertyId] = $block;
+                        $currCb = $currCb->modify('+1 day');
+                    }
+                }
+            }
+        }
+
         $cursor = $startDate;
         while ($cursor <= $endDate) {
             $dateStr = $cursor->format('Y-m-d');
@@ -402,6 +434,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 // Active stay on dateStr
                 $confirmedRes = $activeConfirmedStaysByDate[$dateStr][$pid] ?? null;
                 $pendingRes = $pendingHoldsByDate[$dateStr][$pid] ?? null;
+                $channelBlock = $channelBlocksByDate[$dateStr][$pid] ?? null;
                 $resIn = $checkInsByProp[$pid][$dateStr][0] ?? null;
                 $resOut = $checkOutsByProp[$pid][$dateStr][0] ?? null;
 
@@ -423,6 +456,8 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                             $warningMessages[] = $warning;
                         }
                     }
+                } elseif ($mBlock === null && $channelBlock !== null) {
+                    $occupiedUnits++;
                 }
 
                 if ($pendingRes !== null) {
@@ -449,6 +484,10 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                     $flatStatus = 'Reserved (Confirmed)';
                     $primaryGuestOrCode = (string) ($confirmedRes['guest_name'] ?: ($confirmedRes['external_confirmation_code'] ?: 'Guest'));
                     $movement = ((string) $confirmedRes['check_in'] === $dateStr) ? 'Check-in' : 'Stay';
+                } elseif ($channelBlock !== null) {
+                    $flatStatus = 'Channel Block (Airbnb)';
+                    $primaryGuestOrCode = 'Airbnb Channel Block (Un-onboarded)';
+                    $movement = ($channelBlock->startDate === $dateStr) ? 'Check-in' : 'Channel Block';
                 } elseif ($pendingRes !== null) {
                     $flatStatus = 'Reserved (Pending)';
                     $primaryGuestOrCode = (string) ($pendingRes['guest_name'] ?: ($pendingRes['external_confirmation_code'] ?: 'Hold'));
@@ -581,7 +620,7 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
     private function calculateNightlyRate(string $pid, string $d, array $tiers1606, array $tiers1707): array
     {
         $tiers = ($pid === '1606') ? $tiers1606 : $tiers1707;
-        $base = ($pid === '1606') ? 110 : 120;
+        $base = (int) $this->ratesConfig->getDefaultNightlyRate($pid);
         foreach ($tiers as $tier) {
             if ($tier->coversDate($d)) {
                 return [
@@ -596,6 +635,67 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             'isSeasonal' => false,
             'tierName' => 'Standard Rate',
         ];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $reservations
+     */
+    private function isChannelBlockAbsorbed(ChannelBlock $block, array $reservations = []): bool
+    {
+        $blockIdentifier = self::computeChannelBlockUid($block);
+        foreach ($reservations as $res) {
+            if ((string) ($res['property_id'] ?? '') !== $block->propertyId) {
+                continue;
+            }
+            $status = (string) ($res['status'] ?? '');
+            if ($status === 'cancelled') {
+                continue;
+            }
+            $resBlockUid = (string) ($res['channel_block_uid'] ?? '');
+            $cin = (string) ($res['check_in'] ?? '');
+            $cout = (string) ($res['check_out'] ?? '');
+            $source = (string) ($res['source'] ?? '');
+            if (
+                ($resBlockUid !== '' && $resBlockUid === $blockIdentifier)
+                || ($cin === $block->startDate && $cout === $block->endDate)
+                || ($cin < $block->endDate && $cout > $block->startDate && strtolower($source) === strtolower($block->source))
+            ) {
+                return true;
+            }
+        }
+
+        try {
+            $pdo = $this->reservationRepo->getPdo();
+            $stmt = $pdo->prepare('
+                SELECT 1
+                FROM reservations
+                WHERE property_id = :prop
+                  AND status != "cancelled"
+                  AND (
+                      channel_block_uid = :block_uid
+                      OR (check_in = :exact_start AND check_out = :exact_end)
+                      OR (check_in < :overlap_end AND check_out > :overlap_start AND LOWER(source) = LOWER(:source))
+                  )
+                LIMIT 1
+            ');
+            $stmt->execute([
+                'prop' => $block->propertyId,
+                'block_uid' => $blockIdentifier,
+                'exact_start' => $block->startDate,
+                'exact_end' => $block->endDate,
+                'overlap_end' => $block->endDate,
+                'overlap_start' => $block->startDate,
+                'source' => $block->source,
+            ]);
+            return $stmt->fetchColumn() !== false;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private static function computeChannelBlockUid(ChannelBlock $block): string
+    {
+        return md5("{$block->propertyId}_{$block->startDate}_{$block->endDate}_{$block->source}");
     }
 
     /**
@@ -778,6 +878,25 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
             $depRes = $checkOutsByProp[$pid][0] ?? null;
             $actRes = $activeStaysByProp[$pid] ?? null;
 
+            /** @var ?ChannelBlock $cBlock */
+            $cBlock = null;
+            /** @var ?string $cBlockUid */
+            $cBlockUid = null;
+            if ($this->ledger !== null) {
+                try {
+                    $propChannelBlocks = $this->ledger->getChannelBlocks($pid);
+                } catch (\Throwable) {
+                    $propChannelBlocks = [];
+                }
+                foreach ($propChannelBlocks as $cb) {
+                    if ($cb->startDate <= $date && $date < $cb->endDate && !$this->isChannelBlockAbsorbed($cb, $rangeReservations)) {
+                        $cBlock = $cb;
+                        $cBlockUid = self::computeChannelBlockUid($cb);
+                        break;
+                    }
+                }
+            }
+
             /** @var list<OperationsEvent> $propMovements */
             $propMovements = [];
             foreach ($events as $event) {
@@ -816,6 +935,9 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 } else {
                     $status = 'Pending';
                 }
+            } elseif ($cBlock !== null) {
+                $status = 'Channel Block';
+                $isOccupied = true;
             }
 
             if ($isOccupied) {
@@ -865,7 +987,9 @@ final class DashboardQueryService implements DashboardQueryServiceInterface
                 arrivingReservation: $arrRes,
                 maintenanceBlock: $mBlock,
                 movements: $propMovements,
-                warnings: $propWarnings
+                warnings: $propWarnings,
+                channelBlock: $cBlock,
+                channelBlockUid: $cBlockUid
             );
         }
 

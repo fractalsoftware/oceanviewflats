@@ -79,17 +79,25 @@ final class HeatmapDayCell
      * Returns the click navigation action for state-adaptive HTMX routing:
      * - 'vacant': 0 reservations, no maintenance -> opens New Reservation modal
      * - 'single_reservation': exactly 1 reservation, no turnover, no maintenance -> opens Reservation detail drawer
-     * - 'day_drawer': multi-stay, turnover, or maintenance block -> opens Day Summary drawer
+     * - 'day_drawer': multi-stay, turnover, maintenance block, or un-onboarded channel block -> opens Day Summary drawer
      *
      * @return 'vacant'|'single_reservation'|'day_drawer'
      */
     public function getClickAction(): string
     {
-        if ($this->hasMaintenance || $this->hasTurnover || count($this->reservationUids) > 1) {
+        if (
+            $this->hasMaintenance
+            || $this->hasTurnover
+            || count($this->reservationUids) > 1
+            || $this->occupiedProperties > count($this->reservationUids)
+        ) {
             return 'day_drawer';
         }
         if (count($this->reservationUids) === 1 && $this->singleReservationUid !== null) {
             return 'single_reservation';
+        }
+        if ($this->occupiedProperties > 0) {
+            return 'day_drawer';
         }
         return 'vacant';
     }

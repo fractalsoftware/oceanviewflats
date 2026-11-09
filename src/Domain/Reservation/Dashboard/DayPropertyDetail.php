@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Reservation\Dashboard;
 
+use OceanViewFlats\Domain\Reservation\ChannelBlock;
 use OceanViewFlats\Domain\Reservation\MaintenanceBlock;
 
 /**
@@ -22,7 +23,7 @@ final class DayPropertyDetail
     public function __construct(
         public readonly string $propertyId, // '1606' | '1707'
         public readonly string $propertyName, // 'Property 1606' | 'Property 1707'
-        public readonly string $status, // 'Vacant' | 'Occupied' | 'Turnover' | 'Maintenance' | 'Pending'
+        public readonly string $status, // 'Vacant' | 'Occupied' | 'Turnover' | 'Maintenance' | 'Pending' | 'Channel Block'
         public readonly bool $isOccupied,
         public readonly int $nightlyRate,
         public readonly array $rateInfo,
@@ -31,7 +32,9 @@ final class DayPropertyDetail
         public readonly ?array $arrivingReservation = null,
         public readonly ?MaintenanceBlock $maintenanceBlock = null,
         public readonly array $movements = [],
-        public readonly array $warnings = []
+        public readonly array $warnings = [],
+        public readonly ?ChannelBlock $channelBlock = null,
+        public readonly ?string $channelBlockUid = null
     ) {}
 
     public function hasMaintenance(): bool
@@ -47,5 +50,10 @@ final class DayPropertyDetail
     public function hasWarnings(): bool
     {
         return count($this->warnings) > 0;
+    }
+
+    public function hasChannelBlock(): bool
+    {
+        return $this->channelBlock !== null;
     }
 }
