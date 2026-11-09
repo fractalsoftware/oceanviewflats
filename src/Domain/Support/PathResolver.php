@@ -28,18 +28,18 @@ final class PathResolver
         $cleanRoot = rtrim($rootDir ?? (getenv('OVF_CONFIG_ROOT') ?: dirname(__DIR__, 3)), '/\\');
         $cleanRelative = (string) preg_replace('#^(public_html/|public/)#', '', ltrim($relativePath, '/\\'));
 
-        $localPath = $cleanRoot . '/public/' . $cleanRelative;
-        if (file_exists($localPath)) {
-            return $localPath;
-        }
-
         $cpanelPath = $cleanRoot . '/public_html/' . $cleanRelative;
         if (file_exists($cpanelPath)) {
             return $cpanelPath;
         }
 
+        $localPath = $cleanRoot . '/public/' . $cleanRelative;
+        if (file_exists($localPath)) {
+            return $localPath;
+        }
+
         throw new RuntimeException(
-            "Resource '{$relativePath}' not found. Checked: '{$localPath}' and '{$cpanelPath}'."
+            "Resource '{$relativePath}' not found. Checked: '{$cpanelPath}' and '{$localPath}'."
         );
     }
 
@@ -71,18 +71,17 @@ final class PathResolver
         $cleanRoot = rtrim($rootDir ?? (getenv('OVF_CONFIG_ROOT') ?: dirname(__DIR__, 3)), '/\\');
         $cleanRelative = (string) preg_replace('#^(public_html/|public/)#', '', ltrim($relativeDir, '/\\'));
 
+        $cpanelDir = $cleanRoot . '/public_html/' . $cleanRelative;
+        if (is_dir($cpanelDir) || is_dir($cleanRoot . '/public_html')) {
+            return $cpanelDir;
+        }
+
         $localDir = $cleanRoot . '/public/' . $cleanRelative;
         if (is_dir($localDir)) {
             return $localDir;
         }
 
-        $cpanelDir = $cleanRoot . '/public_html/' . $cleanRelative;
-        if (is_dir($cpanelDir)) {
-            return $cpanelDir;
-        }
-
-        // If neither exists yet, default to public_html if public_html root exists, else public
-        return is_dir($cleanRoot . '/public_html') ? $cpanelDir : $localDir;
+        return $localDir;
     }
 
     /**

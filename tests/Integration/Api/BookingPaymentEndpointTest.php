@@ -519,13 +519,298 @@ final class BookingPaymentEndpointTest extends TestCase
         $this->assertNotEmpty($res['json']['error']);
     }
 
+    public function testBookRequestRefreshesStaleOrMissingAirbnbCacheAndRejectsOverlappingChannelBlock(): void
+    {
+        $tempCacheDir = sys_get_temp_dir() . '/ovf_book_sync_' . bin2hex(random_bytes(6));
+        mkdir($tempCacheDir, 0755, true);
+
+        // Seed a stale cache (> 300s old) with no conflict on 2026-12-15
+        $availFile = $tempCacheDir . '/avail_1606.json';
+        file_put_contents($availFile, json_encode(['2026-11-01']));
+        touch($availFile, time() - 360);
+
+        $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
+        $cacheDirExport = var_export($tempCacheDir, true);
+        $prependCode = <<<PHP
+require_once {$autoloadPath};
+\$pdo = new PDO('sqlite::memory:');
+\$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+\$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+\$pdo->exec("CREATE TABLE reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_uid TEXT UNIQUE,
+    property_id TEXT,
+    guest_name TEXT,
+    guest_email TEXT,
+    guest_phone TEXT,
+    check_in TEXT,
+    check_out TEXT,
+    total_price REAL,
+    refunded_amount REAL DEFAULT 0.0,
+    status TEXT,
+    payment_method_id TEXT,
+    mercadopago_preference_id TEXT,
+    mercadopago_payment_id TEXT,
+    payment_status TEXT,
+    payment_detail TEXT,
+    notes TEXT,
+    source TEXT DEFAULT 'web',
+    external_confirmation_code TEXT DEFAULT NULL,
+    channel_block_uid TEXT DEFAULT NULL,
+    lang TEXT,
+    registry_completed INTEGER DEFAULT 0,
+    registry_completed_at TEXT,
+    door_code TEXT,
+    privacy_policy_version TEXT DEFAULT NULL,
+    privacy_consent_at TEXT DEFAULT NULL,
+    privacy_consent_ip TEXT DEFAULT NULL,
+    pii_redacted_at TEXT DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE calendar_blocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    created_by INTEGER DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE admin_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_user_id INTEGER,
+    action TEXT,
+    entity_type TEXT,
+    entity_id TEXT,
+    payload_before TEXT,
+    payload_after TEXT,
+    ip_address TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$GLOBALS['TEST_PDO'] = \$pdo;
+\$GLOBALS['TEST_EMAIL_SENDER'] = new \\OceanViewFlats\\Domain\\Fulfillment\\InMemoryEmailSender();
+\$icalBody = "BEGIN:VCALENDAR\\nVERSION:2.0\\nBEGIN:VEVENT\\nDTSTART;VALUE=DATE:20261215\\nDTEND;VALUE=DATE:20261218\\nUID:abnb-sync-1@airbnb.com\\nEND:VEVENT\\nEND:VCALENDAR";
+\$mockTransport = new class(\$icalBody) implements \\OceanViewFlats\\Domain\\Reservation\\HttpTransportInterface {
+    public function __construct(private string \$body) {}
+    public function get(string \$url, array \$options = []): array {
+        return ['statusCode' => 200, 'body' => \$this->body, 'error' => null];
+    }
+};
+\$GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] = new \\OceanViewFlats\\Domain\\Reservation\\InboundChannelSyncService(
+    ['1606' => 'https://example.com/1606.ics'],
+    {$cacheDirExport},
+    \$mockTransport
+);
+PHP;
+
+        try {
+            $res = $this->callBookRequestEndpoint([
+                'property_id' => '1606',
+                'check_in' => '2026-12-13',
+                'check_out' => '2026-12-17',
+                'guest_name' => 'Carlos Rodriguez',
+                'guest_email' => 'carlos@example.com',
+                'guest_phone' => '+573001234567',
+                'privacy_consent' => '1',
+                'privacy_policy_version' => '2026-10',
+                'lang' => 'en',
+            ], $prependCode);
+
+            $this->assertSame(0, $res['exitCode'], $res['stderr']);
+            $this->assertIsArray($res['json']);
+            $this->assertFalse($res['json']['success']);
+            $this->assertStringContainsString('2026-12-15', (string) ($res['json']['error'] ?? ''));
+
+            // Verify cache file was refreshed with the synced block
+            $cachedDates = json_decode((string) file_get_contents($availFile), true);
+            $this->assertSame(['2026-12-15', '2026-12-16', '2026-12-17'], $cachedDates);
+        } finally {
+            foreach (glob($tempCacheDir . '/*') ?: [] as $f) {
+                @unlink($f);
+            }
+            @rmdir($tempCacheDir);
+        }
+    }
+
+    public function testBookRequestAllowsSameDayTurnoverWhenCheckOutEqualsSyncedChannelBlockStartDate(): void
+    {
+        $tempCacheDir = sys_get_temp_dir() . '/ovf_book_turnover_' . bin2hex(random_bytes(6));
+        mkdir($tempCacheDir, 0755, true);
+
+        $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
+        $cacheDirExport = var_export($tempCacheDir, true);
+        $prependCode = <<<PHP
+require_once {$autoloadPath};
+\$pdo = new PDO('sqlite::memory:');
+\$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+\$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+\$pdo->exec("CREATE TABLE reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_uid TEXT UNIQUE,
+    property_id TEXT,
+    guest_name TEXT,
+    guest_email TEXT,
+    guest_phone TEXT,
+    check_in TEXT,
+    check_out TEXT,
+    total_price REAL,
+    refunded_amount REAL DEFAULT 0.0,
+    status TEXT,
+    payment_method_id TEXT,
+    mercadopago_preference_id TEXT,
+    mercadopago_payment_id TEXT,
+    payment_status TEXT,
+    payment_detail TEXT,
+    notes TEXT,
+    source TEXT DEFAULT 'web',
+    external_confirmation_code TEXT DEFAULT NULL,
+    channel_block_uid TEXT DEFAULT NULL,
+    lang TEXT,
+    registry_completed INTEGER DEFAULT 0,
+    registry_completed_at TEXT,
+    door_code TEXT,
+    privacy_policy_version TEXT DEFAULT NULL,
+    privacy_consent_at TEXT DEFAULT NULL,
+    privacy_consent_ip TEXT DEFAULT NULL,
+    pii_redacted_at TEXT DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE calendar_blocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    created_by INTEGER DEFAULT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$pdo->exec("CREATE TABLE admin_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_user_id INTEGER,
+    action TEXT,
+    entity_type TEXT,
+    entity_id TEXT,
+    payload_before TEXT,
+    payload_after TEXT,
+    ip_address TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)");
+\$GLOBALS['TEST_PDO'] = \$pdo;
+\$GLOBALS['TEST_EMAIL_SENDER'] = new \\OceanViewFlats\\Domain\\Fulfillment\\InMemoryEmailSender();
+\$icalBody = "BEGIN:VCALENDAR\\nVERSION:2.0\\nBEGIN:VEVENT\\nDTSTART;VALUE=DATE:20261215\\nDTEND;VALUE=DATE:20261218\\nUID:abnb-sync-2@airbnb.com\\nEND:VEVENT\\nEND:VCALENDAR";
+\$mockTransport = new class(\$icalBody) implements \\OceanViewFlats\\Domain\\Reservation\\HttpTransportInterface {
+    public function __construct(private string \$body) {}
+    public function get(string \$url, array \$options = []): array {
+        return ['statusCode' => 200, 'body' => \$this->body, 'error' => null];
+    }
+};
+\$GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] = new \\OceanViewFlats\\Domain\\Reservation\\InboundChannelSyncService(
+    ['1606' => 'https://example.com/1606.ics'],
+    {$cacheDirExport},
+    \$mockTransport
+);
+PHP;
+
+        try {
+            // Check-in 2026-12-11, Check-out 2026-12-15 (4 nights, same-day Turnover with Airbnb check-in on 2026-12-15)
+            $res = $this->callBookRequestEndpoint([
+                'property_id' => '1606',
+                'check_in' => '2026-12-11',
+                'check_out' => '2026-12-15',
+                'guest_name' => 'Carlos Rodriguez',
+                'guest_email' => 'carlos@example.com',
+                'guest_phone' => '+573001234567',
+                'privacy_consent' => '1',
+                'privacy_policy_version' => '2026-10',
+                'lang' => 'en',
+            ], $prependCode);
+
+            $this->assertSame(0, $res['exitCode'], $res['stderr']);
+            $this->assertIsArray($res['json']);
+            $this->assertTrue($res['json']['success'], (string) ($res['json']['error'] ?? ''));
+            $this->assertNotEmpty($res['json']['reservation_uid'] ?? '');
+        } finally {
+            foreach (glob($tempCacheDir . '/*') ?: [] as $f) {
+                @unlink($f);
+            }
+            @rmdir($tempCacheDir);
+        }
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();
-        $rateLimitFile = sys_get_temp_dir() . '/ovf_payments_rate_limits.json';
+        foreach (['ovf_payments_rate_limits.json', 'ovf_booking_rate_limits.json'] as $file) {
+            $rateLimitFile = sys_get_temp_dir() . '/' . $file;
+            if (file_exists($rateLimitFile)) {
+                @unlink($rateLimitFile);
+            }
+        }
+    }
+
+    /**
+     * @param array<string, string> $postData
+     * @param string $prependCode
+     * @return array{exitCode: int, stdout: string, stderr: string, json: ?array<string, mixed>}
+     */
+    private function callBookRequestEndpoint(array $postData, string $prependCode = ''): array
+    {
+        $rateLimitFile = sys_get_temp_dir() . '/ovf_booking_rate_limits.json';
         if (file_exists($rateLimitFile)) {
             @unlink($rateLimitFile);
         }
+
+        $secret = 'securesaltsecret';
+        $challenge = '3 + 6';
+        $signature = hash_hmac('sha256', $challenge, $secret);
+
+        $mergedPost = array_merge([
+            'captcha_challenge' => $challenge,
+            'captcha_signature' => $signature,
+            'captcha_response' => '9',
+        ], $postData);
+
+        $mergedServer = [
+            'REQUEST_METHOD' => 'POST',
+            'HTTP_HOST' => 'oceanviewflats.com',
+            'HTTP_REFERER' => 'https://oceanviewflats.com/Oceanview1606/index.html',
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+            'REMOTE_ADDR' => '127.0.0.1',
+        ];
+
+        $phpCode = sprintf(
+            '%s; $_SERVER = array_merge($_SERVER, %s); $_POST = %s; require %s;',
+            $prependCode,
+            var_export($mergedServer, true),
+            var_export($mergedPost, true),
+            var_export(dirname(__DIR__, 3) . '/public/api/book-request.php', true)
+        );
+
+        $process = proc_open(
+            ['php', '-r', $phpCode],
+            [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ],
+            $pipes
+        );
+
+        fclose($pipes[0]);
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+        $exitCode = proc_close($process);
+
+        return [
+            'exitCode' => $exitCode,
+            'stdout' => (string) $stdout,
+            'stderr' => (string) $stderr,
+            'json' => json_decode((string) $stdout, true),
+        ];
     }
 
     /**

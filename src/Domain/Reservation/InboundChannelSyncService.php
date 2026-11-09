@@ -18,7 +18,7 @@ use OceanViewFlats\Domain\Support\PathResolver;
 final class InboundChannelSyncService implements InboundChannelSyncServiceInterface
 {
     public const DEFAULT_COOLDOWN_SECONDS = 60;
-    public const DEFAULT_CACHE_LIFETIME_SECONDS = 900; // 15 minutes
+    public const DEFAULT_CACHE_LIFETIME_SECONDS = 300; // 5 minutes
     public const STATUS_FILENAME = 'channel_sync_status.json';
 
     private readonly HttpTransportInterface $httpTransport;

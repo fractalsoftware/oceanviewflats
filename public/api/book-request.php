@@ -12,13 +12,17 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
+use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
 use OceanViewFlats\Domain\Fulfillment\PhpMailSender;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\DirectHoldRequest;
+use OceanViewFlats\Domain\Reservation\InboundChannelSyncService;
+use OceanViewFlats\Domain\Reservation\InboundChannelSyncServiceInterface;
 use OceanViewFlats\Domain\Reservation\PrimaryGuest;
 use OceanViewFlats\Domain\Reservation\ReservationConflictException;
 use OceanViewFlats\Domain\Reservation\ReservationValidationException;
 use OceanViewFlats\Domain\Security\PiiMasker;
+use OceanViewFlats\Domain\Support\PathResolver;
 use OceanViewFlats\Infrastructure\Reservation\ReservationLifecycleEngineFactory;
 
 // Load central utilities & configuration
@@ -133,8 +137,8 @@ if ($checkIn < strtotime(date('Y-m-d'))) {
 }
 
 // 6. Overlap Booking Check, Quote Computation, and Atomic Hold via ReservationLifecycleEngine (ADR 0011)
-$pdo = null;
-if (!empty($config['db']['host']) && !empty($config['db']['dbname'])) {
+$pdo = $GLOBALS['TEST_PDO'] ?? null;
+if ($pdo === null && !empty($config['db']['host']) && !empty($config['db']['dbname'])) {
     try {
         $pdo = get_db_connection($config['db']);
     } catch (PDOException $e) {
@@ -142,7 +146,28 @@ if (!empty($config['db']['host']) && !empty($config['db']['dbname'])) {
     }
 }
 
-$cacheDir = __DIR__ . '/../cache';
+$icalFeeds = isset($config['ical_feeds']) && is_array($config['ical_feeds']) ? $config['ical_feeds'] : [];
+$defaultCacheDir = PathResolver::resolveDirectory('cache');
+if (!file_exists($defaultCacheDir)) {
+    mkdir($defaultCacheDir, 0755, true);
+}
+
+/** @var InboundChannelSyncServiceInterface $syncService */
+$syncService = $GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] ?? new InboundChannelSyncService($icalFeeds, $defaultCacheDir);
+$cacheDir = $GLOBALS['TEST_CACHE_DIR']
+    ?? (($syncService instanceof InboundChannelSyncService) ? $syncService->getCacheDir() : $defaultCacheDir);
+if (!file_exists($cacheDir)) {
+    mkdir($cacheDir, 0755, true);
+}
+
+try {
+    if ($syncService->isCacheStale($propertyId, 300)) {
+        $syncService->sync($propertyId, force: false, initiatedBy: 'public_traffic');
+    }
+} catch (Throwable $syncError) {
+    error_log('[Book Request Channel Sync Warning] ' . $syncError->getMessage());
+}
+
 $lifecycleEngine = ReservationLifecycleEngineFactory::create($pdo, [
     'cacheDir' => $cacheDir,
 ]);
@@ -266,7 +291,8 @@ $html_message = "
 ";
 
 // Dispatch via PhpMailSender
-$mailSender = new PhpMailSender();
+/** @var EmailSenderInterface $mailSender */
+$mailSender = $GLOBALS['TEST_EMAIL_SENDER'] ?? new PhpMailSender();
 
 // Send to host
 $subjectHost = "NEW DIRECT BOOKING REQUEST: Prop $propertyId ($guestName) - [" . strtoupper($lang) . "]";

@@ -157,6 +157,39 @@ PHP;
         $this->assertSame(502, $res['json']['status_code']);
     }
 
+    public function testAvailabilityEndpointRefreshesCacheWhenOlderThanFiveMinutes(): void
+    {
+        // Seed a cache file aged 6 minutes (360s > 300s threshold, < old 900s threshold)
+        file_put_contents($this->cacheFile1606, json_encode(['2026-11-01']));
+        touch($this->cacheFile1606, time() - 360);
+
+        $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
+        $cachePath = var_export($this->cacheDir, true);
+        $prependCode = <<<PHP
+require_once {$autoloadPath};
+\$icalBody = "BEGIN:VCALENDAR\\nVERSION:2.0\\nBEGIN:VEVENT\\nDTSTART;VALUE=DATE:20261215\\nDTEND;VALUE=DATE:20261218\\nUID:abnb-1@airbnb.com\\nEND:VEVENT\\nEND:VCALENDAR";
+\$mockTransport = new class(\$icalBody) implements \\OceanViewFlats\\Domain\\Reservation\\HttpTransportInterface {
+    public function __construct(private string \$body) {}
+    public function get(string \$url, array \$options = []): array {
+        return ['statusCode' => 200, 'body' => \$this->body, 'error' => null];
+    }
+};
+\$GLOBALS['TEST_CHANNEL_SYNC_SERVICE'] = new \\OceanViewFlats\\Domain\\Reservation\\InboundChannelSyncService(
+    ['1606' => 'https://example.com/1606.ics'],
+    {$cachePath},
+    \$mockTransport
+);
+PHP;
+
+        $res = $this->callEndpoint(['property' => '1606'], $prependCode);
+        $this->assertSame(0, $res['exitCode'], $res['stderr']);
+        $this->assertIsArray($res['json']);
+        $this->assertContains('2026-12-15', $res['json']);
+        $this->assertContains('2026-12-16', $res['json']);
+        $this->assertContains('2026-12-17', $res['json']);
+        $this->assertNotContains('2026-12-18', $res['json']);
+    }
+
     /**
      * @param array<string, string> $params
      * @return array{exitCode: int, stdout: string, stderr: string, json: ?array<int|string, mixed>}
