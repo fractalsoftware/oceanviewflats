@@ -105,7 +105,7 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
         $hostNotificationEmail = (string) ($options['hostNotificationEmail'] ?? 'reservas@oceanviewflats.com');
 
         $gateway = $options['gateway'] ?? new MercadoPagoPaymentGateway(
-            accessToken: (string) ($options['mpAccessToken'] ?? (getenv('MERCADOPAGO_ACCESS_TOKEN') ?: ''))
+            accessToken: (string) ($options['mpAccessToken'] ?? ($_ENV['MERCADOPAGO_ACCESS_TOKEN'] ?? $_SERVER['MERCADOPAGO_ACCESS_TOKEN'] ?? getenv('MERCADOPAGO_ACCESS_TOKEN') ?: ''))
         );
 
         $ledger = $options['ledger'] ?? ReservationLedger::createDefault($pdo, $options['cacheDir'] ?? null);
