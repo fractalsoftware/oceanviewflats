@@ -8,7 +8,7 @@ export const dict = {
 			"Oceanview Flat 1707 | Playa Salguero, Santa Marta Vacation Rental",
 		seoDescription:
 			"Book your beachfront stay at Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfect for digital nomads, featuring high-speed Wi-Fi, pool, and stunning Caribbean sea sunsets. Book your direct stay now.",
-		navBook: "Book on Airbnb",
+		navBook: "Book with us",
 		navBookDirect: "Book Direct",
 		heroTitle: "Oceanview Flat 1707",
 		heroSub:
@@ -588,7 +588,7 @@ export const dict = {
 			"Apartamento Vista al Mar 1707 | Alquiler Vacacional en Playa Salguero",
 		seoDescription:
 			"Reserva tu estadía frente a la playa en Oceanview Flat 1707 en Playa Salguero, Santa Marta. Ideal para nómadas digitales, con Wi-Fi de alta velocidad, piscina e increíbles atardeceres del Caribe. Reserva tu estancia directa ahora.",
-		navBook: "Reservar en Airbnb",
+		navBook: "Reservar con nosotros",
 		navBookDirect: "Reservar Directo",
 		heroTitle: "Apartamento Vista al Mar 1707",
 		heroSub:
@@ -1185,7 +1185,7 @@ export const dict = {
 			"Appartement Vue Mer 1707 | Location de Vacances à Playa Salguero",
 		seoDescription:
 			"Réservez votre séjour en bord de mer au Oceanview Flat 1707 à Playa Salguero, Santa Marta. Idéal pour les nomades digitaux, avec Wi-Fi haut débit, piscine et superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
-		navBook: "Réserver sur Airbnb",
+		navBook: "Réserver avec nous",
 		navBookDirect: "Réserver en Direct",
 		heroTitle: "Appartement Vue Mer 1707",
 		heroSub:
@@ -1789,7 +1789,7 @@ export const dict = {
 		seoTitle: "Appartamento Vista Mare 1707 | Casa Vacanze a Playa Salguero",
 		seoDescription:
 			"Prenota il tuo soggiorno di fronte al mare all'Oceanview Flat 1707 a Playa Salguero, Santa Marta. Perfetto per i nomadi digitali, con Wi-Fi ad alta velocità, piscina e splendidi tramonti sui Caraibi. Prenota ora il tuo soggiorno diretto.",
-		navBook: "Prenota su Airbnb",
+		navBook: "Prenota con noi",
 		navBookDirect: "Prenota Diretto",
 		heroTitle: "Appartamento Vista Mare 1707",
 		heroSub:
@@ -2384,7 +2384,7 @@ export const dict = {
 		seoTitle: "Apartment mit Meerblick 1707 | Ferienwohnung in Playa Salguero",
 		seoDescription:
 			"Buchen Sie Ihren Strandurlaub im Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfekt für digitale Nomaden, mit Highspeed-WLAN, Pool und atemberaubenden Sonnenuntergängen in der Karibik. Buchen Sie jetzt Ihren Aufenthalt direkt.",
-		navBook: "Auf Airbnb buchen",
+		navBook: "Bei uns buchen",
 		navBookDirect: "Direkt Buchen",
 		heroTitle: "Apartment mit Meerblick 1707",
 		heroSub:
@@ -2986,7 +2986,7 @@ export const dict = {
 			"オーシャンビューフラット 1707 | サンタマルタ、プラヤ・サルグエロのバケーションレンタル",
 		seoDescription:
 			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707で、ビーチフロントの滞在をご予約ください。デジタルノマドに最適で、高速Wi-Fi、プール、カリブ海の美しい夕日をお楽しみいただけます。今すぐ直接予約しましょう。",
-		navBook: "Airbnbで予約",
+		navBook: "当サイトで予約",
 		navBookDirect: "直接予約",
 		heroTitle: "オーシャンビューフラット 1707",
 		heroSub:

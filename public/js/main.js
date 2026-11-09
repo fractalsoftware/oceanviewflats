@@ -447,8 +447,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const directForm = document.getElementById('direct-booking-form');
 
         if (checkIn && checkOut) {
-            btnBook.href = airbnbUrl + "?check_in=" + formatDate(checkIn) + "&check_out=" + formatDate(checkOut);
-            btnBookText.textContent = txtReady;
+            if (btnBook) {
+                btnBook.href = airbnbUrl + "?check_in=" + formatDate(checkIn) + "&check_out=" + formatDate(checkOut);
+                btnBook.setAttribute('aria-disabled', 'false');
+                btnBook.removeAttribute('tabindex');
+                btnBook.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                btnBook.classList.add('hover:scale-[1.02]');
+            }
+            if (btnBookText) {
+                btnBookText.textContent = txtReady;
+            }
 
             // Compute direct booking subtotals
             const details = calculateStayDetails(checkIn, checkOut);
@@ -514,8 +522,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadMercadoPagoSDK().catch(err => console.warn("Background SDK load error:", err));
             }
         } else {
-            btnBook.href = airbnbUrl;
-            btnBookText.textContent = txtDefault;
+            if (btnBook) {
+                btnBook.removeAttribute('href');
+                btnBook.setAttribute('aria-disabled', 'true');
+                btnBook.setAttribute('tabindex', '-1');
+                btnBook.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                btnBook.classList.remove('hover:scale-[1.02]');
+            }
+            if (btnBookText) {
+                btnBookText.textContent = txtReady;
+            }
 
             if (breakdownCard) breakdownCard.classList.add('hidden');
             if (directForm) directForm.classList.add('hidden');
@@ -831,7 +847,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Matomo Tracking for Airbnb booking redirection (Goal 3)
     if (btnBook) {
-        btnBook.addEventListener('click', () => {
+        btnBook.addEventListener('click', (e) => {
+            if (!checkIn || !checkOut || btnBook.getAttribute('aria-disabled') === 'true') {
+                if (e && typeof e.preventDefault === 'function') {
+                    e.preventDefault();
+                }
+                return;
+            }
             if (window._paq) {
                 const propId = window.location.pathname.includes('1606') ? '1606' : '1707';
                 window._paq.push(['trackEvent', 'Booking', 'Redirect to Airbnb', propId]);
