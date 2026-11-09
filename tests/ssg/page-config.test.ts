@@ -2378,3 +2378,108 @@ test("Homepage highlights bed-capacity pills on #home-card-1707 and #home-card-1
 		"dist/css/style.css must include @media (prefers-reduced-motion: reduce) with scroll-behavior: auto !important and transition-duration safeguard",
 	);
 });
+
+test("Property 1707 and 1606 pages render 'Book with us' header links and place 'Check Selected Dates on Airbnb' below WhatsApp CTA enabled only when a date range is selected", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			suffix: "index.html",
+			expectedNavBook: "Book with us",
+			forbiddenNavAirbnb: "Book on Airbnb",
+			expectedAirbnbCta: "Check Selected Dates on Airbnb",
+			forbiddenDefaultAirbnbCta: "Check Availability on Airbnb",
+		},
+		{
+			code: "es",
+			suffix: "es.html",
+			expectedNavBook: "Reservar con nosotros",
+			forbiddenNavAirbnb: "Reservar en Airbnb",
+			expectedAirbnbCta: "Ver Fechas en Airbnb",
+			forbiddenDefaultAirbnbCta: "Ver Disponibilidad en Airbnb",
+		},
+		{
+			code: "fr",
+			suffix: "fr.html",
+			expectedNavBook: "Réserver avec nous",
+			forbiddenNavAirbnb: "Réserver sur Airbnb",
+			expectedAirbnbCta: "Voir les dates sur Airbnb",
+			forbiddenDefaultAirbnbCta: "Voir la disponibilité sur Airbnb",
+		},
+		{
+			code: "it",
+			suffix: "it.html",
+			expectedNavBook: "Prenota con noi",
+			forbiddenNavAirbnb: "Prenota su Airbnb",
+			expectedAirbnbCta: "Verifica Date Selezionate su Airbnb",
+			forbiddenDefaultAirbnbCta: "Verifica Disponibilità su Airbnb",
+		},
+		{
+			code: "de",
+			suffix: "de.html",
+			expectedNavBook: "Bei uns buchen",
+			forbiddenNavAirbnb: "Auf Airbnb buchen",
+			expectedAirbnbCta: "Ausgewählte Daten auf Airbnb prüfen",
+			forbiddenDefaultAirbnbCta: "Verfügbarkeit auf Airbnb prüfen",
+		},
+		{
+			code: "ja",
+			suffix: "ja.html",
+			expectedNavBook: "当サイトで予約",
+			forbiddenNavAirbnb: "Airbnbで予約",
+			expectedAirbnbCta: "Airbnbで選択した日付を確認",
+			forbiddenDefaultAirbnbCta: "Airbnbで空室状況を確認",
+		},
+	];
+
+	for (const prop of ["Oceanview1707", "Oceanview1606"]) {
+		for (const locale of locales) {
+			const relFile = `${prop}/${locale.suffix}`;
+			const html = fs.readFileSync(path.join(distDir, relFile), "utf-8");
+
+			// 1. Navbar (#nav-book) and Hero header CTA both display "Book with us" (expectedNavBook) and never "Book on Airbnb"
+			const navMatch = html.match(/<nav[\s\S]*?<\/nav>/);
+			const headerMatch = html.match(/<header[\s\S]*?<\/header>/);
+			assert.ok(
+				navMatch && headerMatch,
+				`${relFile} must render <nav> and <header>`,
+			);
+			assert.ok(
+				navMatch[0].includes(locale.expectedNavBook) &&
+					!navMatch[0].includes(locale.forbiddenNavAirbnb),
+				`${relFile} <nav> must display "${locale.expectedNavBook}"`,
+			);
+			assert.ok(
+				headerMatch[0].includes(locale.expectedNavBook) &&
+					!headerMatch[0].includes(locale.forbiddenNavAirbnb),
+				`${relFile} <header> must display "${locale.expectedNavBook}"`,
+			);
+
+			// 2. #btn-book appears AFTER #whatsapp-booking-link and is disabled by default with "Check Selected Dates on Airbnb"
+			const whatsappIndex = html.indexOf('id="whatsapp-booking-link"');
+			const btnBookIndex = html.indexOf('id="btn-book"');
+			assert.ok(
+				whatsappIndex !== -1 &&
+					btnBookIndex !== -1 &&
+					btnBookIndex > whatsappIndex,
+				`${relFile} #btn-book must be placed below #whatsapp-booking-link`,
+			);
+
+			const btnBookMatch = html.match(
+				/<a[^>]*id="btn-book"[^>]*>[\s\S]*?<\/a>/,
+			);
+			assert.ok(btnBookMatch, `${relFile} must render #btn-book`);
+			const btnBookHtml = btnBookMatch[0];
+			assert.ok(
+				btnBookHtml.includes('aria-disabled="true"') &&
+					btnBookHtml.includes('tabindex="-1"') &&
+					!btnBookHtml.includes("href=") &&
+					btnBookHtml.includes("pointer-events-none") &&
+					btnBookHtml.includes("opacity-50") &&
+					btnBookHtml.includes(locale.expectedAirbnbCta) &&
+					!btnBookHtml.includes(locale.forbiddenDefaultAirbnbCta),
+				`${relFile} #btn-book must be disabled by default and display "${locale.expectedAirbnbCta}"`,
+			);
+		}
+	}
+});
