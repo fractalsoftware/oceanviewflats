@@ -110,50 +110,38 @@ export const OCEANVIEW_1606_PATHS: Record<string, string> = {
 	ja: "Oceanview1606/ja.html",
 };
 
+const resolveLocalizedPath = (
+	paths: Record<string, string>,
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = paths[lang] || paths.en;
+	return `${assetPrefix}${relPath}`;
+};
+
 export const getPrivacyPolicyPath = (
 	lang: string,
 	assetPrefix = "./",
-): string => {
-	const relPath = PRIVACY_POLICY_PATHS[lang] || PRIVACY_POLICY_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+): string => resolveLocalizedPath(PRIVACY_POLICY_PATHS, lang, assetPrefix);
 
-export const getContactPagePath = (
-	lang: string,
-	assetPrefix = "./",
-): string => {
-	const relPath = CONTACT_PAGE_PATHS[lang] || CONTACT_PAGE_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+export const getContactPagePath = (lang: string, assetPrefix = "./"): string =>
+	resolveLocalizedPath(CONTACT_PAGE_PATHS, lang, assetPrefix);
 
-export const getGuidePagePath = (lang: string, assetPrefix = "./"): string => {
-	const relPath = GUIDE_PAGE_PATHS[lang] || GUIDE_PAGE_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+export const getGuidePagePath = (lang: string, assetPrefix = "./"): string =>
+	resolveLocalizedPath(GUIDE_PAGE_PATHS, lang, assetPrefix);
 
-export const getRegistryPagePath = (
-	lang: string,
-	assetPrefix = "./",
-): string => {
-	const relPath = REGISTRY_PAGE_PATHS[lang] || REGISTRY_PAGE_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+export const getRegistryPagePath = (lang: string, assetPrefix = "./"): string =>
+	resolveLocalizedPath(REGISTRY_PAGE_PATHS, lang, assetPrefix);
 
 export const getBookingSuccessPath = (
 	lang: string,
 	assetPrefix = "./",
-): string => {
-	const relPath = BOOKING_SUCCESS_PATHS[lang] || BOOKING_SUCCESS_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+): string => resolveLocalizedPath(BOOKING_SUCCESS_PATHS, lang, assetPrefix);
 
 export const getBookingPendingPath = (
 	lang: string,
 	assetPrefix = "./",
-): string => {
-	const relPath = BOOKING_PENDING_PATHS[lang] || BOOKING_PENDING_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+): string => resolveLocalizedPath(BOOKING_PENDING_PATHS, lang, assetPrefix);
 
 export const getHomePagePath = (lang: string, assetPrefix = "./"): string => {
 	const relPath = HOME_PAGE_PATHS[lang] ?? HOME_PAGE_PATHS.en;

@@ -453,7 +453,7 @@ export const dict = {
 			"Thank you for your payment. Your reservation has been successfully completed and locked in. You will receive an automated email confirmation with your stay details shortly.",
 		dbSuccessRegistryBtn: "Complete Guest Registry",
 		dbSuccessRegistryNotice:
-			"Mandatory next step: Complete the Guest Registry to verify all occupants under Colombian hospitality regulations (Law 1581) and unlock your smart-lock Access Credentials (0XXXXXX#) and Guest Guide.",
+			"Mandatory next step: Complete the Guest Registry to verify all occupants under Colombian hospitality regulations (Law 1581) and unlock your smart-lock Access Credentials (0XXXXXX#) and Guest Guide. If you do not have every Guest's identification documents on hand right now, you can complete the Guest Registry later using the link in your Reservation Confirmation email.",
 		dbReferenceCodeLabel: "Reservation Reference Code",
 		dbSuccessHomeBtn: "Back to Home",
 		dbSuccessGuideBtn: "Open Guests Guide",
@@ -466,7 +466,7 @@ export const dict = {
 		dbPendingTitle: "Payment Pending - OceanViewFlats",
 		dbPendingHeader: "Payment Pending",
 		dbPendingSubtitle:
-			"Your payment is currently pending or undergoing bank authorization. We have logged your reservation details under a temporary hold. We will confirm your booking as soon as the transaction clears.",
+			"Your payment is currently pending or undergoing bank authorization. We have logged your reservation details under a temporary hold. Once payment settlement is verified, we will confirm your booking and dispatch your Reservation Confirmation email with your Guest Registry link to unlock Property access.",
 		dbPendingVoucherTitle: "Cash Payment Voucher (Efecty)",
 		dbPendingBarcodeLabel: "Payment Barcode / Reference",
 		dbPendingVerifCodeLabel: "Agreement / Verification Code",
@@ -1060,7 +1060,7 @@ export const dict = {
 			"Gracias por tu pago. Su reserva ha sido registrada y asegurada con éxito. En breve recibirá un correo electrónico de confirmación automático con los detalles de su estadía.",
 		dbSuccessRegistryBtn: "Completar Registro de Huéspedes",
 		dbSuccessRegistryNotice:
-			"Siguiente paso obligatorio: Complete el Registro de Huéspedes para verificar a todos los ocupantes según la normativa hotelera colombiana (Ley 1581) y desbloquear sus Credenciales de Acceso (0XXXXXX#) y la Guía de Huéspedes.",
+			"Siguiente paso obligatorio: Complete el Registro de Huéspedes para verificar a todos los ocupantes según la normativa hotelera colombiana (Ley 1581) y desbloquear sus Credenciales de Acceso (0XXXXXX#) y la Guía de Huéspedes. Si no tiene a mano los documentos de identidad de todos los huéspedes en este momento, puede completar el Registro de Huéspedes más tarde utilizando el enlace en su correo de Confirmación de Reserva.",
 		dbReferenceCodeLabel: "Código de Referencia de la Reserva",
 		dbSuccessHomeBtn: "Volver al Inicio",
 		dbSuccessGuideBtn: "Abrir Guía de Huéspedes",
@@ -1073,7 +1073,7 @@ export const dict = {
 		dbPendingTitle: "Pago Pendiente - OceanViewFlats",
 		dbPendingHeader: "Pago Pendiente",
 		dbPendingSubtitle:
-			"Su pago se encuentra actualmente pendiente o en proceso de autorización bancaria. Hemos registrado su reserva bajo un bloqueo temporal. Confirmaremos su reserva tan pronto como se apruebe la transacción.",
+			"Su pago se encuentra actualmente pendiente o en proceso de autorización bancaria. Hemos registrado su reserva bajo un bloqueo temporal. Una vez verificado el pago, confirmaremos su reserva y le enviaremos el correo de Confirmación de Reserva con el enlace al Registro de Huéspedes para desbloquear el acceso a la Propiedad.",
 		dbPendingVoucherTitle: "Cupón de Pago en Efectivo (Efecty)",
 		dbPendingBarcodeLabel: "Código de Barras / Referencia",
 		dbPendingVerifCodeLabel: "Convenio / Código de Verificación",
@@ -1672,7 +1672,7 @@ export const dict = {
 			"Merci pour votre paiement. Votre réservation a été enregistrée et sécurisée avec succès. Vous recevrez sous peu un e-mail de confirmation automatique avec les détails de votre séjour.",
 		dbSuccessRegistryBtn: "Compléter le Registre des Invités",
 		dbSuccessRegistryNotice:
-			"Prochaine étape obligatoire : Complétez le Registre des Invités pour vérifier tous les occupants conformément à la réglementation hôtelière colombienne (Loi 1581) et débloquer vos Identifiants d'Accès (0XXXXXX#) ainsi que le Guide des Invités.",
+			"Prochaine étape obligatoire : Complétez le Registre des Invités pour vérifier tous les occupants conformément à la réglementation hôtelière colombienne (Loi 1581) et débloquer vos Identifiants d'Accès (0XXXXXX#) ainsi que le Guide des Invités. Si vous n'avez pas les pièces d'identité de tous les invités sous la main pour le moment, vous pourrez compléter le Registre des Invités plus tard via le lien figurant dans votre e-mail de Confirmation de Réservation.",
 		dbReferenceCodeLabel: "Code de Référence de la Réservation",
 		dbSuccessHomeBtn: "Retour à l'Accueil",
 		dbSuccessGuideBtn: "Oouvrir le Guide des Invités",
@@ -1685,7 +1685,7 @@ export const dict = {
 		dbPendingTitle: "Paiement en Attente - OceanViewFlats",
 		dbPendingHeader: "Paiement en Attente",
 		dbPendingSubtitle:
-			"Votre paiement est actuellement en attente ou en cours d'autorisation bancaire. Nous avons enregistré votre réservation sous un blocage temporaire. Nous confirmerons votre séjour dès que la transaction sera approuvée.",
+			"Votre paiement est actuellement en attente ou en cours d'autorisation bancaire. Nous avons enregistré votre réservation sous un blocage temporaire. Dès que le règlement sera vérifié, nous confirmerons votre séjour et vous enverrons l'e-mail de Confirmation de Réservation contenant le lien vers le Registre des Invités afin de débloquer l'accès à la Propriété.",
 		dbPendingVoucherTitle: "Bon de Paiement en Espèces (Efecty)",
 		dbPendingBarcodeLabel: "Code-Barres / Référence",
 		dbPendingVerifCodeLabel: "Code de Vérification / Convention",
@@ -2279,7 +2279,7 @@ export const dict = {
 			"Grazie per il pagamento. La tua prenotazione è stata registrata e assicurata con successo. Riceverai a breve un'e-mail di conferma automatica con i dettagli del soggiorno.",
 		dbSuccessRegistryBtn: "Completa il Registro degli Ospiti",
 		dbSuccessRegistryNotice:
-			"Prossimo passo obbligatorio: Completa il Registro degli Ospiti per verificare tutti gli occupanti secondo la normativa alberghiera colombiana (Legge 1581) e sbloccare le Credenziali di Accesso (0XXXXXX#) e la Guida per gli Ospiti.",
+			"Prossimo passo obbligatorio: Completa il Registro degli Ospiti per verificare tutti gli occupanti secondo la normativa alberghiera colombiana (Legge 1581) e sbloccare le Credenziali di Accesso (0XXXXXX#) e la Guida per gli Ospiti. Se al momento non hai a portata di mano i documenti di identità di tutti gli ospiti, potrai completare il Registro degli Ospiti più tardi utilizzando il link presente nell'e-mail di Conferma della Prenotazione.",
 		dbReferenceCodeLabel: "Codice di Riferimento della Prenotazione",
 		dbSuccessHomeBtn: "Torna alla Home",
 		dbSuccessGuideBtn: "Apri la Guida per gli Ospiti",
@@ -2292,7 +2292,7 @@ export const dict = {
 		dbPendingTitle: "Pagamento in Sospeso - OceanViewFlats",
 		dbPendingHeader: "Pagamento in Sospeso",
 		dbPendingSubtitle:
-			"Il tuo pagamento è attualmente in sospeso o in fase di autorizzazione bancaria. Abbiamo registrato la tua prenotazione con un blocco temporaneo. Confermeremo il tuo soggiorno non appena la transazione sarà approvata.",
+			"Il tuo pagamento è attualmente in sospeso o in fase di autorizzazione bancaria. Abbiamo registrato la tua prenotazione con un blocco temporaneo. Non appena il pagamento sarà verificato, confermeremo il soggiorno e invieremo l'e-mail di Conferma della Prenotazione con il link al Registro degli Ospiti per sbloccare l'accesso alla Proprietà.",
 		dbPendingVoucherTitle: "Voucher di Pagamento in Contanti (Efecty)",
 		dbPendingBarcodeLabel: "Codice a Barre / Riferimento",
 		dbPendingVerifCodeLabel: "Codice di Verifica / Convenzione",
@@ -2889,7 +2889,7 @@ export const dict = {
 			"Vielen Dank für Ihre Zahlung. Ihre Reservierung wurde erfolgreich registriert und gesichert. Sie erhalten in Kürze eine automatische E-Mail-Bestätigung mit Ihren Aufenthaltsdetails.",
 		dbSuccessRegistryBtn: "Gästeregistrierung Abschließen",
 		dbSuccessRegistryNotice:
-			"Obligatorischer nächster Schritt: Schließen Sie die Gästeregistrierung ab, um alle Gäste gemäß den kolumbianischen Gastgewerbevorschriften (Gesetz 1581) zu verifizieren und Ihre Zugangsdaten (0XXXXXX#) sowie den Gästeführer freizuschalten.",
+			"Obligatorischer nächster Schritt: Schließen Sie die Gästeregistrierung ab, um alle Gäste gemäß den kolumbianischen Gastgewerbevorschriften (Gesetz 1581) zu verifizieren und Ihre Zugangsdaten (0XXXXXX#) sowie den Gästeführer freizuschalten. Falls Sie die Ausweisdokumente aller Gäste gerade nicht zur Hand haben, können Sie die Gästeregistrierung später über den Link in Ihrer Buchungsbestätigungs-E-Mail abschließen.",
 		dbReferenceCodeLabel: "Reservierungs-Referenzcode",
 		dbSuccessHomeBtn: "Zurück zur Startseite",
 		dbSuccessGuideBtn: "Gästeführer Öffnen",
@@ -2902,7 +2902,7 @@ export const dict = {
 		dbPendingTitle: "Zahlung Ausstehend - OceanViewFlats",
 		dbPendingHeader: "Zahlung Ausstehend",
 		dbPendingSubtitle:
-			"Ihre Zahlung steht derzeit aus oder befindet sich in der Bankautorisierung. Wir haben Ihre Reservierungsdaten unter einer temporären Sperre erfasst. Wir werden Ihre Buchung bestätigen, sobald die Transaktion freigegeben ist.",
+			"Ihre Zahlung steht derzeit aus oder befindet sich in der Bankautorisierung. Wir haben Ihre Reservierungsdaten unter einer temporären Sperre erfasst. Sobald der Zahlungseingang bestätigt ist, bestätigen wir Ihre Buchung und senden Ihnen die Buchungsbestätigungs-E-Mail mit dem Link zur Gästeregistrierung, um den Zugang zur Unterkunft freizuschalten.",
 		dbPendingVoucherTitle: "Barzahlungsgutschein (Efecty)",
 		dbPendingBarcodeLabel: "Zahlungs-Barcode / Referenz",
 		dbPendingVerifCodeLabel: "Verifizierungscode / Vereinbarung",
@@ -3495,7 +3495,7 @@ export const dict = {
 			"お支払いが確認されました。お客様のご予約は正常に確定し、お部屋は確保されました。まもなく滞在の詳細が記載された自動確認メールが送信されます。",
 		dbSuccessRegistryBtn: "宿泊者名簿（ゲスト登録）を完了する",
 		dbSuccessRegistryNotice:
-			"必須の次のステップ：コロンビアの宿泊施設規則（法第1581号）に基づき宿泊者全員の確認を行い、スマートロックの暗証番号（0XXXXXX#）とゲストガイドを解除するために、宿泊者名簿を完了してください。",
+			"必須の次のステップ：コロンビアの宿泊施設規則（法第1581号）に基づき宿泊者全員の確認を行い、スマートロックの暗証番号（0XXXXXX#）とゲストガイドを解除するために、宿泊者名簿を完了してください。現在すべての宿泊者の身分証明書がお手元にない場合は、予約確認メールに記載されているリンクから後で宿泊者名簿を完了することも可能です。",
 		dbReferenceCodeLabel: "予約参照コード",
 		dbSuccessHomeBtn: "ホームに戻る",
 		dbSuccessGuideBtn: "ゲストガイドを開く",
@@ -3508,7 +3508,7 @@ export const dict = {
 		dbPendingTitle: "決済保留中 - OceanViewFlats",
 		dbPendingHeader: "決済保留中",
 		dbPendingSubtitle:
-			"お支払いは現在保留中、または銀行による承認手続き中です。お客様のご予約は現在仮押さえ状態となっております。決済が承認され次第、ご予約を確定いたします。",
+			"お支払いは現在保留中、または銀行による承認手続き中です。お客様のご予約は現在仮押さえ状態となっております。決済の完了が確認され次第、ご予約を確定し、施設のアクセス解除に必要な宿泊者名簿（ゲスト登録）リンクを記載した予約確認メールをお送りいたします。",
 		dbPendingVoucherTitle: "現金支払いバウチャー（Efecty）",
 		dbPendingBarcodeLabel: "支払いバーコード／参照番号",
 		dbPendingVerifCodeLabel: "確認コード／規約番号",

@@ -3491,6 +3491,346 @@ test("Property Page #calendar-widget fetches authoritative Quote from quote.php 
 	assert.equal(btnBook.classList.contains("pointer-events-none"), false);
 });
 
+interface BookingTestNode {
+	id: string;
+	tagName: string;
+	textContent: string;
+	innerHTML: string;
+	className: string;
+	value: string;
+	href: string;
+	disabled: boolean;
+	checked: boolean;
+	style: Record<string, string>;
+	classList: {
+		add: (...cls: string[]) => void;
+		remove: (...cls: string[]) => void;
+		contains: (c: string) => boolean;
+	};
+	getAttribute: (k: string) => string | null;
+	setAttribute: (k: string, v: string) => void;
+	removeAttribute: (k: string) => void;
+	addEventListener: (evt: string, fn: (e?: unknown) => void) => void;
+	dispatchEvent: (evt: string, payload?: Record<string, unknown>) => void;
+	appendChild: (child: BookingTestNode) => BookingTestNode;
+	querySelector: (sel: string) => BookingTestNode | null;
+	querySelectorAll: (sel: string) => BookingTestNode[];
+}
+
+const createBookingTestNode = (
+	id: string,
+	tagName = "DIV",
+	initialClasses: string[] = [],
+	initialAttrs: Record<string, string> = {},
+): BookingTestNode => {
+	const classes = new Set<string>(initialClasses);
+	const attrs = new Map<string, string>(Object.entries(initialAttrs));
+	const listeners: Record<string, Array<(e?: unknown) => void>> = {};
+	const children: BookingTestNode[] = [];
+
+	const node: BookingTestNode = {
+		id,
+		tagName,
+		textContent: "",
+		innerHTML: "",
+		className: initialClasses.join(" "),
+		value: initialAttrs.value || "",
+		href: initialAttrs.href || "",
+		disabled: false,
+		checked: false,
+		style: {},
+		classList: {
+			add: (...cls: string[]) => {
+				for (const c of cls) classes.add(c);
+			},
+			remove: (...cls: string[]) => {
+				for (const c of cls) classes.delete(c);
+			},
+			contains: (c: string) => classes.has(c),
+		},
+		getAttribute: (k: string) => attrs.get(k) ?? null,
+		setAttribute: (k: string, v: string) => {
+			attrs.set(k, v);
+			if (k === "href") node.href = v;
+		},
+		removeAttribute: (k: string) => {
+			attrs.delete(k);
+		},
+		addEventListener: (evt: string, fn: (e?: unknown) => void) => {
+			listeners[evt] = listeners[evt] || [];
+			listeners[evt].push(fn);
+		},
+		dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
+			for (const fn of listeners[evt] || []) {
+				fn({
+					target: node,
+					preventDefault: () => {},
+					stopPropagation: () => {},
+					...payload,
+				});
+			}
+		},
+		appendChild: (child: BookingTestNode) => {
+			children.push(child);
+			return child;
+		},
+		querySelector: () => null,
+		querySelectorAll: () => children,
+	};
+	return node;
+};
+
+const runBookingPaymentRedirectHarness = async (options: {
+	mainJsCode: string;
+	langCode: "en" | "es";
+	propertyId: "1707" | "1606";
+	paymentMethod: string;
+	guestName: string;
+	guestEmail: string;
+	guestPhone: string;
+	checkIn: string;
+	checkOut: string;
+	bookRequestResponse: Record<string, unknown>;
+	paymentResponse: Record<string, unknown>;
+}) => {
+	let capturedBrickConfig: {
+		callbacks?: {
+			onSubmit?: (args: {
+				selectedPaymentMethod: string;
+				formData: Record<string, unknown>;
+			}) => Promise<unknown>;
+		};
+	} | null = null;
+	const sessionStore = new Map<string, string>();
+	const {
+		mainJsCode,
+		langCode,
+		propertyId,
+		paymentMethod,
+		guestName,
+		guestEmail,
+		guestPhone,
+		checkIn,
+		checkOut,
+		bookRequestResponse,
+		paymentResponse,
+	} = options;
+
+	const calendarWidget = createBookingTestNode("calendar-widget", "DIV", [], {
+		"data-lang": langCode,
+		"data-month-names": JSON.stringify({
+			[langCode]: Array(12).fill("Month"),
+		}),
+		"data-day-names": JSON.stringify({
+			[langCode]: Array(7).fill("D"),
+		}),
+	});
+	const directBookingForm = createBookingTestNode(
+		"direct-booking-form",
+		"FORM",
+		[],
+		{
+			"data-mp-public-key": "TEST-KEY",
+		},
+	);
+	const guestNameInput = createBookingTestNode(
+		"booking-guest-name",
+		"INPUT",
+		[],
+		{
+			value: guestName,
+		},
+	);
+	const guestEmailInput = createBookingTestNode(
+		"booking-guest-email",
+		"INPUT",
+		[],
+		{
+			value: guestEmail,
+		},
+	);
+	const guestPhoneInput = createBookingTestNode(
+		"booking-guest-phone",
+		"INPUT",
+		[],
+		{
+			value: guestPhone,
+		},
+	);
+	const captchaResponseInput = createBookingTestNode(
+		"booking-captcha-response",
+		"INPUT",
+		[],
+		{ value: "7" },
+	);
+	const privacyConsentInput = createBookingTestNode(
+		"booking-privacy-consent",
+		"INPUT",
+	);
+	privacyConsentInput.checked = true;
+	const formCheckIn = createBookingTestNode("form-check-in-date", "INPUT", [], {
+		value: checkIn,
+	});
+	const formCheckOut = createBookingTestNode(
+		"form-check-out-date",
+		"INPUT",
+		[],
+		{
+			value: checkOut,
+		},
+	);
+	const btnBook = createBookingTestNode("btn-book", "A", [], {
+		"data-airbnb-url": `https://airbnb.com/rooms/${propertyId}`,
+		"data-text-ready": "Ready",
+		"data-text-default": "Default",
+	});
+
+	const nodesById = new Map<string, BookingTestNode>([
+		["calendar-widget", calendarWidget],
+		["btn-prev-month", createBookingTestNode("btn-prev-month", "BUTTON")],
+		["btn-next-month", createBookingTestNode("btn-next-month", "BUTTON")],
+		["month-label", createBookingTestNode("month-label", "SPAN")],
+		["calendar-grid", createBookingTestNode("calendar-grid", "DIV")],
+		["check-in-display", createBookingTestNode("check-in-display", "DIV")],
+		["check-out-display", createBookingTestNode("check-out-display", "DIV")],
+		["btn-book", btnBook],
+		["btn-book-text", createBookingTestNode("btn-book-text", "SPAN")],
+		["direct-booking-form", directBookingForm],
+		["booking-guest-name", guestNameInput],
+		["booking-guest-email", guestEmailInput],
+		["booking-guest-phone", guestPhoneInput],
+		["booking-captcha-response", captchaResponseInput],
+		["booking-privacy-consent", privacyConsentInput],
+		["form-check-in-date", formCheckIn],
+		["form-check-out-date", formCheckOut],
+		[
+			"payment-brick-container",
+			createBookingTestNode("payment-brick-container", "DIV"),
+		],
+	]);
+
+	const docListeners: Record<string, Array<() => void>> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			MercadoPago: function () {
+				return {
+					bricks: () => ({
+						create: async (
+							_type: string,
+							_container: string,
+							cfg: typeof capturedBrickConfig,
+						) => {
+							capturedBrickConfig = cfg;
+							return { unmount: async () => {} };
+						},
+					}),
+				};
+			},
+			location: {
+				search: "",
+				pathname: `/Oceanview${propertyId}/${langCode === "en" ? "index.html" : `${langCode}.html`}`,
+				href: "",
+			},
+			getPageConfig: () => ({
+				pageId: `Oceanview${propertyId}`,
+				lang: langCode,
+				assetPrefix: "../",
+				apiBase: "../api/",
+				i18n: {},
+			}),
+			t: (k: string, _p?: unknown, fb?: string) => fb ?? k,
+			addEventListener: () => {},
+		},
+		document: {
+			documentElement: { lang: langCode },
+			head: { appendChild: () => {} },
+			createElement: (tag: string) =>
+				tag.toLowerCase() === "script"
+					? { ...scriptStub }
+					: createBookingTestNode("", tag.toUpperCase()),
+			getElementsByTagName: () => [scriptStub],
+			querySelector: () => null,
+			querySelectorAll: () => [],
+			getElementById: (id: string) => nodesById.get(id) || null,
+			addEventListener: (evt: string, fn: () => void) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+		},
+		sessionStorage: {
+			getItem: (k: string) => sessionStore.get(k) ?? null,
+			setItem: (k: string, v: string) => {
+				sessionStore.set(k, v);
+			},
+		},
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		fetch: async (url: string) => {
+			if (url.includes("book-request.php")) {
+				return {
+					ok: true,
+					json: async () => bookRequestResponse,
+				};
+			}
+			if (url.includes("payment.php")) {
+				return {
+					ok: true,
+					json: async () => paymentResponse,
+				};
+			}
+			return { ok: true, json: async () => [] };
+		},
+		Intl,
+		Date,
+		URLSearchParams,
+		FormData: class {},
+		console: { log: () => {}, warn: () => {}, error: () => {} },
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+	for (const fn of docListeners.DOMContentLoaded || []) fn();
+	await new Promise((r) => setTimeout(r, 15));
+
+	const nextMonthBtn = nodesById.get("btn-next-month");
+	assert.ok(nextMonthBtn);
+	nextMonthBtn.dispatchEvent("click");
+	const calendarGridNode = nodesById.get("calendar-grid");
+	assert.ok(calendarGridNode);
+	const gridChildren = calendarGridNode.querySelectorAll("*");
+	gridChildren[10].dispatchEvent("click");
+	gridChildren[14].dispatchEvent("click");
+	formCheckIn.value = checkIn;
+	formCheckOut.value = checkOut;
+
+	directBookingForm.dispatchEvent("submit");
+	await new Promise((r) => setTimeout(r, 20));
+	const onSubmit = capturedBrickConfig?.callbacks?.onSubmit;
+	assert.ok(onSubmit);
+
+	await onSubmit({
+		selectedPaymentMethod: paymentMethod,
+		formData: paymentMethod === "credit_card" ? { token: "tok_123" } : {},
+	});
+
+	return {
+		redirectedHref: sandbox.window.location.href,
+		sessionStore,
+		formCheckInValue: formCheckIn.value,
+		formCheckOutValue: formCheckOut.value,
+	};
+};
+
 test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUCCESS_THEME & getRegistryPagePath, approved checkout redirect + sessionStorage persistence, and reservation code DOM hydration (#264)", async () => {
 	const { getRegistryPagePath } = await import("../../src/constants/config");
 	assert.equal(getRegistryPagePath("en", "../"), "../registry/index.html");
@@ -3653,298 +3993,40 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 		"utf-8",
 	);
 
-	interface MockNode {
-		id: string;
-		tagName: string;
-		textContent: string;
-		innerHTML: string;
-		className: string;
-		value: string;
-		href: string;
-		disabled: boolean;
-		checked: boolean;
-		style: Record<string, string>;
-		classList: {
-			add: (...cls: string[]) => void;
-			remove: (...cls: string[]) => void;
-			contains: (c: string) => boolean;
-		};
-		getAttribute: (k: string) => string | null;
-		setAttribute: (k: string, v: string) => void;
-		removeAttribute: (k: string) => void;
-		addEventListener: (evt: string, fn: (e?: unknown) => void) => void;
-		dispatchEvent: (evt: string, payload?: Record<string, unknown>) => void;
-		appendChild: (child: MockNode) => MockNode;
-		querySelector: (sel: string) => MockNode | null;
-		querySelectorAll: (sel: string) => MockNode[];
-	}
-
-	const createNode = (
-		id: string,
-		tagName = "DIV",
-		initialClasses: string[] = [],
-		initialAttrs: Record<string, string> = {},
-	): MockNode => {
-		const classes = new Set<string>(initialClasses);
-		const attrs = new Map<string, string>(Object.entries(initialAttrs));
-		const listeners: Record<string, Array<(e?: unknown) => void>> = {};
-		const children: MockNode[] = [];
-
-		const node: MockNode = {
-			id,
-			tagName,
-			textContent: "",
-			innerHTML: "",
-			className: initialClasses.join(" "),
-			value: initialAttrs.value || "",
-			href: initialAttrs.href || "",
-			disabled: false,
-			checked: false,
-			style: {},
-			classList: {
-				add: (...cls: string[]) => {
-					for (const c of cls) classes.add(c);
-				},
-				remove: (...cls: string[]) => {
-					for (const c of cls) classes.delete(c);
-				},
-				contains: (c: string) => classes.has(c),
+	for (const langCode of ["en", "es"] as const) {
+		const {
+			redirectedHref,
+			sessionStore,
+			formCheckInValue,
+			formCheckOutValue,
+		} = await runBookingPaymentRedirectHarness({
+			mainJsCode,
+			langCode,
+			propertyId: "1707",
+			paymentMethod: "credit_card",
+			guestName: "Mateo Restrepo",
+			guestEmail: "mateo@example.com",
+			guestPhone: "+573001112233",
+			checkIn: "2026-12-10",
+			checkOut: "2026-12-14",
+			bookRequestResponse: {
+				success: true,
+				total_price: 1900000,
+				reservation_uid: "ovf_res_264",
 			},
-			getAttribute: (k: string) => attrs.get(k) ?? null,
-			setAttribute: (k: string, v: string) => {
-				attrs.set(k, v);
-				if (k === "href") node.href = v;
+			paymentResponse: {
+				success: true,
+				status: "approved",
+				payment_id: "mp_pay_777",
+				reservation_code: "ovf_res_264",
 			},
-			removeAttribute: (k: string) => {
-				attrs.delete(k);
-			},
-			addEventListener: (evt: string, fn: (e?: unknown) => void) => {
-				listeners[evt] = listeners[evt] || [];
-				listeners[evt].push(fn);
-			},
-			dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
-				for (const fn of listeners[evt] || []) {
-					fn({
-						target: node,
-						preventDefault: () => {},
-						stopPropagation: () => {},
-						...payload,
-					});
-				}
-			},
-			appendChild: (child: MockNode) => {
-				children.push(child);
-				return child;
-			},
-			querySelector: () => null,
-			querySelectorAll: () => children,
-		};
-		return node;
-	};
-
-	const runApprovedPaymentRedirectTest = async (langCode: "en" | "es") => {
-		let capturedBrickConfig: {
-			callbacks?: {
-				onSubmit?: (args: {
-					selectedPaymentMethod: string;
-					formData: Record<string, unknown>;
-				}) => Promise<unknown>;
-			};
-		} | null = null;
-		const sessionStore = new Map<string, string>();
-
-		const calendarWidget = createNode("calendar-widget", "DIV", [], {
-			"data-lang": langCode,
-			"data-month-names": JSON.stringify({
-				[langCode]: Array(12).fill("Month"),
-			}),
-			"data-day-names": JSON.stringify({
-				[langCode]: Array(7).fill("D"),
-			}),
-		});
-		const directBookingForm = createNode("direct-booking-form", "FORM", [], {
-			"data-mp-public-key": "TEST-KEY",
-		});
-		const guestNameInput = createNode("booking-guest-name", "INPUT", [], {
-			value: "Mateo Restrepo",
-		});
-		const guestEmailInput = createNode("booking-guest-email", "INPUT", [], {
-			value: "mateo@example.com",
-		});
-		const guestPhoneInput = createNode("booking-guest-phone", "INPUT", [], {
-			value: "+573001112233",
-		});
-		const captchaResponseInput = createNode(
-			"booking-captcha-response",
-			"INPUT",
-			[],
-			{ value: "7" },
-		);
-		const privacyConsentInput = createNode("booking-privacy-consent", "INPUT");
-		privacyConsentInput.checked = true;
-		const formCheckIn = createNode("form-check-in-date", "INPUT", [], {
-			value: "2026-12-10",
-		});
-		const formCheckOut = createNode("form-check-out-date", "INPUT", [], {
-			value: "2026-12-14",
-		});
-		const btnBook = createNode("btn-book", "A", [], {
-			"data-airbnb-url": "https://airbnb.com/rooms/1707",
-			"data-text-ready": "Ready",
-			"data-text-default": "Default",
-		});
-
-		const nodesById = new Map<string, MockNode>([
-			["calendar-widget", calendarWidget],
-			["btn-prev-month", createNode("btn-prev-month", "BUTTON")],
-			["btn-next-month", createNode("btn-next-month", "BUTTON")],
-			["month-label", createNode("month-label", "SPAN")],
-			["calendar-grid", createNode("calendar-grid", "DIV")],
-			["check-in-display", createNode("check-in-display", "DIV")],
-			["check-out-display", createNode("check-out-display", "DIV")],
-			["btn-book", btnBook],
-			["btn-book-text", createNode("btn-book-text", "SPAN")],
-			["direct-booking-form", directBookingForm],
-			["booking-guest-name", guestNameInput],
-			["booking-guest-email", guestEmailInput],
-			["booking-guest-phone", guestPhoneInput],
-			["booking-captcha-response", captchaResponseInput],
-			["booking-privacy-consent", privacyConsentInput],
-			["form-check-in-date", formCheckIn],
-			["form-check-out-date", formCheckOut],
-			["payment-brick-container", createNode("payment-brick-container", "DIV")],
-		]);
-
-		const docListeners: Record<string, Array<() => void>> = {};
-		const scriptStub = {
-			async: false,
-			src: "",
-			parentNode: { insertBefore: () => {} },
-		};
-
-		const sandbox = {
-			window: {
-				_paq: [] as unknown[],
-				scrollY: 0,
-				MercadoPago: function () {
-					return {
-						bricks: () => ({
-							create: async (
-								_type: string,
-								_container: string,
-								cfg: typeof capturedBrickConfig,
-							) => {
-								capturedBrickConfig = cfg;
-								return { unmount: async () => {} };
-							},
-						}),
-					};
-				},
-				location: {
-					search: "",
-					pathname: `/Oceanview1707/${langCode === "en" ? "index.html" : `${langCode}.html`}`,
-					href: "",
-				},
-				getPageConfig: () => ({
-					pageId: "Oceanview1707",
-					lang: langCode,
-					assetPrefix: "../",
-					apiBase: "../api/",
-					i18n: {},
-				}),
-				t: (k: string, _p?: unknown, fb?: string) => fb ?? k,
-				addEventListener: () => {},
-			},
-			document: {
-				documentElement: { lang: langCode },
-				head: { appendChild: () => {} },
-				createElement: (tag: string) =>
-					tag.toLowerCase() === "script"
-						? { ...scriptStub }
-						: createNode("", tag.toUpperCase()),
-				getElementsByTagName: () => [scriptStub],
-				querySelector: () => null,
-				querySelectorAll: () => [],
-				getElementById: (id: string) => nodesById.get(id) || null,
-				addEventListener: (evt: string, fn: () => void) => {
-					docListeners[evt] = docListeners[evt] || [];
-					docListeners[evt].push(fn);
-				},
-			},
-			sessionStorage: {
-				getItem: (k: string) => sessionStore.get(k) ?? null,
-				setItem: (k: string, v: string) => {
-					sessionStore.set(k, v);
-				},
-			},
-			localStorage: {
-				getItem: () => null,
-				setItem: () => {},
-			},
-			fetch: async (url: string) => {
-				if (url.includes("book-request.php")) {
-					return {
-						ok: true,
-						json: async () => ({
-							success: true,
-							total_price: 1900000,
-							reservation_uid: "ovf_res_264",
-						}),
-					};
-				}
-				if (url.includes("payment.php")) {
-					return {
-						ok: true,
-						json: async () => ({
-							success: true,
-							status: "approved",
-							payment_id: "mp_pay_777",
-							reservation_code: "ovf_res_264",
-						}),
-					};
-				}
-				return { ok: true, json: async () => [] };
-			},
-			Intl,
-			Date,
-			URLSearchParams,
-			FormData: class {},
-			console: { log: () => {}, warn: () => {}, error: () => {} },
-		};
-
-		vm.createContext(sandbox);
-		vm.runInContext(mainJsCode, sandbox);
-		for (const fn of docListeners.DOMContentLoaded || []) fn();
-		await new Promise((r) => setTimeout(r, 15));
-
-		// Select two future dates on the calendar so checkIn and checkOut are set
-		const nextMonthBtn = nodesById.get("btn-next-month");
-		assert.ok(nextMonthBtn);
-		nextMonthBtn.dispatchEvent("click");
-		const calendarGridNode = nodesById.get("calendar-grid");
-		assert.ok(calendarGridNode);
-		const gridChildren = calendarGridNode.querySelectorAll("*");
-		gridChildren[10].dispatchEvent("click");
-		gridChildren[14].dispatchEvent("click");
-		formCheckIn.value = "2026-12-10";
-		formCheckOut.value = "2026-12-14";
-
-		// Submit direct booking form to initialize Payment Brick
-		directBookingForm.dispatchEvent("submit");
-		await new Promise((r) => setTimeout(r, 20));
-		const onSubmit = capturedBrickConfig?.callbacks?.onSubmit;
-		assert.ok(onSubmit);
-
-		await onSubmit({
-			selectedPaymentMethod: "credit_card",
-			formData: { token: "tok_123" },
 		});
 
 		const expectedTarget =
 			langCode === "en"
 				? "../booking-success/index.html?id=mp_pay_777&code=ovf_res_264&status=approved"
 				: `../booking-success/${langCode}.html?id=mp_pay_777&code=ovf_res_264&status=approved`;
-		assert.equal(sandbox.window.location.href, expectedTarget);
+		assert.equal(redirectedHref, expectedTarget);
 		assert.equal(sessionStore.get("ovf_last_reservation_code"), "ovf_res_264");
 		const savedContext = JSON.parse(
 			sessionStore.get("ovf_checkout_context") || "{}",
@@ -3955,13 +4037,10 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 			guest_email: "mateo@example.com",
 			guest_phone: "+573001112233",
 			property_id: "1707",
-			check_in: formCheckIn.value,
-			check_out: formCheckOut.value,
+			check_in: formCheckInValue,
+			check_out: formCheckOutValue,
 		});
-	};
-
-	await runApprovedPaymentRedirectTest("en");
-	await runApprovedPaymentRedirectTest("es");
+	}
 
 	// 4. Verify DOMContentLoaded hydration on booking-success (via URL query string AND via sessionStorage fallback)
 	const runConfirmationHydrationTest = async (
@@ -3978,27 +4057,41 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 		assert.ok(configMatchEs);
 		const configJson = configMatchEs[1];
 
-		const refBox = createNode("booking-reference-box", "DIV", ["hidden"]);
-		const codeDisplay = createNode("display-reservation-code", "SPAN");
-		const copyBtn = createNode("btn-copy-reservation-code", "BUTTON");
-		const copyFeedback = createNode("copy-code-feedback", "SPAN", ["hidden"]);
-		const registryBtn = createNode("btn-booking-registry", "A", [], {
+		const refBox = createBookingTestNode("booking-reference-box", "DIV", [
+			"hidden",
+		]);
+		const codeDisplay = createBookingTestNode(
+			"display-reservation-code",
+			"SPAN",
+		);
+		const copyBtn = createBookingTestNode(
+			"btn-copy-reservation-code",
+			"BUTTON",
+		);
+		const copyFeedback = createBookingTestNode("copy-code-feedback", "SPAN", [
+			"hidden",
+		]);
+		const registryBtn = createBookingTestNode("btn-booking-registry", "A", [], {
 			href: "../registry/es.html",
 		});
-		const guideBtn = createNode("btn-booking-guide", "A", [], {
+		const guideBtn = createBookingTestNode("btn-booking-guide", "A", [], {
 			href: "../guide/es.html",
 		});
-		const homeBtn = createNode("btn-booking-home", "A", [], {
+		const homeBtn = createBookingTestNode("btn-booking-home", "A", [], {
 			href: "../es.html",
 		});
 
-		const langGroup = createNode("lang-toggle-group", "DIV");
-		const langEnLink = createNode("lang-en", "A", [], { href: "index.html" });
-		const langFrLink = createNode("lang-fr", "A", [], { href: "fr.html" });
+		const langGroup = createBookingTestNode("lang-toggle-group", "DIV");
+		const langEnLink = createBookingTestNode("lang-en", "A", [], {
+			href: "index.html",
+		});
+		const langFrLink = createBookingTestNode("lang-fr", "A", [], {
+			href: "fr.html",
+		});
 		langGroup.appendChild(langEnLink);
 		langGroup.appendChild(langFrLink);
 
-		const mapById = new Map<string, MockNode>([
+		const mapById = new Map<string, BookingTestNode>([
 			["booking-reference-box", refBox],
 			["display-reservation-code", codeDisplay],
 			["btn-copy-reservation-code", copyBtn],
@@ -4365,7 +4458,7 @@ test("registry.js pre-fills Primary Guest email, phone, and fallback name from s
 		};
 	};
 
-	// Scenario A: Matching code via ?code=ovf_res_266 pre-fills email, phone, and splits multi-part guest_name alongside lookup stay metadata
+	// Scenario A: Matching code via ?code=ovf_res_266 pre-fills email, phone, and splits multi-part guest_name from sessionStorage fallback when lookup guest_name is empty
 	const matchingResult = await runRegistryScenario({
 		search: "?code=ovf_res_266",
 		sessionStorageRaw: JSON.stringify({
@@ -4388,7 +4481,24 @@ test("registry.js pre-fills Primary Guest email, phone, and fallback name from s
 	assert.equal(matchingResult.checkIn, "2027-02-10");
 	assert.equal(matchingResult.checkOut, "2027-02-14");
 
-	// Scenario B: Matching code via ?reservation_code=ovf_res_266 does not overwrite existing/user-entered values
+	// Scenario A2: Authoritative r.guest_name from registry-lookup.php takes precedence over ovf_checkout_context.guest_name fallback
+	const authoritativeNameResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_res_266",
+			guest_name: "Fallback Session Name",
+			guest_email: "camila@example.com",
+			guest_phone: "+573109998877",
+		}),
+		lookupGuestName: "Valeria Sofia Morales",
+	});
+	assert.equal(authoritativeNameResult.email, "camila@example.com");
+	assert.equal(authoritativeNameResult.phone, "+573109998877");
+	assert.equal(authoritativeNameResult.fullName, "Valeria Sofia Morales");
+	assert.equal(authoritativeNameResult.firstName, "Valeria Sofia");
+	assert.equal(authoritativeNameResult.lastName, "Morales");
+
+	// Scenario B: Matching code via ?reservation_code=ovf_res_266 does not overwrite existing/user-entered values (even when lookup returns r.guest_name)
 	const preserveExistingResult = await runRegistryScenario({
 		search: "?reservation_code=ovf_res_266",
 		sessionStorageRaw: JSON.stringify({
@@ -4397,6 +4507,7 @@ test("registry.js pre-fills Primary Guest email, phone, and fallback name from s
 			guest_email: "camila@example.com",
 			guest_phone: "+573109998877",
 		}),
+		lookupGuestName: "Server Name",
 		initialEmail: "custom@example.com",
 		initialPhone: "+18005551234",
 		initialFirstName: "manual-first",
@@ -4600,310 +4711,50 @@ test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PEN
 		"utf-8",
 	);
 
-	interface MockNode {
-		id: string;
-		tagName: string;
-		textContent: string;
-		innerHTML: string;
-		className: string;
-		value: string;
-		href: string;
-		disabled: boolean;
-		checked: boolean;
-		style: Record<string, string>;
-		classList: {
-			add: (...cls: string[]) => void;
-			remove: (...cls: string[]) => void;
-			contains: (c: string) => boolean;
-		};
-		getAttribute: (k: string) => string | null;
-		setAttribute: (k: string, v: string) => void;
-		removeAttribute: (k: string) => void;
-		addEventListener: (evt: string, fn: (e?: unknown) => void) => void;
-		dispatchEvent: (evt: string, payload?: Record<string, unknown>) => void;
-		appendChild: (child: MockNode) => MockNode;
-		querySelector: (sel: string) => MockNode | null;
-		querySelectorAll: (sel: string) => MockNode[];
-	}
-
-	const createNode = (
-		id: string,
-		tagName = "DIV",
-		initialClasses: string[] = [],
-		initialAttrs: Record<string, string> = {},
-	): MockNode => {
-		const classes = new Set<string>(initialClasses);
-		const attrs = new Map<string, string>(Object.entries(initialAttrs));
-		const listeners: Record<string, Array<(e?: unknown) => void>> = {};
-		const children: MockNode[] = [];
-
-		const node: MockNode = {
-			id,
-			tagName,
-			textContent: "",
-			innerHTML: "",
-			className: initialClasses.join(" "),
-			value: initialAttrs.value || "",
-			href: initialAttrs.href || "",
-			disabled: false,
-			checked: false,
-			style: {},
-			classList: {
-				add: (...cls: string[]) => {
-					for (const c of cls) classes.add(c);
-				},
-				remove: (...cls: string[]) => {
-					for (const c of cls) classes.delete(c);
-				},
-				contains: (c: string) => classes.has(c),
-			},
-			getAttribute: (k: string) => attrs.get(k) ?? null,
-			setAttribute: (k: string, v: string) => {
-				attrs.set(k, v);
-				if (k === "href") node.href = v;
-			},
-			removeAttribute: (k: string) => {
-				attrs.delete(k);
-			},
-			addEventListener: (evt: string, fn: (e?: unknown) => void) => {
-				listeners[evt] = listeners[evt] || [];
-				listeners[evt].push(fn);
-			},
-			dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
-				for (const fn of listeners[evt] || []) {
-					fn({
-						target: node,
-						preventDefault: () => {},
-						stopPropagation: () => {},
-						...payload,
-					});
-				}
-			},
-			appendChild: (child: MockNode) => {
-				children.push(child);
-				return child;
-			},
-			querySelector: () => null,
-			querySelectorAll: () => children,
-		};
-		return node;
-	};
-
 	const runPendingPaymentRedirectTest = async (
 		langCode: "en" | "es",
 		paymentMethod: "efecty" | "credit_card",
 	) => {
-		let capturedBrickConfig: {
-			callbacks?: {
-				onSubmit?: (args: {
-					selectedPaymentMethod: string;
-					formData: Record<string, unknown>;
-				}) => Promise<unknown>;
-			};
-		} | null = null;
-		const sessionStore = new Map<string, string>();
-
-		const calendarWidget = createNode("calendar-widget", "DIV", [], {
-			"data-lang": langCode,
-			"data-month-names": JSON.stringify({
-				[langCode]: Array(12).fill("Month"),
-			}),
-			"data-day-names": JSON.stringify({
-				[langCode]: Array(7).fill("D"),
-			}),
-		});
-		const directBookingForm = createNode("direct-booking-form", "FORM", [], {
-			"data-mp-public-key": "TEST-KEY",
-		});
-		const guestNameInput = createNode("booking-guest-name", "INPUT", [], {
-			value: "Camila Vargas",
-		});
-		const guestEmailInput = createNode("booking-guest-email", "INPUT", [], {
-			value: "camila@example.com",
-		});
-		const guestPhoneInput = createNode("booking-guest-phone", "INPUT", [], {
-			value: "+573109998877",
-		});
-		const captchaResponseInput = createNode(
-			"booking-captcha-response",
-			"INPUT",
-			[],
-			{ value: "7" },
-		);
-		const privacyConsentInput = createNode("booking-privacy-consent", "INPUT");
-		privacyConsentInput.checked = true;
-		const formCheckIn = createNode("form-check-in-date", "INPUT", [], {
-			value: "2026-12-18",
-		});
-		const formCheckOut = createNode("form-check-out-date", "INPUT", [], {
-			value: "2026-12-22",
-		});
-		const btnBook = createNode("btn-book", "A", [], {
-			"data-airbnb-url": "https://airbnb.com/rooms/1606",
-			"data-text-ready": "Ready",
-			"data-text-default": "Default",
-		});
-
-		const nodesById = new Map<string, MockNode>([
-			["calendar-widget", calendarWidget],
-			["btn-prev-month", createNode("btn-prev-month", "BUTTON")],
-			["btn-next-month", createNode("btn-next-month", "BUTTON")],
-			["month-label", createNode("month-label", "SPAN")],
-			["calendar-grid", createNode("calendar-grid", "DIV")],
-			["check-in-display", createNode("check-in-display", "DIV")],
-			["check-out-display", createNode("check-out-display", "DIV")],
-			["btn-book", btnBook],
-			["btn-book-text", createNode("btn-book-text", "SPAN")],
-			["direct-booking-form", directBookingForm],
-			["booking-guest-name", guestNameInput],
-			["booking-guest-email", guestEmailInput],
-			["booking-guest-phone", guestPhoneInput],
-			["booking-captcha-response", captchaResponseInput],
-			["booking-privacy-consent", privacyConsentInput],
-			["form-check-in-date", formCheckIn],
-			["form-check-out-date", formCheckOut],
-			["payment-brick-container", createNode("payment-brick-container", "DIV")],
-		]);
-
-		const docListeners: Record<string, Array<() => void>> = {};
-		const scriptStub = {
-			async: false,
-			src: "",
-			parentNode: { insertBefore: () => {} },
-		};
-
-		const sandbox = {
-			window: {
-				_paq: [] as unknown[],
-				scrollY: 0,
-				MercadoPago: function () {
-					return {
-						bricks: () => ({
-							create: async (
-								_type: string,
-								_container: string,
-								cfg: typeof capturedBrickConfig,
-							) => {
-								capturedBrickConfig = cfg;
-								return { unmount: async () => {} };
-							},
-						}),
-					};
+		const { redirectedHref, sessionStore } =
+			await runBookingPaymentRedirectHarness({
+				mainJsCode,
+				langCode,
+				propertyId: "1606",
+				paymentMethod,
+				guestName: "Camila Vargas",
+				guestEmail: "camila@example.com",
+				guestPhone: "+573109998877",
+				checkIn: "2026-12-18",
+				checkOut: "2026-12-22",
+				bookRequestResponse: {
+					success: true,
+					total_price: 1650000,
+					reservation_uid: "ovf_res_265",
 				},
-				location: {
-					search: "",
-					pathname: `/Oceanview1606/${langCode === "en" ? "index.html" : `${langCode}.html`}`,
-					href: "",
+				paymentResponse: {
+					success: true,
+					status: "pending",
+					payment_id: "mp_pay_888",
+					reservation_code: "ovf_res_265",
+					barcode: "770999888111",
+					verification_code: "110500",
+					printable_voucher_url:
+						"https://www.mercadopago.com.co/payments/888/ticket",
 				},
-				getPageConfig: () => ({
-					pageId: "Oceanview1606",
-					lang: langCode,
-					assetPrefix: "../",
-					apiBase: "../api/",
-					i18n: {},
-				}),
-				t: (k: string, _p?: unknown, fb?: string) => fb ?? k,
-				addEventListener: () => {},
-			},
-			document: {
-				documentElement: { lang: langCode },
-				head: { appendChild: () => {} },
-				createElement: (tag: string) =>
-					tag.toLowerCase() === "script"
-						? { ...scriptStub }
-						: createNode("", tag.toUpperCase()),
-				getElementsByTagName: () => [scriptStub],
-				querySelector: () => null,
-				querySelectorAll: () => [],
-				getElementById: (id: string) => nodesById.get(id) || null,
-				addEventListener: (evt: string, fn: () => void) => {
-					docListeners[evt] = docListeners[evt] || [];
-					docListeners[evt].push(fn);
-				},
-			},
-			sessionStorage: {
-				getItem: (k: string) => sessionStore.get(k) ?? null,
-				setItem: (k: string, v: string) => {
-					sessionStore.set(k, v);
-				},
-			},
-			localStorage: {
-				getItem: () => null,
-				setItem: () => {},
-			},
-			fetch: async (url: string) => {
-				if (url.includes("book-request.php")) {
-					return {
-						ok: true,
-						json: async () => ({
-							success: true,
-							total_price: 1650000,
-							reservation_uid: "ovf_res_265",
-						}),
-					};
-				}
-				if (url.includes("payment.php")) {
-					return {
-						ok: true,
-						json: async () => ({
-							success: true,
-							status: "pending",
-							payment_id: "mp_pay_888",
-							reservation_code: "ovf_res_265",
-							barcode: "770999888111",
-							verification_code: "110500",
-							printable_voucher_url:
-								"https://www.mercadopago.com.co/payments/888/ticket",
-						}),
-					};
-				}
-				return { ok: true, json: async () => [] };
-			},
-			Intl,
-			Date,
-			URLSearchParams,
-			FormData: class {},
-			console: { log: () => {}, warn: () => {}, error: () => {} },
-		};
-
-		vm.createContext(sandbox);
-		vm.runInContext(mainJsCode, sandbox);
-		for (const fn of docListeners.DOMContentLoaded || []) fn();
-		await new Promise((r) => setTimeout(r, 15));
-
-		const nextMonthBtn = nodesById.get("btn-next-month");
-		assert.ok(nextMonthBtn);
-		nextMonthBtn.dispatchEvent("click");
-		const calendarGridNode = nodesById.get("calendar-grid");
-		assert.ok(calendarGridNode);
-		const gridChildren = calendarGridNode.querySelectorAll("*");
-		gridChildren[10].dispatchEvent("click");
-		gridChildren[14].dispatchEvent("click");
-		formCheckIn.value = "2026-12-18";
-		formCheckOut.value = "2026-12-22";
-
-		directBookingForm.dispatchEvent("submit");
-		await new Promise((r) => setTimeout(r, 20));
-		const onSubmit = capturedBrickConfig?.callbacks?.onSubmit;
-		assert.ok(onSubmit);
-
-		await onSubmit({
-			selectedPaymentMethod: paymentMethod,
-			formData: {},
-		});
+			});
 
 		const basePage =
 			langCode === "en"
 				? "../booking-pending/index.html"
 				: `../booking-pending/${langCode}.html`;
 		assert.ok(
-			sandbox.window.location.href.startsWith(`${basePage}?`),
-			`Pending ${paymentMethod} payment must redirect to ${basePage}, never /booking-success (got ${sandbox.window.location.href})`,
+			redirectedHref.startsWith(`${basePage}?`),
+			`Pending ${paymentMethod} payment must redirect to ${basePage}, never /booking-success (got ${redirectedHref})`,
 		);
-		assert.ok(!sandbox.window.location.href.includes("booking-success"));
+		assert.ok(!redirectedHref.includes("booking-success"));
 
 		const redirectedQuery = new URLSearchParams(
-			sandbox.window.location.href.split("?")[1] || "",
+			redirectedHref.split("?")[1] || "",
 		);
 		assert.equal(redirectedQuery.get("id"), "mp_pay_888");
 		assert.equal(redirectedQuery.get("code"), "ovf_res_265");
@@ -4941,27 +4792,54 @@ test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PEN
 		assert.ok(configMatchEs);
 		const configJson = configMatchEs[1];
 
-		const refBox = createNode("booking-reference-box", "DIV", ["hidden"]);
-		const codeDisplay = createNode("display-reservation-code", "SPAN");
-		const copyBtn = createNode("btn-copy-reservation-code", "BUTTON");
-		const copyFeedback = createNode("copy-code-feedback", "SPAN", ["hidden"]);
-		const voucherBox = createNode("pending-voucher-box", "DIV", ["hidden"]);
-		const voucherBarcode = createNode("display-voucher-barcode", "SPAN");
-		const voucherVerifCode = createNode("display-voucher-verif-code", "SPAN");
-		const btnPrintVoucher = createNode("btn-print-voucher", "A", ["hidden"], {
-			href: "#",
-		});
-		const homeBtn = createNode("btn-pending-home", "A", [], {
+		const refBox = createBookingTestNode("booking-reference-box", "DIV", [
+			"hidden",
+		]);
+		const codeDisplay = createBookingTestNode(
+			"display-reservation-code",
+			"SPAN",
+		);
+		const copyBtn = createBookingTestNode(
+			"btn-copy-reservation-code",
+			"BUTTON",
+		);
+		const copyFeedback = createBookingTestNode("copy-code-feedback", "SPAN", [
+			"hidden",
+		]);
+		const voucherBox = createBookingTestNode("pending-voucher-box", "DIV", [
+			"hidden",
+		]);
+		const voucherBarcode = createBookingTestNode(
+			"display-voucher-barcode",
+			"SPAN",
+		);
+		const voucherVerifCode = createBookingTestNode(
+			"display-voucher-verif-code",
+			"SPAN",
+		);
+		const btnPrintVoucher = createBookingTestNode(
+			"btn-print-voucher",
+			"A",
+			["hidden"],
+			{
+				href: "#",
+			},
+		);
+		const homeBtn = createBookingTestNode("btn-pending-home", "A", [], {
 			href: "../es.html",
 		});
 
-		const langGroup = createNode("lang-toggle-group", "DIV");
-		const langEnLink = createNode("lang-en", "A", [], { href: "index.html" });
-		const langDeLink = createNode("lang-de", "A", [], { href: "de.html" });
+		const langGroup = createBookingTestNode("lang-toggle-group", "DIV");
+		const langEnLink = createBookingTestNode("lang-en", "A", [], {
+			href: "index.html",
+		});
+		const langDeLink = createBookingTestNode("lang-de", "A", [], {
+			href: "de.html",
+		});
 		langGroup.appendChild(langEnLink);
 		langGroup.appendChild(langDeLink);
 
-		const mapById = new Map<string, MockNode>([
+		const mapById = new Map<string, BookingTestNode>([
 			["booking-reference-box", refBox],
 			["display-reservation-code", codeDisplay],
 			["btn-copy-reservation-code", copyBtn],

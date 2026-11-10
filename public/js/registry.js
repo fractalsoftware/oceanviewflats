@@ -162,26 +162,43 @@ document.addEventListener('DOMContentLoaded', () => {
         hiddenCheckOut.value = "";
     }
 
-    function populatePrimaryGuestName(rawName) {
+    let isNameFromSessionFallback = false;
+
+    ['guest-first-name-1', 'guest-last-name-1'].forEach(inputId => {
+        const el = document.getElementById(inputId);
+        if (el) {
+            el.addEventListener('input', () => {
+                isNameFromSessionFallback = false;
+            });
+        }
+    });
+
+    function populatePrimaryGuestName(rawName, options = {}) {
         if (!rawName || typeof rawName !== 'string') return;
         const trimmedName = rawName.trim();
         if (!trimmedName) return;
+
+        const isAuthoritative = Boolean(options.authoritative);
+        const isSessionFallback = Boolean(options.fromSessionFallback);
+        const canOverwriteFallback = isAuthoritative && isNameFromSessionFallback;
 
         const guest1NameInput = document.getElementById('guest-name-1');
         const guest1FnInput = document.getElementById('guest-first-name-1');
         const guest1LnInput = document.getElementById('guest-last-name-1');
 
-        if (guest1NameInput && !guest1NameInput.value) {
+        if (guest1NameInput && (!guest1NameInput.value || canOverwriteFallback)) {
             guest1NameInput.value = trimmedName;
         }
-        if (guest1FnInput && !guest1FnInput.value && guest1LnInput && !guest1LnInput.value) {
+        if (guest1FnInput && guest1LnInput && ((!guest1FnInput.value && !guest1LnInput.value) || canOverwriteFallback)) {
             const parts = trimmedName.split(/\s+/);
             if (parts.length > 1) {
                 guest1FnInput.value = parts.slice(0, -1).join(' ');
                 guest1LnInput.value = parts[parts.length - 1];
             } else if (parts.length === 1) {
                 guest1FnInput.value = parts[0];
+                guest1LnInput.value = '';
             }
+            isNameFromSessionFallback = isSessionFallback;
         }
     }
 
@@ -208,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (typeof ctx.guest_name === 'string' && ctx.guest_name.trim()) {
-                populatePrimaryGuestName(ctx.guest_name);
+                populatePrimaryGuestName(ctx.guest_name, { fromSessionFallback: true });
             }
         } catch (_) {
             // Gracefully ignore unavailable or malformed sessionStorage
@@ -243,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     hiddenCheckOut.value = r.check_out;
                 }
                 if (r.guest_name) {
-                    populatePrimaryGuestName(r.guest_name);
+                    populatePrimaryGuestName(r.guest_name, { authoritative: true });
                 }
 
                 if (typeof r.max_guests === 'number' || (typeof r.max_guests === 'string' && r.max_guests !== '')) {

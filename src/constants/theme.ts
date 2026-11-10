@@ -316,7 +316,7 @@ export const HOME_THEME = {
 		"w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 min-h-[48px] bg-slate-800/80 border border-[#047857] text-[#34D399] hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 } as const;
 
-export const BOOKING_SUCCESS_THEME = {
+export const SHARED_BOOKING_STATUS_THEME = {
 	pageWrapper:
 		"min-h-screen flex flex-col bg-slate-900 font-sans text-slate-100 scroll-smooth",
 	main: "flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden",
@@ -325,21 +325,25 @@ export const BOOKING_SUCCESS_THEME = {
 	bgOverlay:
 		"absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-900/70 to-slate-950/90 backdrop-blur-[3px]",
 	cardWrapper: "relative z-10 max-w-xl w-full text-center",
+	referenceBox:
+		"hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 text-center",
+	referenceLabel:
+		"text-xs font-bold text-slate-400 tracking-wider uppercase block mb-1",
+	referenceRow: "flex items-center justify-center space-x-3",
+	copyBtn:
+		"p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors cursor-pointer",
+	copyIcon: "w-4 h-4",
+} as const;
+
+export const BOOKING_SUCCESS_THEME = {
+	...SHARED_BOOKING_STATUS_THEME,
 	card: "bg-slate-950/70 backdrop-blur-xl border border-teal-500/20 rounded-3xl p-8 md:p-12 shadow-2xl shadow-slate-950/50",
 	badgeWrapper:
 		"inline-flex p-4 bg-teal-500/10 rounded-full border border-teal-500/30 shadow-lg mb-6 animate-[pulse_2s_infinite]",
 	badgeIcon: "w-16 h-16 text-teal-400",
 	heading: "text-3xl md:text-4xl font-extrabold mb-4 tracking-tight",
 	subtitle: "text-slate-300 font-light mb-6 leading-relaxed",
-	referenceBox:
-		"hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 text-center",
-	referenceLabel:
-		"text-xs font-bold text-slate-400 tracking-wider uppercase block mb-1",
-	referenceRow: "flex items-center justify-center space-x-3",
 	referenceCode: "text-xl font-mono font-bold text-teal-300 select-all",
-	copyBtn:
-		"p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors cursor-pointer",
-	copyIcon: "w-4 h-4",
 	copyFeedback: "hidden text-xs text-teal-400 font-semibold",
 	registryNoticeBox:
 		"bg-teal-500/10 border border-teal-500/25 rounded-2xl p-4 mb-8 text-left flex items-start space-x-3",
@@ -358,14 +362,7 @@ export const BOOKING_SUCCESS_THEME = {
 } as const;
 
 export const BOOKING_PENDING_THEME = {
-	pageWrapper:
-		"min-h-screen flex flex-col bg-slate-900 font-sans text-slate-100 scroll-smooth",
-	main: "flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden",
-	bgWrapper: "absolute inset-0 w-full h-full",
-	bgImage: "w-full h-full object-cover scale-105",
-	bgOverlay:
-		"absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-900/70 to-slate-950/90 backdrop-blur-[3px]",
-	cardWrapper: "relative z-10 max-w-xl w-full text-center",
+	...SHARED_BOOKING_STATUS_THEME,
 	card: "bg-slate-950/70 backdrop-blur-xl border border-amber-500/20 rounded-3xl p-8 md:p-12 shadow-2xl shadow-slate-950/50",
 	badgeWrapper:
 		"inline-flex p-4 bg-amber-500/10 rounded-full border border-amber-500/30 shadow-lg mb-6 animate-[pulse_2.5s_infinite]",
@@ -373,15 +370,7 @@ export const BOOKING_PENDING_THEME = {
 	heading:
 		"text-3xl md:text-4xl font-extrabold mb-4 tracking-tight text-amber-100",
 	subtitle: "text-slate-300 font-light mb-8 leading-relaxed",
-	referenceBox:
-		"hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 text-center",
-	referenceLabel:
-		"text-xs font-bold text-slate-400 tracking-wider uppercase block mb-1",
-	referenceRow: "flex items-center justify-center space-x-3",
 	referenceCode: "text-xl font-mono font-bold text-amber-300 select-all",
-	copyBtn:
-		"p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors cursor-pointer",
-	copyIcon: "w-4 h-4",
 	copyFeedback: "hidden text-xs text-amber-400 font-semibold",
 	voucherBox:
 		"hidden bg-amber-500/10 border border-amber-500/25 rounded-2xl p-5 mb-8 text-left space-y-3",

@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     navigator.clipboard.writeText(code);
                 }
                 if (copyFeedback) {
-                    const copyMsg = t('guideCopySuccess', {}, copyFeedback.textContent || 'Copied!');
+                    const copyMsg = t('guideCopySuccess', {}, copyFeedback.textContent || '');
                     if (copyMsg) {
                         copyFeedback.textContent = copyMsg;
                     }
