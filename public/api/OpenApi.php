@@ -547,6 +547,20 @@ class WebhookEndpoints
         tags: ['Webhooks'],
         parameters: [
             new OA\Parameter(
+                name: 'x-signature',
+                in: 'header',
+                description: 'Mercado Pago HMAC-SHA256 webhook signature header (ts=...,v1=...)',
+                required: true,
+                schema: new OA\Schema(type: 'string', example: 'ts=1704908010,v1=618c85345248dd820d5fd456117c2ab2ef8eda45a0282ff693eac24131a5e839')
+            ),
+            new OA\Parameter(
+                name: 'x-request-id',
+                in: 'header',
+                description: 'Mercado Pago unique webhook request identifier',
+                required: true,
+                schema: new OA\Schema(type: 'string', example: 'req-987654321')
+            ),
+            new OA\Parameter(
                 name: 'id',
                 in: 'query',
                 description: 'Payment ID (IPN fallback)',
@@ -589,7 +603,12 @@ class WebhookEndpoints
             ),
             new OA\Response(
                 response: 400,
-                description: 'Invalid webhook payload or signature',
+                description: 'Invalid webhook payload',
+                content: new OA\JsonContent(ref: '#/components/schemas/ErrorResponse')
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Missing or invalid webhook cryptographic signature',
                 content: new OA\JsonContent(ref: '#/components/schemas/ErrorResponse')
             ),
             new OA\Response(
