@@ -385,7 +385,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let checkOut = null;
     let blockedDates = []; // Array of YYYY-MM-DD strings of booked dates
     
-    const lang = pageConfig.lang || widget.getAttribute('data-lang');
+    const SUPPORTED_LANGS = ['en', 'es', 'fr', 'it', 'de', 'ja'];
+    const rawWidgetLang = pageConfig.lang || widget.getAttribute('data-lang') || 'en';
+    const lang = SUPPORTED_LANGS.find(l => l === rawWidgetLang) || 'en';
     const monthNames = JSON.parse(widget.getAttribute('data-month-names'));
     const dayNames = JSON.parse(widget.getAttribute('data-day-names'));
 
@@ -1072,14 +1074,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                const currentLang = lang || pageConfig.lang || (document.documentElement && document.documentElement.lang) || 'en';
-                const assetPrefix = pageConfig.assetPrefix || '../';
-                const successPage = (currentLang === 'en' || !currentLang)
-                    ? 'booking-success/index.html'
-                    : `booking-success/${currentLang}.html`;
-                const pendingPage = (currentLang === 'en' || !currentLang)
-                    ? 'booking-pending/index.html'
-                    : `booking-pending/${currentLang}.html`;
+                const BOOKING_SUCCESS_PAGES = {
+                    en: 'booking-success/index.html',
+                    es: 'booking-success/es.html',
+                    fr: 'booking-success/fr.html',
+                    it: 'booking-success/it.html',
+                    de: 'booking-success/de.html',
+                    ja: 'booking-success/ja.html'
+                };
+                const BOOKING_PENDING_PAGES = {
+                    en: 'booking-pending/index.html',
+                    es: 'booking-pending/es.html',
+                    fr: 'booking-pending/fr.html',
+                    it: 'booking-pending/it.html',
+                    de: 'booking-pending/de.html',
+                    ja: 'booking-pending/ja.html'
+                };
+                const rawCurrentLang = lang || pageConfig.lang || (document.documentElement && document.documentElement.lang) || 'en';
+                const safeLang = Object.prototype.hasOwnProperty.call(BOOKING_SUCCESS_PAGES, rawCurrentLang) ? rawCurrentLang : 'en';
+                const assetPrefix = (pageConfig.assetPrefix === './' || pageConfig.assetPrefix === '/') ? pageConfig.assetPrefix : '../';
+                const successPage = BOOKING_SUCCESS_PAGES[safeLang];
+                const pendingPage = BOOKING_PENDING_PAGES[safeLang];
 
                 // Route dynamically based on status and method
                 if (result.status === 'approved') {
