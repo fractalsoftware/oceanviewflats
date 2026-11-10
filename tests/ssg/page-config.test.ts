@@ -4106,3 +4106,342 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 	);
 	await runConfirmationHydrationTest("", "ovf_res_264");
 });
+
+test("registry.js pre-fills Primary Guest email, phone, and fallback name from same-session ovf_checkout_context when reservation code matches, ignores mismatched or malformed sessionStorage, and registry-lookup.php omits guest_email/guest_phone (#266)", async () => {
+	// 1. Verify public/api/registry-lookup.php never exposes guest_email or guest_phone in its response payload (ADR 0001 & ADR 0012)
+	const lookupPhpSource = fs.readFileSync(
+		path.join(process.cwd(), "public", "api", "registry-lookup.php"),
+		"utf-8",
+	);
+	const responseBlockMatch = lookupPhpSource.match(
+		/send_json_response\(\s*true[\s\S]*?\);\s*$/,
+	);
+	assert.ok(
+		responseBlockMatch,
+		"registry-lookup.php must contain success send_json_response block",
+	);
+	assert.ok(
+		!responseBlockMatch[0].includes("guest_email") &&
+			!responseBlockMatch[0].includes("guestEmail") &&
+			!responseBlockMatch[0].includes("guest_phone") &&
+			!responseBlockMatch[0].includes("guestPhone"),
+		"registry-lookup.php response payload must never expose guest_email or guest_phone",
+	);
+
+	// 2. Run registry.js in node:vm across matching, non-overwriting, mismatched, malformed, and throwing sessionStorage scenarios
+	const registryJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "registry.js"),
+		"utf-8",
+	);
+
+	type Listener = (e?: Record<string, unknown>) => void;
+	const createMockElement = (
+		id: string,
+		tagName = "INPUT",
+		initialClasses: string[] = [],
+	) => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>();
+		const listeners: Record<string, Listener[]> = {};
+		const el: Record<string, unknown> = {
+			id,
+			tagName,
+			type: "text",
+			name: id,
+			value: "",
+			checked: false,
+			disabled: false,
+			required: false,
+			textContent: "",
+			href: "",
+			className: initialClasses.join(" "),
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+				if (k === "disabled") el.disabled = true;
+				if (k === "required") el.required = true;
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+				if (k === "disabled") el.disabled = false;
+				if (k === "required") el.required = false;
+			},
+			getAttribute: (k: string) => attrs.get(k) || null,
+			hasAttribute: (k: string) => attrs.has(k),
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			removeEventListener: () => {},
+			dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({ target: el, preventDefault: () => {}, ...payload });
+				}
+			},
+			querySelectorAll: () => [],
+			scrollIntoView: () => {},
+			closest: () => null,
+		};
+		return el;
+	};
+
+	const runRegistryScenario = async (options: {
+		search: string;
+		sessionStorageRaw?: string | null;
+		sessionStorageThrows?: boolean;
+		lookupGuestName?: string;
+		initialEmail?: string;
+		initialPhone?: string;
+		initialFirstName?: string;
+		initialLastName?: string;
+	}) => {
+		const elements = new Map<string, ReturnType<typeof createMockElement>>();
+		const register = (el: ReturnType<typeof createMockElement>) => {
+			elements.set(el.id as string, el);
+			return el;
+		};
+
+		const form = register(createMockElement("registry-form", "FORM"));
+		form.setAttribute("action", "../api/registry-processor.php");
+		register(createMockElement("submit-button", "BUTTON"));
+		register(createMockElement("submit-text", "SPAN"));
+		register(createMockElement("form-message", "DIV", ["hidden"]));
+		register(createMockElement("success-overlay", "DIV", ["hidden"]));
+		register(createMockElement("display-property", "SPAN"));
+		register(createMockElement("display-check-in", "SPAN"));
+		register(createMockElement("display-check-out", "SPAN"));
+		register(createMockElement("hidden-property", "INPUT"));
+		register(createMockElement("hidden-check-in", "INPUT"));
+		register(createMockElement("hidden-check-out", "INPUT"));
+		register(createMockElement("hidden-reservation-code", "INPUT"));
+		register(createMockElement("btn-unlocked-guide", "A"));
+		register(createMockElement("success-title", "H2"));
+		register(createMockElement("success-desc", "P"));
+		register(createMockElement("add-guest-button", "BUTTON"));
+		register(createMockElement("guest-count-input", "INPUT"));
+		register(createMockElement("captcha-label", "SPAN"));
+		register(createMockElement("captcha-challenge", "INPUT"));
+		register(createMockElement("captcha-response", "INPUT"));
+		register(createMockElement("privacy-consent", "INPUT"));
+		register(
+			createMockElement("minor-attestation-container", "DIV", ["hidden"]),
+		);
+		register(createMockElement("minor-guardian-consent", "INPUT"));
+
+		const guestEmail1 = register(createMockElement("guest-email-1", "INPUT"));
+		guestEmail1.value = options.initialEmail ?? "";
+		const guestPhone1 = register(createMockElement("guest-phone-1", "INPUT"));
+		guestPhone1.value = options.initialPhone ?? "";
+		const guestName1 = register(createMockElement("guest-name-1", "INPUT"));
+		guestName1.type = "hidden";
+		const guestFn1 = register(createMockElement("guest-first-name-1", "INPUT"));
+		guestFn1.value = options.initialFirstName ?? "";
+		const guestLn1 = register(createMockElement("guest-last-name-1", "INPUT"));
+		guestLn1.value = options.initialLastName ?? "";
+
+		for (let num = 1; num <= 12; num++) {
+			const card = register(
+				createMockElement(
+					`guest-card-${num}`,
+					"DIV",
+					num === 1 ? [] : ["hidden"],
+				),
+			);
+			const age = register(createMockElement(`guest-age-${num}`, "INPUT"));
+			const docType = register(
+				createMockElement(`guest-doc-type-${num}`, "SELECT"),
+			);
+			card.querySelectorAll = () =>
+				num === 1
+					? [
+							guestEmail1,
+							guestPhone1,
+							guestName1,
+							guestFn1,
+							guestLn1,
+							age,
+							docType,
+						]
+					: [age, docType];
+		}
+
+		let domReadyCallback: Listener | null = null;
+		const sessionStorageMock = {
+			getItem: (key: string) => {
+				if (options.sessionStorageThrows) {
+					throw new Error("SecurityError: sessionStorage disabled");
+				}
+				if (key === "ovf_checkout_context") {
+					return options.sessionStorageRaw ?? null;
+				}
+				return null;
+			},
+		};
+
+		const sandbox = {
+			document: {
+				documentElement: { lang: "en" },
+				addEventListener: (evt: string, fn: Listener) => {
+					if (evt === "DOMContentLoaded") domReadyCallback = fn;
+				},
+				getElementById: (id: string) => elements.get(id) || null,
+			},
+			window: {
+				location: {
+					search: options.search,
+					origin: "https://oceanviewflats.com",
+				},
+				sessionStorage: sessionStorageMock,
+				getPageConfig: () => ({
+					lang: "en",
+					assetPrefix: "../",
+					apiBase: "../api/",
+					minorDocTypes: ["Tarjeta de Identidad", "Registro Civil"],
+				}),
+				t: (key: string, _params?: unknown, fallback?: string) =>
+					fallback || key,
+				scrollTo: () => {},
+			},
+			sessionStorage: sessionStorageMock,
+			URLSearchParams,
+			URL,
+			Intl,
+			Date,
+			FormData: class {},
+			fetch: async (url: string) => {
+				if (url.includes("registry-lookup.php")) {
+					return {
+						ok: true,
+						status: 200,
+						json: async () => ({
+							success: true,
+							status: "success",
+							reservation: {
+								reservation_uid: "ovf_res_266",
+								property_id: "1707",
+								check_in: "2027-02-10",
+								check_out: "2027-02-14",
+								guest_name: options.lookupGuestName ?? "",
+								status: "confirmed",
+								registry_completed: false,
+								max_guests: 6,
+							},
+						}),
+					};
+				}
+				return {
+					ok: true,
+					status: 200,
+					json: async () => ({ challenge: "4 + 1", signature: "sig" }),
+				};
+			},
+			console: { error: () => {}, warn: () => {} },
+			setTimeout,
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(registryJsCode, sandbox);
+		assert.ok(domReadyCallback);
+		(domReadyCallback as Listener)();
+		await new Promise((r) => setTimeout(r, 15));
+
+		return {
+			email: guestEmail1.value as string,
+			phone: guestPhone1.value as string,
+			fullName: guestName1.value as string,
+			firstName: guestFn1.value as string,
+			lastName: guestLn1.value as string,
+			property: elements.get("hidden-property")?.value as string,
+			checkIn: elements.get("hidden-check-in")?.value as string,
+			checkOut: elements.get("hidden-check-out")?.value as string,
+		};
+	};
+
+	// Scenario A: Matching code via ?code=ovf_res_266 pre-fills email, phone, and splits multi-part guest_name alongside lookup stay metadata
+	const matchingResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_res_266",
+			guest_name: "Camila Andrea Restrepo",
+			guest_email: "camila@example.com",
+			guest_phone: "+573109998877",
+			property_id: "1707",
+			check_in: "2027-02-10",
+			check_out: "2027-02-14",
+		}),
+		lookupGuestName: "",
+	});
+	assert.equal(matchingResult.email, "camila@example.com");
+	assert.equal(matchingResult.phone, "+573109998877");
+	assert.equal(matchingResult.fullName, "Camila Andrea Restrepo");
+	assert.equal(matchingResult.firstName, "Camila Andrea");
+	assert.equal(matchingResult.lastName, "Restrepo");
+	assert.equal(matchingResult.property, "1707");
+	assert.equal(matchingResult.checkIn, "2027-02-10");
+	assert.equal(matchingResult.checkOut, "2027-02-14");
+
+	// Scenario B: Matching code via ?reservation_code=ovf_res_266 does not overwrite existing/user-entered values
+	const preserveExistingResult = await runRegistryScenario({
+		search: "?reservation_code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_res_266",
+			guest_name: "Camila Restrepo",
+			guest_email: "camila@example.com",
+			guest_phone: "+573109998877",
+		}),
+		initialEmail: "custom@example.com",
+		initialPhone: "+18005551234",
+		initialFirstName: "manual-first",
+		initialLastName: "manual-last",
+	});
+	assert.equal(preserveExistingResult.email, "custom@example.com");
+	assert.equal(preserveExistingResult.phone, "+18005551234");
+	assert.equal(preserveExistingResult.firstName, "manual-first");
+	assert.equal(preserveExistingResult.lastName, "manual-last");
+
+	// Scenario C: Mismatched reservation code in sessionStorage must NOT pre-fill email or phone (no cross-reservation leakage)
+	const mismatchResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_other_999",
+			guest_name: "Other Guest",
+			guest_email: "other@example.com",
+			guest_phone: "+573000000000",
+		}),
+		lookupGuestName: "Carlos Vives",
+	});
+	assert.equal(mismatchResult.email, "");
+	assert.equal(mismatchResult.phone, "");
+	assert.equal(mismatchResult.firstName, "Carlos");
+	assert.equal(mismatchResult.lastName, "Vives");
+
+	// Scenario D: Malformed JSON in sessionStorage is ignored gracefully without throwing
+	const malformedResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: "{not-valid-json",
+		lookupGuestName: "Shakira Mebarak",
+	});
+	assert.equal(malformedResult.email, "");
+	assert.equal(malformedResult.phone, "");
+	assert.equal(malformedResult.firstName, "Shakira");
+	assert.equal(malformedResult.lastName, "Mebarak");
+
+	// Scenario E: Unavailable/throwing sessionStorage is ignored gracefully without throwing
+	const throwingResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageThrows: true,
+		lookupGuestName: "Juanes Aristizabal",
+	});
+	assert.equal(throwingResult.email, "");
+	assert.equal(throwingResult.phone, "");
+	assert.equal(throwingResult.firstName, "Juanes");
+	assert.equal(throwingResult.lastName, "Aristizabal");
+});
