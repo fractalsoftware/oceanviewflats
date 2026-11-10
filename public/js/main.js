@@ -193,7 +193,7 @@ function resolveApiBase(pageConfig) {
     return base.endsWith('/') ? base : `${base}/`;
 }
 
-// Booking Confirmation & Pending Screen Reservation Code Hydration
+// Booking Confirmation & Pending Screen Reservation Code & Cash Voucher Hydration
 document.addEventListener('DOMContentLoaded', () => {
     const refBox = document.getElementById('booking-reference-box');
     const codeDisplay = document.getElementById('display-reservation-code');
@@ -201,8 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyFeedback = document.getElementById('copy-code-feedback');
     const btnRegistry = document.getElementById('btn-booking-registry');
     const btnGuide = document.getElementById('btn-booking-guide');
+    const voucherBox = document.getElementById('pending-voucher-box');
+    const voucherBarcode = document.getElementById('display-voucher-barcode');
+    const voucherVerifCode = document.getElementById('display-voucher-verif-code');
+    const btnPrintVoucher = document.getElementById('btn-print-voucher');
 
-    if (!refBox && !btnRegistry && !btnGuide) return;
+    if (!refBox && !btnRegistry && !btnGuide && !voucherBox) return;
 
     const t = (key, params, fallback) => (window.t ? window.t(key, params, fallback) : (fallback !== undefined ? fallback : key));
     const rawSearch = (window.location && window.location.search) ? window.location.search : '';
@@ -269,12 +273,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.href = nextHref;
             }
         });
+    }
 
-        const langToggleGroup = document.getElementById('lang-toggle-group');
-        if (langToggleGroup && typeof langToggleGroup.querySelectorAll === 'function') {
-            const queryToAppend = rawSearch && rawSearch.includes('code=')
-                ? rawSearch
-                : `?code=${encodeURIComponent(code)}`;
+    const barcode = (urlParams.get('barcode') || '').trim();
+    const verifCode = (urlParams.get('verif_code') || urlParams.get('verification_code') || '').trim();
+    const voucherUrl = (urlParams.get('voucher_url') || urlParams.get('printable_voucher_url') || '').trim();
+
+    if (voucherBox && (barcode || verifCode || voucherUrl)) {
+        voucherBox.classList.remove('hidden');
+        if (voucherBarcode) {
+            voucherBarcode.textContent = barcode || '—';
+        }
+        if (voucherVerifCode) {
+            voucherVerifCode.textContent = verifCode || '—';
+        }
+        if (btnPrintVoucher) {
+            if (/^https?:\/\/\S+$/i.test(voucherUrl)) {
+                btnPrintVoucher.setAttribute('href', voucherUrl);
+                btnPrintVoucher.href = voucherUrl;
+                btnPrintVoucher.classList.remove('hidden');
+                btnPrintVoucher.classList.add('inline-flex');
+            } else {
+                btnPrintVoucher.classList.add('hidden');
+                btnPrintVoucher.classList.remove('inline-flex');
+            }
+        }
+    }
+
+    const langToggleGroup = document.getElementById('lang-toggle-group');
+    if (langToggleGroup && typeof langToggleGroup.querySelectorAll === 'function' && (code || rawSearch.length > 1)) {
+        let queryToAppend = rawSearch;
+        if (code && (!rawSearch || !urlParams.get('code'))) {
+            const nextParams = new URLSearchParams(rawSearch);
+            nextParams.set('code', code);
+            queryToAppend = `?${nextParams.toString()}`;
+        }
+        if (queryToAppend) {
             const langLinks = langToggleGroup.querySelectorAll('a');
             langLinks.forEach(link => {
                 const baseHref = (link.getAttribute('href') || link.href || '').split('?')[0];

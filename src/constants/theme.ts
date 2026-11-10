@@ -357,6 +357,50 @@ export const BOOKING_SUCCESS_THEME = {
 	btnArrowIcon: "w-4 h-4 ml-1",
 } as const;
 
+export const BOOKING_PENDING_THEME = {
+	pageWrapper:
+		"min-h-screen flex flex-col bg-slate-900 font-sans text-slate-100 scroll-smooth",
+	main: "flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden",
+	bgWrapper: "absolute inset-0 w-full h-full",
+	bgImage: "w-full h-full object-cover scale-105",
+	bgOverlay:
+		"absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-900/70 to-slate-950/90 backdrop-blur-[3px]",
+	cardWrapper: "relative z-10 max-w-xl w-full text-center",
+	card: "bg-slate-950/70 backdrop-blur-xl border border-amber-500/20 rounded-3xl p-8 md:p-12 shadow-2xl shadow-slate-950/50",
+	badgeWrapper:
+		"inline-flex p-4 bg-amber-500/10 rounded-full border border-amber-500/30 shadow-lg mb-6 animate-[pulse_2.5s_infinite]",
+	badgeIcon: "w-16 h-16 text-amber-400",
+	heading:
+		"text-3xl md:text-4xl font-extrabold mb-4 tracking-tight text-amber-100",
+	subtitle: "text-slate-300 font-light mb-8 leading-relaxed",
+	referenceBox:
+		"hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 text-center",
+	referenceLabel:
+		"text-xs font-bold text-slate-400 tracking-wider uppercase block mb-1",
+	referenceRow: "flex items-center justify-center space-x-3",
+	referenceCode: "text-xl font-mono font-bold text-amber-300 select-all",
+	copyBtn:
+		"p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors cursor-pointer",
+	copyIcon: "w-4 h-4",
+	copyFeedback: "hidden text-xs text-amber-400 font-semibold",
+	voucherBox:
+		"hidden bg-amber-500/10 border border-amber-500/25 rounded-2xl p-5 mb-8 text-left space-y-3",
+	voucherTitle: "text-sm font-bold text-amber-200 uppercase tracking-wider",
+	voucherGrid: "grid grid-cols-1 sm:grid-cols-2 gap-3",
+	voucherItem: "bg-slate-900/80 border border-slate-800 rounded-xl p-3",
+	voucherItemLabel:
+		"text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1",
+	voucherItemValue:
+		"text-sm font-mono font-bold text-amber-300 break-all select-all",
+	printVoucherBtn:
+		"hidden w-full items-center justify-center space-x-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-100 px-5 py-3 rounded-xl font-bold text-sm transition-colors",
+	printVoucherIcon: "w-4 h-4",
+	actionsWrapper: "flex justify-center",
+	homeBtn:
+		"flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-2xl font-bold transition-transform duration-300 hover:scale-[1.02] shadow-lg shadow-amber-950/20",
+	homeIcon: "w-5 h-5 mr-1",
+} as const;
+
 export const PRIVACY_THEME_STYLES = {
 	privacyPageWrapper:
 		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",

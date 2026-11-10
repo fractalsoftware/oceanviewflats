@@ -4106,3 +4106,641 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 	);
 	await runConfirmationHydrationTest("", "ovf_res_264");
 });
+
+test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PENDING_THEME, Efecty Cash Voucher & pending checkout routing, and voucher + reference code DOM hydration (#265)", async () => {
+	const { getBookingPendingPath } = await import("../../src/constants/config");
+	assert.equal(
+		getBookingPendingPath("en", "../"),
+		"../booking-pending/index.html",
+	);
+	assert.equal(
+		getBookingPendingPath("es", "../"),
+		"../booking-pending/es.html",
+	);
+	assert.equal(
+		getBookingPendingPath("fr", "../"),
+		"../booking-pending/fr.html",
+	);
+	assert.equal(
+		getBookingPendingPath("it", "../"),
+		"../booking-pending/it.html",
+	);
+	assert.equal(
+		getBookingPendingPath("de", "../"),
+		"../booking-pending/de.html",
+	);
+	assert.equal(
+		getBookingPendingPath("ja", "../"),
+		"../booking-pending/ja.html",
+	);
+	assert.equal(getBookingPendingPath("en"), "./booking-pending/index.html");
+
+	// 1. Verify BookingPending.tsx is 100% style-agnostic without inline class strings or React state/effect hooks
+	const bookingPendingSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "BookingPending.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		bookingPendingSource.includes("BOOKING_PENDING_THEME") &&
+			bookingPendingSource.includes("getHomePagePath"),
+		"BookingPending.tsx must consume BOOKING_PENDING_THEME and getHomePagePath",
+	);
+	assert.ok(
+		!bookingPendingSource.includes('className="'),
+		"BookingPending.tsx must not contain any hardcoded inline className strings",
+	);
+	assert.ok(
+		!bookingPendingSource.includes("useState") &&
+			!bookingPendingSource.includes("useEffect"),
+		"BookingPending.tsx must not contain client-side useState/useEffect hooks in zero-hydration SSG",
+	);
+
+	// 2. Verify compiled 6-locale booking-pending HTML files
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "booking-pending/index.html",
+			expectedHomeHref: "../",
+			expectedRefLabel: "Reservation Reference Code",
+			expectedVoucherTitle: "Cash Payment Voucher (Efecty)",
+			expectedPrintBtn: "Open Printable Cash Voucher",
+		},
+		{
+			code: "es",
+			file: "booking-pending/es.html",
+			expectedHomeHref: "../es.html",
+			expectedRefLabel: "Código de Referencia de la Reserva",
+			expectedVoucherTitle: "Cupón de Pago en Efectivo (Efecty)",
+			expectedPrintBtn: "Abrir Cupón de Pago Imprimible",
+		},
+		{
+			code: "fr",
+			file: "booking-pending/fr.html",
+			expectedHomeHref: "../fr.html",
+			expectedRefLabel: "Code de Référence de la Réservation",
+			expectedVoucherTitle: "Bon de Paiement en Espèces (Efecty)",
+			expectedPrintBtn: "Ouvrir le Bon de Paiement Imprimable",
+		},
+		{
+			code: "it",
+			file: "booking-pending/it.html",
+			expectedHomeHref: "../it.html",
+			expectedRefLabel: "Codice di Riferimento della Prenotazione",
+			expectedVoucherTitle: "Voucher di Pagamento in Contanti (Efecty)",
+			expectedPrintBtn: "Apri il Voucher di Pagamento Stampabile",
+		},
+		{
+			code: "de",
+			file: "booking-pending/de.html",
+			expectedHomeHref: "../de.html",
+			expectedRefLabel: "Reservierungs-Referenzcode",
+			expectedVoucherTitle: "Barzahlungsgutschein (Efecty)",
+			expectedPrintBtn: "Druckbaren Zahlungsgutschein Öffnen",
+		},
+		{
+			code: "ja",
+			file: "booking-pending/ja.html",
+			expectedHomeHref: "../ja.html",
+			expectedRefLabel: "予約参照コード",
+			expectedVoucherTitle: "現金支払いバウチャー（Efecty）",
+			expectedPrintBtn: "印刷用バウチャーを開く",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		assert.ok(
+			html.includes('id="booking-reference-box"') &&
+				html.includes('id="display-reservation-code"') &&
+				html.includes('id="btn-copy-reservation-code"') &&
+				html.includes('id="copy-code-feedback"') &&
+				html.includes('id="pending-voucher-box"') &&
+				html.includes('id="display-voucher-barcode"') &&
+				html.includes('id="display-voucher-verif-code"') &&
+				html.includes('id="btn-print-voucher"') &&
+				html.includes('id="btn-pending-home"'),
+			`${locale.file} must pre-render deterministic pending & voucher DOM IDs`,
+		);
+		assert.ok(
+			html.includes(locale.expectedRefLabel) &&
+				html.includes(locale.expectedVoucherTitle) &&
+				html.includes(locale.expectedPrintBtn),
+			`${locale.file} must render localized reference label and Cash Voucher labels`,
+		);
+		assert.ok(
+			html.includes(
+				`id="btn-pending-home" href="${locale.expectedHomeHref}"`,
+			) ||
+				html.includes(
+					`href="${locale.expectedHomeHref}" id="btn-pending-home"`,
+				),
+			`${locale.file} #btn-pending-home must link to ${locale.expectedHomeHref}`,
+		);
+
+		const configMatch = html.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatch, `${locale.file} must embed #ovf-page-config`);
+		const parsedConfig = JSON.parse(configMatch[1]);
+		assert.ok(
+			typeof parsedConfig.i18n.guideCopySuccess === "string" &&
+				parsedConfig.i18n.guideCopySuccess.length > 0,
+			`${locale.file} page config must expose guideCopySuccess in i18n slice`,
+		);
+	}
+
+	// 3. Verify main.js Cash Voucher (efecty) and standard pending checkouts redirect to localized booking-pending route
+	const pageConfigCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "page-config.js"),
+		"utf-8",
+	);
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockNode {
+		id: string;
+		tagName: string;
+		textContent: string;
+		innerHTML: string;
+		className: string;
+		value: string;
+		href: string;
+		disabled: boolean;
+		checked: boolean;
+		style: Record<string, string>;
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		removeAttribute: (k: string) => void;
+		addEventListener: (evt: string, fn: (e?: unknown) => void) => void;
+		dispatchEvent: (evt: string, payload?: Record<string, unknown>) => void;
+		appendChild: (child: MockNode) => MockNode;
+		querySelector: (sel: string) => MockNode | null;
+		querySelectorAll: (sel: string) => MockNode[];
+	}
+
+	const createNode = (
+		id: string,
+		tagName = "DIV",
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Array<(e?: unknown) => void>> = {};
+		const children: MockNode[] = [];
+
+		const node: MockNode = {
+			id,
+			tagName,
+			textContent: "",
+			innerHTML: "",
+			className: initialClasses.join(" "),
+			value: initialAttrs.value || "",
+			href: initialAttrs.href || "",
+			disabled: false,
+			checked: false,
+			style: {},
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+				if (k === "href") node.href = v;
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+			},
+			addEventListener: (evt: string, fn: (e?: unknown) => void) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+			querySelector: () => null,
+			querySelectorAll: () => children,
+		};
+		return node;
+	};
+
+	const runPendingPaymentRedirectTest = async (
+		langCode: "en" | "es",
+		paymentMethod: "efecty" | "credit_card",
+	) => {
+		let capturedBrickConfig: {
+			callbacks?: {
+				onSubmit?: (args: {
+					selectedPaymentMethod: string;
+					formData: Record<string, unknown>;
+				}) => Promise<unknown>;
+			};
+		} | null = null;
+		const sessionStore = new Map<string, string>();
+
+		const calendarWidget = createNode("calendar-widget", "DIV", [], {
+			"data-lang": langCode,
+			"data-month-names": JSON.stringify({
+				[langCode]: Array(12).fill("Month"),
+			}),
+			"data-day-names": JSON.stringify({
+				[langCode]: Array(7).fill("D"),
+			}),
+		});
+		const directBookingForm = createNode("direct-booking-form", "FORM", [], {
+			"data-mp-public-key": "TEST-KEY",
+		});
+		const guestNameInput = createNode("booking-guest-name", "INPUT", [], {
+			value: "Camila Vargas",
+		});
+		const guestEmailInput = createNode("booking-guest-email", "INPUT", [], {
+			value: "camila@example.com",
+		});
+		const guestPhoneInput = createNode("booking-guest-phone", "INPUT", [], {
+			value: "+573109998877",
+		});
+		const captchaResponseInput = createNode(
+			"booking-captcha-response",
+			"INPUT",
+			[],
+			{ value: "7" },
+		);
+		const privacyConsentInput = createNode("booking-privacy-consent", "INPUT");
+		privacyConsentInput.checked = true;
+		const formCheckIn = createNode("form-check-in-date", "INPUT", [], {
+			value: "2026-12-18",
+		});
+		const formCheckOut = createNode("form-check-out-date", "INPUT", [], {
+			value: "2026-12-22",
+		});
+		const btnBook = createNode("btn-book", "A", [], {
+			"data-airbnb-url": "https://airbnb.com/rooms/1606",
+			"data-text-ready": "Ready",
+			"data-text-default": "Default",
+		});
+
+		const nodesById = new Map<string, MockNode>([
+			["calendar-widget", calendarWidget],
+			["btn-prev-month", createNode("btn-prev-month", "BUTTON")],
+			["btn-next-month", createNode("btn-next-month", "BUTTON")],
+			["month-label", createNode("month-label", "SPAN")],
+			["calendar-grid", createNode("calendar-grid", "DIV")],
+			["check-in-display", createNode("check-in-display", "DIV")],
+			["check-out-display", createNode("check-out-display", "DIV")],
+			["btn-book", btnBook],
+			["btn-book-text", createNode("btn-book-text", "SPAN")],
+			["direct-booking-form", directBookingForm],
+			["booking-guest-name", guestNameInput],
+			["booking-guest-email", guestEmailInput],
+			["booking-guest-phone", guestPhoneInput],
+			["booking-captcha-response", captchaResponseInput],
+			["booking-privacy-consent", privacyConsentInput],
+			["form-check-in-date", formCheckIn],
+			["form-check-out-date", formCheckOut],
+			["payment-brick-container", createNode("payment-brick-container", "DIV")],
+		]);
+
+		const docListeners: Record<string, Array<() => void>> = {};
+		const scriptStub = {
+			async: false,
+			src: "",
+			parentNode: { insertBefore: () => {} },
+		};
+
+		const sandbox = {
+			window: {
+				_paq: [] as unknown[],
+				scrollY: 0,
+				MercadoPago: function () {
+					return {
+						bricks: () => ({
+							create: async (
+								_type: string,
+								_container: string,
+								cfg: typeof capturedBrickConfig,
+							) => {
+								capturedBrickConfig = cfg;
+								return { unmount: async () => {} };
+							},
+						}),
+					};
+				},
+				location: {
+					search: "",
+					pathname: `/Oceanview1606/${langCode === "en" ? "index.html" : `${langCode}.html`}`,
+					href: "",
+				},
+				getPageConfig: () => ({
+					pageId: "Oceanview1606",
+					lang: langCode,
+					assetPrefix: "../",
+					apiBase: "../api/",
+					i18n: {},
+				}),
+				t: (k: string, _p?: unknown, fb?: string) => fb ?? k,
+				addEventListener: () => {},
+			},
+			document: {
+				documentElement: { lang: langCode },
+				head: { appendChild: () => {} },
+				createElement: (tag: string) =>
+					tag.toLowerCase() === "script"
+						? { ...scriptStub }
+						: createNode("", tag.toUpperCase()),
+				getElementsByTagName: () => [scriptStub],
+				querySelector: () => null,
+				querySelectorAll: () => [],
+				getElementById: (id: string) => nodesById.get(id) || null,
+				addEventListener: (evt: string, fn: () => void) => {
+					docListeners[evt] = docListeners[evt] || [];
+					docListeners[evt].push(fn);
+				},
+			},
+			sessionStorage: {
+				getItem: (k: string) => sessionStore.get(k) ?? null,
+				setItem: (k: string, v: string) => {
+					sessionStore.set(k, v);
+				},
+			},
+			localStorage: {
+				getItem: () => null,
+				setItem: () => {},
+			},
+			fetch: async (url: string) => {
+				if (url.includes("book-request.php")) {
+					return {
+						ok: true,
+						json: async () => ({
+							success: true,
+							total_price: 1650000,
+							reservation_uid: "ovf_res_265",
+						}),
+					};
+				}
+				if (url.includes("payment.php")) {
+					return {
+						ok: true,
+						json: async () => ({
+							success: true,
+							status: "pending",
+							payment_id: "mp_pay_888",
+							reservation_code: "ovf_res_265",
+							barcode: "770999888111",
+							verification_code: "110500",
+							printable_voucher_url:
+								"https://www.mercadopago.com.co/payments/888/ticket",
+						}),
+					};
+				}
+				return { ok: true, json: async () => [] };
+			},
+			Intl,
+			Date,
+			URLSearchParams,
+			FormData: class {},
+			console: { log: () => {}, warn: () => {}, error: () => {} },
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(mainJsCode, sandbox);
+		for (const fn of docListeners.DOMContentLoaded || []) fn();
+		await new Promise((r) => setTimeout(r, 15));
+
+		const nextMonthBtn = nodesById.get("btn-next-month");
+		assert.ok(nextMonthBtn);
+		nextMonthBtn.dispatchEvent("click");
+		const calendarGridNode = nodesById.get("calendar-grid");
+		assert.ok(calendarGridNode);
+		const gridChildren = calendarGridNode.querySelectorAll("*");
+		gridChildren[10].dispatchEvent("click");
+		gridChildren[14].dispatchEvent("click");
+		formCheckIn.value = "2026-12-18";
+		formCheckOut.value = "2026-12-22";
+
+		directBookingForm.dispatchEvent("submit");
+		await new Promise((r) => setTimeout(r, 20));
+		const onSubmit = capturedBrickConfig?.callbacks?.onSubmit;
+		assert.ok(onSubmit);
+
+		await onSubmit({
+			selectedPaymentMethod: paymentMethod,
+			formData: {},
+		});
+
+		const basePage =
+			langCode === "en"
+				? "../booking-pending/index.html"
+				: `../booking-pending/${langCode}.html`;
+		assert.ok(
+			sandbox.window.location.href.startsWith(`${basePage}?`),
+			`Pending ${paymentMethod} payment must redirect to ${basePage}, never /booking-success (got ${sandbox.window.location.href})`,
+		);
+		assert.ok(!sandbox.window.location.href.includes("booking-success"));
+
+		const redirectedQuery = new URLSearchParams(
+			sandbox.window.location.href.split("?")[1] || "",
+		);
+		assert.equal(redirectedQuery.get("id"), "mp_pay_888");
+		assert.equal(redirectedQuery.get("code"), "ovf_res_265");
+		assert.equal(redirectedQuery.get("status"), "pending");
+		if (paymentMethod === "efecty") {
+			assert.equal(redirectedQuery.get("method"), "efecty");
+			assert.equal(redirectedQuery.get("barcode"), "770999888111");
+			assert.equal(redirectedQuery.get("verif_code"), "110500");
+			assert.equal(
+				redirectedQuery.get("voucher_url"),
+				"https://www.mercadopago.com.co/payments/888/ticket",
+			);
+		}
+		assert.equal(sessionStore.get("ovf_last_reservation_code"), "ovf_res_265");
+	};
+
+	await runPendingPaymentRedirectTest("en", "efecty");
+	await runPendingPaymentRedirectTest("es", "efecty");
+	await runPendingPaymentRedirectTest("es", "credit_card");
+
+	// 4. Verify DOMContentLoaded hydration of #booking-reference-box, #pending-voucher-box, URL sanitization, and language switcher query preservation
+	const runPendingHydrationTest = async (
+		locationSearch: string,
+		expectVoucherVisible: boolean,
+		expectPrintBtnVisible: boolean,
+		expectedVoucherHref?: string,
+	) => {
+		const esHtml = fs.readFileSync(
+			path.join(distDir, "booking-pending", "es.html"),
+			"utf-8",
+		);
+		const configMatchEs = esHtml.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatchEs);
+		const configJson = configMatchEs[1];
+
+		const refBox = createNode("booking-reference-box", "DIV", ["hidden"]);
+		const codeDisplay = createNode("display-reservation-code", "SPAN");
+		const copyBtn = createNode("btn-copy-reservation-code", "BUTTON");
+		const copyFeedback = createNode("copy-code-feedback", "SPAN", ["hidden"]);
+		const voucherBox = createNode("pending-voucher-box", "DIV", ["hidden"]);
+		const voucherBarcode = createNode("display-voucher-barcode", "SPAN");
+		const voucherVerifCode = createNode("display-voucher-verif-code", "SPAN");
+		const btnPrintVoucher = createNode("btn-print-voucher", "A", ["hidden"], {
+			href: "#",
+		});
+		const homeBtn = createNode("btn-pending-home", "A", [], {
+			href: "../es.html",
+		});
+
+		const langGroup = createNode("lang-toggle-group", "DIV");
+		const langEnLink = createNode("lang-en", "A", [], { href: "index.html" });
+		const langDeLink = createNode("lang-de", "A", [], { href: "de.html" });
+		langGroup.appendChild(langEnLink);
+		langGroup.appendChild(langDeLink);
+
+		const mapById = new Map<string, MockNode>([
+			["booking-reference-box", refBox],
+			["display-reservation-code", codeDisplay],
+			["btn-copy-reservation-code", copyBtn],
+			["copy-code-feedback", copyFeedback],
+			["pending-voucher-box", voucherBox],
+			["display-voucher-barcode", voucherBarcode],
+			["display-voucher-verif-code", voucherVerifCode],
+			["btn-print-voucher", btnPrintVoucher],
+			["btn-pending-home", homeBtn],
+			["lang-toggle-group", langGroup],
+		]);
+
+		let copiedText = "";
+		const sessionStore = new Map<string, string>();
+		const docListeners: Record<string, Array<() => void>> = {};
+		const scriptStub = {
+			async: false,
+			src: "",
+			parentNode: { insertBefore: () => {} },
+		};
+
+		const sandbox = {
+			window: {
+				_paq: [] as unknown[],
+				scrollY: 0,
+				location: {
+					search: locationSearch,
+					pathname: "/booking-pending/es.html",
+				},
+				addEventListener: () => {},
+			} as Record<string, unknown>,
+			navigator: {
+				clipboard: {
+					writeText: async (txt: string) => {
+						copiedText = txt;
+					},
+				},
+			},
+			document: {
+				documentElement: { lang: "es" },
+				createElement: () => ({ ...scriptStub }),
+				getElementsByTagName: () => [scriptStub],
+				getElementById: (id: string) => {
+					if (id === "ovf-page-config") return { textContent: configJson };
+					return mapById.get(id) || null;
+				},
+				addEventListener: (evt: string, fn: () => void) => {
+					docListeners[evt] = docListeners[evt] || [];
+					docListeners[evt].push(fn);
+				},
+			},
+			sessionStorage: {
+				getItem: (k: string) => sessionStore.get(k) ?? null,
+				setItem: (k: string, v: string) => {
+					sessionStore.set(k, v);
+				},
+			},
+			localStorage: {
+				getItem: () => null,
+				setItem: () => {},
+			},
+			URLSearchParams,
+			setTimeout,
+			console: { log: () => {}, warn: () => {}, error: () => {} },
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(pageConfigCode, sandbox);
+		vm.runInContext(mainJsCode, sandbox);
+		for (const fn of docListeners.DOMContentLoaded || []) fn();
+
+		assert.equal(refBox.classList.contains("hidden"), false);
+		assert.equal(codeDisplay.textContent, "ovf_res_265");
+		assert.equal(
+			voucherBox.classList.contains("hidden"),
+			!expectVoucherVisible,
+		);
+		assert.equal(
+			btnPrintVoucher.classList.contains("hidden"),
+			!expectPrintBtnVisible,
+		);
+
+		if (expectVoucherVisible) {
+			assert.equal(voucherBarcode.textContent, "770999888111");
+			assert.equal(voucherVerifCode.textContent, "110500");
+			assert.ok(
+				langEnLink.getAttribute("href")?.includes("barcode=770999888111") &&
+					langDeLink.getAttribute("href")?.includes("verif_code=110500"),
+				"Language switcher links must preserve Cash Voucher query parameters",
+			);
+		}
+		if (expectedVoucherHref) {
+			assert.equal(btnPrintVoucher.getAttribute("href"), expectedVoucherHref);
+		}
+
+		copyBtn.dispatchEvent("click");
+		await new Promise((r) => setTimeout(r, 10));
+		assert.equal(copiedText, "ovf_res_265");
+		assert.equal(copyFeedback.classList.contains("hidden"), false);
+		assert.equal(copyFeedback.textContent, "¡Copiado!");
+	};
+
+	await runPendingHydrationTest(
+		"?id=mp_pay_888&code=ovf_res_265&status=pending&method=efecty&barcode=770999888111&verif_code=110500&voucher_url=https%3A%2F%2Fwww.mercadopago.com.co%2Fpayments%2F888%2Fticket",
+		true,
+		true,
+		"https://www.mercadopago.com.co/payments/888/ticket",
+	);
+	await runPendingHydrationTest(
+		"?id=mp_pay_888&code=ovf_res_265&status=pending&method=efecty&barcode=770999888111&verif_code=110500&voucher_url=javascript%3Aalert(1)",
+		true,
+		false,
+		"#",
+	);
+	await runPendingHydrationTest(
+		"?id=mp_pay_888&code=ovf_res_265&status=pending",
+		false,
+		false,
+		"#",
+	);
+});
