@@ -35,6 +35,7 @@ jobs:
           echo "SetEnv DB_PASS \"${{ secrets.DB_PASS }}\"" >> public/.htaccess
           echo "SetEnv MERCADOPAGO_ACCESS_TOKEN \"${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}\"" >> public/.htaccess
           echo "SetEnv MERCADOPAGO_PUBLIC_KEY \"${{ secrets.MERCADOPAGO_PUBLIC_KEY }}\"" >> public/.htaccess
+          echo "SetEnv MERCADOPAGO_WEBHOOK_SECRET \"${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}\"" >> public/.htaccess
           echo "SetEnv PROPERTY_1606_DOOR_CODE \"${{ secrets.PROPERTY_1606_DOOR_CODE }}\"" >> public/.htaccess
           echo "SetEnv PROPERTY_1606_WIFI_SSID \"${{ secrets.PROPERTY_1606_WIFI_SSID }}\"" >> public/.htaccess
           echo "SetEnv PROPERTY_1606_WIFI_PASSWORD \"${{ secrets.PROPERTY_1606_WIFI_PASSWORD }}\"" >> public/.htaccess

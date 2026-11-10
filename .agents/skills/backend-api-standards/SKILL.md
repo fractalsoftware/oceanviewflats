@@ -27,6 +27,7 @@ $all_translations = require __DIR__ . '/translations.php';
 4. **Stateless HMAC Math CAPTCHA**: Verify signed challenges via `verify_captcha_challenge(...)` before database writes or email dispatches.
 5. **File-Backed Rate Limiting**: Throttle public endpoints via `enforce_rate_limit(RATE_LIMIT_FILE, MAX_SUBMISSIONS, RATE_LIMIT_WINDOW, $t['err_rate_limit']);`.
 6. **Prepared Statements & Transactions**: Use `get_db_connection($dbConfig)` with prepared statements (`PDO::ATTR_EMULATE_PREPARES => false`). Never execute external HTTP gateway calls while holding a database transaction lock ([ADR 0011](../../../docs/adr/0011-reservation-lifecycle-engine.md)).
+7. **Webhook Signature Verification**: In `mercadopago-webhook.php`, validate `x-signature` (`ts`, `v1`) and `x-request-id` headers against `id:{resolved_payment_id};request-id:{x-request-id};ts:{ts};` using HMAC-SHA256 (`MERCADOPAGO_WEBHOOK_SECRET`) and `hash_equals()`, rejecting unauthorized requests with `403 Forbidden` before `get_db_connection()` is called.
 
 ## 3. Privacy & Compliance Invariants
 

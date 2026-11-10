@@ -483,6 +483,309 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
     }
 
     /**
+     * Valid x-signature and x-request-id headers pass HTTP boundary verification and settle the payment.
+     */
+    public function testWebhookHttpEndpointAcceptsValidSignatureAndConfirmsReservation(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
+            VALUES ('ovf-sig-valid', '1606', 'Signed Guest', 'signed@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending');
+        ");
+
+        $paymentId = '77889900';
+        $secret = 'test_mp_webhook_secret_key_2026';
+        $requestId = 'req-valid-12345';
+        $ts = '1704908010';
+        $manifest = "id:{$paymentId};request-id:{$requestId};ts:{$ts};";
+        $v1 = hash_hmac('sha256', $manifest, $secret);
+
+        $paymentPayload = [
+            'id' => $paymentId,
+            'status' => 'approved',
+            'status_detail' => 'accredited',
+            'external_reference' => 'ovf-sig-valid',
+            'transaction_amount' => 750000.00,
+            'transaction_amount_refunded' => 0.0,
+            'payment_method_id' => 'visa',
+        ];
+
+        $res = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => $paymentId]],
+            query: [],
+            server: [
+                'HTTP_X_SIGNATURE' => "ts={$ts},v1={$v1}",
+                'HTTP_X_REQUEST_ID' => $requestId,
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+            ],
+            stagedPayment: $paymentPayload,
+            injectTestPdo: true
+        );
+
+        $this->assertSame(200, $res['statusCode'], $res['stderr']);
+        $this->assertIsArray($res['json']);
+        $this->assertTrue($res['json']['success'] ?? false);
+        $this->assertSame('confirmed', $res['json']['status'] ?? null);
+
+        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-valid'");
+        $row = $stmt->fetch();
+        $this->assertIsArray($row);
+        $this->assertSame('confirmed', $row['status']);
+        $this->assertSame('approved', $row['payment_status']);
+        $this->assertSame($paymentId, (string) $row['mercadopago_payment_id']);
+    }
+
+    /**
+     * Missing x-signature or x-request-id headers are rejected with 403 Forbidden and error_log before DB connection.
+     */
+    public function testWebhookHttpEndpointRejectsMissingSignatureOrRequestIdHeadersWith403(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
+            VALUES ('ovf-sig-missing', '1606', 'Missing Header Guest', 'missing@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending');
+        ");
+
+        $paymentId = '77889901';
+        $secret = 'test_mp_webhook_secret_key_2026';
+        $requestId = 'req-missing-12345';
+        $ts = '1704908010';
+        $manifest = "id:{$paymentId};request-id:{$requestId};ts:{$ts};";
+        $v1 = hash_hmac('sha256', $manifest, $secret);
+
+        // 1. Missing x-signature header (with unreachable DB_HOST and no TEST_PDO to prove DB connection is never opened)
+        $resMissingSig = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => $paymentId]],
+            query: [],
+            server: [
+                'HTTP_X_REQUEST_ID' => $requestId,
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+                'DB_HOST' => 'unreachable.invalid.local',
+            ],
+            stagedPayment: null,
+            injectTestPdo: false
+        );
+
+        $this->assertSame(403, $resMissingSig['statusCode']);
+        $this->assertIsArray($resMissingSig['json']);
+        $this->assertFalse($resMissingSig['json']['success'] ?? true);
+        $this->assertStringContainsString('[MercadoPago Webhook Security]', $resMissingSig['stderr']);
+
+        // 2. Missing x-request-id header
+        $resMissingReqId = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => $paymentId]],
+            query: [],
+            server: [
+                'HTTP_X_SIGNATURE' => "ts={$ts},v1={$v1}",
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+                'DB_HOST' => 'unreachable.invalid.local',
+            ],
+            stagedPayment: null,
+            injectTestPdo: false
+        );
+
+        $this->assertSame(403, $resMissingReqId['statusCode']);
+        $this->assertIsArray($resMissingReqId['json']);
+        $this->assertFalse($resMissingReqId['json']['success'] ?? true);
+        $this->assertStringContainsString('[MercadoPago Webhook Security]', $resMissingReqId['stderr']);
+
+        // Verify no database side-effects occurred
+        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-missing'");
+        $row = $stmt->fetch();
+        $this->assertIsArray($row);
+        $this->assertSame('pending_payment', $row['status']);
+        $this->assertSame('pending', $row['payment_status']);
+        $this->assertNull($row['mercadopago_payment_id']);
+    }
+
+    /**
+     * Invalid x-signature (tampered payment ID, wrong hash, or altered timestamp) returns 403 Forbidden
+     * and logs an error before opening any database connection.
+     */
+    public function testWebhookHttpEndpointRejectsInvalidSignatureWith403AndNoDatabaseSideEffects(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
+            VALUES ('ovf-sig-tampered', '1606', 'Tampered Guest', 'tampered@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending');
+        ");
+
+        $paymentId = '77889902';
+        $secret = 'test_mp_webhook_secret_key_2026';
+        $requestId = 'req-tampered-12345';
+        $ts = '1704908010';
+        $validManifest = "id:{$paymentId};request-id:{$requestId};ts:{$ts};";
+        $validV1 = hash_hmac('sha256', $validManifest, $secret);
+
+        // 1. Tampered payment ID in payload (signed for 77889902, payload sends 99999999)
+        $resTamperedId = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => '99999999']],
+            query: [],
+            server: [
+                'HTTP_X_SIGNATURE' => "ts={$ts},v1={$validV1}",
+                'HTTP_X_REQUEST_ID' => $requestId,
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+                'DB_HOST' => 'unreachable.invalid.local',
+            ],
+            stagedPayment: null,
+            injectTestPdo: false
+        );
+
+        $this->assertSame(403, $resTamperedId['statusCode']);
+        $this->assertIsArray($resTamperedId['json']);
+        $this->assertFalse($resTamperedId['json']['success'] ?? true);
+        $this->assertStringContainsString('[MercadoPago Webhook Security]', $resTamperedId['stderr']);
+
+        // 2. Wrong HMAC hash (v1 forged with wrong secret)
+        $wrongV1 = hash_hmac('sha256', $validManifest, 'wrong_attacker_secret');
+        $resWrongHash = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => $paymentId]],
+            query: [],
+            server: [
+                'HTTP_X_SIGNATURE' => "ts={$ts},v1={$wrongV1}",
+                'HTTP_X_REQUEST_ID' => $requestId,
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+                'DB_HOST' => 'unreachable.invalid.local',
+            ],
+            stagedPayment: null,
+            injectTestPdo: false
+        );
+
+        $this->assertSame(403, $resWrongHash['statusCode']);
+        $this->assertIsArray($resWrongHash['json']);
+        $this->assertFalse($resWrongHash['json']['success'] ?? true);
+        $this->assertStringContainsString('[MercadoPago Webhook Security]', $resWrongHash['stderr']);
+
+        // 3. Altered timestamp in x-signature header
+        $resAlteredTs = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => $paymentId]],
+            query: [],
+            server: [
+                'HTTP_X_SIGNATURE' => "ts=1704999999,v1={$validV1}",
+                'HTTP_X_REQUEST_ID' => $requestId,
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+                'DB_HOST' => 'unreachable.invalid.local',
+            ],
+            stagedPayment: null,
+            injectTestPdo: false
+        );
+
+        $this->assertSame(403, $resAlteredTs['statusCode']);
+        $this->assertIsArray($resAlteredTs['json']);
+        $this->assertFalse($resAlteredTs['json']['success'] ?? true);
+        $this->assertStringContainsString('[MercadoPago Webhook Security]', $resAlteredTs['stderr']);
+
+        // Verify reservation in database was never touched
+        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-tampered'");
+        $row = $stmt->fetch();
+        $this->assertIsArray($row);
+        $this->assertSame('pending_payment', $row['status']);
+        $this->assertSame('pending', $row['payment_status']);
+        $this->assertNull($row['mercadopago_payment_id']);
+    }
+
+    /**
+     * Executes public/api/mercadopago-webhook.php via an isolated PHP subprocess to test the HTTP boundary.
+     *
+     * @param array<string, mixed> $body
+     * @param array<string, string> $query
+     * @param array<string, string> $server
+     * @param array<string, mixed>|null $stagedPayment
+     * @param bool $injectTestPdo
+     * @return array{exitCode: int, statusCode: int, stdout: string, stderr: string, json: ?array<string, mixed>}
+     */
+    private function callWebhookHttpEndpoint(
+        array $body,
+        array $query = [],
+        array $server = [],
+        ?array $stagedPayment = null,
+        bool $injectTestPdo = true
+    ): array {
+        $rateLimitFile = sys_get_temp_dir() . '/ovf_webhook_rate_limits.json';
+        if (file_exists($rateLimitFile)) {
+            @unlink($rateLimitFile);
+        }
+
+        $statusFile = sys_get_temp_dir() . '/ovf_webhook_status_' . uniqid('', true) . '.txt';
+        $errorLogFile = sys_get_temp_dir() . '/ovf_webhook_errlog_' . uniqid('', true) . '.log';
+
+        $defaultServer = [
+            'REQUEST_METHOD' => 'POST',
+            'REMOTE_ADDR' => '127.0.0.1',
+        ];
+        $mergedServer = array_merge($defaultServer, $server);
+
+        $prependLines = [
+            'ini_set("log_errors", "1");',
+            'ini_set("error_log", ' . var_export($errorLogFile, true) . ');',
+            'register_shutdown_function(static function (): void {',
+            '    $code = http_response_code();',
+            '    file_put_contents(' . var_export($statusFile, true) . ', (string) (is_int($code) ? $code : 200));',
+            '});',
+            'require_once ' . var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true) . ';',
+        ];
+
+        foreach ($mergedServer as $k => $v) {
+            $prependLines[] = sprintf('$_SERVER[%s] = %s;', var_export($k, true), var_export($v, true));
+            if (str_starts_with($k, 'MERCADOPAGO_') || str_starts_with($k, 'DB_')) {
+                $prependLines[] = sprintf('$_ENV[%s] = %s;', var_export($k, true), var_export($v, true));
+                $prependLines[] = sprintf('putenv(%s);', var_export($k . '=' . $v, true));
+            }
+        }
+
+        $prependLines[] = sprintf('$_GET = %s;', var_export($query, true));
+
+        if ($injectTestPdo) {
+            $prependLines[] = sprintf(
+                '$GLOBALS["TEST_PDO"] = new PDO(%s, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);',
+                var_export('sqlite:' . $this->dbFile, true)
+            );
+        }
+
+        if ($stagedPayment !== null) {
+            $prependLines[] = '$gateway = new \OceanViewFlats\Domain\Payment\InMemoryPaymentGateway();';
+            $prependLines[] = sprintf('$gateway->stagePaymentArray(%s);', var_export($stagedPayment, true));
+            $prependLines[] = '$GLOBALS["TEST_PAYMENT_GATEWAY"] = $gateway;';
+            $prependLines[] = '$GLOBALS["TEST_EMAIL_SENDER"] = new \OceanViewFlats\Domain\Fulfillment\InMemoryEmailSender();';
+        }
+
+        $prependLines[] = sprintf('require %s;', var_export(dirname(__DIR__, 3) . '/public/api/mercadopago-webhook.php', true));
+        $phpCode = implode("\n", $prependLines);
+
+        $process = proc_open(
+            ['php', '-r', $phpCode],
+            [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ],
+            $pipes
+        );
+
+        $jsonInput = json_encode($body);
+        if ($jsonInput !== false) {
+            fwrite($pipes[0], $jsonInput);
+        }
+        fclose($pipes[0]);
+
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+        $exitCode = proc_close($process);
+
+        $statusCode = file_exists($statusFile) ? (int) trim((string) file_get_contents($statusFile)) : 200;
+        $loggedErrors = file_exists($errorLogFile) ? (string) file_get_contents($errorLogFile) : '';
+        @unlink($statusFile);
+        @unlink($errorLogFile);
+
+        return [
+            'exitCode' => $exitCode,
+            'statusCode' => $statusCode,
+            'stdout' => (string) $stdout,
+            'stderr' => (string) $stderr . $loggedErrors,
+            'json' => json_decode((string) $stdout, true),
+        ];
+    }
+
+    /**
      * Helper to invoke settlement processor in memory without subprocesses.
      *
      * @param string $paymentId
