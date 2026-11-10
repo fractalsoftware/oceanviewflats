@@ -1,112 +1,135 @@
-import { Clock, Copy, Home } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Clock, Copy, ExternalLink, Home } from "lucide-react";
+import React from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
-import { IMAGES } from "../constants/config";
+import { getHomePagePath, IMAGES } from "../constants/config";
+import { BOOKING_PENDING_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
-export default function BookingPending({ lang, assetPrefix = "/" }: AppProps) {
+export default function BookingPending({
+	lang,
+	assetPrefix = "../",
+}: AppProps) {
 	const t = dict[lang];
-	const [isScrolled, setIsScrolled] = useState(false);
-	const [reservationUid, setReservationUid] = useState<string | null>(null);
-	const [copied, setCopied] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const handleScroll = () => setIsScrolled(window.scrollY > 50);
-		window.addEventListener("scroll", handleScroll);
-
-		// Retrieve external_reference from query parameters
-		const params = new URLSearchParams(window.location.search);
-		const ref = params.get("external_reference") || params.get("preference_id");
-		if (ref) {
-			setReservationUid(ref);
-		}
-
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
-
-	const handleCopy = () => {
-		if (!reservationUid || typeof window === "undefined") return;
-		navigator.clipboard.writeText(reservationUid);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
-
-	// Compute URLs
-	const homeUrl =
-		lang === "en" ? `${assetPrefix}` : `${assetPrefix}${lang}.html`;
+	const homeUrl = getHomePagePath(lang, assetPrefix);
 
 	return (
-		<div className="min-h-screen flex flex-col bg-slate-900 font-sans text-slate-100 scroll-smooth">
+		<div className={BOOKING_PENDING_THEME.pageWrapper}>
 			<Navigation
-				isScrolled={isScrolled}
+				isScrolled={false}
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
 			/>
 
-			<main className="flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
+			<main className={BOOKING_PENDING_THEME.main}>
 				{/* Ambient Background */}
-				<div className="absolute inset-0 w-full h-full">
+				<div className={BOOKING_PENDING_THEME.bgWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
-						alt="OceanViewFlats Ocean Backdrop"
-						className="w-full h-full object-cover scale-105"
+						alt={t.heroImgAlt}
+						className={BOOKING_PENDING_THEME.bgImage}
 					/>
-					<div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-900/70 to-slate-950/90 backdrop-blur-[3px]"></div>
+					<div className={BOOKING_PENDING_THEME.bgOverlay}></div>
 				</div>
 
 				{/* Card */}
-				<div className="relative z-10 max-w-xl w-full text-center">
-					<div className="bg-slate-950/70 backdrop-blur-xl border border-amber-500/20 rounded-3xl p-8 md:p-12 shadow-2xl shadow-slate-950/50">
+				<div className={BOOKING_PENDING_THEME.cardWrapper}>
+					<div className={BOOKING_PENDING_THEME.card}>
 						{/* Animated Clock/Pending Badge */}
-						<div className="inline-flex p-4 bg-amber-500/10 rounded-full border border-amber-500/30 shadow-lg mb-6 animate-[pulse_2.5s_infinite]">
-							<Clock className="w-16 h-16 text-amber-400" />
+						<div className={BOOKING_PENDING_THEME.badgeWrapper}>
+							<Clock className={BOOKING_PENDING_THEME.badgeIcon} />
 						</div>
 
-						<h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight text-amber-100">
+						<h1 className={BOOKING_PENDING_THEME.heading}>
 							{t.dbPendingHeader}
 						</h1>
 
-						<p className="text-slate-300 font-light mb-8 leading-relaxed">
+						<p className={BOOKING_PENDING_THEME.subtitle}>
 							{t.dbPendingSubtitle}
 						</p>
 
-						{/* Display Booking Reference Code */}
-						{reservationUid && (
-							<div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-8 text-center">
-								<span className="text-xs font-bold text-slate-400 tracking-wider uppercase block mb-1">
-									Reservation Reference Code
+						{/* Display Booking Reference Code (un-hidden by client JS when code is resolved) */}
+						<div
+							id="booking-reference-box"
+							className={BOOKING_PENDING_THEME.referenceBox}
+						>
+							<span className={BOOKING_PENDING_THEME.referenceLabel}>
+								{t.dbReferenceCodeLabel}
+							</span>
+							<div className={BOOKING_PENDING_THEME.referenceRow}>
+								<span
+									id="display-reservation-code"
+									className={BOOKING_PENDING_THEME.referenceCode}
+								></span>
+								<button
+									id="btn-copy-reservation-code"
+									type="button"
+									className={BOOKING_PENDING_THEME.copyBtn}
+									aria-label={t.dbReferenceCodeLabel}
+								>
+									<Copy className={BOOKING_PENDING_THEME.copyIcon} />
+								</button>
+								<span
+									id="copy-code-feedback"
+									className={BOOKING_PENDING_THEME.copyFeedback}
+								>
+									{t.guideCopySuccess}
 								</span>
-								<div className="flex items-center justify-center space-x-3">
-									<span className="text-xl font-mono font-bold text-amber-300 select-all">
-										{reservationUid}
+							</div>
+						</div>
+
+						{/* Cash Voucher Details Box (un-hidden by client JS when barcode/verif_code/voucher_url are present) */}
+						<div
+							id="pending-voucher-box"
+							className={BOOKING_PENDING_THEME.voucherBox}
+						>
+							<h2 className={BOOKING_PENDING_THEME.voucherTitle}>
+								{t.dbPendingVoucherTitle}
+							</h2>
+							<div className={BOOKING_PENDING_THEME.voucherGrid}>
+								<div className={BOOKING_PENDING_THEME.voucherItem}>
+									<span className={BOOKING_PENDING_THEME.voucherItemLabel}>
+										{t.dbPendingBarcodeLabel}
 									</span>
-									<button
-										onClick={handleCopy}
-										className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
-										title="Copy Code"
-									>
-										<Copy className="w-4 h-4" />
-									</button>
-									{copied && (
-										<span className="text-xs text-amber-400 font-semibold animate-fade-in">
-											{t.guideCopySuccess}
-										</span>
-									)}
+									<span
+										id="display-voucher-barcode"
+										className={BOOKING_PENDING_THEME.voucherItemValue}
+									></span>
+								</div>
+								<div className={BOOKING_PENDING_THEME.voucherItem}>
+									<span className={BOOKING_PENDING_THEME.voucherItemLabel}>
+										{t.dbPendingVerifCodeLabel}
+									</span>
+									<span
+										id="display-voucher-verif-code"
+										className={BOOKING_PENDING_THEME.voucherItemValue}
+									></span>
 								</div>
 							</div>
-						)}
+							<a
+								id="btn-print-voucher"
+								href="#"
+								target="_blank"
+								rel="noopener noreferrer"
+								className={BOOKING_PENDING_THEME.printVoucherBtn}
+							>
+								<ExternalLink
+									className={BOOKING_PENDING_THEME.printVoucherIcon}
+								/>
+								<span>{t.dbPendingPrintVoucherBtn}</span>
+							</a>
+						</div>
 
 						{/* Actions */}
-						<div className="flex justify-center">
+						<div className={BOOKING_PENDING_THEME.actionsWrapper}>
 							<a
+								id="btn-pending-home"
 								href={homeUrl}
-								className="flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-2xl font-bold transition-transform duration-300 hover:scale-[1.02] shadow-lg shadow-amber-950/20"
+								className={BOOKING_PENDING_THEME.homeBtn}
 							>
-								<Home className="w-5 h-5 mr-1" />
+								<Home className={BOOKING_PENDING_THEME.homeIcon} />
 								<span>{t.dbPendingHomeBtn}</span>
 							</a>
 						</div>
