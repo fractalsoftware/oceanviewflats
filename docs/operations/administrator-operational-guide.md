@@ -54,6 +54,7 @@ Deployments are split across two independent GitHub Actions workflows connecting
 | `APP_ENCRYPTION_KEY` | Both | 32-byte (or 64-char hex) key for XSalsa20-Poly1305 encryption of `guest_registries.guests_payload` ([ADR 0012](../adr/0012-personal-data-protection-and-ley-1581-compliance.md)) |
 | `OVF_ADMIN_SESSION_SECRET` | Admin | 64-char random hex secret (`openssl rand -hex 32`) for session/CSRF signing and initial `setup.php` token |
 | `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_ACCESS_TOKEN` | Both | Mercado Pago Checkout Bricks public key and server-to-server access token |
+| `MERCADOPAGO_WEBHOOK_SECRET` | Public | HMAC-SHA256 secret for validating incoming Mercado Pago webhook `x-signature` and `x-request-id` headers on `/api/mercadopago-webhook.php` |
 | `RECIPIENT_EMAIL` | Public | Host notification mailbox (`rentals@oceanviewflats.com`) |
 | `CAPTCHA_SECRET` | Public | HMAC key for signing stateless mathematical CAPTCHA tokens |
 | `PROPERTY_1606_DOOR_CODE`, `PROPERTY_1606_WIFI_SSID`, `PROPERTY_1606_WIFI_PASSWORD` | Both | Fallback smart-lock PIN (`0160600#`) and Wi-Fi credentials for Property `1606` |
@@ -181,3 +182,4 @@ Available at `/financial-report` (`admin` and `superadmin` roles):
 | Public API rate-limit lockout (`HTTP 429`) | IP exceeded 10-minute sliding window in `sys_get_temp_dir()`. | Flush temporary rate-limit files: `rm -f /tmp/ovf_*_rate_limits.json`. |
 | Admin Console clean URLs return Apache 404 | Missing `admin/public/.htaccess` or wrong cPanel subdomain `DocumentRoot`. | Verify `DocumentRoot` is `/home/<user>/admin/public` and `admin/public/.htaccess` is present. |
 | Encrypted `guests_payload` cannot be decrypted | Missing or mismatched `APP_ENCRYPTION_KEY` between `public/.htaccess` and `admin/public/.htaccess`. | Ensure identical `APP_ENCRYPTION_KEY` secret is deployed to both pipelines. |
+| Mercado Pago webhooks fail with `HTTP 403 Forbidden` | Missing or invalid `x-signature` / `x-request-id` headers, or missing/mismatched `MERCADOPAGO_WEBHOOK_SECRET`. | Check server error logs for `[MercadoPago Webhook Security]` entries and verify `MERCADOPAGO_WEBHOOK_SECRET` matches the webhook secret configured in the Mercado Pago Developer Dashboard. |
