@@ -451,6 +451,10 @@ export const dict = {
 		dbSuccessHeader: "Booking Confirmed!",
 		dbSuccessSubtitle:
 			"Thank you for your payment. Your reservation has been successfully completed and locked in. You will receive an automated email confirmation with your stay details shortly.",
+		dbSuccessRegistryBtn: "Complete Guest Registry",
+		dbSuccessRegistryNotice:
+			"Mandatory next step: Complete the Guest Registry to verify all occupants under Colombian hospitality regulations (Law 1581) and unlock your smart-lock Access Credentials (0XXXXXX#) and Guest Guide.",
+		dbReferenceCodeLabel: "Reservation Reference Code",
 		dbSuccessHomeBtn: "Back to Home",
 		dbSuccessGuideBtn: "Open Guests Guide",
 		dbFailureTitle: "Payment Failed - OceanViewFlats",
@@ -1050,6 +1054,10 @@ export const dict = {
 		dbSuccessHeader: "¡Reserva Confirmada!",
 		dbSuccessSubtitle:
 			"Gracias por tu pago. Su reserva ha sido registrada y asegurada con éxito. En breve recibirá un correo electrónico de confirmación automático con los detalles de su estadía.",
+		dbSuccessRegistryBtn: "Completar Registro de Huéspedes",
+		dbSuccessRegistryNotice:
+			"Siguiente paso obligatorio: Complete el Registro de Huéspedes para verificar a todos los ocupantes según la normativa hotelera colombiana (Ley 1581) y desbloquear sus Credenciales de Acceso (0XXXXXX#) y la Guía de Huéspedes.",
+		dbReferenceCodeLabel: "Código de Referencia de la Reserva",
 		dbSuccessHomeBtn: "Volver al Inicio",
 		dbSuccessGuideBtn: "Abrir Guía de Huéspedes",
 		dbFailureTitle: "Pago Fallido - OceanViewFlats",
@@ -1654,6 +1662,10 @@ export const dict = {
 		dbSuccessHeader: "Réservation Confirmée !",
 		dbSuccessSubtitle:
 			"Merci pour votre paiement. Votre réservation a été enregistrée et sécurisée avec succès. Vous recevrez sous peu un e-mail de confirmation automatique avec les détails de votre séjour.",
+		dbSuccessRegistryBtn: "Compléter le Registre des Invités",
+		dbSuccessRegistryNotice:
+			"Prochaine étape obligatoire : Complétez le Registre des Invités pour vérifier tous les occupants conformément à la réglementation hôtelière colombienne (Loi 1581) et débloquer vos Identifiants d'Accès (0XXXXXX#) ainsi que le Guide des Invités.",
+		dbReferenceCodeLabel: "Code de Référence de la Réservation",
 		dbSuccessHomeBtn: "Retour à l'Accueil",
 		dbSuccessGuideBtn: "Oouvrir le Guide des Invités",
 		dbFailureTitle: "Échec du Paiement - OceanViewFlats",
@@ -2253,6 +2265,10 @@ export const dict = {
 		dbSuccessHeader: "Prenotazione Confermata!",
 		dbSuccessSubtitle:
 			"Grazie per il pagamento. La tua prenotazione è stata registrata e assicurata con successo. Riceverai a breve un'e-mail di conferma automatica con i dettagli del soggiorno.",
+		dbSuccessRegistryBtn: "Completa il Registro degli Ospiti",
+		dbSuccessRegistryNotice:
+			"Prossimo passo obbligatorio: Completa il Registro degli Ospiti per verificare tutti gli occupanti secondo la normativa alberghiera colombiana (Legge 1581) e sbloccare le Credenziali di Accesso (0XXXXXX#) e la Guida per gli Ospiti.",
+		dbReferenceCodeLabel: "Codice di Riferimento della Prenotazione",
 		dbSuccessHomeBtn: "Torna alla Home",
 		dbSuccessGuideBtn: "Apri la Guida per gli Ospiti",
 		dbFailureTitle: "Pagamento Fallito - OceanViewFlats",
@@ -2855,6 +2871,10 @@ export const dict = {
 		dbSuccessHeader: "Buchung Bestätigt!",
 		dbSuccessSubtitle:
 			"Vielen Dank für Ihre Zahlung. Ihre Reservierung wurde erfolgreich registriert und gesichert. Sie erhalten in Kürze eine automatische E-Mail-Bestätigung mit Ihren Aufenthaltsdetails.",
+		dbSuccessRegistryBtn: "Gästeregistrierung Abschließen",
+		dbSuccessRegistryNotice:
+			"Obligatorischer nächster Schritt: Schließen Sie die Gästeregistrierung ab, um alle Gäste gemäß den kolumbianischen Gastgewerbevorschriften (Gesetz 1581) zu verifizieren und Ihre Zugangsdaten (0XXXXXX#) sowie den Gästeführer freizuschalten.",
+		dbReferenceCodeLabel: "Reservierungs-Referenzcode",
 		dbSuccessHomeBtn: "Zurück zur Startseite",
 		dbSuccessGuideBtn: "Gästeführer Öffnen",
 		dbFailureTitle: "Zahlung Fehlgeschlagen - OceanViewFlats",
@@ -3453,6 +3473,10 @@ export const dict = {
 		dbSuccessHeader: "ご予約が完了しました！",
 		dbSuccessSubtitle:
 			"お支払いが確認されました。お客様のご予約は正常に確定し、お部屋は確保されました。まもなく滞在の詳細が記載された自動確認メールが送信されます。",
+		dbSuccessRegistryBtn: "宿泊者名簿（ゲスト登録）を完了する",
+		dbSuccessRegistryNotice:
+			"必須の次のステップ：コロンビアの宿泊施設規則（法第1581号）に基づき宿泊者全員の確認を行い、スマートロックの暗証番号（0XXXXXX#）とゲストガイドを解除するために、宿泊者名簿を完了してください。",
+		dbReferenceCodeLabel: "予約参照コード",
 		dbSuccessHomeBtn: "ホームに戻る",
 		dbSuccessGuideBtn: "ゲストガイドを開く",
 		dbFailureTitle: "決済失敗 - OceanViewFlats",

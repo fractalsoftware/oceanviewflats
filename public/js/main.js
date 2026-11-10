@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Select the dropdown menu inside the group
-    const dropdownMenu = document.getElementById('lang-dropdown') || langToggleGroup.querySelector('.absolute.right-0.top-full');
+    const dropdownMenu = document.getElementById('lang-dropdown') || (typeof langToggleGroup.querySelector === 'function' ? langToggleGroup.querySelector('.absolute.right-0.top-full') : null);
     if (!dropdownMenu) return;
 
     function isLangDropdownOpen() {
@@ -192,6 +192,101 @@ function resolveApiBase(pageConfig) {
     const base = (pageConfig && pageConfig.apiBase) ? pageConfig.apiBase : `${(pageConfig && pageConfig.assetPrefix) || ''}api/`;
     return base.endsWith('/') ? base : `${base}/`;
 }
+
+// Booking Confirmation & Pending Screen Reservation Code Hydration
+document.addEventListener('DOMContentLoaded', () => {
+    const refBox = document.getElementById('booking-reference-box');
+    const codeDisplay = document.getElementById('display-reservation-code');
+    const copyBtn = document.getElementById('btn-copy-reservation-code');
+    const copyFeedback = document.getElementById('copy-code-feedback');
+    const btnRegistry = document.getElementById('btn-booking-registry');
+    const btnGuide = document.getElementById('btn-booking-guide');
+
+    if (!refBox && !btnRegistry && !btnGuide) return;
+
+    const t = (key, params, fallback) => (window.t ? window.t(key, params, fallback) : (fallback !== undefined ? fallback : key));
+    const rawSearch = (window.location && window.location.search) ? window.location.search : '';
+    const urlParams = new URLSearchParams(rawSearch);
+
+    let code = (
+        urlParams.get('code') ||
+        urlParams.get('reservation_code') ||
+        urlParams.get('external_reference') ||
+        urlParams.get('preference_id') ||
+        ''
+    ).trim();
+
+    if (!code && typeof sessionStorage !== 'undefined') {
+        try {
+            code = (sessionStorage.getItem('ovf_last_reservation_code') || '').trim();
+        } catch (err) {
+            console.warn('Unable to read reservation code from sessionStorage:', err);
+        }
+    }
+
+    if (code) {
+        if (typeof sessionStorage !== 'undefined') {
+            try {
+                sessionStorage.setItem('ovf_last_reservation_code', code);
+            } catch (err) {
+                console.warn('Unable to save reservation code to sessionStorage:', err);
+            }
+        }
+
+        if (codeDisplay) {
+            codeDisplay.textContent = code;
+        }
+        if (refBox) {
+            refBox.classList.remove('hidden');
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(code);
+                }
+                if (copyFeedback) {
+                    const copyMsg = t('guideCopySuccess', {}, copyFeedback.textContent || 'Copied!');
+                    if (copyMsg) {
+                        copyFeedback.textContent = copyMsg;
+                    }
+                    copyFeedback.classList.remove('hidden');
+                    if (typeof setTimeout === 'function') {
+                        setTimeout(() => {
+                            copyFeedback.classList.add('hidden');
+                        }, 2000);
+                    }
+                }
+            });
+        }
+
+        [btnRegistry, btnGuide].forEach(btn => {
+            if (!btn) return;
+            const baseHref = (btn.getAttribute('href') || btn.href || '').split('?')[0];
+            if (baseHref) {
+                const nextHref = `${baseHref}?code=${encodeURIComponent(code)}`;
+                btn.setAttribute('href', nextHref);
+                btn.href = nextHref;
+            }
+        });
+
+        const langToggleGroup = document.getElementById('lang-toggle-group');
+        if (langToggleGroup && typeof langToggleGroup.querySelectorAll === 'function') {
+            const queryToAppend = rawSearch && rawSearch.includes('code=')
+                ? rawSearch
+                : `?code=${encodeURIComponent(code)}`;
+            const langLinks = langToggleGroup.querySelectorAll('a');
+            langLinks.forEach(link => {
+                const baseHref = (link.getAttribute('href') || link.href || '').split('?')[0];
+                if (baseHref) {
+                    const nextHref = `${baseHref}${queryToAppend}`;
+                    link.setAttribute('href', nextHref);
+                    link.href = nextHref;
+                }
+            });
+        }
+    }
+});
 
 // Home Page Property Card Rate Hydration
 document.addEventListener('DOMContentLoaded', () => {
@@ -926,27 +1021,63 @@ document.addEventListener('DOMContentLoaded', () => {
                     window._paq.push(['trackGoal', 5]);
                 }
 
+                if (result.reservation_code && typeof sessionStorage !== 'undefined') {
+                    try {
+                        sessionStorage.setItem('ovf_last_reservation_code', result.reservation_code);
+                        sessionStorage.setItem('ovf_checkout_context', JSON.stringify({
+                            code: result.reservation_code,
+                            guest_name: guestName,
+                            guest_email: guestEmail,
+                            guest_phone: payload.guest_phone,
+                            property_id: propertyId,
+                            check_in: payload.check_in,
+                            check_out: payload.check_out
+                        }));
+                    } catch (storageErr) {
+                        console.warn('Unable to persist checkout context in sessionStorage:', storageErr);
+                    }
+                }
+
+                const currentLang = lang || pageConfig.lang || (document.documentElement && document.documentElement.lang) || 'en';
+                const assetPrefix = pageConfig.assetPrefix || '../';
+                const successPage = (currentLang === 'en' || !currentLang)
+                    ? 'booking-success/index.html'
+                    : `booking-success/${currentLang}.html`;
+                const pendingPage = (currentLang === 'en' || !currentLang)
+                    ? 'booking-pending/index.html'
+                    : `booking-pending/${currentLang}.html`;
+
                 // Route dynamically based on status and method
                 if (result.status === 'approved') {
-                    window.location.href = `/booking-success?id=${result.payment_id}&code=${result.reservation_code}&status=approved`;
+                    const params = new URLSearchParams({
+                        id: String(result.payment_id || ''),
+                        code: String(result.reservation_code || ''),
+                        status: 'approved'
+                    });
+                    window.location.href = `${assetPrefix}${successPage}?${params.toString()}`;
                 } else if (selectedPaymentMethod === 'pse' && result.external_resource_url) {
                     // Redirection for bank payment authorization
                     window.location.href = result.external_resource_url;
                 } else if (selectedPaymentMethod === 'efecty') {
-                    // Redirection to booking-success page, passing Efecty voucher print parameters
+                    // Redirection to booking-pending page, passing Efecty voucher print parameters
                     const params = new URLSearchParams({
-                        id: result.payment_id,
-                        code: result.reservation_code,
+                        id: String(result.payment_id || ''),
+                        code: String(result.reservation_code || ''),
                         status: 'pending',
                         method: 'efecty',
-                        barcode: result.barcode,
-                        verif_code: result.verification_code,
-                        voucher_url: result.printable_voucher_url
+                        barcode: String(result.barcode || ''),
+                        verif_code: String(result.verification_code || ''),
+                        voucher_url: String(result.printable_voucher_url || '')
                     });
-                    window.location.href = `/booking-success?${params.toString()}`;
+                    window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
                 } else {
                     // Standard pending screen fallback
-                    window.location.href = `/booking-pending?id=${result.payment_id}&code=${result.reservation_code}`;
+                    const params = new URLSearchParams({
+                        id: String(result.payment_id || ''),
+                        code: String(result.reservation_code || ''),
+                        status: String(result.status || 'pending')
+                    });
+                    window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
                 }
             } else {
                 throw new Error(result.error || msgDeclined);

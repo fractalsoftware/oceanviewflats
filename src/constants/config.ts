@@ -56,6 +56,33 @@ export const GUIDE_PAGE_PATHS: Record<string, string> = {
 	ja: "guide/ja.html",
 };
 
+export const REGISTRY_PAGE_PATHS: Record<string, string> = {
+	en: "registry/index.html",
+	es: "registry/es.html",
+	fr: "registry/fr.html",
+	it: "registry/it.html",
+	de: "registry/de.html",
+	ja: "registry/ja.html",
+};
+
+export const BOOKING_SUCCESS_PATHS: Record<string, string> = {
+	en: "booking-success/index.html",
+	es: "booking-success/es.html",
+	fr: "booking-success/fr.html",
+	it: "booking-success/it.html",
+	de: "booking-success/de.html",
+	ja: "booking-success/ja.html",
+};
+
+export const BOOKING_PENDING_PATHS: Record<string, string> = {
+	en: "booking-pending/index.html",
+	es: "booking-pending/es.html",
+	fr: "booking-pending/fr.html",
+	it: "booking-pending/it.html",
+	de: "booking-pending/de.html",
+	ja: "booking-pending/ja.html",
+};
+
 export const HOME_PAGE_PATHS: Record<string, string> = {
 	en: "",
 	es: "es.html",
@@ -101,6 +128,30 @@ export const getContactPagePath = (
 
 export const getGuidePagePath = (lang: string, assetPrefix = "./"): string => {
 	const relPath = GUIDE_PAGE_PATHS[lang] || GUIDE_PAGE_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getRegistryPagePath = (
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = REGISTRY_PAGE_PATHS[lang] || REGISTRY_PAGE_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getBookingSuccessPath = (
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = BOOKING_SUCCESS_PATHS[lang] || BOOKING_SUCCESS_PATHS.en;
+	return `${assetPrefix}${relPath}`;
+};
+
+export const getBookingPendingPath = (
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = BOOKING_PENDING_PATHS[lang] || BOOKING_PENDING_PATHS.en;
 	return `${assetPrefix}${relPath}`;
 };
 
