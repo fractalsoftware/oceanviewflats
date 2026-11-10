@@ -56,6 +56,33 @@ export const GUIDE_PAGE_PATHS: Record<string, string> = {
 	ja: "guide/ja.html",
 };
 
+export const REGISTRY_PAGE_PATHS: Record<string, string> = {
+	en: "registry/index.html",
+	es: "registry/es.html",
+	fr: "registry/fr.html",
+	it: "registry/it.html",
+	de: "registry/de.html",
+	ja: "registry/ja.html",
+};
+
+export const BOOKING_SUCCESS_PATHS: Record<string, string> = {
+	en: "booking-success/index.html",
+	es: "booking-success/es.html",
+	fr: "booking-success/fr.html",
+	it: "booking-success/it.html",
+	de: "booking-success/de.html",
+	ja: "booking-success/ja.html",
+};
+
+export const BOOKING_PENDING_PATHS: Record<string, string> = {
+	en: "booking-pending/index.html",
+	es: "booking-pending/es.html",
+	fr: "booking-pending/fr.html",
+	it: "booking-pending/it.html",
+	de: "booking-pending/de.html",
+	ja: "booking-pending/ja.html",
+};
+
 export const HOME_PAGE_PATHS: Record<string, string> = {
 	en: "",
 	es: "es.html",
@@ -83,26 +110,38 @@ export const OCEANVIEW_1606_PATHS: Record<string, string> = {
 	ja: "Oceanview1606/ja.html",
 };
 
+const resolveLocalizedPath = (
+	paths: Record<string, string>,
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const relPath = paths[lang] || paths.en;
+	return `${assetPrefix}${relPath}`;
+};
+
 export const getPrivacyPolicyPath = (
 	lang: string,
 	assetPrefix = "./",
-): string => {
-	const relPath = PRIVACY_POLICY_PATHS[lang] || PRIVACY_POLICY_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+): string => resolveLocalizedPath(PRIVACY_POLICY_PATHS, lang, assetPrefix);
 
-export const getContactPagePath = (
+export const getContactPagePath = (lang: string, assetPrefix = "./"): string =>
+	resolveLocalizedPath(CONTACT_PAGE_PATHS, lang, assetPrefix);
+
+export const getGuidePagePath = (lang: string, assetPrefix = "./"): string =>
+	resolveLocalizedPath(GUIDE_PAGE_PATHS, lang, assetPrefix);
+
+export const getRegistryPagePath = (lang: string, assetPrefix = "./"): string =>
+	resolveLocalizedPath(REGISTRY_PAGE_PATHS, lang, assetPrefix);
+
+export const getBookingSuccessPath = (
 	lang: string,
 	assetPrefix = "./",
-): string => {
-	const relPath = CONTACT_PAGE_PATHS[lang] || CONTACT_PAGE_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+): string => resolveLocalizedPath(BOOKING_SUCCESS_PATHS, lang, assetPrefix);
 
-export const getGuidePagePath = (lang: string, assetPrefix = "./"): string => {
-	const relPath = GUIDE_PAGE_PATHS[lang] || GUIDE_PAGE_PATHS.en;
-	return `${assetPrefix}${relPath}`;
-};
+export const getBookingPendingPath = (
+	lang: string,
+	assetPrefix = "./",
+): string => resolveLocalizedPath(BOOKING_PENDING_PATHS, lang, assetPrefix);
 
 export const getHomePagePath = (lang: string, assetPrefix = "./"): string => {
 	const relPath = HOME_PAGE_PATHS[lang] ?? HOME_PAGE_PATHS.en;

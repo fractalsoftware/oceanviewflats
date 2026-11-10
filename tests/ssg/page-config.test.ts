@@ -3490,3 +3490,1474 @@ test("Property Page #calendar-widget fetches authoritative Quote from quote.php 
 	assert.equal(btnBook.getAttribute("aria-disabled"), "false");
 	assert.equal(btnBook.classList.contains("pointer-events-none"), false);
 });
+
+interface BookingTestNode {
+	id: string;
+	tagName: string;
+	textContent: string;
+	innerHTML: string;
+	className: string;
+	value: string;
+	href: string;
+	disabled: boolean;
+	checked: boolean;
+	style: Record<string, string>;
+	classList: {
+		add: (...cls: string[]) => void;
+		remove: (...cls: string[]) => void;
+		contains: (c: string) => boolean;
+	};
+	getAttribute: (k: string) => string | null;
+	setAttribute: (k: string, v: string) => void;
+	removeAttribute: (k: string) => void;
+	addEventListener: (evt: string, fn: (e?: unknown) => void) => void;
+	dispatchEvent: (evt: string, payload?: Record<string, unknown>) => void;
+	appendChild: (child: BookingTestNode) => BookingTestNode;
+	querySelector: (sel: string) => BookingTestNode | null;
+	querySelectorAll: (sel: string) => BookingTestNode[];
+}
+
+const createBookingTestNode = (
+	id: string,
+	tagName = "DIV",
+	initialClasses: string[] = [],
+	initialAttrs: Record<string, string> = {},
+): BookingTestNode => {
+	const classes = new Set<string>(initialClasses);
+	const attrs = new Map<string, string>(Object.entries(initialAttrs));
+	const listeners: Record<string, Array<(e?: unknown) => void>> = {};
+	const children: BookingTestNode[] = [];
+
+	const node: BookingTestNode = {
+		id,
+		tagName,
+		textContent: "",
+		innerHTML: "",
+		className: initialClasses.join(" "),
+		value: initialAttrs.value || "",
+		href: initialAttrs.href || "",
+		disabled: false,
+		checked: false,
+		style: {},
+		classList: {
+			add: (...cls: string[]) => {
+				for (const c of cls) classes.add(c);
+			},
+			remove: (...cls: string[]) => {
+				for (const c of cls) classes.delete(c);
+			},
+			contains: (c: string) => classes.has(c),
+		},
+		getAttribute: (k: string) => attrs.get(k) ?? null,
+		setAttribute: (k: string, v: string) => {
+			attrs.set(k, v);
+			if (k === "href") node.href = v;
+		},
+		removeAttribute: (k: string) => {
+			attrs.delete(k);
+		},
+		addEventListener: (evt: string, fn: (e?: unknown) => void) => {
+			listeners[evt] = listeners[evt] || [];
+			listeners[evt].push(fn);
+		},
+		dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
+			for (const fn of listeners[evt] || []) {
+				fn({
+					target: node,
+					preventDefault: () => {},
+					stopPropagation: () => {},
+					...payload,
+				});
+			}
+		},
+		appendChild: (child: BookingTestNode) => {
+			children.push(child);
+			return child;
+		},
+		querySelector: () => null,
+		querySelectorAll: () => children,
+	};
+	return node;
+};
+
+const runBookingPaymentRedirectHarness = async (options: {
+	mainJsCode: string;
+	langCode: "en" | "es";
+	propertyId: "1707" | "1606";
+	paymentMethod: string;
+	guestName: string;
+	guestEmail: string;
+	guestPhone: string;
+	checkIn: string;
+	checkOut: string;
+	bookRequestResponse: Record<string, unknown>;
+	paymentResponse: Record<string, unknown>;
+}) => {
+	let capturedBrickConfig: {
+		callbacks?: {
+			onSubmit?: (args: {
+				selectedPaymentMethod: string;
+				formData: Record<string, unknown>;
+			}) => Promise<unknown>;
+		};
+	} | null = null;
+	const sessionStore = new Map<string, string>();
+	const {
+		mainJsCode,
+		langCode,
+		propertyId,
+		paymentMethod,
+		guestName,
+		guestEmail,
+		guestPhone,
+		checkIn,
+		checkOut,
+		bookRequestResponse,
+		paymentResponse,
+	} = options;
+
+	const calendarWidget = createBookingTestNode("calendar-widget", "DIV", [], {
+		"data-lang": langCode,
+		"data-month-names": JSON.stringify({
+			[langCode]: Array(12).fill("Month"),
+		}),
+		"data-day-names": JSON.stringify({
+			[langCode]: Array(7).fill("D"),
+		}),
+	});
+	const directBookingForm = createBookingTestNode(
+		"direct-booking-form",
+		"FORM",
+		[],
+		{
+			"data-mp-public-key": "TEST-KEY",
+		},
+	);
+	const guestNameInput = createBookingTestNode(
+		"booking-guest-name",
+		"INPUT",
+		[],
+		{
+			value: guestName,
+		},
+	);
+	const guestEmailInput = createBookingTestNode(
+		"booking-guest-email",
+		"INPUT",
+		[],
+		{
+			value: guestEmail,
+		},
+	);
+	const guestPhoneInput = createBookingTestNode(
+		"booking-guest-phone",
+		"INPUT",
+		[],
+		{
+			value: guestPhone,
+		},
+	);
+	const captchaResponseInput = createBookingTestNode(
+		"booking-captcha-response",
+		"INPUT",
+		[],
+		{ value: "7" },
+	);
+	const privacyConsentInput = createBookingTestNode(
+		"booking-privacy-consent",
+		"INPUT",
+	);
+	privacyConsentInput.checked = true;
+	const formCheckIn = createBookingTestNode("form-check-in-date", "INPUT", [], {
+		value: checkIn,
+	});
+	const formCheckOut = createBookingTestNode(
+		"form-check-out-date",
+		"INPUT",
+		[],
+		{
+			value: checkOut,
+		},
+	);
+	const btnBook = createBookingTestNode("btn-book", "A", [], {
+		"data-airbnb-url": `https://airbnb.com/rooms/${propertyId}`,
+		"data-text-ready": "Ready",
+		"data-text-default": "Default",
+	});
+
+	const nodesById = new Map<string, BookingTestNode>([
+		["calendar-widget", calendarWidget],
+		["btn-prev-month", createBookingTestNode("btn-prev-month", "BUTTON")],
+		["btn-next-month", createBookingTestNode("btn-next-month", "BUTTON")],
+		["month-label", createBookingTestNode("month-label", "SPAN")],
+		["calendar-grid", createBookingTestNode("calendar-grid", "DIV")],
+		["check-in-display", createBookingTestNode("check-in-display", "DIV")],
+		["check-out-display", createBookingTestNode("check-out-display", "DIV")],
+		["btn-book", btnBook],
+		["btn-book-text", createBookingTestNode("btn-book-text", "SPAN")],
+		["direct-booking-form", directBookingForm],
+		["booking-guest-name", guestNameInput],
+		["booking-guest-email", guestEmailInput],
+		["booking-guest-phone", guestPhoneInput],
+		["booking-captcha-response", captchaResponseInput],
+		["booking-privacy-consent", privacyConsentInput],
+		["form-check-in-date", formCheckIn],
+		["form-check-out-date", formCheckOut],
+		[
+			"payment-brick-container",
+			createBookingTestNode("payment-brick-container", "DIV"),
+		],
+	]);
+
+	const docListeners: Record<string, Array<() => void>> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			MercadoPago: function () {
+				return {
+					bricks: () => ({
+						create: async (
+							_type: string,
+							_container: string,
+							cfg: typeof capturedBrickConfig,
+						) => {
+							capturedBrickConfig = cfg;
+							return { unmount: async () => {} };
+						},
+					}),
+				};
+			},
+			location: {
+				search: "",
+				pathname: `/Oceanview${propertyId}/${langCode === "en" ? "index.html" : `${langCode}.html`}`,
+				href: "",
+			},
+			getPageConfig: () => ({
+				pageId: `Oceanview${propertyId}`,
+				lang: langCode,
+				assetPrefix: "../",
+				apiBase: "../api/",
+				i18n: {},
+			}),
+			t: (k: string, _p?: unknown, fb?: string) => fb ?? k,
+			addEventListener: () => {},
+		},
+		document: {
+			documentElement: { lang: langCode },
+			head: { appendChild: () => {} },
+			createElement: (tag: string) =>
+				tag.toLowerCase() === "script"
+					? { ...scriptStub }
+					: createBookingTestNode("", tag.toUpperCase()),
+			getElementsByTagName: () => [scriptStub],
+			querySelector: () => null,
+			querySelectorAll: () => [],
+			getElementById: (id: string) => nodesById.get(id) || null,
+			addEventListener: (evt: string, fn: () => void) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+		},
+		sessionStorage: {
+			getItem: (k: string) => sessionStore.get(k) ?? null,
+			setItem: (k: string, v: string) => {
+				sessionStore.set(k, v);
+			},
+		},
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		fetch: async (url: string) => {
+			if (url.includes("book-request.php")) {
+				return {
+					ok: true,
+					json: async () => bookRequestResponse,
+				};
+			}
+			if (url.includes("payment.php")) {
+				return {
+					ok: true,
+					json: async () => paymentResponse,
+				};
+			}
+			return { ok: true, json: async () => [] };
+		},
+		Intl,
+		Date,
+		URLSearchParams,
+		FormData: class {},
+		console: { log: () => {}, warn: () => {}, error: () => {} },
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+	for (const fn of docListeners.DOMContentLoaded || []) fn();
+	await new Promise((r) => setTimeout(r, 15));
+
+	const nextMonthBtn = nodesById.get("btn-next-month");
+	assert.ok(nextMonthBtn);
+	nextMonthBtn.dispatchEvent("click");
+	const calendarGridNode = nodesById.get("calendar-grid");
+	assert.ok(calendarGridNode);
+	const gridChildren = calendarGridNode.querySelectorAll("*");
+	gridChildren[10].dispatchEvent("click");
+	gridChildren[14].dispatchEvent("click");
+	formCheckIn.value = checkIn;
+	formCheckOut.value = checkOut;
+
+	directBookingForm.dispatchEvent("submit");
+	await new Promise((r) => setTimeout(r, 20));
+	const onSubmit = capturedBrickConfig?.callbacks?.onSubmit;
+	assert.ok(onSubmit);
+
+	await onSubmit({
+		selectedPaymentMethod: paymentMethod,
+		formData: paymentMethod === "credit_card" ? { token: "tok_123" } : {},
+	});
+
+	return {
+		redirectedHref: sandbox.window.location.href,
+		sessionStore,
+		formCheckInValue: formCheckIn.value,
+		formCheckOutValue: formCheckOut.value,
+	};
+};
+
+test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUCCESS_THEME & getRegistryPagePath, approved checkout redirect + sessionStorage persistence, and reservation code DOM hydration (#264)", async () => {
+	const { getRegistryPagePath } = await import("../../src/constants/config");
+	assert.equal(getRegistryPagePath("en", "../"), "../registry/index.html");
+	assert.equal(getRegistryPagePath("es", "../"), "../registry/es.html");
+	assert.equal(getRegistryPagePath("fr", "../"), "../registry/fr.html");
+	assert.equal(getRegistryPagePath("it", "../"), "../registry/it.html");
+	assert.equal(getRegistryPagePath("de", "../"), "../registry/de.html");
+	assert.equal(getRegistryPagePath("ja", "../"), "../registry/ja.html");
+	assert.equal(getRegistryPagePath("en"), "./registry/index.html");
+
+	// 1. Verify BookingSuccess.tsx is 100% style-agnostic without inline class strings or React state/effect hooks
+	const bookingSuccessSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "BookingSuccess.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		bookingSuccessSource.includes("BOOKING_SUCCESS_THEME") &&
+			bookingSuccessSource.includes("getRegistryPagePath") &&
+			bookingSuccessSource.includes("getGuidePagePath") &&
+			bookingSuccessSource.includes("getHomePagePath"),
+		"BookingSuccess.tsx must consume BOOKING_SUCCESS_THEME, getRegistryPagePath, getGuidePagePath, and getHomePagePath",
+	);
+	assert.ok(
+		!bookingSuccessSource.includes('className="'),
+		"BookingSuccess.tsx must not contain any hardcoded inline className strings",
+	);
+	assert.ok(
+		!bookingSuccessSource.includes("useState") &&
+			!bookingSuccessSource.includes("useEffect"),
+		"BookingSuccess.tsx must not contain client-side useState/useEffect hooks in zero-hydration SSG",
+	);
+
+	// 2. Verify compiled 6-locale booking-success HTML files
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "booking-success/index.html",
+			expectedRegistryHref: "../registry/index.html",
+			expectedGuideHref: "../guide/index.html",
+			expectedHomeHref: "../",
+			expectedRegistryBtn: "Complete Guest Registry",
+			expectedRefLabel: "Reservation Reference Code",
+		},
+		{
+			code: "es",
+			file: "booking-success/es.html",
+			expectedRegistryHref: "../registry/es.html",
+			expectedGuideHref: "../guide/es.html",
+			expectedHomeHref: "../es.html",
+			expectedRegistryBtn: "Completar Registro de Huéspedes",
+			expectedRefLabel: "Código de Referencia de la Reserva",
+		},
+		{
+			code: "fr",
+			file: "booking-success/fr.html",
+			expectedRegistryHref: "../registry/fr.html",
+			expectedGuideHref: "../guide/fr.html",
+			expectedHomeHref: "../fr.html",
+			expectedRegistryBtn: "Compléter le Registre des Invités",
+			expectedRefLabel: "Code de Référence de la Réservation",
+		},
+		{
+			code: "it",
+			file: "booking-success/it.html",
+			expectedRegistryHref: "../registry/it.html",
+			expectedGuideHref: "../guide/it.html",
+			expectedHomeHref: "../it.html",
+			expectedRegistryBtn: "Completa il Registro degli Ospiti",
+			expectedRefLabel: "Codice di Riferimento della Prenotazione",
+		},
+		{
+			code: "de",
+			file: "booking-success/de.html",
+			expectedRegistryHref: "../registry/de.html",
+			expectedGuideHref: "../guide/de.html",
+			expectedHomeHref: "../de.html",
+			expectedRegistryBtn: "Gästeregistrierung Abschließen",
+			expectedRefLabel: "Reservierungs-Referenzcode",
+		},
+		{
+			code: "ja",
+			file: "booking-success/ja.html",
+			expectedRegistryHref: "../registry/ja.html",
+			expectedGuideHref: "../guide/ja.html",
+			expectedHomeHref: "../ja.html",
+			expectedRegistryBtn: "宿泊者名簿（ゲスト登録）を完了する",
+			expectedRefLabel: "予約参照コード",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		assert.ok(
+			html.includes('id="booking-reference-box"') &&
+				html.includes('id="display-reservation-code"') &&
+				html.includes('id="btn-copy-reservation-code"') &&
+				html.includes('id="copy-code-feedback"') &&
+				html.includes('id="booking-registry-notice"') &&
+				html.includes('id="btn-booking-registry"') &&
+				html.includes('id="btn-booking-guide"') &&
+				html.includes('id="btn-booking-home"'),
+			`${locale.file} must pre-render deterministic confirmation DOM IDs`,
+		);
+		assert.ok(
+			html.includes(locale.expectedRefLabel) &&
+				html.includes(locale.expectedRegistryBtn) &&
+				html.includes("1581") &&
+				html.includes("0XXXXXX#"),
+			`${locale.file} must render localized reference label, Guest Registry CTA, and ADR 0001 / Law 1581 notice`,
+		);
+		assert.ok(
+			html.includes(
+				`id="btn-booking-registry" href="${locale.expectedRegistryHref}"`,
+			) ||
+				html.includes(
+					`href="${locale.expectedRegistryHref}" id="btn-booking-registry"`,
+				),
+			`${locale.file} #btn-booking-registry must link to ${locale.expectedRegistryHref}`,
+		);
+		assert.ok(
+			html.includes(
+				`id="btn-booking-guide" href="${locale.expectedGuideHref}"`,
+			) ||
+				html.includes(
+					`href="${locale.expectedGuideHref}" id="btn-booking-guide"`,
+				),
+			`${locale.file} #btn-booking-guide must link to ${locale.expectedGuideHref}`,
+		);
+		assert.ok(
+			html.includes(
+				`id="btn-booking-home" href="${locale.expectedHomeHref}"`,
+			) ||
+				html.includes(
+					`href="${locale.expectedHomeHref}" id="btn-booking-home"`,
+				),
+			`${locale.file} #btn-booking-home must link to ${locale.expectedHomeHref}`,
+		);
+
+		const configMatch = html.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatch, `${locale.file} must embed #ovf-page-config`);
+		const parsedConfig = JSON.parse(configMatch[1]);
+		assert.ok(
+			typeof parsedConfig.i18n.guideCopySuccess === "string" &&
+				parsedConfig.i18n.guideCopySuccess.length > 0,
+			`${locale.file} page config must expose guideCopySuccess in i18n slice`,
+		);
+	}
+
+	// 3. Verify main.js approved checkout saves sessionStorage context and redirects to localized booking-success route
+	const pageConfigCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "page-config.js"),
+		"utf-8",
+	);
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	for (const langCode of ["en", "es"] as const) {
+		const {
+			redirectedHref,
+			sessionStore,
+			formCheckInValue,
+			formCheckOutValue,
+		} = await runBookingPaymentRedirectHarness({
+			mainJsCode,
+			langCode,
+			propertyId: "1707",
+			paymentMethod: "credit_card",
+			guestName: "Mateo Restrepo",
+			guestEmail: "mateo@example.com",
+			guestPhone: "+573001112233",
+			checkIn: "2026-12-10",
+			checkOut: "2026-12-14",
+			bookRequestResponse: {
+				success: true,
+				total_price: 1900000,
+				reservation_uid: "ovf_res_264",
+			},
+			paymentResponse: {
+				success: true,
+				status: "approved",
+				payment_id: "mp_pay_777",
+				reservation_code: "ovf_res_264",
+			},
+		});
+
+		const expectedTarget =
+			langCode === "en"
+				? "../booking-success/index.html?id=mp_pay_777&code=ovf_res_264&status=approved"
+				: `../booking-success/${langCode}.html?id=mp_pay_777&code=ovf_res_264&status=approved`;
+		assert.equal(redirectedHref, expectedTarget);
+		assert.equal(sessionStore.get("ovf_last_reservation_code"), "ovf_res_264");
+		const savedContext = JSON.parse(
+			sessionStore.get("ovf_checkout_context") || "{}",
+		);
+		assert.deepEqual(savedContext, {
+			code: "ovf_res_264",
+			guest_name: "Mateo Restrepo",
+			guest_email: "mateo@example.com",
+			guest_phone: "+573001112233",
+			property_id: "1707",
+			check_in: formCheckInValue,
+			check_out: formCheckOutValue,
+		});
+	}
+
+	// 4. Verify DOMContentLoaded hydration on booking-success (via URL query string AND via sessionStorage fallback)
+	const runConfirmationHydrationTest = async (
+		locationSearch: string,
+		initialSessionCode: string | null,
+	) => {
+		const esHtml = fs.readFileSync(
+			path.join(distDir, "booking-success", "es.html"),
+			"utf-8",
+		);
+		const configMatchEs = esHtml.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatchEs);
+		const configJson = configMatchEs[1];
+
+		const refBox = createBookingTestNode("booking-reference-box", "DIV", [
+			"hidden",
+		]);
+		const codeDisplay = createBookingTestNode(
+			"display-reservation-code",
+			"SPAN",
+		);
+		const copyBtn = createBookingTestNode(
+			"btn-copy-reservation-code",
+			"BUTTON",
+		);
+		const copyFeedback = createBookingTestNode("copy-code-feedback", "SPAN", [
+			"hidden",
+		]);
+		const registryBtn = createBookingTestNode("btn-booking-registry", "A", [], {
+			href: "../registry/es.html",
+		});
+		const guideBtn = createBookingTestNode("btn-booking-guide", "A", [], {
+			href: "../guide/es.html",
+		});
+		const homeBtn = createBookingTestNode("btn-booking-home", "A", [], {
+			href: "../es.html",
+		});
+
+		const langGroup = createBookingTestNode("lang-toggle-group", "DIV");
+		const langEnLink = createBookingTestNode("lang-en", "A", [], {
+			href: "index.html",
+		});
+		const langFrLink = createBookingTestNode("lang-fr", "A", [], {
+			href: "fr.html",
+		});
+		langGroup.appendChild(langEnLink);
+		langGroup.appendChild(langFrLink);
+
+		const mapById = new Map<string, BookingTestNode>([
+			["booking-reference-box", refBox],
+			["display-reservation-code", codeDisplay],
+			["btn-copy-reservation-code", copyBtn],
+			["copy-code-feedback", copyFeedback],
+			["btn-booking-registry", registryBtn],
+			["btn-booking-guide", guideBtn],
+			["btn-booking-home", homeBtn],
+			["lang-toggle-group", langGroup],
+		]);
+
+		let copiedText = "";
+		const sessionStore = new Map<string, string>();
+		if (initialSessionCode) {
+			sessionStore.set("ovf_last_reservation_code", initialSessionCode);
+		}
+		const docListeners: Record<string, Array<() => void>> = {};
+		const scriptStub = {
+			async: false,
+			src: "",
+			parentNode: { insertBefore: () => {} },
+		};
+
+		const sandbox = {
+			window: {
+				_paq: [] as unknown[],
+				scrollY: 0,
+				location: {
+					search: locationSearch,
+					pathname: "/booking-success/es.html",
+				},
+				addEventListener: () => {},
+			} as Record<string, unknown>,
+			navigator: {
+				clipboard: {
+					writeText: async (txt: string) => {
+						copiedText = txt;
+					},
+				},
+			},
+			document: {
+				documentElement: { lang: "es" },
+				createElement: () => ({ ...scriptStub }),
+				getElementsByTagName: () => [scriptStub],
+				getElementById: (id: string) => {
+					if (id === "ovf-page-config") return { textContent: configJson };
+					return mapById.get(id) || null;
+				},
+				addEventListener: (evt: string, fn: () => void) => {
+					docListeners[evt] = docListeners[evt] || [];
+					docListeners[evt].push(fn);
+				},
+			},
+			sessionStorage: {
+				getItem: (k: string) => sessionStore.get(k) ?? null,
+				setItem: (k: string, v: string) => {
+					sessionStore.set(k, v);
+				},
+			},
+			localStorage: {
+				getItem: () => null,
+				setItem: () => {},
+			},
+			URLSearchParams,
+			setTimeout,
+			console: { log: () => {}, warn: () => {}, error: () => {} },
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(pageConfigCode, sandbox);
+		vm.runInContext(mainJsCode, sandbox);
+		for (const fn of docListeners.DOMContentLoaded || []) fn();
+
+		assert.equal(
+			refBox.classList.contains("hidden"),
+			false,
+			"#booking-reference-box must be revealed when reservation code is resolved",
+		);
+		assert.equal(codeDisplay.textContent, "ovf_res_264");
+		assert.equal(sessionStore.get("ovf_last_reservation_code"), "ovf_res_264");
+		assert.equal(
+			registryBtn.getAttribute("href"),
+			"../registry/es.html?code=ovf_res_264",
+		);
+		assert.equal(
+			guideBtn.getAttribute("href"),
+			"../guide/es.html?code=ovf_res_264",
+		);
+		assert.equal(homeBtn.getAttribute("href"), "../es.html");
+		assert.ok(
+			langEnLink.getAttribute("href")?.includes("code=ovf_res_264") &&
+				langFrLink.getAttribute("href")?.includes("code=ovf_res_264"),
+			"Language switcher links must preserve code=ovf_res_264",
+		);
+
+		copyBtn.dispatchEvent("click");
+		await new Promise((r) => setTimeout(r, 10));
+		assert.equal(copiedText, "ovf_res_264");
+		assert.equal(copyFeedback.classList.contains("hidden"), false);
+		assert.equal(copyFeedback.textContent, "¡Copiado!");
+	};
+
+	await runConfirmationHydrationTest(
+		"?id=mp_pay_777&code=ovf_res_264&status=approved",
+		null,
+	);
+	await runConfirmationHydrationTest("", "ovf_res_264");
+});
+
+test("registry.js pre-fills Primary Guest email, phone, and fallback name from same-session ovf_checkout_context when reservation code matches, ignores mismatched or malformed sessionStorage, and registry-lookup.php omits guest_email/guest_phone (#266)", async () => {
+	// 1. Verify public/api/registry-lookup.php never exposes guest_email or guest_phone in its response payload (ADR 0001 & ADR 0012)
+	const lookupPhpSource = fs.readFileSync(
+		path.join(process.cwd(), "public", "api", "registry-lookup.php"),
+		"utf-8",
+	);
+	const responseBlockMatch = lookupPhpSource.match(
+		/send_json_response\(\s*true[\s\S]*?\);\s*$/,
+	);
+	assert.ok(
+		responseBlockMatch,
+		"registry-lookup.php must contain success send_json_response block",
+	);
+	assert.ok(
+		!responseBlockMatch[0].includes("guest_email") &&
+			!responseBlockMatch[0].includes("guestEmail") &&
+			!responseBlockMatch[0].includes("guest_phone") &&
+			!responseBlockMatch[0].includes("guestPhone"),
+		"registry-lookup.php response payload must never expose guest_email or guest_phone",
+	);
+
+	// 2. Run registry.js in node:vm across matching, non-overwriting, mismatched, malformed, and throwing sessionStorage scenarios
+	const registryJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "registry.js"),
+		"utf-8",
+	);
+
+	type Listener = (e?: Record<string, unknown>) => void;
+	const createMockElement = (
+		id: string,
+		tagName = "INPUT",
+		initialClasses: string[] = [],
+	) => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>();
+		const listeners: Record<string, Listener[]> = {};
+		const el: Record<string, unknown> = {
+			id,
+			tagName,
+			type: "text",
+			name: id,
+			value: "",
+			checked: false,
+			disabled: false,
+			required: false,
+			textContent: "",
+			href: "",
+			className: initialClasses.join(" "),
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+				if (k === "disabled") el.disabled = true;
+				if (k === "required") el.required = true;
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+				if (k === "disabled") el.disabled = false;
+				if (k === "required") el.required = false;
+			},
+			getAttribute: (k: string) => attrs.get(k) || null,
+			hasAttribute: (k: string) => attrs.has(k),
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			removeEventListener: () => {},
+			dispatchEvent: (evt: string, payload: Record<string, unknown> = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({ target: el, preventDefault: () => {}, ...payload });
+				}
+			},
+			querySelectorAll: () => [],
+			scrollIntoView: () => {},
+			closest: () => null,
+		};
+		return el;
+	};
+
+	const runRegistryScenario = async (options: {
+		search: string;
+		sessionStorageRaw?: string | null;
+		sessionStorageThrows?: boolean;
+		lookupGuestName?: string;
+		initialEmail?: string;
+		initialPhone?: string;
+		initialFirstName?: string;
+		initialLastName?: string;
+	}) => {
+		const elements = new Map<string, ReturnType<typeof createMockElement>>();
+		const register = (el: ReturnType<typeof createMockElement>) => {
+			elements.set(el.id as string, el);
+			return el;
+		};
+
+		const form = register(createMockElement("registry-form", "FORM"));
+		form.setAttribute("action", "../api/registry-processor.php");
+		register(createMockElement("submit-button", "BUTTON"));
+		register(createMockElement("submit-text", "SPAN"));
+		register(createMockElement("form-message", "DIV", ["hidden"]));
+		register(createMockElement("success-overlay", "DIV", ["hidden"]));
+		register(createMockElement("display-property", "SPAN"));
+		register(createMockElement("display-check-in", "SPAN"));
+		register(createMockElement("display-check-out", "SPAN"));
+		register(createMockElement("hidden-property", "INPUT"));
+		register(createMockElement("hidden-check-in", "INPUT"));
+		register(createMockElement("hidden-check-out", "INPUT"));
+		register(createMockElement("hidden-reservation-code", "INPUT"));
+		register(createMockElement("btn-unlocked-guide", "A"));
+		register(createMockElement("success-title", "H2"));
+		register(createMockElement("success-desc", "P"));
+		register(createMockElement("add-guest-button", "BUTTON"));
+		register(createMockElement("guest-count-input", "INPUT"));
+		register(createMockElement("captcha-label", "SPAN"));
+		register(createMockElement("captcha-challenge", "INPUT"));
+		register(createMockElement("captcha-response", "INPUT"));
+		register(createMockElement("privacy-consent", "INPUT"));
+		register(
+			createMockElement("minor-attestation-container", "DIV", ["hidden"]),
+		);
+		register(createMockElement("minor-guardian-consent", "INPUT"));
+
+		const guestEmail1 = register(createMockElement("guest-email-1", "INPUT"));
+		guestEmail1.value = options.initialEmail ?? "";
+		const guestPhone1 = register(createMockElement("guest-phone-1", "INPUT"));
+		guestPhone1.value = options.initialPhone ?? "";
+		const guestName1 = register(createMockElement("guest-name-1", "INPUT"));
+		guestName1.type = "hidden";
+		const guestFn1 = register(createMockElement("guest-first-name-1", "INPUT"));
+		guestFn1.value = options.initialFirstName ?? "";
+		const guestLn1 = register(createMockElement("guest-last-name-1", "INPUT"));
+		guestLn1.value = options.initialLastName ?? "";
+
+		for (let num = 1; num <= 12; num++) {
+			const card = register(
+				createMockElement(
+					`guest-card-${num}`,
+					"DIV",
+					num === 1 ? [] : ["hidden"],
+				),
+			);
+			const age = register(createMockElement(`guest-age-${num}`, "INPUT"));
+			const docType = register(
+				createMockElement(`guest-doc-type-${num}`, "SELECT"),
+			);
+			card.querySelectorAll = () =>
+				num === 1
+					? [
+							guestEmail1,
+							guestPhone1,
+							guestName1,
+							guestFn1,
+							guestLn1,
+							age,
+							docType,
+						]
+					: [age, docType];
+		}
+
+		let domReadyCallback: Listener | null = null;
+		const sessionStorageMock = {
+			getItem: (key: string) => {
+				if (options.sessionStorageThrows) {
+					throw new Error("SecurityError: sessionStorage disabled");
+				}
+				if (key === "ovf_checkout_context") {
+					return options.sessionStorageRaw ?? null;
+				}
+				return null;
+			},
+		};
+
+		const sandbox = {
+			document: {
+				documentElement: { lang: "en" },
+				addEventListener: (evt: string, fn: Listener) => {
+					if (evt === "DOMContentLoaded") domReadyCallback = fn;
+				},
+				getElementById: (id: string) => elements.get(id) || null,
+			},
+			window: {
+				location: {
+					search: options.search,
+					origin: "https://oceanviewflats.com",
+				},
+				sessionStorage: sessionStorageMock,
+				getPageConfig: () => ({
+					lang: "en",
+					assetPrefix: "../",
+					apiBase: "../api/",
+					minorDocTypes: ["Tarjeta de Identidad", "Registro Civil"],
+				}),
+				t: (key: string, _params?: unknown, fallback?: string) =>
+					fallback || key,
+				scrollTo: () => {},
+			},
+			sessionStorage: sessionStorageMock,
+			URLSearchParams,
+			URL,
+			Intl,
+			Date,
+			FormData: class {},
+			fetch: async (url: string) => {
+				if (url.includes("registry-lookup.php")) {
+					return {
+						ok: true,
+						status: 200,
+						json: async () => ({
+							success: true,
+							status: "success",
+							reservation: {
+								reservation_uid: "ovf_res_266",
+								property_id: "1707",
+								check_in: "2027-02-10",
+								check_out: "2027-02-14",
+								guest_name: options.lookupGuestName ?? "",
+								status: "confirmed",
+								registry_completed: false,
+								max_guests: 6,
+							},
+						}),
+					};
+				}
+				return {
+					ok: true,
+					status: 200,
+					json: async () => ({ challenge: "4 + 1", signature: "sig" }),
+				};
+			},
+			console: { error: () => {}, warn: () => {} },
+			setTimeout,
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(registryJsCode, sandbox);
+		assert.ok(domReadyCallback);
+		(domReadyCallback as Listener)();
+		await new Promise((r) => setTimeout(r, 15));
+
+		return {
+			email: guestEmail1.value as string,
+			phone: guestPhone1.value as string,
+			fullName: guestName1.value as string,
+			firstName: guestFn1.value as string,
+			lastName: guestLn1.value as string,
+			property: elements.get("hidden-property")?.value as string,
+			checkIn: elements.get("hidden-check-in")?.value as string,
+			checkOut: elements.get("hidden-check-out")?.value as string,
+		};
+	};
+
+	// Scenario A: Matching code via ?code=ovf_res_266 pre-fills email, phone, and splits multi-part guest_name from sessionStorage fallback when lookup guest_name is empty
+	const matchingResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_res_266",
+			guest_name: "Camila Andrea Restrepo",
+			guest_email: "camila@example.com",
+			guest_phone: "+573109998877",
+			property_id: "1707",
+			check_in: "2027-02-10",
+			check_out: "2027-02-14",
+		}),
+		lookupGuestName: "",
+	});
+	assert.equal(matchingResult.email, "camila@example.com");
+	assert.equal(matchingResult.phone, "+573109998877");
+	assert.equal(matchingResult.fullName, "Camila Andrea Restrepo");
+	assert.equal(matchingResult.firstName, "Camila Andrea");
+	assert.equal(matchingResult.lastName, "Restrepo");
+	assert.equal(matchingResult.property, "1707");
+	assert.equal(matchingResult.checkIn, "2027-02-10");
+	assert.equal(matchingResult.checkOut, "2027-02-14");
+
+	// Scenario A2: Authoritative r.guest_name from registry-lookup.php takes precedence over ovf_checkout_context.guest_name fallback
+	const authoritativeNameResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_res_266",
+			guest_name: "Fallback Session Name",
+			guest_email: "camila@example.com",
+			guest_phone: "+573109998877",
+		}),
+		lookupGuestName: "Valeria Sofia Morales",
+	});
+	assert.equal(authoritativeNameResult.email, "camila@example.com");
+	assert.equal(authoritativeNameResult.phone, "+573109998877");
+	assert.equal(authoritativeNameResult.fullName, "Valeria Sofia Morales");
+	assert.equal(authoritativeNameResult.firstName, "Valeria Sofia");
+	assert.equal(authoritativeNameResult.lastName, "Morales");
+
+	// Scenario B: Matching code via ?reservation_code=ovf_res_266 does not overwrite existing/user-entered values (even when lookup returns r.guest_name)
+	const preserveExistingResult = await runRegistryScenario({
+		search: "?reservation_code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_res_266",
+			guest_name: "Camila Restrepo",
+			guest_email: "camila@example.com",
+			guest_phone: "+573109998877",
+		}),
+		lookupGuestName: "Server Name",
+		initialEmail: "custom@example.com",
+		initialPhone: "+18005551234",
+		initialFirstName: "manual-first",
+		initialLastName: "manual-last",
+	});
+	assert.equal(preserveExistingResult.email, "custom@example.com");
+	assert.equal(preserveExistingResult.phone, "+18005551234");
+	assert.equal(preserveExistingResult.firstName, "manual-first");
+	assert.equal(preserveExistingResult.lastName, "manual-last");
+
+	// Scenario C: Mismatched reservation code in sessionStorage must NOT pre-fill email or phone (no cross-reservation leakage)
+	const mismatchResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: JSON.stringify({
+			code: "ovf_other_999",
+			guest_name: "Other Guest",
+			guest_email: "other@example.com",
+			guest_phone: "+573000000000",
+		}),
+		lookupGuestName: "Carlos Vives",
+	});
+	assert.equal(mismatchResult.email, "");
+	assert.equal(mismatchResult.phone, "");
+	assert.equal(mismatchResult.firstName, "Carlos");
+	assert.equal(mismatchResult.lastName, "Vives");
+
+	// Scenario D: Malformed JSON in sessionStorage is ignored gracefully without throwing
+	const malformedResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageRaw: "{not-valid-json",
+		lookupGuestName: "Shakira Mebarak",
+	});
+	assert.equal(malformedResult.email, "");
+	assert.equal(malformedResult.phone, "");
+	assert.equal(malformedResult.firstName, "Shakira");
+	assert.equal(malformedResult.lastName, "Mebarak");
+
+	// Scenario E: Unavailable/throwing sessionStorage is ignored gracefully without throwing
+	const throwingResult = await runRegistryScenario({
+		search: "?code=ovf_res_266",
+		sessionStorageThrows: true,
+		lookupGuestName: "Juanes Aristizabal",
+	});
+	assert.equal(throwingResult.email, "");
+	assert.equal(throwingResult.phone, "");
+	assert.equal(throwingResult.firstName, "Juanes");
+	assert.equal(throwingResult.lastName, "Aristizabal");
+});
+
+test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PENDING_THEME, Efecty Cash Voucher & pending checkout routing, and voucher + reference code DOM hydration (#265)", async () => {
+	const { getBookingPendingPath } = await import("../../src/constants/config");
+	assert.equal(
+		getBookingPendingPath("en", "../"),
+		"../booking-pending/index.html",
+	);
+	assert.equal(
+		getBookingPendingPath("es", "../"),
+		"../booking-pending/es.html",
+	);
+	assert.equal(
+		getBookingPendingPath("fr", "../"),
+		"../booking-pending/fr.html",
+	);
+	assert.equal(
+		getBookingPendingPath("it", "../"),
+		"../booking-pending/it.html",
+	);
+	assert.equal(
+		getBookingPendingPath("de", "../"),
+		"../booking-pending/de.html",
+	);
+	assert.equal(
+		getBookingPendingPath("ja", "../"),
+		"../booking-pending/ja.html",
+	);
+	assert.equal(getBookingPendingPath("en"), "./booking-pending/index.html");
+
+	// 1. Verify BookingPending.tsx is 100% style-agnostic without inline class strings or React state/effect hooks
+	const bookingPendingSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "BookingPending.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		bookingPendingSource.includes("BOOKING_PENDING_THEME") &&
+			bookingPendingSource.includes("getHomePagePath"),
+		"BookingPending.tsx must consume BOOKING_PENDING_THEME and getHomePagePath",
+	);
+	assert.ok(
+		!bookingPendingSource.includes('className="'),
+		"BookingPending.tsx must not contain any hardcoded inline className strings",
+	);
+	assert.ok(
+		!bookingPendingSource.includes("useState") &&
+			!bookingPendingSource.includes("useEffect"),
+		"BookingPending.tsx must not contain client-side useState/useEffect hooks in zero-hydration SSG",
+	);
+
+	// 2. Verify compiled 6-locale booking-pending HTML files
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			file: "booking-pending/index.html",
+			expectedHomeHref: "../",
+			expectedRefLabel: "Reservation Reference Code",
+			expectedVoucherTitle: "Cash Payment Voucher (Efecty)",
+			expectedPrintBtn: "Open Printable Cash Voucher",
+		},
+		{
+			code: "es",
+			file: "booking-pending/es.html",
+			expectedHomeHref: "../es.html",
+			expectedRefLabel: "Código de Referencia de la Reserva",
+			expectedVoucherTitle: "Cupón de Pago en Efectivo (Efecty)",
+			expectedPrintBtn: "Abrir Cupón de Pago Imprimible",
+		},
+		{
+			code: "fr",
+			file: "booking-pending/fr.html",
+			expectedHomeHref: "../fr.html",
+			expectedRefLabel: "Code de Référence de la Réservation",
+			expectedVoucherTitle: "Bon de Paiement en Espèces (Efecty)",
+			expectedPrintBtn: "Ouvrir le Bon de Paiement Imprimable",
+		},
+		{
+			code: "it",
+			file: "booking-pending/it.html",
+			expectedHomeHref: "../it.html",
+			expectedRefLabel: "Codice di Riferimento della Prenotazione",
+			expectedVoucherTitle: "Voucher di Pagamento in Contanti (Efecty)",
+			expectedPrintBtn: "Apri il Voucher di Pagamento Stampabile",
+		},
+		{
+			code: "de",
+			file: "booking-pending/de.html",
+			expectedHomeHref: "../de.html",
+			expectedRefLabel: "Reservierungs-Referenzcode",
+			expectedVoucherTitle: "Barzahlungsgutschein (Efecty)",
+			expectedPrintBtn: "Druckbaren Zahlungsgutschein Öffnen",
+		},
+		{
+			code: "ja",
+			file: "booking-pending/ja.html",
+			expectedHomeHref: "../ja.html",
+			expectedRefLabel: "予約参照コード",
+			expectedVoucherTitle: "現金支払いバウチャー（Efecty）",
+			expectedPrintBtn: "印刷用バウチャーを開く",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+
+		assert.ok(
+			html.includes('id="booking-reference-box"') &&
+				html.includes('id="display-reservation-code"') &&
+				html.includes('id="btn-copy-reservation-code"') &&
+				html.includes('id="copy-code-feedback"') &&
+				html.includes('id="pending-voucher-box"') &&
+				html.includes('id="display-voucher-barcode"') &&
+				html.includes('id="display-voucher-verif-code"') &&
+				html.includes('id="btn-print-voucher"') &&
+				html.includes('id="btn-pending-home"'),
+			`${locale.file} must pre-render deterministic pending & voucher DOM IDs`,
+		);
+		assert.ok(
+			html.includes(locale.expectedRefLabel) &&
+				html.includes(locale.expectedVoucherTitle) &&
+				html.includes(locale.expectedPrintBtn),
+			`${locale.file} must render localized reference label and Cash Voucher labels`,
+		);
+		assert.ok(
+			html.includes(
+				`id="btn-pending-home" href="${locale.expectedHomeHref}"`,
+			) ||
+				html.includes(
+					`href="${locale.expectedHomeHref}" id="btn-pending-home"`,
+				),
+			`${locale.file} #btn-pending-home must link to ${locale.expectedHomeHref}`,
+		);
+
+		const configMatch = html.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatch, `${locale.file} must embed #ovf-page-config`);
+		const parsedConfig = JSON.parse(configMatch[1]);
+		assert.ok(
+			typeof parsedConfig.i18n.guideCopySuccess === "string" &&
+				parsedConfig.i18n.guideCopySuccess.length > 0,
+			`${locale.file} page config must expose guideCopySuccess in i18n slice`,
+		);
+	}
+
+	// 3. Verify main.js Cash Voucher (efecty) and standard pending checkouts redirect to localized booking-pending route
+	const pageConfigCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "page-config.js"),
+		"utf-8",
+	);
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	const runPendingPaymentRedirectTest = async (
+		langCode: "en" | "es",
+		paymentMethod: "efecty" | "credit_card",
+	) => {
+		const { redirectedHref, sessionStore } =
+			await runBookingPaymentRedirectHarness({
+				mainJsCode,
+				langCode,
+				propertyId: "1606",
+				paymentMethod,
+				guestName: "Camila Vargas",
+				guestEmail: "camila@example.com",
+				guestPhone: "+573109998877",
+				checkIn: "2026-12-18",
+				checkOut: "2026-12-22",
+				bookRequestResponse: {
+					success: true,
+					total_price: 1650000,
+					reservation_uid: "ovf_res_265",
+				},
+				paymentResponse: {
+					success: true,
+					status: "pending",
+					payment_id: "mp_pay_888",
+					reservation_code: "ovf_res_265",
+					barcode: "770999888111",
+					verification_code: "110500",
+					printable_voucher_url:
+						"https://www.mercadopago.com.co/payments/888/ticket",
+				},
+			});
+
+		const basePage =
+			langCode === "en"
+				? "../booking-pending/index.html"
+				: `../booking-pending/${langCode}.html`;
+		assert.ok(
+			redirectedHref.startsWith(`${basePage}?`),
+			`Pending ${paymentMethod} payment must redirect to ${basePage}, never /booking-success (got ${redirectedHref})`,
+		);
+		assert.ok(!redirectedHref.includes("booking-success"));
+
+		const redirectedQuery = new URLSearchParams(
+			redirectedHref.split("?")[1] || "",
+		);
+		assert.equal(redirectedQuery.get("id"), "mp_pay_888");
+		assert.equal(redirectedQuery.get("code"), "ovf_res_265");
+		assert.equal(redirectedQuery.get("status"), "pending");
+		if (paymentMethod === "efecty") {
+			assert.equal(redirectedQuery.get("method"), "efecty");
+			assert.equal(redirectedQuery.get("barcode"), "770999888111");
+			assert.equal(redirectedQuery.get("verif_code"), "110500");
+			assert.equal(
+				redirectedQuery.get("voucher_url"),
+				"https://www.mercadopago.com.co/payments/888/ticket",
+			);
+		}
+		assert.equal(sessionStore.get("ovf_last_reservation_code"), "ovf_res_265");
+	};
+
+	await runPendingPaymentRedirectTest("en", "efecty");
+	await runPendingPaymentRedirectTest("es", "efecty");
+	await runPendingPaymentRedirectTest("es", "credit_card");
+
+	// 4. Verify DOMContentLoaded hydration of #booking-reference-box, #pending-voucher-box, URL sanitization, and language switcher query preservation
+	const runPendingHydrationTest = async (
+		locationSearch: string,
+		expectVoucherVisible: boolean,
+		expectPrintBtnVisible: boolean,
+		expectedVoucherHref?: string,
+	) => {
+		const esHtml = fs.readFileSync(
+			path.join(distDir, "booking-pending", "es.html"),
+			"utf-8",
+		);
+		const configMatchEs = esHtml.match(
+			/<script id="ovf-page-config" type="application\/json">(.*?)<\/script>/,
+		);
+		assert.ok(configMatchEs);
+		const configJson = configMatchEs[1];
+
+		const refBox = createBookingTestNode("booking-reference-box", "DIV", [
+			"hidden",
+		]);
+		const codeDisplay = createBookingTestNode(
+			"display-reservation-code",
+			"SPAN",
+		);
+		const copyBtn = createBookingTestNode(
+			"btn-copy-reservation-code",
+			"BUTTON",
+		);
+		const copyFeedback = createBookingTestNode("copy-code-feedback", "SPAN", [
+			"hidden",
+		]);
+		const voucherBox = createBookingTestNode("pending-voucher-box", "DIV", [
+			"hidden",
+		]);
+		const voucherBarcode = createBookingTestNode(
+			"display-voucher-barcode",
+			"SPAN",
+		);
+		const voucherVerifCode = createBookingTestNode(
+			"display-voucher-verif-code",
+			"SPAN",
+		);
+		const btnPrintVoucher = createBookingTestNode(
+			"btn-print-voucher",
+			"A",
+			["hidden"],
+			{
+				href: "#",
+			},
+		);
+		const homeBtn = createBookingTestNode("btn-pending-home", "A", [], {
+			href: "../es.html",
+		});
+
+		const langGroup = createBookingTestNode("lang-toggle-group", "DIV");
+		const langEnLink = createBookingTestNode("lang-en", "A", [], {
+			href: "index.html",
+		});
+		const langDeLink = createBookingTestNode("lang-de", "A", [], {
+			href: "de.html",
+		});
+		langGroup.appendChild(langEnLink);
+		langGroup.appendChild(langDeLink);
+
+		const mapById = new Map<string, BookingTestNode>([
+			["booking-reference-box", refBox],
+			["display-reservation-code", codeDisplay],
+			["btn-copy-reservation-code", copyBtn],
+			["copy-code-feedback", copyFeedback],
+			["pending-voucher-box", voucherBox],
+			["display-voucher-barcode", voucherBarcode],
+			["display-voucher-verif-code", voucherVerifCode],
+			["btn-print-voucher", btnPrintVoucher],
+			["btn-pending-home", homeBtn],
+			["lang-toggle-group", langGroup],
+		]);
+
+		let copiedText = "";
+		const sessionStore = new Map<string, string>();
+		const docListeners: Record<string, Array<() => void>> = {};
+		const scriptStub = {
+			async: false,
+			src: "",
+			parentNode: { insertBefore: () => {} },
+		};
+
+		const sandbox = {
+			window: {
+				_paq: [] as unknown[],
+				scrollY: 0,
+				location: {
+					search: locationSearch,
+					pathname: "/booking-pending/es.html",
+				},
+				addEventListener: () => {},
+			} as Record<string, unknown>,
+			navigator: {
+				clipboard: {
+					writeText: async (txt: string) => {
+						copiedText = txt;
+					},
+				},
+			},
+			document: {
+				documentElement: { lang: "es" },
+				createElement: () => ({ ...scriptStub }),
+				getElementsByTagName: () => [scriptStub],
+				getElementById: (id: string) => {
+					if (id === "ovf-page-config") return { textContent: configJson };
+					return mapById.get(id) || null;
+				},
+				addEventListener: (evt: string, fn: () => void) => {
+					docListeners[evt] = docListeners[evt] || [];
+					docListeners[evt].push(fn);
+				},
+			},
+			sessionStorage: {
+				getItem: (k: string) => sessionStore.get(k) ?? null,
+				setItem: (k: string, v: string) => {
+					sessionStore.set(k, v);
+				},
+			},
+			localStorage: {
+				getItem: () => null,
+				setItem: () => {},
+			},
+			URLSearchParams,
+			setTimeout,
+			console: { log: () => {}, warn: () => {}, error: () => {} },
+		};
+
+		vm.createContext(sandbox);
+		vm.runInContext(pageConfigCode, sandbox);
+		vm.runInContext(mainJsCode, sandbox);
+		for (const fn of docListeners.DOMContentLoaded || []) fn();
+
+		assert.equal(refBox.classList.contains("hidden"), false);
+		assert.equal(codeDisplay.textContent, "ovf_res_265");
+		assert.equal(
+			voucherBox.classList.contains("hidden"),
+			!expectVoucherVisible,
+		);
+		assert.equal(
+			btnPrintVoucher.classList.contains("hidden"),
+			!expectPrintBtnVisible,
+		);
+
+		if (expectVoucherVisible) {
+			assert.equal(voucherBarcode.textContent, "770999888111");
+			assert.equal(voucherVerifCode.textContent, "110500");
+			assert.ok(
+				langEnLink.getAttribute("href")?.includes("barcode=770999888111") &&
+					langDeLink.getAttribute("href")?.includes("verif_code=110500"),
+				"Language switcher links must preserve Cash Voucher query parameters",
+			);
+		}
+		if (expectedVoucherHref) {
+			assert.equal(btnPrintVoucher.getAttribute("href"), expectedVoucherHref);
+		}
+
+		copyBtn.dispatchEvent("click");
+		await new Promise((r) => setTimeout(r, 10));
+		assert.equal(copiedText, "ovf_res_265");
+		assert.equal(copyFeedback.classList.contains("hidden"), false);
+		assert.equal(copyFeedback.textContent, "¡Copiado!");
+	};
+
+	await runPendingHydrationTest(
+		"?id=mp_pay_888&code=ovf_res_265&status=pending&method=efecty&barcode=770999888111&verif_code=110500&voucher_url=https%3A%2F%2Fwww.mercadopago.com.co%2Fpayments%2F888%2Fticket",
+		true,
+		true,
+		"https://www.mercadopago.com.co/payments/888/ticket",
+	);
+	await runPendingHydrationTest(
+		"?id=mp_pay_888&code=ovf_res_265&status=pending&method=efecty&barcode=770999888111&verif_code=110500&voucher_url=javascript%3Aalert(1)",
+		true,
+		false,
+		"#",
+	);
+	await runPendingHydrationTest(
+		"?id=mp_pay_888&code=ovf_res_265&status=pending",
+		false,
+		false,
+		"#",
+	);
+});

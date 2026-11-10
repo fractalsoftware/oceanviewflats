@@ -130,6 +130,13 @@ export const getClientDictionaryForPage = (
 		};
 	}
 
+	if (pageId === "booking-success" || pageId === "booking-pending") {
+		return {
+			...common,
+			guideCopySuccess: t.guideCopySuccess || "",
+		};
+	}
+
 	return common;
 };
 

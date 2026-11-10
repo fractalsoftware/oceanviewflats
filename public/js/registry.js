@@ -101,6 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (guest1FnInput) guest1FnInput.value = '';
         const guest1LnInput = document.getElementById('guest-last-name-1');
         if (guest1LnInput) guest1LnInput.value = '';
+        const guest1EmailInput = document.getElementById('guest-email-1');
+        if (guest1EmailInput) guest1EmailInput.value = '';
+        const guest1PhoneInput = document.getElementById('guest-phone-1');
+        if (guest1PhoneInput) guest1PhoneInput.value = '';
 
         if (form) form.classList.add('hidden');
         if (successOverlay) successOverlay.classList.add('hidden');
@@ -158,6 +162,76 @@ document.addEventListener('DOMContentLoaded', () => {
         hiddenCheckOut.value = "";
     }
 
+    let isNameFromSessionFallback = false;
+
+    ['guest-first-name-1', 'guest-last-name-1'].forEach(inputId => {
+        const el = document.getElementById(inputId);
+        if (el) {
+            el.addEventListener('input', () => {
+                isNameFromSessionFallback = false;
+            });
+        }
+    });
+
+    function populatePrimaryGuestName(rawName, options = {}) {
+        if (!rawName || typeof rawName !== 'string') return;
+        const trimmedName = rawName.trim();
+        if (!trimmedName) return;
+
+        const isAuthoritative = Boolean(options.authoritative);
+        const isSessionFallback = Boolean(options.fromSessionFallback);
+        const canOverwriteFallback = isAuthoritative && isNameFromSessionFallback;
+
+        const guest1NameInput = document.getElementById('guest-name-1');
+        const guest1FnInput = document.getElementById('guest-first-name-1');
+        const guest1LnInput = document.getElementById('guest-last-name-1');
+
+        if (guest1NameInput && (!guest1NameInput.value || canOverwriteFallback)) {
+            guest1NameInput.value = trimmedName;
+        }
+        if (guest1FnInput && guest1LnInput && ((!guest1FnInput.value && !guest1LnInput.value) || canOverwriteFallback)) {
+            const parts = trimmedName.split(/\s+/);
+            if (parts.length > 1) {
+                guest1FnInput.value = parts.slice(0, -1).join(' ');
+                guest1LnInput.value = parts[parts.length - 1];
+            } else if (parts.length === 1) {
+                guest1FnInput.value = parts[0];
+                guest1LnInput.value = '';
+            }
+            isNameFromSessionFallback = isSessionFallback;
+        }
+    }
+
+    function prefillFromCheckoutContext(code) {
+        if (!code) return;
+        try {
+            const storage = typeof sessionStorage !== 'undefined'
+                ? sessionStorage
+                : (window && window.sessionStorage ? window.sessionStorage : null);
+            if (!storage || typeof storage.getItem !== 'function') return;
+            const raw = storage.getItem('ovf_checkout_context');
+            if (!raw || typeof raw !== 'string') return;
+            const ctx = JSON.parse(raw);
+            if (!ctx || typeof ctx !== 'object' || ctx.code !== code) return;
+
+            const emailInput = document.getElementById('guest-email-1');
+            if (emailInput && !emailInput.value && typeof ctx.guest_email === 'string' && ctx.guest_email.trim()) {
+                emailInput.value = ctx.guest_email.trim();
+            }
+
+            const phoneInput = document.getElementById('guest-phone-1');
+            if (phoneInput && !phoneInput.value && typeof ctx.guest_phone === 'string' && ctx.guest_phone.trim()) {
+                phoneInput.value = ctx.guest_phone.trim();
+            }
+
+            if (typeof ctx.guest_name === 'string' && ctx.guest_name.trim()) {
+                populatePrimaryGuestName(ctx.guest_name, { fromSessionFallback: true });
+            }
+        } catch (_) {
+            // Gracefully ignore unavailable or malformed sessionStorage
+        }
+    }
+
     // Async lookup if reservation code is present
     async function lookupReservation() {
         if (!reservationCodeVal) return;
@@ -185,22 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayCheckOut.textContent = r.check_out;
                     hiddenCheckOut.value = r.check_out;
                 }
-                const guest1NameInput = document.getElementById('guest-name-1');
-                const guest1FnInput = document.getElementById('guest-first-name-1');
-                const guest1LnInput = document.getElementById('guest-last-name-1');
                 if (r.guest_name) {
-                    if (guest1NameInput && !guest1NameInput.value) {
-                        guest1NameInput.value = r.guest_name;
-                    }
-                    if (guest1FnInput && !guest1FnInput.value && guest1LnInput && !guest1LnInput.value) {
-                        const parts = r.guest_name.trim().split(/\s+/);
-                        if (parts.length > 1) {
-                            guest1FnInput.value = parts.slice(0, -1).join(' ');
-                            guest1LnInput.value = parts[parts.length - 1];
-                        } else if (parts.length === 1) {
-                            guest1FnInput.value = parts[0];
-                        }
-                    }
+                    populatePrimaryGuestName(r.guest_name, { authoritative: true });
                 }
 
                 if (typeof r.max_guests === 'number' || (typeof r.max_guests === 'string' && r.max_guests !== '')) {
@@ -252,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (reservationCodeVal) {
+        prefillFromCheckoutContext(reservationCodeVal);
         lookupReservation();
     }
 
