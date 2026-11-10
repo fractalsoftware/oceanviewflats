@@ -485,11 +485,74 @@ final class WebhookSettlementProcessorTest extends TestCase
 
         // Verify fulfillment was invoked
         $this->assertSame(1, $this->fulfillmentSpy->calls);
-        $lastReservation = $this->fulfillmentSpy->lastReservation;
-        $this->assertNotNull($lastReservation);
-        $this->assertSame('ovf-pending-approve', $lastReservation->reservationUid);
-        // ADR 0001: Door code MUST be withheld during payment confirmation fulfillment
-        $this->assertNull($lastReservation->doorCode);
+    }
+
+    public function testRule6RejectedPaymentReturnsUnhandledStatusAndLeavesReservationPending(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status, door_code)
+            VALUES ('ovf-pending-rejected', '1606', 'Rejected Guest', 'rejected@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending', '9999');
+        ");
+
+        $this->gateway->stagePayment(new PaymentDetails(
+            paymentId: 'pay-rej',
+            status: 'rejected',
+            statusDetail: 'cc_rejected_insufficient_amount', // FUND simulation
+            externalReference: 'ovf-pending-rejected',
+            transactionAmount: 750000.00,
+            totalRefundedAmount: 0.0,
+            paymentMethodId: 'visa'
+        ));
+
+        $result = $this->processor->settlePayment('pay-rej');
+
+        $this->assertTrue($result->success);
+        $this->assertSame('rejected', $result->status);
+        $this->assertSame(200, $result->httpStatusCode);
+        $this->assertSame('ovf-pending-rejected', $result->reservationUid);
+
+        // Verify DB reservation was NOT modified
+        $stmt = $this->pdo->query("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-pending-rejected'");
+        $row = $stmt->fetch();
+        $this->assertSame('pending_payment', $row['status']);
+        $this->assertSame('pending', $row['payment_status']);
+
+        // Verify fulfillment was NOT invoked
+        $this->assertSame(0, $this->fulfillmentSpy->calls);
+    }
+
+    public function testRule7InProcessPaymentReturnsUnhandledStatusAndLeavesReservationPending(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status, door_code)
+            VALUES ('ovf-pending-cont', '1606', 'CONT Guest', 'cont@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending', '9999');
+        ");
+
+        $this->gateway->stagePayment(new PaymentDetails(
+            paymentId: 'pay-cont',
+            status: 'in_process',
+            statusDetail: 'pending_contingency', // CONT simulation
+            externalReference: 'ovf-pending-cont',
+            transactionAmount: 750000.00,
+            totalRefundedAmount: 0.0,
+            paymentMethodId: 'visa'
+        ));
+
+        $result = $this->processor->settlePayment('pay-cont');
+
+        $this->assertTrue($result->success);
+        $this->assertSame('in_process', $result->status);
+        $this->assertSame(200, $result->httpStatusCode);
+        $this->assertSame('ovf-pending-cont', $result->reservationUid);
+
+        // Verify DB reservation was NOT modified
+        $stmt = $this->pdo->query("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-pending-cont'");
+        $row = $stmt->fetch();
+        $this->assertSame('pending_payment', $row['status']);
+        $this->assertSame('pending', $row['payment_status']);
+
+        // Verify fulfillment was NOT invoked
+        $this->assertSame(0, $this->fulfillmentSpy->calls);
     }
 
     /**

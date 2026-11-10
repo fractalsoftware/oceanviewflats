@@ -4,6 +4,7 @@ export const AIRBNB_URLS = {
 };
 
 export const MERCADOPAGO_PUBLIC_KEY =
+	process.env.MERCADOPAGO_PUBLIC_KEY ||
 	"APP_USR-d820875d-6c1a-4f51-b997-7fc6f15779c6"; // Official MercadoPago Public Key (or Sandbox)
 
 export const PRIVACY_POLICY_VERSION = "2026-10";

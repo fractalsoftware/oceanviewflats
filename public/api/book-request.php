@@ -291,7 +291,18 @@ $html_message = "
 
 // Dispatch via PhpMailSender
 /** @var EmailSenderInterface $mailSender */
-$mailSender = $GLOBALS['TEST_EMAIL_SENDER'] ?? new PhpMailSender();
+if (isset($GLOBALS['TEST_EMAIL_SENDER'])) {
+    $mailSender = $GLOBALS['TEST_EMAIL_SENDER'];
+} elseif (($_ENV['APP_ENV'] ?? 'production') !== 'production' || ($_SERVER['SERVER_NAME'] ?? '') === 'localhost' || isset($_SERVER['HTTP_NGROK_SKIP_BROWSER_WARNING'])) {
+    $mailSender = new class implements OceanViewFlats\Domain\Fulfillment\EmailSenderInterface {
+        public function send(string $to, string $subject, string $htmlBody, array $headers = []): bool {
+            error_log("Mock Email Sent to: $to, Subject: $subject");
+            return true;
+        }
+    };
+} else {
+    $mailSender = new PhpMailSender();
+}
 
 // Send to host
 $subjectHost = "NEW DIRECT BOOKING REQUEST: Prop $propertyId ($guestName) - [" . strtoupper($lang) . "]";
