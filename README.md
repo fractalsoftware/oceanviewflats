@@ -133,7 +133,7 @@ Copy `.env.example` to `.env` for local development. In production, CI workflows
 | `CAPTCHA_SECRET` | HMAC secret for stateless mathematical CAPTCHA signing |
 | `APP_ENCRYPTION_KEY` | 32-byte (or 64-char hex) key for XSalsa20-Poly1305 encryption of `guest_registries.guests_payload` ([ADR 0012](docs/adr/0012-personal-data-protection-and-ley-1581-compliance.md)) |
 | `OVF_ADMIN_SESSION_SECRET` | 64-char hex secret for Admin Console session signing and `setup.php` authorization |
-| `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_SANDBOX` | Mercado Pago Checkout Bricks & server-to-server payment/refund credentials |
+| `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_ACCESS_TOKEN` | Mercado Pago Checkout Bricks & server-to-server payment/refund credentials |
 | `PROPERTY_1606_DOOR_CODE`, `PROPERTY_1606_WIFI_SSID`, `PROPERTY_1606_WIFI_PASSWORD` | Property `1606` emergency fallback PIN and Wi-Fi credentials |
 | `PROPERTY_1707_DOOR_CODE`, `PROPERTY_1707_WIFI_SSID`, `PROPERTY_1707_WIFI_PASSWORD` | Property `1707` emergency fallback PIN and Wi-Fi credentials |
 | `HUESPED_MANAGER_BASE_URL`, `HUESPED_MANAGER_1707_CHECK`, `HUESPED_MANAGER_1606_CHECK` | Condominium Administration Portal base URL and per-property security check tokens ([ADR 0008](docs/adr/0008-automated-condominium-clearance-sync.md)) |
