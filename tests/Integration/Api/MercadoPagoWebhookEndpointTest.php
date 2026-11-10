@@ -415,6 +415,74 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
     }
 
     /**
+     * Testing FUND, SECU, CALL, EXPI, FORM, OTHE scenarios (Rejected payments).
+     * The processor should return unhandledStatus and keep the reservation pending.
+     */
+    public function testRejectedPaymentWebhookLeavesReservationPending(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
+            VALUES ('ovf-pending-rejected', '1606', 'Rejected Guest', 'rejected@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending');
+        ");
+
+        $paymentPayload = [
+            'id' => '11223344',
+            'status' => 'rejected',
+            'status_detail' => 'cc_rejected_insufficient_amount', // FUND simulation
+            'external_reference' => 'ovf-pending-rejected',
+            'transaction_amount' => 750000.00,
+            'transaction_amount_refunded' => 0.0,
+            'payment_method_id' => 'mastercard',
+        ];
+
+        $res = $this->callWebhook('11223344', $paymentPayload);
+
+        $this->assertSame(0, $res['exitCode'], $res['stderr']);
+        $this->assertSame('rejected', $res['json']['status'] ?? null);
+
+        // Assert reservation was NOT modified
+        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-rejected'");
+        $row = $stmt->fetch();
+        $this->assertSame('pending_payment', $row['status']);
+        $this->assertSame('pending', $row['payment_status']);
+        $this->assertNull($row['mercadopago_payment_id']); // Not confirmed
+    }
+
+    /**
+     * Testing CONT scenario (Pending / in_process payment).
+     * The processor should return unhandledStatus and keep the reservation pending without side-effects.
+     */
+    public function testInProcessPaymentWebhookLeavesReservationPending(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
+            VALUES ('ovf-pending-cont', '1606', 'CONT Guest', 'cont@example.com', '+573001112233', '2026-12-28', '2026-12-31', 750000.00, 'pending_payment', 'pending');
+        ");
+
+        $paymentPayload = [
+            'id' => '55667788',
+            'status' => 'in_process',
+            'status_detail' => 'pending_contingency', // CONT simulation
+            'external_reference' => 'ovf-pending-cont',
+            'transaction_amount' => 750000.00,
+            'transaction_amount_refunded' => 0.0,
+            'payment_method_id' => 'visa',
+        ];
+
+        $res = $this->callWebhook('55667788', $paymentPayload);
+
+        $this->assertSame(0, $res['exitCode'], $res['stderr']);
+        $this->assertSame('in_process', $res['json']['status'] ?? null);
+
+        // Assert reservation was NOT modified
+        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-cont'");
+        $row = $stmt->fetch();
+        $this->assertSame('pending_payment', $row['status']);
+        $this->assertSame('pending', $row['payment_status']);
+        $this->assertNull($row['mercadopago_payment_id']); // Not confirmed
+    }
+
+    /**
      * Helper to invoke settlement processor in memory without subprocesses.
      *
      * @param string $paymentId

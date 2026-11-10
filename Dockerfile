@@ -15,10 +15,8 @@ COPY src ./src
 COPY public ./public
 
 ARG MERCADOPAGO_PUBLIC_KEY=""
-RUN if [ -n "${MERCADOPAGO_PUBLIC_KEY}" ]; then \
-        sed -i "s|export const MERCADOPAGO_PUBLIC_KEY = \".*\";|export const MERCADOPAGO_PUBLIC_KEY = \"${MERCADOPAGO_PUBLIC_KEY}\";|g" src/constants/config.ts; \
-    fi \
-    && npm run build
+ENV MERCADOPAGO_PUBLIC_KEY=${MERCADOPAGO_PUBLIC_KEY}
+RUN npm run build
 
 # =============================================================================
 # Stage 2: Composer Dependency Builder
@@ -39,6 +37,7 @@ FROM php:8.3-apache AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         unzip \
+        sendmail \
     && docker-php-ext-install -j"$(nproc)" \
         opcache \
         pdo_mysql \

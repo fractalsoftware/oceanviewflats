@@ -200,7 +200,7 @@ function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST
         
         if ($originClean === 'https://www.oceanviewflats.com' || $originClean === 'https://oceanviewflats.com') {
             $allowed = true;
-        } elseif (preg_match('/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i', $originClean)) {
+        } elseif (preg_match('/^https?:\/\/(localhost|127\.0\.0\.1|.*\.ngrok-free\.(app|dev))(:\d+)?$/i', $originClean)) {
             $allowed = true;
         }
         
@@ -234,7 +234,7 @@ function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST
  * 
  * @param array $allowedHosts Allowed referrer domain names.
  */
-function enforce_referer_check(array $allowedHosts = ['oceanviewflats.com', 'localhost', '127.0.0.1']): void {
+function enforce_referer_check(array $allowedHosts = ['oceanviewflats.com', 'localhost', '127.0.0.1', 'ngrok-free.dev', 'ngrok-free.app']): void {
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     if (empty($referer)) {
         // Enforce restriction for browser clients only (to avoid blocking legitimate curl tests or server webhooks)

@@ -897,6 +897,9 @@ document.addEventListener('DOMContentLoaded', () => {
             lang: lang || document.documentElement.lang || 'en',
             privacy_consent: Boolean(privacyCheckboxEl && privacyCheckboxEl.checked),
             privacy_policy_version: (privacyVersionEl && privacyVersionEl.value) ? privacyVersionEl.value : '2026-10',
+            captcha_challenge: document.getElementById('booking-captcha-challenge') ? document.getElementById('booking-captcha-challenge').value : '',
+            captcha_response: document.getElementById('booking-captcha-response') ? document.getElementById('booking-captcha-response').value.trim() : '',
+            captcha_signature: bookingCaptchaSignature || '',
             ...formData
         };
 
