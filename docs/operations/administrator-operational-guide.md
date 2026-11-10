@@ -53,7 +53,7 @@ Deployments are split across two independent GitHub Actions workflows connecting
 | `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS` | Both | MySQL database connection credentials |
 | `APP_ENCRYPTION_KEY` | Both | 32-byte (or 64-char hex) key for XSalsa20-Poly1305 encryption of `guest_registries.guests_payload` ([ADR 0012](../adr/0012-personal-data-protection-and-ley-1581-compliance.md)) |
 | `OVF_ADMIN_SESSION_SECRET` | Admin | 64-char random hex secret (`openssl rand -hex 32`) for session/CSRF signing and initial `setup.php` token |
-| `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_SANDBOX` | Both | Mercado Pago Checkout Bricks public key, server-to-server access token, and boolean sandbox flag |
+| `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_ACCESS_TOKEN` | Both | Mercado Pago Checkout Bricks public key and server-to-server access token |
 | `RECIPIENT_EMAIL` | Public | Host notification mailbox (`rentals@oceanviewflats.com`) |
 | `CAPTCHA_SECRET` | Public | HMAC key for signing stateless mathematical CAPTCHA tokens |
 | `PROPERTY_1606_DOOR_CODE`, `PROPERTY_1606_WIFI_SSID`, `PROPERTY_1606_WIFI_PASSWORD` | Both | Fallback smart-lock PIN (`0160600#`) and Wi-Fi credentials for Property `1606` |
