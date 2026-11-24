@@ -180,6 +180,7 @@ jobs:
 
       - name: Run Trivy filesystem vulnerability & misconfig scan (MEDIUM+ SARIF)
         id: trivy_sarif
+        if: github.workflow == 'CI'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: 'fs'
@@ -192,7 +193,7 @@ jobs:
 
       - name: Upload Trivy SARIF report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@74c1aea9df7c0f02e9b7bfe4a8935abf2e5e3aa6 # v3
-        if: always() && steps.trivy_sarif.conclusion != 'skipped'
+        if: always() && github.workflow == 'CI' && steps.trivy_sarif.conclusion != 'skipped'
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -246,7 +247,7 @@ jobs:
 
       - name: Upload Semgrep SARIF report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@74c1aea9df7c0f02e9b7bfe4a8935abf2e5e3aa6 # v3
-        if: always() && hashFiles('semgrep-results.sarif') != ''
+        if: always() && github.workflow == 'CI' && hashFiles('semgrep-results.sarif') != ''
         with:
           sarif_file: 'semgrep-results.sarif'
           category: 'semgrep-sast'

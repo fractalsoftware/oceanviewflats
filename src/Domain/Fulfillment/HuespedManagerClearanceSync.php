@@ -428,7 +428,7 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
 
         // 5. Verify Step 2 outcome
         $isSuccess = false;
-        $failureReason = null;
+        $failureReason = 'Step 2 failed during occupant submission.';
 
         if ($response2['error'] !== null) {
             $failureReason = 'Step 2 HTTP transport error: ' . $response2['error'];
@@ -480,7 +480,7 @@ final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInter
                 ->markSynced((string) $lastId);
         } else {
             $clearance = $clearance->withPayload($fullPayload)
-                ->markFailed($failureReason ?? 'Step 2 failed during occupant submission.');
+                ->markFailed($failureReason);
         }
 
         return $this->finalizeClearance($clearance, $reservationUid, $payloadBefore, $admin);
