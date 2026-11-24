@@ -22,7 +22,10 @@ $jsonOutput = $apiDir . '/openapi.json';
 $yamlOutput = $apiDir . '/openapi.yaml';
 
 try {
-    $openapi = Generator::scan([$apiDir]);
+    $openapi = (new Generator())->generate([$apiDir]);
+    if ($openapi === null) {
+        throw new \RuntimeException('Failed to generate OpenAPI specification: no OpenAPI root found.');
+    }
     
     // Save JSON
     file_put_contents($jsonOutput, $openapi->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
