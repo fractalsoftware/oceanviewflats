@@ -5,9 +5,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  schedule:
-    # Weekly Monday 08:00 COT (13:00 UTC) continuous CVE & SAST monitoring
-    - cron: '0 13 * * 1'
   workflow_call:
   workflow_dispatch:
 
@@ -18,7 +15,6 @@ jobs:
   backend:
     name: Backend (PHP & Quality Seam)
     runs-on: ubuntu-latest
-    if: github.event_name != 'schedule'
 
     steps:
       - name: Checkout Repository
@@ -67,7 +63,6 @@ jobs:
   frontend:
     name: Frontend (TypeScript, Biome, Tests & Build)
     runs-on: ubuntu-latest
-    if: github.event_name != 'schedule'
 
     steps:
       - name: Checkout Repository
@@ -256,53 +251,3 @@ jobs:
         with:
           sarif_file: 'semgrep-results.sarif'
           category: 'semgrep-sast'
-
-  security-alert-issue:
-    name: Open/Update Security Alert Issue (Scheduled Scan)
-    runs-on: ubuntu-latest
-    needs: [security]
-    if: always() && github.event_name == 'schedule' && needs.security.result == 'failure'
-    permissions:
-      issues: write
-
-    steps:
-      - name: Create or update deduplicated security audit issue
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        with:
-          script: |
-            const title = 'Weekly Security Audit Failed — Action Required';
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const { data: openIssues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'security',
-              per_page: 50,
-            });
-            const existing = openIssues.find((issue) => issue.title === title);
-            const body = [
-              'The scheduled weekly **CI / Security** scan detected one or more **HIGH or CRITICAL** vulnerabilities, secret findings, SAST errors, or workflow issues.',
-              '',
-              `- **Workflow Run**: ${runUrl}`,
-              `- **Commit**: \`${context.sha}\``,
-              `- **Timestamp (UTC)**: ${new Date().toISOString()}`,
-              '',
-              'Inspect the run logs and **Security → Code scanning alerts** tab to triage and remediate.',
-            ].join('\n');
-
-            if (existing) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                body,
-              });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body,
-                labels: ['security'],
-              });
-            }
