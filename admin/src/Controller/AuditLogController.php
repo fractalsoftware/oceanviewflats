@@ -192,7 +192,7 @@ class AuditLogController
             'id' => $session['admin_user_id'] ?? null,
             'name' => $session['admin_user_name'] ?? 'Admin',
             'email' => $session['admin_user_email'] ?? ($session['admin_email'] ?? 'admin@oceanviewflats.com'),
-            'role' => $session['admin_user_role'] ?? ($session['admin_role'] ?? 'viewer'),
+            'role' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
         ];
     }
 }

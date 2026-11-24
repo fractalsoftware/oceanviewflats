@@ -71,7 +71,7 @@ final class AuthController
             $session['admin_user_id'] = $adminUserId;
             $session['admin_user_name'] = (string) ($user['name'] ?? 'Admin');
             $session['admin_user_email'] = (string) ($user['email'] ?? $email);
-            $session['admin_user_role'] = (string) ($user['role'] ?? 'admin');
+            $session['admin_user_role'] = (\OceanViewFlats\Admin\Auth\AdminRole::tryFrom(strtolower(trim((string) ($user['role'] ?? '')))) ?? \OceanViewFlats\Admin\Auth\AdminRole::VIEWER)->value;
 
             // Rotate CSRF token upon successful authentication per Spec
             $session['csrf_token'] = CsrfMiddleware::generateToken();

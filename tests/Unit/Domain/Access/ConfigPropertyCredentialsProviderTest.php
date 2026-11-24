@@ -18,22 +18,29 @@ final class ConfigPropertyCredentialsProviderTest extends TestCase
         parent::tearDown();
     }
 
-    public function testReturnsAuthoritativeDefaultsFor1606And1707(): void
+    public function testFailsClosedWithoutConfiguredSecretsAndAppliesNonSecretMetadataDefaults(): void
     {
-        $provider = new ConfigPropertyCredentialsProvider([]);
+        $unconfiguredProvider = new ConfigPropertyCredentialsProvider([]);
+        $this->assertNull($unconfiguredProvider->getCredentials('1606'));
+        $this->assertNull($unconfiguredProvider->getCredentials('1707'));
+
+        $provider = new ConfigPropertyCredentialsProvider([
+            '1606' => ['door_code' => '0111606#', 'wifi_password' => 'TestPass1606'],
+            '1707' => ['door_code' => '0111707#', 'wifi_password' => 'TestPass1707'],
+        ]);
 
         $creds1606 = $provider->getCredentials('1606');
         $this->assertNotNull($creds1606);
-        $this->assertSame('1606#', $creds1606->doorCode);
+        $this->assertSame('0111606#', $creds1606->doorCode);
         $this->assertSame('APTO1606', $creds1606->wifiSsid);
-        $this->assertSame('Invitado@1606@HN', $creds1606->wifiPassword);
+        $this->assertSame('TestPass1606', $creds1606->wifiPassword);
         $this->assertSame('87', $creds1606->parkingSpot);
 
         $creds1707 = $provider->getCredentials('1707');
         $this->assertNotNull($creds1707);
-        $this->assertSame('1707#', $creds1707->doorCode);
+        $this->assertSame('0111707#', $creds1707->doorCode);
         $this->assertSame('APTO1707', $creds1707->wifiSsid);
-        $this->assertSame('Invitado@1707@HN', $creds1707->wifiPassword);
+        $this->assertSame('TestPass1707', $creds1707->wifiPassword);
         $this->assertSame('95', $creds1707->parkingSpot);
     }
 

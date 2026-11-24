@@ -117,6 +117,7 @@ final class AdminAppTest extends TestCase
         // Verify CSV path propagation override behavior: quote calculation uses custom CSV rate ($888,777 * 2 nights = $1,777,554)
         $quoteSession = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'quote-token',
         ];
         $quoteRequest = new Request(
@@ -160,7 +161,7 @@ final class AdminAppTest extends TestCase
             // Static routes (15)
             ['GET', '/login'],
             ['POST', '/login'],
-            ['GET', '/logout'],
+            ['POST', '/logout'],
             ['GET', '/'],
             ['GET', '/reservations'],
             ['GET', '/reservations/new'],

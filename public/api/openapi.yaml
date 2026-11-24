@@ -409,7 +409,7 @@ paths:
       tags:
         - Webhooks
       summary: 'Mercado Pago asynchronous IPN & Webhook receiver'
-      description: 'Receives real-time payment status updates from Mercado Pago, verifies payment status server-to-server, updates database reservation and refund records with Resurrection Defense, and dispatches localized guest confirmation or cancellation emails.'
+      description: 'Receives real-time payment status updates from Mercado Pago, validates HMAC-SHA256 signatures within a strict +/-5 minute timestamp replay window, verifies settled COP currency and transaction amount server-to-server, updates database reservation and refund records with Resurrection Defense, and dispatches localized guest confirmation or cancellation emails.'
       operationId: handleMercadoPagoWebhook
       parameters:
         -
@@ -510,6 +510,7 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               required:
+                - reservation_code
                 - property
                 - check_in
                 - check_out
@@ -519,6 +520,10 @@ paths:
                 - captcha_signature
                 - captcha_response
               properties:
+                reservation_code:
+                  description: 'Authoritative reservation_uid required for public Guest Registry submission (ADR 0014)'
+                  type: string
+                  example: ovf_20260910_a1b2c3
                 property:
                   type: string
                   enum: ['1606', '1707']
@@ -612,7 +617,7 @@ paths:
             text/calendar:
               schema:
                 type: string
-                example: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//OceanViewFlats//Direct Booking Sync//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:RES-1606-1234@oceanviewflats.com\r\nDTSTART;VALUE=DATE:20260910\r\nDTEND;VALUE=DATE:20260915\r\nSUMMARY:Blocked - OceanViewFlats Direct Booking\r\nEND:VEVENT\r\nEND:VCALENDAR"
+                example: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//OceanViewFlats//Direct Booking Sync//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:ovf-evt-9f86d081884c7d659a2feaa0c55ad015@oceanviewflats.com\r\nDTSTART;VALUE=DATE:20260910\r\nDTEND;VALUE=DATE:20260915\r\nSUMMARY:Blocked - OceanViewFlats Direct Booking\r\nEND:VEVENT\r\nEND:VCALENDAR"
         '400':
           description: 'Invalid or missing property parameter'
         '429':

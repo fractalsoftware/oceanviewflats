@@ -11,6 +11,10 @@ final class GuideAccessEndpointTest extends TestCase
     private function getSqliteSetupCode(): string
     {
         return <<<'PHP'
+$_ENV['PROPERTY_1606_DOOR_CODE'] = '0111606#';
+$_ENV['PROPERTY_1606_WIFI_PASSWORD'] = 'TestWifi1606!';
+$_ENV['PROPERTY_1707_DOOR_CODE'] = '0111707#';
+$_ENV['PROPERTY_1707_WIFI_PASSWORD'] = 'TestWifi1707!';
 $pdo = new PDO("sqlite::memory:");
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
@@ -117,9 +121,9 @@ PHP;
         $this->assertTrue($res['json']['verified']);
         $this->assertSame('verified', $res['json']['status']);
         $this->assertArrayHasKey('credentials', $res['json']);
-        $this->assertSame('0170700#', $res['json']['credentials']['door_code']);
+        $this->assertSame('0111707#', $res['json']['credentials']['door_code']);
         $this->assertSame('APTO1707', $res['json']['credentials']['wifi_ssid']);
-        $this->assertSame('Invitado@1707@HN', $res['json']['credentials']['wifi_password']);
+        $this->assertSame('TestWifi1707!', $res['json']['credentials']['wifi_password']);
         $this->assertSame('95', $res['json']['credentials']['parking_spot']);
         $this->assertArrayHasKey('reservation', $res['json']);
         $this->assertSame('Completed Guest', $res['json']['reservation']['guest_name']);
@@ -138,7 +142,7 @@ PHP;
         $this->assertArrayHasKey('credentials', $res['json']);
         $this->assertSame('0876543#', $res['json']['credentials']['door_code']);
         $this->assertSame('APTO1606', $res['json']['credentials']['wifi_ssid']);
-        $this->assertSame('Invitado@1606@HN', $res['json']['credentials']['wifi_password']);
+        $this->assertSame('TestWifi1606!', $res['json']['credentials']['wifi_password']);
         $this->assertSame('87', $res['json']['credentials']['parking_spot']);
     }
 
@@ -180,7 +184,7 @@ PHP;
         $this->assertArrayNotHasKey('registry_url', $resEn['json']);
         $this->assertStringNotContainsString('0987654#', $resEn['stdout']);
         $this->assertStringNotContainsString('APTO1606', $resEn['stdout']);
-        $this->assertStringNotContainsString('Invitado@1606@HN', $resEn['stdout']);
+        $this->assertStringNotContainsString('TestWifi1606!', $resEn['stdout']);
 
         // 2. Spanish localized response
         $resEs = $this->callEndpoint(['code' => 'ovf_concluded_1', 'lang' => 'es'], $this->getSqliteSetupCode());

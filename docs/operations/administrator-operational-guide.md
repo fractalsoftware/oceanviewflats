@@ -57,10 +57,24 @@ Deployments are split across two independent GitHub Actions workflows connecting
 | `MERCADOPAGO_WEBHOOK_SECRET` | Public | HMAC-SHA256 secret for validating incoming Mercado Pago webhook `x-signature` and `x-request-id` headers on `/api/mercadopago-webhook.php` |
 | `RECIPIENT_EMAIL` | Public | Host notification mailbox (`rentals@oceanviewflats.com`) |
 | `CAPTCHA_SECRET` | Public | HMAC key for signing stateless mathematical CAPTCHA tokens |
-| `PROPERTY_1606_DOOR_CODE`, `PROPERTY_1606_WIFI_SSID`, `PROPERTY_1606_WIFI_PASSWORD` | Both | Fallback smart-lock PIN (`0160600#`) and Wi-Fi credentials for Property `1606` |
-| `PROPERTY_1707_DOOR_CODE`, `PROPERTY_1707_WIFI_SSID`, `PROPERTY_1707_WIFI_PASSWORD` | Both | Fallback smart-lock PIN (`0170700#`) and Wi-Fi credentials for Property `1707` |
+| `PROPERTY_1606_DOOR_CODE`, `PROPERTY_1606_WIFI_SSID`, `PROPERTY_1606_WIFI_PASSWORD` | Both | Fallback smart-lock PIN and Wi-Fi credentials for Property `1606` |
+| `PROPERTY_1707_DOOR_CODE`, `PROPERTY_1707_WIFI_SSID`, `PROPERTY_1707_WIFI_PASSWORD` | Both | Fallback smart-lock PIN and Wi-Fi credentials for Property `1707` |
+| `ICAL_FEED_1606`, `ICAL_FEED_1707` | Both | Private Airbnb Inbound Feed `.ics` URLs (including secret `?t=` query tokens) |
+| `ICAL_UID_SECRET` | Public | Optional dedicated HMAC key for opaque Outbound Feed iCal UIDs ([ADR 0014](../adr/0014-opaque-outbound-feed-uids-and-token-gated-fulfillment.md); defaults to `APP_ENCRYPTION_KEY`) |
 | `HUESPED_MANAGER_BASE_URL` | Both | Condominium Administration Portal base URL (`https://salguerosunset.huespedmanager.com.co`) |
-| `HUESPED_MANAGER_1707_CHECK`, `HUESPED_MANAGER_1606_CHECK` | Both | Per-property security check tokens for Huésped Manager (`ep92449222` / `ep24281580`) |
+| `HUESPED_MANAGER_1707_CHECK`, `HUESPED_MANAGER_1606_CHECK` | Both | Per-property pre-shared security check tokens for Huésped Manager |
+
+### Provisioning `APP_ENCRYPTION_KEY` & Re-Encrypting Legacy Guest Registries
+
+`PayloadEncryptor` fails closed outside explicit local/test environments whenever `APP_ENCRYPTION_KEY` is unset. When provisioning `APP_ENCRYPTION_KEY` on an existing production database whose `guest_registries.guests_payload` rows were previously encrypted with the legacy fallback seed:
+
+1. Generate a 32-byte key (`openssl rand -hex 32`) and save it as the `APP_ENCRYPTION_KEY` GitHub Actions secret.
+2. Deploy both `deploy.yml` and `admin-deploy.yml` so `APP_ENCRYPTION_KEY` is active on cPanel.
+3. Run a dry-run audit over SSH/cPanel Terminal, then apply the atomic re-encryption:
+   ```bash
+   php scripts/reencrypt-guest-registries.php --from-legacy-fallback
+   php scripts/reencrypt-guest-registries.php --from-legacy-fallback --apply
+   ```
 
 ---
 

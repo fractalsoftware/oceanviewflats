@@ -1,0 +1,90 @@
+rules:
+  - id: ovf-php-dangerous-sink
+    languages: [php]
+    severity: ERROR
+    message: >
+      Dangerous PHP execution or deserialization sink detected. Never invoke eval, shell
+      execution functions, or unserialize on runtime code paths.
+    paths:
+      include:
+        - public/api/
+        - src/
+        - admin/src/
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+      - pattern: shell_exec(...)
+      - pattern: system(...)
+      - pattern: passthru(...)
+      - pattern: proc_open(...)
+      - pattern: popen(...)
+      - pattern: unserialize(...)
+    metadata:
+      category: security
+      cwe: "CWE-94"
+
+  - id: ovf-php-interpolated-pdo-query
+    languages: [php]
+    severity: ERROR
+    message: >
+      SQL query executed with dynamic variable interpolation via PDO::query/exec.
+      Always use prepared statements with bound parameters.
+    paths:
+      include:
+        - public/api/
+        - src/
+        - admin/src/
+    pattern-either:
+      - pattern: $PDO->query("..." . $VAR . ...)
+      - pattern: $PDO->query($VAR . "...")
+      - pattern: $PDO->exec("..." . $VAR . ...)
+      - pattern: $PDO->exec($VAR . "...")
+    metadata:
+      category: security
+      cwe: "CWE-89"
+
+  - id: ovf-php-unmasked-pii-error-log
+    languages: [php]
+    severity: ERROR
+    message: >
+      Potential raw PII (email, phone, document number, passport, or password) written to
+      error_log(). Mask PII via OceanViewFlats\Domain\Security\PiiMasker before logging (ADR 0012).
+    paths:
+      include:
+        - public/api/
+        - src/
+        - admin/src/
+    patterns:
+      - pattern-either:
+          - pattern: error_log(..., $PII, ...)
+          - pattern: error_log($A . $PII)
+          - pattern: error_log($A . $PII . $B)
+          - pattern: error_log($PII . $B)
+      - metavariable-regex:
+          metavariable: $PII
+          regex: '^\$(?:guest_?email|primary_?email|email|guest_?phone|phone|doc_?num|document_?number|passport|password|wifi_?password|door_?code)$'
+    metadata:
+      category: security
+      cwe: "CWE-532"
+
+  - id: ovf-js-dom-xss-sink
+    languages: [javascript]
+    severity: ERROR
+    message: >
+      Direct HTML DOM sink (innerHTML / outerHTML / insertAdjacentHTML / document.write)
+      detected in public/js/. Prefer textContent or createElement() to prevent DOM XSS.
+    paths:
+      include:
+        - public/js/
+    pattern-either:
+      - pattern: $EL.outerHTML = $VAL
+      - pattern: $EL.insertAdjacentHTML(...)
+      - pattern: document.write(...)
+      - pattern: document.writeln(...)
+      - patterns:
+          - pattern: $EL.innerHTML = $VAL
+          - pattern-not: $EL.innerHTML = ""
+          - pattern-not: $EL.innerHTML = ''
+    metadata:
+      category: security
+      cwe: "CWE-79"

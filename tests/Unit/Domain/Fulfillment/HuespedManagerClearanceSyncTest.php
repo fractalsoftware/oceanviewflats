@@ -31,12 +31,21 @@ final class HuespedManagerClearanceSyncTest extends TestCase
 
     protected function setUp(): void
     {
+        $_ENV['HUESPED_MANAGER_1707_CHECK'] = 'test-check-1707';
+        $_ENV['HUESPED_MANAGER_1606_CHECK'] = 'test-check-1606';
+
         $this->pdo = new PDO('sqlite::memory:', null, null, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
         MigrationRunner::run($this->pdo, 'test_db');
         $this->repository = new PdoCondominiumClearanceRepository($this->pdo);
+    }
+
+    protected function tearDown(): void
+    {
+        unset($_ENV['HUESPED_MANAGER_1707_CHECK'], $_ENV['HUESPED_MANAGER_1606_CHECK']);
+        parent::tearDown();
     }
 
     private function createSampleReservation(
@@ -218,7 +227,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         // Verify Step 1 call
         $this->assertCount(2, $requests);
         $step1 = $requests[0];
-        $this->assertStringContainsString('reg_guest_owner_pre.php?unit=1707&check=ep92449222', $step1['url']);
+        $this->assertStringContainsString('reg_guest_owner_pre.php?unit=1707&check=test-check-1707', $step1['url']);
         $this->assertSame('1707', $step1['data']['send_apt']);
         $this->assertSame('2026-11-01', $step1['data']['send_indate']);
         $this->assertSame('2026-11-05', $step1['data']['send_outdate']);
@@ -653,7 +662,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
 
         $this->assertCount(2, $requests);
         $this->assertSame(
-            'https://salguerosunset.huespedmanager.com.co/propietarios/production/reg_guest_owner_pre.php?unit=1606&check=ep24281580',
+            'https://salguerosunset.huespedmanager.com.co/propietarios/production/reg_guest_owner_pre.php?unit=1606&check=test-check-1606',
             $requests[0]
         );
         $this->assertSame(

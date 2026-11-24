@@ -21,9 +21,11 @@ Options -Indexes
 
 # 3. HTTP Security Headers
 <IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
     Header set X-Frame-Options "DENY"
     Header set X-Content-Type-Options "nosniff"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
 </IfModule>
 
 # 4. Static Asset MIME Types (PWA Web App Manifest & Vector Icons)
@@ -88,5 +90,5 @@ LimitRequestBody 65536
 # SetEnv PROPERTY_ID "1"
 # SetEnv APP_ENV "production"
 # SetEnv HUESPED_MANAGER_BASE_URL "https://salguerosunset.huespedmanager.com.co/propietarios/production"
-# SetEnv HUESPED_MANAGER_1707_CHECK "ep92449222"
-# SetEnv HUESPED_MANAGER_1606_CHECK "ep24281580"
+# SetEnv HUESPED_MANAGER_1707_CHECK "your_1707_check_token"
+# SetEnv HUESPED_MANAGER_1606_CHECK "your_1606_check_token"

@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Weekly Monday 08:00 COT (13:00 UTC) continuous CVE & SAST monitoring
+    - cron: '0 13 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -14,13 +17,14 @@ jobs:
   backend:
     name: Backend (PHP & Quality Seam)
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.3'
           extensions: mbstring, pdo, pdo_mysql, sqlite3, json
@@ -31,10 +35,10 @@ jobs:
 
       - name: Get Composer Cache Directory
         id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -60,21 +64,25 @@ jobs:
         run: git diff --exit-code public/api/openapi.json public/api/openapi.yaml
 
   frontend:
-    name: Frontend (TypeScript, Biome & Build)
+    name: Frontend (TypeScript, Biome, Tests & Build)
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Run SSG & client interactivity tests
+        run: npm test
 
       - name: Run TypeScript typecheck
         run: npm run typecheck
@@ -86,7 +94,7 @@ jobs:
         run: npm run build
 
   security:
-    name: Security (Audits, Gitleaks & Trivy SAST)
+    name: Security (Audits, Gitleaks, Trivy, Semgrep & Workflow Lint)
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -95,28 +103,33 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.3'
           coverage: none
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
 
+      - name: Set up Python (Semgrep & zizmor)
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
       - name: Get Composer Cache Directory
         id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -126,38 +139,167 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run Composer security audit
-        run: composer audit --locked
+      - name: Run Composer security audit (advisories + abandoned report)
+        run: composer audit --locked --abandoned=report
 
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Run npm security audit
+      - name: Run npm security audit (block HIGH/CRITICAL)
         run: npm audit --audit-level=high
 
-      - name: Run Gitleaks secret detection
+      - name: Run Gitleaks secret detection (SHA256 verified)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          set -euo pipefail
           GITLEAKS_VERSION="8.24.2"
-          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz -C /usr/local/bin gitleaks
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gitleaks detect --source . --log-opts="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}" --redact --verbose
+          GITLEAKS_SHA256="fa0500f6b7e41d28791ebc680f5dd9899cd42b58629218a5f041efa899151a8e"
+          ARCHIVE="/tmp/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o "$ARCHIVE"
+          echo "${GITLEAKS_SHA256}  ${ARCHIVE}" | sha256sum -c -
+          tar -xzf "$ARCHIVE" -C /usr/local/bin gitleaks
+          rm -f "$ARCHIVE"
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_BASE_SHA" ] && [ -n "$PR_HEAD_SHA" ]; then
+            gitleaks detect --source . --log-opts="${PR_BASE_SHA}..${PR_HEAD_SHA}" --redact --verbose
           else
             gitleaks detect --source . --redact --verbose
           fi
 
-      - name: Run Trivy filesystem vulnerability scan
-        id: trivy
-        uses: aquasecurity/trivy-action@v0.36.0
+      - name: Run actionlint & zizmor on GitHub Workflows
+        run: |
+          set -euo pipefail
+          ACTIONLINT_VERSION="1.7.7"
+          ACTIONLINT_SHA256="023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
+          ARCHIVE="/tmp/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -o "$ARCHIVE"
+          echo "${ACTIONLINT_SHA256}  ${ARCHIVE}" | sha256sum -c -
+          tar -xzf "$ARCHIVE" -C /usr/local/bin actionlint
+          rm -f "$ARCHIVE"
+          actionlint -color
+          python3 -m pip install --quiet --upgrade zizmor
+          zizmor --persona=regular --min-severity=high .github/workflows
+
+      - name: Run Trivy filesystem vulnerability & misconfig scan (MEDIUM+ SARIF)
+        id: trivy_sarif
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: 'fs'
+          scanners: 'vuln,misconfig'
           format: 'sarif'
           output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF report to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@74c1aea9df7c0f02e9b7bfe4a8935abf2e5e3aa6 # v3
+        if: always() && steps.trivy_sarif.conclusion != 'skipped'
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'trivy-fs'
+
+      - name: Enforce Trivy HIGH/CRITICAL gate
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: 'fs'
+          scanners: 'vuln,misconfig'
+          format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
           ignore-unfixed: true
 
-      - name: Upload SARIF report to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        if: always() && steps.trivy.conclusion != 'skipped'
+      - name: Run Semgrep SAST (PHP, JS/TS, OWASP Top 10 & OVF custom rules)
+        id: semgrep
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet semgrep
+          semgrep scan \
+            --config p/php \
+            --config p/typescript \
+            --config p/javascript \
+            --config p/owasp-top-ten \
+            --config p/security-audit \
+            --config .semgrep/oceanviewflats.yml \
+            --exclude tests \
+            --exclude admin/tests \
+            --exclude dist \
+            --exclude vendor \
+            --exclude node_modules \
+            --sarif \
+            --output semgrep-results.sarif \
+            --metrics=off || true
+          semgrep scan \
+            --config p/php \
+            --config p/typescript \
+            --config p/javascript \
+            --config p/owasp-top-ten \
+            --config p/security-audit \
+            --config .semgrep/oceanviewflats.yml \
+            --exclude tests \
+            --exclude admin/tests \
+            --exclude dist \
+            --exclude vendor \
+            --exclude node_modules \
+            --severity ERROR \
+            --error \
+            --metrics=off
+
+      - name: Upload Semgrep SARIF report to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@74c1aea9df7c0f02e9b7bfe4a8935abf2e5e3aa6 # v3
+        if: always() && hashFiles('semgrep-results.sarif') != ''
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'semgrep-results.sarif'
+          category: 'semgrep-sast'
+
+  security-alert-issue:
+    name: Open/Update Security Alert Issue (Scheduled Scan)
+    runs-on: ubuntu-latest
+    needs: [security]
+    if: always() && github.event_name == 'schedule' && needs.security.result == 'failure'
+    permissions:
+      issues: write
+
+    steps:
+      - name: Create or update deduplicated security audit issue
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = 'Weekly Security Audit Failed — Action Required';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 50,
+            });
+            const existing = openIssues.find((issue) => issue.title === title);
+            const body = [
+              'The scheduled weekly **CI / Security** scan detected one or more **HIGH or CRITICAL** vulnerabilities, secret findings, SAST errors, or workflow issues.',
+              '',
+              `- **Workflow Run**: ${runUrl}`,
+              `- **Commit**: \`${context.sha}\``,
+              `- **Timestamp (UTC)**: ${new Date().toISOString()}`,
+              '',
+              'Inspect the run logs and **Security → Code scanning alerts** tab to triage and remediate.',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['security'],
+              });
+            }

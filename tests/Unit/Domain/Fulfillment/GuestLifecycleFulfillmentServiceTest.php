@@ -303,7 +303,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->assertStringContainsString('#87', $guestEmail['htmlBody']);
     }
 
-    public function testSubmitRegistryMatchesByPropertyAndStayDatesWhenCodeIsEmpty(): void
+    public function testSubmitRegistryRejectsEmptyCodeWithoutDateFallback(): void
     {
         $this->createSampleReservation('ovf_sample_dates');
         $submission = $this->createSubmission(
@@ -315,9 +315,10 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
 
         $result = $this->service->submitRegistry($submission);
 
-        $this->assertTrue($result->success);
-        $this->assertSame('ovf_sample_dates', $result->reservation?->reservationUid);
-        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $result->doorCode);
+        // ADR 0014: Public date-only fallback is forbidden to prevent reservation takeover
+        $this->assertFalse($result->success);
+        $this->assertNull($result->doorCode);
+        $this->assertContains('No confirmed reservation matches the provided booking details.', $result->errors);
     }
 
     public function testSubmitRegistryRejectsInvalidOccupantCount(): void

@@ -16,7 +16,7 @@ final class AuthMiddleware
     public const DEFAULT_WHITELIST = [
         'GET /login',
         'POST /login',
-        'GET /logout',
+        'POST /logout',
     ];
 
     /**

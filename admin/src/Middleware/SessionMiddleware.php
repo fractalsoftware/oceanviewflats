@@ -112,11 +112,34 @@ final class SessionMiddleware
     }
 
     /**
+     * Checks whether a session has exceeded either its absolute lifetime or idle inactivity timeout.
+     *
+     * @param array<string, mixed> $session
+     */
+    public static function isSessionExpired(
+        array $session,
+        ?int $currentTime = null,
+        int $idleTimeout = self::IDLE_TIMEOUT_SECONDS,
+        int $maxLifetime = self::MAX_LIFETIME_SECONDS
+    ): bool {
+        $now = $currentTime ?? time();
+        if (isset($session['created_at']) && ($now - (int) $session['created_at'] > $maxLifetime)) {
+            return true;
+        }
+        if (isset($session['last_activity']) && ($now - (int) $session['last_activity'] > $idleTimeout)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Configures cookie parameters and starts native PHP session if not already active.
      */
     public static function startNativeSession(?string $serverName = null, ?bool $isHttps = null): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            @ini_set('session.use_strict_mode', '1');
+            @ini_set('session.use_only_cookies', '1');
             session_name(self::SESSION_NAME);
             session_set_cookie_params(self::resolveCookieParams($serverName, $isHttps));
             session_start();
@@ -143,15 +166,14 @@ final class SessionMiddleware
             if (ini_get('session.use_cookies')) {
                 $params = session_get_cookie_params();
                 $sessionName = (string) session_name();
-                setcookie(
-                    $sessionName,
-                    '',
-                    time() - 42000,
-                    $params['path'],
-                    $params['domain'],
-                    $params['secure'],
-                    $params['httponly']
-                );
+                setcookie($sessionName, '', [
+                    'expires' => time() - 42000,
+                    'path' => $params['path'],
+                    'domain' => $params['domain'],
+                    'secure' => $params['secure'],
+                    'httponly' => $params['httponly'],
+                    'samesite' => 'Strict',
+                ]);
             }
             session_destroy();
         }

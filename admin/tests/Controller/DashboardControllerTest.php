@@ -101,10 +101,10 @@ final class DashboardControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
 
-        // Default fallbacks: 'Admin' and 'admin' in header, and 'Audit Logs' visible for 'admin' role
+        // Fail-closed default fallbacks: 'Admin' and 'viewer' in header, hiding privileged 'Audit Logs' link
         $this->assertStringContainsString('Admin', $body);
-        $this->assertStringContainsString('(admin)', $body);
-        $this->assertStringContainsString('href="/audit-logs"', $body);
+        $this->assertStringContainsString('(viewer)', $body);
+        $this->assertStringNotContainsString('href="/audit-logs"', $body);
         $this->assertStringNotContainsString('Welcome back', $body);
     }
 

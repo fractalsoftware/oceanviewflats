@@ -945,7 +945,7 @@ final class ReservationController
             'condominiumClearance' => $resolvedClearance,
             'clearanceAlertDismissed' => $clearanceAlertDismissed,
             'csrfToken' => (string) ($session['csrf_token'] ?? ''),
-            'currentUserRole' => (string) ($session['admin_user_role'] ?? ($session['admin_role'] ?? 'admin')),
+            'currentUserRole' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
             'publicSiteUrl' => $publicSiteUrl,
             'urlBuilder' => $urlBuilder ?? new PublicUrlBuilder($publicSiteUrl),
         ]);
@@ -1385,7 +1385,7 @@ final class ReservationController
             'id' => isset($session['admin_user_id']) ? (int) $session['admin_user_id'] : null,
             'name' => (string) ($session['admin_user_name'] ?? 'Admin'),
             'email' => (string) ($session['admin_user_email'] ?? ''),
-            'role' => (string) ($session['admin_user_role'] ?? ($session['admin_role'] ?? 'admin')),
+            'role' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
         ];
     }
 

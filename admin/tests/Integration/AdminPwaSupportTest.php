@@ -229,7 +229,8 @@ final class AdminPwaSupportTest extends TestCase
         $deployYml = (string) file_get_contents($deployYmlPath);
 
         $this->assertStringContainsString('cp -R admin staging/admin', $deployYml);
-        $this->assertStringNotContainsString('staging/admin/public', $deployYml);
+        $this->assertStringNotContainsString('rm -rf staging/admin/public', $deployYml);
+        $this->assertStringContainsString('rm -f staging/admin/public/setup.php', $deployYml);
 
         $requiredAssets = [
             'favicon.svg',

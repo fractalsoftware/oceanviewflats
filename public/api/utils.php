@@ -179,31 +179,45 @@ function enforce_rate_limit(string $filename, int $maxSubmissions, int $windowSe
 }
 
 /**
+ * Determines whether the current API request runs in an explicit non-production environment.
+ */
+function ovf_is_non_production_env(): bool {
+    if (class_exists(\OceanViewFlats\Domain\Support\AppEnvironment::class)) {
+        return \OceanViewFlats\Domain\Support\AppEnvironment::isNonProduction(allowPhpUnit: false);
+    }
+    $env = strtolower(trim((string) ($_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? (getenv('APP_ENV') ?: 'production'))));
+    return in_array($env, ['development', 'local', 'testing', 'test'], true);
+}
+
+/**
  * Enforces security headers and CORS (Cross-Origin Resource Sharing) restrictions.
  * 
  * @param array $allowedMethods Allowed HTTP methods for this endpoint.
  */
 function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST', 'OPTIONS']): void {
-    // 1. Send Security Headers
+    // 1. Send Security Headers (emit Vary: Origin unconditionally to prevent shared-cache CORS poisoning)
     if (!headers_sent()) {
+        header("Vary: Origin");
         header("X-Frame-Options: DENY");
         header("X-Content-Type-Options: nosniff");
-        header("X-XSS-Protection: 1; mode=block");
         header("Referrer-Policy: strict-origin-when-cross-origin");
+        header("Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(self)");
     }
+
+    $isNonProduction = ovf_is_non_production_env();
 
     // 2. Validate Origin if set
     $origin = $_SERVER['HTTP_ORIGIN'] ?? null;
     if ($origin !== null) {
         $originClean = trim($origin);
         $allowed = false;
-        
+
         if ($originClean === 'https://www.oceanviewflats.com' || $originClean === 'https://oceanviewflats.com') {
             $allowed = true;
-        } elseif (preg_match('/^https?:\/\/(localhost|127\.0\.0\.1|.*\.ngrok-free\.(app|dev))(:\d+)?$/i', $originClean)) {
+        } elseif ($isNonProduction && preg_match('/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i', $originClean)) {
             $allowed = true;
         }
-        
+
         if ($allowed) {
             header("Access-Control-Allow-Origin: " . $originClean);
             header("Access-Control-Allow-Methods: " . implode(', ', $allowedMethods));
@@ -232,9 +246,14 @@ function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST
  * Restricts access to forms to prevent direct browser address bar accesses (missing Referer)
  * or accesses from unauthorized foreign domains.
  * 
- * @param array $allowedHosts Allowed referrer domain names.
+ * @param array|null $allowedHosts Optional explicit allowed referrer domain names.
  */
-function enforce_referer_check(array $allowedHosts = ['oceanviewflats.com', 'localhost', '127.0.0.1', 'ngrok-free.dev', 'ngrok-free.app']): void {
+function enforce_referer_check(?array $allowedHosts = null): void {
+    if ($allowedHosts === null) {
+        $allowedHosts = ovf_is_non_production_env()
+            ? ['oceanviewflats.com', 'localhost', '127.0.0.1']
+            : ['oceanviewflats.com'];
+    }
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     if (empty($referer)) {
         // Enforce restriction for browser clients only (to avoid blocking legitimate curl tests or server webhooks)

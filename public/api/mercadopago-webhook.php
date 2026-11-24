@@ -76,6 +76,19 @@ if ($ts === '' || $v1 === '' || $webhookSecret === '' || !hash_equals($expectedS
     send_json_response(false, 'Forbidden: Invalid webhook signature.');
 }
 
+// Enforce ±5 minute replay window on webhook signature timestamp
+if (!ctype_digit($ts)) {
+    error_log('[MercadoPago Webhook Security] Malformed webhook timestamp for payment ID: ' . $resolvedPaymentId);
+    http_response_code(403);
+    send_json_response(false, 'Forbidden: Invalid webhook timestamp.');
+}
+$tsSeconds = strlen($ts) >= 13 ? intdiv((int) $ts, 1000) : (int) $ts;
+if (abs(time() - $tsSeconds) > 300) {
+    error_log('[MercadoPago Webhook Security] Expired webhook signature timestamp for payment ID: ' . $resolvedPaymentId);
+    http_response_code(403);
+    send_json_response(false, 'Forbidden: Expired webhook signature.');
+}
+
 if (empty($paymentId)) {
     http_response_code(200);
     header('Content-Type: application/json; charset=UTF-8');

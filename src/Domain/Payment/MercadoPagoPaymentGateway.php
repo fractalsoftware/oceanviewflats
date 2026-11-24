@@ -196,8 +196,7 @@ final class MercadoPagoPaymentGateway implements PaymentGatewayInterface
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => $this->timeoutSeconds,
             CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_SSL_VERIFYPEER => true,
-        ];
+        ] + \OceanViewFlats\Domain\Support\CurlSecurityOptions::build($url);
 
         if ($method === 'POST') {
             $options[CURLOPT_POST] = true;

@@ -1,1702 +1,2162 @@
 // Matomo
-let _paq = window._paq = window._paq || [];
+let _paq = (window._paq = window._paq || []);
 /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-_paq.push(['trackPageView']);
-_paq.push(['enableLinkTracking']);
-(function() {
-    let u="//stats.fractalserver.com/";
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', '2']);
-    let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+_paq.push(["trackPageView"]);
+_paq.push(["enableLinkTracking"]);
+(function () {
+	let u = "//stats.fractalserver.com/";
+	_paq.push(["setTrackerUrl", u + "matomo.php"]);
+	_paq.push(["setSiteId", "2"]);
+	let d = document,
+		g = d.createElement("script"),
+		s = d.getElementsByTagName("script")[0];
+	g.async = true;
+	g.src = u + "matomo.js";
+	s.parentNode.insertBefore(g, s);
 })();
+
+// Trusted HTTPS hostname allowlist for external payment/voucher redirects (Mercado Pago / PSE / Efecty)
+function isTrustedPaymentRedirectUrl(rawUrl) {
+	if (typeof rawUrl !== "string" || !rawUrl.trim()) {
+		return false;
+	}
+	try {
+		const parsed = new URL(rawUrl.trim());
+		if (parsed.protocol !== "https:") {
+			return false;
+		}
+		const host = parsed.hostname.toLowerCase();
+		const allowedSuffixes = [
+			"mercadopago.com",
+			"mercadopago.com.co",
+			"mercadopago.cl",
+			"mercadopago.com.mx",
+			"mercadopago.com.ar",
+			"mercadopago.com.br",
+			"mercadolibre.com",
+			"mercadolibre.com.co",
+			"pse.com.co",
+			"achcolombia.com.co",
+			"efecty.com.co",
+		];
+		return allowedSuffixes.some(
+			(suffix) => host === suffix || host.endsWith(`.${suffix}`),
+		);
+	} catch (_) {
+		return false;
+	}
+}
 
 // Simple scroll effect for navbar
 function syncNavbarScrollState() {
-    const nav = document.getElementById('navbar');
-    const logo = document.getElementById('nav-logo');
-    const toggle = document.getElementById('lang-toggle');
-    const contact = document.getElementById('nav-contact');
-    const bookBtn = document.getElementById('nav-book');
-    if (!nav || !logo || !toggle) return;
-    
-    if (window.scrollY > 50) {
-        nav.classList.add('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-3');
-        nav.classList.remove('bg-transparent', 'py-5');
-        logo.classList.add('text-[#FF5A5F]', 'hover:text-[#FF424D]');
-        logo.classList.remove('text-white', 'hover:text-white/80');
-        toggle.classList.add('bg-slate-100', 'hover:bg-slate-200', 'text-slate-700');
-        toggle.classList.remove('bg-white/20', 'hover:bg-white/30', 'text-white', 'backdrop-blur-sm');
-        if (contact) {
-            contact.classList.add('text-slate-600', 'hover:text-rose-700');
-            contact.classList.remove('text-white', 'hover:text-white/80');
-        }
-        if (bookBtn) {
-            bookBtn.classList.add('text-slate-600', 'hover:text-rose-700');
-            bookBtn.classList.remove('text-white', 'hover:text-white/80');
-        }
-    } else {
-        nav.classList.remove('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'py-3');
-        nav.classList.add('bg-transparent', 'py-5');
-        logo.classList.remove('text-[#FF5A5F]', 'hover:text-[#FF424D]');
-        logo.classList.add('text-white', 'hover:text-white/80');
-        toggle.classList.remove('bg-slate-100', 'hover:bg-slate-200', 'text-slate-700');
-        toggle.classList.add('bg-white/20', 'hover:bg-white/30', 'text-white', 'backdrop-blur-sm');
-        if (contact) {
-            contact.classList.remove('text-slate-600', 'hover:text-rose-700');
-            contact.classList.add('text-white', 'hover:text-white/80');
-        }
-        if (bookBtn) {
-            bookBtn.classList.remove('text-slate-600', 'hover:text-rose-700');
-            bookBtn.classList.add('text-white', 'hover:text-white/80');
-        }
-    }
+	const nav = document.getElementById("navbar");
+	const logo = document.getElementById("nav-logo");
+	const toggle = document.getElementById("lang-toggle");
+	const contact = document.getElementById("nav-contact");
+	const bookBtn = document.getElementById("nav-book");
+	if (!nav || !logo || !toggle) return;
+
+	if (window.scrollY > 50) {
+		nav.classList.add("bg-white/90", "backdrop-blur-md", "shadow-sm", "py-3");
+		nav.classList.remove("bg-transparent", "py-5");
+		logo.classList.add("text-[#FF5A5F]", "hover:text-[#FF424D]");
+		logo.classList.remove("text-white", "hover:text-white/80");
+		toggle.classList.add(
+			"bg-slate-100",
+			"hover:bg-slate-200",
+			"text-slate-700",
+		);
+		toggle.classList.remove(
+			"bg-white/20",
+			"hover:bg-white/30",
+			"text-white",
+			"backdrop-blur-sm",
+		);
+		if (contact) {
+			contact.classList.add("text-slate-600", "hover:text-rose-700");
+			contact.classList.remove("text-white", "hover:text-white/80");
+		}
+		if (bookBtn) {
+			bookBtn.classList.add("text-slate-600", "hover:text-rose-700");
+			bookBtn.classList.remove("text-white", "hover:text-white/80");
+		}
+	} else {
+		nav.classList.remove(
+			"bg-white/90",
+			"backdrop-blur-md",
+			"shadow-sm",
+			"py-3",
+		);
+		nav.classList.add("bg-transparent", "py-5");
+		logo.classList.remove("text-[#FF5A5F]", "hover:text-[#FF424D]");
+		logo.classList.add("text-white", "hover:text-white/80");
+		toggle.classList.remove(
+			"bg-slate-100",
+			"hover:bg-slate-200",
+			"text-slate-700",
+		);
+		toggle.classList.add(
+			"bg-white/20",
+			"hover:bg-white/30",
+			"text-white",
+			"backdrop-blur-sm",
+		);
+		if (contact) {
+			contact.classList.remove("text-slate-600", "hover:text-rose-700");
+			contact.classList.add("text-white", "hover:text-white/80");
+		}
+		if (bookBtn) {
+			bookBtn.classList.remove("text-slate-600", "hover:text-rose-700");
+			bookBtn.classList.add("text-white", "hover:text-white/80");
+		}
+	}
 }
 
-window.addEventListener('scroll', syncNavbarScrollState);
-document.addEventListener('DOMContentLoaded', syncNavbarScrollState);
+window.addEventListener("scroll", syncNavbarScrollState);
+document.addEventListener("DOMContentLoaded", syncNavbarScrollState);
 
 // Language Dropdown Mobile & Keyboard Toggle
-document.addEventListener('DOMContentLoaded', () => {
-    // Save language preference if we are on a localized page
-    const currentLang = document.documentElement.lang;
-    if (currentLang && typeof localStorage !== 'undefined') {
-        localStorage.setItem('lang-pref', currentLang);
-    }
+document.addEventListener("DOMContentLoaded", () => {
+	// Save language preference if we are on a localized page
+	const currentLang = document.documentElement.lang;
+	if (currentLang && typeof localStorage !== "undefined") {
+		localStorage.setItem("lang-pref", currentLang);
+	}
 
-    const langToggleGroup = document.getElementById('lang-toggle-group');
-    if (!langToggleGroup) return;
-    
-    const langToggle = document.getElementById('lang-toggle');
-    // Select all language links
-    const langLinks = langToggleGroup.querySelectorAll('a');
-    
-    // Dynamically append current query parameters if present
-    const searchParams = window.location && window.location.search ? window.location.search : '';
-    if (searchParams) {
-        langLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && !href.includes('?')) {
-                link.setAttribute('href', href + searchParams);
-            }
-        });
-    }
+	const langToggleGroup = document.getElementById("lang-toggle-group");
+	if (!langToggleGroup) return;
 
-    // Save language preference on click
-    langLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const href = link.getAttribute('href') || '';
-            let clickedLang = 'en';
-            if (href.includes('.html') && !href.includes('index.html')) {
-                clickedLang = href.split('?')[0].replace('.html', '');
-            }
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('lang-pref', clickedLang);
-            }
-        });
-    });
+	const langToggle = document.getElementById("lang-toggle");
+	// Select all language links
+	const langLinks = langToggleGroup.querySelectorAll("a");
 
-    // Select the dropdown menu inside the group
-    const dropdownMenu = document.getElementById('lang-dropdown') || (typeof langToggleGroup.querySelector === 'function' ? langToggleGroup.querySelector('.absolute.right-0.top-full') : null);
-    if (!dropdownMenu) return;
+	// Dynamically append current query parameters if present
+	const searchParams =
+		window.location && window.location.search ? window.location.search : "";
+	if (searchParams) {
+		langLinks.forEach((link) => {
+			const href = link.getAttribute("href");
+			if (href && !href.includes("?")) {
+				link.setAttribute("href", href + searchParams);
+			}
+		});
+	}
 
-    function isLangDropdownOpen() {
-        if (langToggle && langToggle.getAttribute('aria-expanded') === 'true') {
-            return true;
-        }
-        return dropdownMenu.classList.contains('opacity-100') && !dropdownMenu.classList.contains('invisible');
-    }
+	// Save language preference on click
+	langLinks.forEach((link) => {
+		link.addEventListener("click", () => {
+			const href = link.getAttribute("href") || "";
+			let clickedLang = "en";
+			if (href.includes(".html") && !href.includes("index.html")) {
+				clickedLang = href.split("?")[0].replace(".html", "");
+			}
+			if (typeof localStorage !== "undefined") {
+				localStorage.setItem("lang-pref", clickedLang);
+			}
+		});
+	});
 
-    function openLangDropdown() {
-        dropdownMenu.classList.remove('hidden', 'opacity-0', 'invisible');
-        dropdownMenu.classList.add('opacity-100', 'visible');
-        if (langToggle) {
-            langToggle.setAttribute('aria-expanded', 'true');
-        }
-    }
+	// Select the dropdown menu inside the group
+	const dropdownMenu =
+		document.getElementById("lang-dropdown") ||
+		(typeof langToggleGroup.querySelector === "function"
+			? langToggleGroup.querySelector(".absolute.right-0.top-full")
+			: null);
+	if (!dropdownMenu) return;
 
-    function closeLangDropdown(restoreFocus = false) {
-        dropdownMenu.classList.remove('opacity-100', 'visible');
-        dropdownMenu.classList.add('opacity-0', 'invisible');
-        if (langToggle) {
-            langToggle.setAttribute('aria-expanded', 'false');
-            if (restoreFocus && typeof langToggle.focus === 'function') {
-                langToggle.focus();
-            }
-        }
-    }
+	function isLangDropdownOpen() {
+		if (langToggle && langToggle.getAttribute("aria-expanded") === "true") {
+			return true;
+		}
+		return (
+			dropdownMenu.classList.contains("opacity-100") &&
+			!dropdownMenu.classList.contains("invisible")
+		);
+	}
 
-    const handleToggleClick = (e) => {
-        if (e && typeof e.stopPropagation === 'function') {
-            e.stopPropagation();
-        }
-        if (isLangDropdownOpen()) {
-            closeLangDropdown(false);
-        } else {
-            openLangDropdown();
-        }
-    };
+	function openLangDropdown() {
+		dropdownMenu.classList.remove("hidden", "opacity-0", "invisible");
+		dropdownMenu.classList.add("opacity-100", "visible");
+		if (langToggle) {
+			langToggle.setAttribute("aria-expanded", "true");
+		}
+	}
 
-    if (langToggle) {
-        langToggle.addEventListener('click', handleToggleClick);
-    } else {
-        langToggleGroup.addEventListener('click', handleToggleClick);
-    }
+	function closeLangDropdown(restoreFocus = false) {
+		dropdownMenu.classList.remove("opacity-100", "visible");
+		dropdownMenu.classList.add("opacity-0", "invisible");
+		if (langToggle) {
+			langToggle.setAttribute("aria-expanded", "false");
+			if (restoreFocus && typeof langToggle.focus === "function") {
+				langToggle.focus();
+			}
+		}
+	}
 
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-        const target = e && e.target ? e.target : null;
-        const clickedInside =
-            target === langToggle ||
-            target === langToggleGroup ||
-            target === dropdownMenu ||
-            (langToggleGroup && typeof langToggleGroup.contains === 'function' && langToggleGroup.contains(target)) ||
-            (dropdownMenu && typeof dropdownMenu.contains === 'function' && dropdownMenu.contains(target));
-        if (!clickedInside && isLangDropdownOpen()) {
-            closeLangDropdown(false);
-        }
-    });
+	const handleToggleClick = (e) => {
+		if (e && typeof e.stopPropagation === "function") {
+			e.stopPropagation();
+		}
+		if (isLangDropdownOpen()) {
+			closeLangDropdown(false);
+		} else {
+			openLangDropdown();
+		}
+	};
 
-    // Close on Escape key and restore focus to #lang-toggle
-    const handleKeydown = (e) => {
-        if (e && (e.key === 'Escape' || e.key === 'Esc')) {
-            if (isLangDropdownOpen()) {
-                if (typeof e.preventDefault === 'function') {
-                    e.preventDefault();
-                }
-                closeLangDropdown(true);
-            }
-        }
-    };
+	if (langToggle) {
+		langToggle.addEventListener("click", handleToggleClick);
+	} else {
+		langToggleGroup.addEventListener("click", handleToggleClick);
+	}
 
-    document.addEventListener('keydown', handleKeydown);
-    if (langToggle) {
-        langToggle.addEventListener('keydown', handleKeydown);
-    }
-    dropdownMenu.addEventListener('keydown', handleKeydown);
+	// Close when clicking outside
+	document.addEventListener("click", (e) => {
+		const target = e && e.target ? e.target : null;
+		const clickedInside =
+			target === langToggle ||
+			target === langToggleGroup ||
+			target === dropdownMenu ||
+			(langToggleGroup &&
+				typeof langToggleGroup.contains === "function" &&
+				langToggleGroup.contains(target)) ||
+			(dropdownMenu &&
+				typeof dropdownMenu.contains === "function" &&
+				dropdownMenu.contains(target));
+		if (!clickedInside && isLangDropdownOpen()) {
+			closeLangDropdown(false);
+		}
+	});
 
-    // Close when keyboard focus tabs out of #lang-toggle-group
-    langToggleGroup.addEventListener('focusout', (e) => {
-        const relatedTarget = e && e.relatedTarget ? e.relatedTarget : null;
-        if (
-            relatedTarget &&
-            typeof langToggleGroup.contains === 'function' &&
-            !langToggleGroup.contains(relatedTarget)
-        ) {
-            closeLangDropdown(false);
-        }
-    });
+	// Close on Escape key and restore focus to #lang-toggle
+	const handleKeydown = (e) => {
+		if (e && (e.key === "Escape" || e.key === "Esc")) {
+			if (isLangDropdownOpen()) {
+				if (typeof e.preventDefault === "function") {
+					e.preventDefault();
+				}
+				closeLangDropdown(true);
+			}
+		}
+	};
+
+	document.addEventListener("keydown", handleKeydown);
+	if (langToggle) {
+		langToggle.addEventListener("keydown", handleKeydown);
+	}
+	dropdownMenu.addEventListener("keydown", handleKeydown);
+
+	// Close when keyboard focus tabs out of #lang-toggle-group
+	langToggleGroup.addEventListener("focusout", (e) => {
+		const relatedTarget = e && e.relatedTarget ? e.relatedTarget : null;
+		if (
+			relatedTarget &&
+			typeof langToggleGroup.contains === "function" &&
+			!langToggleGroup.contains(relatedTarget)
+		) {
+			closeLangDropdown(false);
+		}
+	});
 });
 
 function resolveApiBase(pageConfig) {
-    const base = (pageConfig && pageConfig.apiBase) ? pageConfig.apiBase : `${(pageConfig && pageConfig.assetPrefix) || ''}api/`;
-    return base.endsWith('/') ? base : `${base}/`;
+	const base =
+		pageConfig && pageConfig.apiBase
+			? pageConfig.apiBase
+			: `${(pageConfig && pageConfig.assetPrefix) || ""}api/`;
+	return base.endsWith("/") ? base : `${base}/`;
 }
 
 // Booking Confirmation & Pending Screen Reservation Code & Cash Voucher Hydration
-document.addEventListener('DOMContentLoaded', () => {
-    const refBox = document.getElementById('booking-reference-box');
-    const codeDisplay = document.getElementById('display-reservation-code');
-    const copyBtn = document.getElementById('btn-copy-reservation-code');
-    const copyFeedback = document.getElementById('copy-code-feedback');
-    const btnRegistry = document.getElementById('btn-booking-registry');
-    const btnGuide = document.getElementById('btn-booking-guide');
-    const voucherBox = document.getElementById('pending-voucher-box');
-    const voucherBarcode = document.getElementById('display-voucher-barcode');
-    const voucherVerifCode = document.getElementById('display-voucher-verif-code');
-    const btnPrintVoucher = document.getElementById('btn-print-voucher');
+document.addEventListener("DOMContentLoaded", () => {
+	const refBox = document.getElementById("booking-reference-box");
+	const codeDisplay = document.getElementById("display-reservation-code");
+	const copyBtn = document.getElementById("btn-copy-reservation-code");
+	const copyFeedback = document.getElementById("copy-code-feedback");
+	const btnRegistry = document.getElementById("btn-booking-registry");
+	const btnGuide = document.getElementById("btn-booking-guide");
+	const voucherBox = document.getElementById("pending-voucher-box");
+	const voucherBarcode = document.getElementById("display-voucher-barcode");
+	const voucherVerifCode = document.getElementById(
+		"display-voucher-verif-code",
+	);
+	const btnPrintVoucher = document.getElementById("btn-print-voucher");
 
-    if (!refBox && !btnRegistry && !btnGuide && !voucherBox) return;
+	if (!refBox && !btnRegistry && !btnGuide && !voucherBox) return;
 
-    const t = (key, params, fallback) => (window.t ? window.t(key, params, fallback) : (fallback !== undefined ? fallback : key));
-    const rawSearch = (window.location && window.location.search) ? window.location.search : '';
-    const urlParams = new URLSearchParams(rawSearch);
+	const t = (key, params, fallback) =>
+		window.t
+			? window.t(key, params, fallback)
+			: fallback !== undefined
+				? fallback
+				: key;
+	const rawSearch =
+		window.location && window.location.search ? window.location.search : "";
+	const urlParams = new URLSearchParams(rawSearch);
 
-    let code = (
-        urlParams.get('code') ||
-        urlParams.get('reservation_code') ||
-        urlParams.get('external_reference') ||
-        urlParams.get('preference_id') ||
-        ''
-    ).trim();
+	let code = (
+		urlParams.get("code") ||
+		urlParams.get("reservation_code") ||
+		urlParams.get("external_reference") ||
+		urlParams.get("preference_id") ||
+		""
+	).trim();
 
-    if (!code && typeof sessionStorage !== 'undefined') {
-        try {
-            code = (sessionStorage.getItem('ovf_last_reservation_code') || '').trim();
-        } catch (err) {
-            console.warn('Unable to read reservation code from sessionStorage:', err);
-        }
-    }
+	if (!code && typeof sessionStorage !== "undefined") {
+		try {
+			code = (sessionStorage.getItem("ovf_last_reservation_code") || "").trim();
+		} catch (err) {
+			console.warn("Unable to read reservation code from sessionStorage:", err);
+		}
+	}
 
-    if (code) {
-        if (typeof sessionStorage !== 'undefined') {
-            try {
-                sessionStorage.setItem('ovf_last_reservation_code', code);
-            } catch (err) {
-                console.warn('Unable to save reservation code to sessionStorage:', err);
-            }
-        }
+	if (code) {
+		if (typeof sessionStorage !== "undefined") {
+			try {
+				sessionStorage.setItem("ovf_last_reservation_code", code);
+			} catch (err) {
+				console.warn("Unable to save reservation code to sessionStorage:", err);
+			}
+		}
 
-        if (codeDisplay) {
-            codeDisplay.textContent = code;
-        }
-        if (refBox) {
-            refBox.classList.remove('hidden');
-        }
+		if (codeDisplay) {
+			codeDisplay.textContent = code;
+		}
+		if (refBox) {
+			refBox.classList.remove("hidden");
+		}
 
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => {
-                if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-                    navigator.clipboard.writeText(code);
-                }
-                if (copyFeedback) {
-                    const copyMsg = t('guideCopySuccess', {}, copyFeedback.textContent || '');
-                    if (copyMsg) {
-                        copyFeedback.textContent = copyMsg;
-                    }
-                    copyFeedback.classList.remove('hidden');
-                    if (typeof setTimeout === 'function') {
-                        setTimeout(() => {
-                            copyFeedback.classList.add('hidden');
-                        }, 2000);
-                    }
-                }
-            });
-        }
+		if (copyBtn) {
+			copyBtn.addEventListener("click", () => {
+				if (
+					typeof navigator !== "undefined" &&
+					navigator.clipboard &&
+					typeof navigator.clipboard.writeText === "function"
+				) {
+					navigator.clipboard.writeText(code);
+				}
+				if (copyFeedback) {
+					const copyMsg = t(
+						"guideCopySuccess",
+						{},
+						copyFeedback.textContent || "",
+					);
+					if (copyMsg) {
+						copyFeedback.textContent = copyMsg;
+					}
+					copyFeedback.classList.remove("hidden");
+					if (typeof setTimeout === "function") {
+						setTimeout(() => {
+							copyFeedback.classList.add("hidden");
+						}, 2000);
+					}
+				}
+			});
+		}
 
-        [btnRegistry, btnGuide].forEach(btn => {
-            if (!btn) return;
-            const baseHref = (btn.getAttribute('href') || btn.href || '').split('?')[0];
-            if (baseHref) {
-                const nextHref = `${baseHref}?code=${encodeURIComponent(code)}`;
-                btn.setAttribute('href', nextHref);
-                btn.href = nextHref;
-            }
-        });
-    }
+		[btnRegistry, btnGuide].forEach((btn) => {
+			if (!btn) return;
+			const baseHref = (btn.getAttribute("href") || btn.href || "").split(
+				"?",
+			)[0];
+			if (baseHref) {
+				const nextHref = `${baseHref}?code=${encodeURIComponent(code)}`;
+				btn.setAttribute("href", nextHref);
+				btn.href = nextHref;
+			}
+		});
+	}
 
-    const barcode = (urlParams.get('barcode') || '').trim();
-    const verifCode = (urlParams.get('verif_code') || urlParams.get('verification_code') || '').trim();
-    const voucherUrl = (urlParams.get('voucher_url') || urlParams.get('printable_voucher_url') || '').trim();
+	const barcode = (urlParams.get("barcode") || "").trim();
+	const verifCode = (
+		urlParams.get("verif_code") ||
+		urlParams.get("verification_code") ||
+		""
+	).trim();
+	const voucherUrl = (
+		urlParams.get("voucher_url") ||
+		urlParams.get("printable_voucher_url") ||
+		""
+	).trim();
 
-    if (voucherBox && (barcode || verifCode || voucherUrl)) {
-        voucherBox.classList.remove('hidden');
-        if (voucherBarcode) {
-            voucherBarcode.textContent = barcode || '—';
-        }
-        if (voucherVerifCode) {
-            voucherVerifCode.textContent = verifCode || '—';
-        }
-        if (btnPrintVoucher) {
-            if (/^https?:\/\/\S+$/i.test(voucherUrl)) {
-                btnPrintVoucher.setAttribute('href', voucherUrl);
-                btnPrintVoucher.href = voucherUrl;
-                btnPrintVoucher.classList.remove('hidden');
-                btnPrintVoucher.classList.add('inline-flex');
-            } else {
-                btnPrintVoucher.classList.add('hidden');
-                btnPrintVoucher.classList.remove('inline-flex');
-            }
-        }
-    }
+	if (voucherBox && (barcode || verifCode || voucherUrl)) {
+		voucherBox.classList.remove("hidden");
+		if (voucherBarcode) {
+			voucherBarcode.textContent = barcode || "—";
+		}
+		if (voucherVerifCode) {
+			voucherVerifCode.textContent = verifCode || "—";
+		}
+		if (btnPrintVoucher) {
+			if (isTrustedPaymentRedirectUrl(voucherUrl)) {
+				btnPrintVoucher.setAttribute("href", voucherUrl);
+				btnPrintVoucher.href = voucherUrl;
+				btnPrintVoucher.classList.remove("hidden");
+				btnPrintVoucher.classList.add("inline-flex");
+			} else {
+				btnPrintVoucher.classList.add("hidden");
+				btnPrintVoucher.classList.remove("inline-flex");
+			}
+		}
+	}
 
-    const langToggleGroup = document.getElementById('lang-toggle-group');
-    if (langToggleGroup && typeof langToggleGroup.querySelectorAll === 'function' && (code || rawSearch.length > 1)) {
-        let queryToAppend = rawSearch;
-        if (code && (!rawSearch || !urlParams.get('code'))) {
-            const nextParams = new URLSearchParams(rawSearch);
-            nextParams.set('code', code);
-            queryToAppend = `?${nextParams.toString()}`;
-        }
-        if (queryToAppend) {
-            const langLinks = langToggleGroup.querySelectorAll('a');
-            langLinks.forEach(link => {
-                const baseHref = (link.getAttribute('href') || link.href || '').split('?')[0];
-                if (baseHref) {
-                    const nextHref = `${baseHref}${queryToAppend}`;
-                    link.setAttribute('href', nextHref);
-                    link.href = nextHref;
-                }
-            });
-        }
-    }
+	const langToggleGroup = document.getElementById("lang-toggle-group");
+	if (
+		langToggleGroup &&
+		typeof langToggleGroup.querySelectorAll === "function" &&
+		(code || rawSearch.length > 1)
+	) {
+		let queryToAppend = rawSearch;
+		if (code && (!rawSearch || !urlParams.get("code"))) {
+			const nextParams = new URLSearchParams(rawSearch);
+			nextParams.set("code", code);
+			queryToAppend = `?${nextParams.toString()}`;
+		}
+		if (queryToAppend) {
+			const langLinks = langToggleGroup.querySelectorAll("a");
+			langLinks.forEach((link) => {
+				const baseHref = (link.getAttribute("href") || link.href || "").split(
+					"?",
+				)[0];
+				if (baseHref) {
+					const nextHref = `${baseHref}${queryToAppend}`;
+					link.setAttribute("href", nextHref);
+					link.href = nextHref;
+				}
+			});
+		}
+	}
 });
 
 // Home Page Property Card Rate Hydration
-document.addEventListener('DOMContentLoaded', () => {
-    const badge1707 = document.getElementById('home-rate-badge-1707');
-    const badge1606 = document.getElementById('home-rate-badge-1606');
-    if (!badge1707 && !badge1606) return;
+document.addEventListener("DOMContentLoaded", () => {
+	const badge1707 = document.getElementById("home-rate-badge-1707");
+	const badge1606 = document.getElementById("home-rate-badge-1606");
+	if (!badge1707 && !badge1606) return;
 
-    const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
-    const t = (key, params, fallback) => (window.t ? window.t(key, params, fallback) : (fallback !== undefined ? fallback : key));
-    const lang = pageConfig.lang || (document.documentElement && document.documentElement.lang) || 'en';
+	const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
+	const t = (key, params, fallback) =>
+		window.t
+			? window.t(key, params, fallback)
+			: fallback !== undefined
+				? fallback
+				: key;
+	const lang =
+		pageConfig.lang ||
+		(document.documentElement && document.documentElement.lang) ||
+		"en";
 
-    function formatRateNumber(amount, langCode) {
-        const num = Math.round(Number(amount) || 0);
-        const digits = String(num);
-        let sep = ',';
-        if (langCode === 'es' || langCode === 'it' || langCode === 'de') {
-            sep = '.';
-        } else if (langCode === 'fr') {
-            sep = ' ';
-        }
-        return digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
-    }
+	function formatRateNumber(amount, langCode) {
+		const num = Math.round(Number(amount) || 0);
+		const digits = String(num);
+		let sep = ",";
+		if (langCode === "es" || langCode === "it" || langCode === "de") {
+			sep = ".";
+		} else if (langCode === "fr") {
+			sep = " ";
+		}
+		return digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+	}
 
-    async function hydrateHomeRateBadges() {
-        try {
-            const quoteBase = resolveApiBase(pageConfig);
-            const response = await fetch(`${quoteBase}quote.php?action=rates`);
-            if (!response.ok) return;
-            const result = await response.json();
-            if (result && result.success && result.data && result.data.properties) {
-                ['1707', '1606'].forEach(propId => {
-                    const badgeEl = document.getElementById(`home-rate-badge-${propId}`);
-                    const propInfo = result.data.properties[propId];
-                    const rateVal = propInfo && (propInfo.current_nightly_rate_cop || propInfo.currentNightlyRate || propInfo.default_nightly_rate_cop);
-                    if (badgeEl && rateVal) {
-                        const formattedRate = formatRateNumber(rateVal, lang);
-                        const localizedBadge = t('homeCardRateFormat', { rate: formattedRate }, '');
-                        if (localizedBadge) {
-                            badgeEl.textContent = localizedBadge;
-                        }
-                    }
-                });
-            }
-        } catch (err) {
-            console.error('Error hydrating home property rates:', err);
-        }
-    }
+	async function hydrateHomeRateBadges() {
+		try {
+			const quoteBase = resolveApiBase(pageConfig);
+			const response = await fetch(`${quoteBase}quote.php?action=rates`);
+			if (!response.ok) return;
+			const result = await response.json();
+			if (result && result.success && result.data && result.data.properties) {
+				["1707", "1606"].forEach((propId) => {
+					const badgeEl = document.getElementById(`home-rate-badge-${propId}`);
+					const propInfo = result.data.properties[propId];
+					const rateVal =
+						propInfo &&
+						(propInfo.current_nightly_rate_cop ||
+							propInfo.currentNightlyRate ||
+							propInfo.default_nightly_rate_cop);
+					if (badgeEl && rateVal) {
+						const formattedRate = formatRateNumber(rateVal, lang);
+						const localizedBadge = t(
+							"homeCardRateFormat",
+							{ rate: formattedRate },
+							"",
+						);
+						if (localizedBadge) {
+							badgeEl.textContent = localizedBadge;
+						}
+					}
+				});
+			}
+		} catch (err) {
+			console.error("Error hydrating home property rates:", err);
+		}
+	}
 
-    hydrateHomeRateBadges();
+	hydrateHomeRateBadges();
 });
 
 // Calendar Logic
-document.addEventListener('DOMContentLoaded', () => {
-    const widget = document.getElementById('calendar-widget');
-    if (!widget) return;
-
-    const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
-    const t = (key, params, fallback) => (window.t ? window.t(key, params, fallback) : (fallback !== undefined ? fallback : key));
-
-    let currentDate = new Date();
-    let checkIn = null;
-    let checkOut = null;
-    let blockedDates = []; // Array of YYYY-MM-DD strings of booked dates
-    
-    const SUPPORTED_LANGS = ['en', 'es', 'fr', 'it', 'de', 'ja'];
-    const rawWidgetLang = pageConfig.lang || widget.getAttribute('data-lang') || 'en';
-    const lang = SUPPORTED_LANGS.find(l => l === rawWidgetLang) || 'en';
-    const monthNames = JSON.parse(widget.getAttribute('data-month-names'));
-    const dayNames = JSON.parse(widget.getAttribute('data-day-names'));
-
-    const btnPrev = document.getElementById('btn-prev-month');
-    const btnNext = document.getElementById('btn-next-month');
-    const monthLabel = document.getElementById('month-label');
-    const grid = document.getElementById('calendar-grid');
-    
-    const dpIn = document.getElementById('check-in-display');
-    const dpOut = document.getElementById('check-out-display');
-    const btnBook = document.getElementById('btn-book');
-    const btnBookText = document.getElementById('btn-book-text');
-    const airbnbUrl = btnBook.getAttribute('data-airbnb-url');
-    const txtReady = btnBook.getAttribute('data-text-ready');
-    const txtDefault = btnBook.getAttribute('data-text-default');
-
-    // Retrieve property ID from page path (defaults to 1707 if not 1606)
-    const propertyId = window.location.pathname.includes('1606') ? '1606' : '1707';
-
-    // Fetch live blocked dates from local caching proxy
-    async function fetchBlockedDates() {
-        try {
-            const availBase = resolveApiBase(pageConfig);
-            const response = await fetch(`${availBase}availability.php?property=${propertyId}`);
-            if (response.ok) {
-                blockedDates = await response.json();
-                renderCalendar();
-            }
-        } catch (err) {
-            console.error('Error retrieving live Airbnb calendar blocked dates:', err);
-        }
-    }
-
-    function renderCalendar() {
-        grid.innerHTML = '';
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        
-        monthLabel.textContent = monthNames[lang][month] + ' ' + year;
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        for (let i = 0; i < firstDay; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'w-8 h-8 md:w-10 md:h-10';
-            grid.appendChild(empty);
-        }
-
-        const isCheckoutSelectionMode = Boolean(checkIn && !checkOut);
-        const checkInDateStr = checkIn ? formatDate(checkIn) : null;
-        const firstBlockedAfterCheckIn = isCheckoutSelectionMode
-            ? blockedDates
-                .slice()
-                .sort()
-                .find(dStr => dStr > checkInDateStr) || null
-            : null;
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const btn = document.createElement('button');
-            const thisDate = new Date(year, month, i);
-            const dateStr = formatDate(thisDate);
-            
-            const isPast = thisDate < today;
-            const isBlocked = blockedDates.includes(dateStr);
-            const isCheckIn = Boolean(checkIn && thisDate.getTime() === checkIn.getTime());
-            const isCheckOut = Boolean(checkOut && thisDate.getTime() === checkOut.getTime());
-            const isBetween = Boolean(checkIn && checkOut && thisDate > checkIn && thisDate < checkOut);
-            const isTurnoverCheckoutCandidate = Boolean(
-                isCheckoutSelectionMode &&
-                firstBlockedAfterCheckIn &&
-                dateStr === firstBlockedAfterCheckIn
-            );
-            const isBeyondFirstBlocked = Boolean(
-                isCheckoutSelectionMode &&
-                firstBlockedAfterCheckIn &&
-                dateStr > firstBlockedAfterCheckIn
-            );
-            const isDisabled = isCheckoutSelectionMode
-                ? (isPast || (isBlocked && !isTurnoverCheckoutCandidate) || isBeyondFirstBlocked)
-                : (isPast || isBlocked);
-
-            let bgClass = "bg-white hover:bg-slate-100 text-slate-700";
-            if (isPast) {
-                bgClass = "bg-transparent text-slate-300 cursor-not-allowed";
-            } else if (isCheckIn || isCheckOut) {
-                bgClass = "bg-[#FF5A5F] text-white font-medium";
-            } else if (isTurnoverCheckoutCandidate) {
-                bgClass = "bg-white hover:bg-slate-100 text-slate-700";
-            } else if (isBlocked) {
-                bgClass = "bg-slate-50 text-slate-300 cursor-not-allowed line-through relative after:content-[''] after:absolute after:w-full after:h-[1px] after:bg-slate-300 after:rotate-[-45deg]";
-            } else if (isBeyondFirstBlocked) {
-                bgClass = "bg-transparent text-slate-300 cursor-not-allowed";
-            } else if (isBetween) {
-                bgClass = "bg-[#FF5A5F]/10 text-[#FF5A5F] font-medium";
-            }
-
-            btn.className = "calendar-day w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm transition-all relative overflow-hidden " + bgClass;
-            btn.textContent = i;
-            btn.disabled = isDisabled;
-            btn.setAttribute('data-date', dateStr);
-            
-            // Accessible label for screen readers
-            if (isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut) {
-                btn.setAttribute('title', 'Already Booked');
-                btn.setAttribute('aria-label', `${i} ${monthNames[lang][month]}, Booked`);
-            }
-
-            if (!isDisabled) {
-                btn.addEventListener('click', () => {
-                    if (!checkIn || (checkIn && checkOut)) {
-                        checkIn = thisDate;
-                        checkOut = null;
-                    } else if (thisDate > checkIn) {
-                        // Secure dates allocation: prevent selecting ranges spanning across existing bookings
-                        let hasOverlap = false;
-                        let d = new Date(checkIn);
-                        d.setDate(d.getDate() + 1);
-                        while (d < thisDate) {
-                            if (blockedDates.includes(formatDate(d))) {
-                                hasOverlap = true;
-                                break;
-                            }
-                            d.setDate(d.getDate() + 1);
-                        }
-
-                        if (hasOverlap) {
-                            checkIn = thisDate;
-                            checkOut = null;
-                        } else {
-                            checkOut = thisDate;
-                        }
-                    } else {
-                        checkIn = thisDate;
-                        checkOut = null;
-                    }
-                    renderCalendar();
-                    updateBookingDisplay();
-                });
-            }
-
-            grid.appendChild(btn);
-        }
-    }
-
-    function formatDate(d) {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return y + '-' + m + '-' + day;
-    }
-
-    function displayDate(d) {
-        if (!d) return dpIn.getAttribute('data-text-add-date') || 'Add date';
-        const options = { month: 'short', day: 'numeric', year: 'numeric' };
-        const locMap = { 'es': 'es-ES', 'fr': 'fr-FR', 'it': 'it-IT', 'de': 'de-DE', 'ja': 'ja-JP' };
-        return d.toLocaleDateString(locMap[lang] || 'en-US', options);
-    }
-
-    let pricesData = [];
-    let exchangeRates = null;
-    let activeQuoteRequestId = 0;
-    let lastQuoteDetails = null;
-
-    // Fetch build-time or admin-synced seasonal prices json
-    async function fetchPrices() {
-        try {
-            const prefix = pageConfig.assetPrefix || '/';
-            const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
-            const response = await fetch(`${normalizedPrefix}cache/prices.json`);
-            if (response.ok) {
-                const payload = await response.json();
-                if (Array.isArray(payload)) {
-                    pricesData = payload;
-                } else if (payload && Array.isArray(payload.tiers)) {
-                    pricesData = payload.tiers;
-                } else if (payload && payload.data && Array.isArray(payload.data.tiers)) {
-                    pricesData = payload.data.tiers;
-                }
-                if (checkIn && checkOut && lastQuoteDetails && lastQuoteDetails.source === 'fallback') {
-                    const fallbackDetails = calculateStayDetails(checkIn, checkOut);
-                    lastQuoteDetails = fallbackDetails;
-                    renderQuoteDetails(fallbackDetails);
-                }
-            }
-        } catch (err) {
-            console.error('Error fetching seasonal prices:', err);
-        }
-    }
-
-    // Fetch COP exchange rates with 1-hour client-side caching
-    async function fetchExchangeRates() {
-        try {
-            const cachedRates = localStorage.getItem('cop_exchange_rates');
-            const cachedTime = localStorage.getItem('cop_exchange_rates_time');
-            
-            if (cachedRates && cachedTime && (Date.now() - parseInt(cachedTime, 10) < 3600000)) {
-                exchangeRates = JSON.parse(cachedRates);
-                return;
-            }
-            
-            const response = await fetch('https://open.er-api.com/v6/latest/COP');
-            if (response.ok) {
-                const data = await response.json();
-                if (data && data.rates) {
-                    exchangeRates = data.rates;
-                    localStorage.setItem('cop_exchange_rates', JSON.stringify(data.rates));
-                    localStorage.setItem('cop_exchange_rates_time', Date.now().toString());
-                    if (checkIn && checkOut) {
-                        if (lastQuoteDetails) {
-                            renderQuoteDetails(lastQuoteDetails);
-                        } else {
-                            updateBookingDisplay();
-                        }
-                    }
-                }
-            }
-        } catch (err) {
-            console.error('Error fetching currency exchange rates:', err);
-        }
-    }
-
-    fetchPrices();
-    fetchExchangeRates();
-
-    // Captcha Logic for Direct Booking Form
-    let bookingCaptchaSignature = '';
-    const bookingCaptchaLabel = document.getElementById('booking-captcha-label');
-    const bookingCaptchaChallenge = document.getElementById('booking-captcha-challenge');
-    const bookingCaptchaResponse = document.getElementById('booking-captcha-response');
-
-    async function loadBookingCaptcha() {
-        if (!bookingCaptchaLabel) return;
-        try {
-            const currentLang = pageConfig.lang || document.documentElement.lang || 'en';
-            const bookBase = resolveApiBase(pageConfig);
-            const response = await fetch(`${bookBase}book-request.php?action=captcha&lang=${encodeURIComponent(currentLang)}`);
-            if (response.ok) {
-                const data = await response.json();
-                const originalText = bookingCaptchaLabel.getAttribute('data-original') || bookingCaptchaLabel.textContent;
-                if (!bookingCaptchaLabel.getAttribute('data-original')) {
-                    bookingCaptchaLabel.setAttribute('data-original', originalText);
-                }
-                bookingCaptchaLabel.textContent = `${originalText} (${data.challenge})`;
-                bookingCaptchaChallenge.value = data.challenge;
-                bookingCaptchaSignature = data.signature;
-                bookingCaptchaResponse.value = '';
-            }
-        } catch (err) {
-            console.error('Error loading booking captcha:', err);
-        }
-    }
-
-    if (bookingCaptchaLabel) {
-        loadBookingCaptcha();
-    }
-
-    function calculateStayDetails(start, end) {
-        let current = new Date(start);
-        const endLimit = new Date(end);
-        let nights = 0;
-        let accommodationTotal = 0;
-        let maxMinStay = 2;
-
-        while (current < endLimit) {
-            nights++;
-            const dateStr = formatDate(current);
-            const tier = pricesData.find(p => p.property_id === propertyId && dateStr >= p.start_date && dateStr <= p.end_date);
-            const rate = tier ? parseFloat(tier.nightly_rate_cop) : (propertyId === '1707' ? 450000 : 350000);
-            const tierMinStay = tier ? parseInt(tier.minimum_stay || tier.min_stay || 2, 10) : 2;
-            if (tierMinStay > maxMinStay) {
-                maxMinStay = tierMinStay;
-            }
-            accommodationTotal += rate;
-            current.setDate(current.getDate() + 1);
-        }
-
-        const cleaningFee = propertyId === '1707' ? 100000 : 80000;
-        const totalCOP = accommodationTotal + cleaningFee;
-        const isValid = nights >= maxMinStay;
-
-        return {
-            nights,
-            accommodationTotal,
-            cleaningFee,
-            totalCOP,
-            minimumStayRequired: maxMinStay,
-            isValid,
-            violationReason: isValid ? null : 'min_stay',
-            source: 'fallback'
-        };
-    }
-
-    function renderQuoteDetails(details) {
-        const breakdownCard = document.getElementById('price-breakdown-card');
-        const directForm = document.getElementById('direct-booking-form');
-        const minStayWarning = document.getElementById('min-stay-warning');
-        const btnSubmit = document.getElementById('btn-direct-submit');
-
-        // Form bindings
-        const formCheckIn = document.getElementById('form-check-in-date');
-        const formCheckOut = document.getElementById('form-check-out-date');
-        const formTotalPrice = document.getElementById('form-total-price-cop');
-        if (formCheckIn && checkIn) formCheckIn.value = formatDate(checkIn);
-        if (formCheckOut && checkOut) formCheckOut.value = formatDate(checkOut);
-        if (formTotalPrice) formTotalPrice.value = details.totalCOP;
-
-        // Populate Breakdown UI
-        const accommodationValue = document.getElementById('rate-breakdown-value');
-        const cleaningValue = document.getElementById('cleaning-fee-value');
-        const totalValue = document.getElementById('total-cop-value');
-
-        const copFormatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-
-        if (accommodationValue) {
-            const nightsText = t(
-                'dbNightsFormat',
-                { nights: details.nights },
-                accommodationValue.getAttribute('data-nights-format') || ''
-            );
-            accommodationValue.textContent = copFormatter.format(details.accommodationTotal) + (nightsText ? ' ' + nightsText : '');
-        }
-        if (cleaningValue) cleaningValue.textContent = copFormatter.format(details.cleaningFee);
-        if (totalValue) totalValue.textContent = copFormatter.format(details.totalCOP) + ' COP';
-
-        // Convert to selected language's suggested currency
-        const currencyBox = document.getElementById('converted-currency-box');
-        const currencyValue = document.getElementById('converted-currency-value');
-        
-        if (currencyBox && currencyValue && exchangeRates) {
-            const langToCurrency = { 'en': 'USD', 'es': 'USD', 'fr': 'EUR', 'de': 'EUR', 'it': 'EUR', 'ja': 'JPY' };
-            const targetCurrency = langToCurrency[lang] || 'USD';
-            const rate = exchangeRates[targetCurrency];
-            
-            if (rate) {
-                const converted = details.totalCOP * rate;
-                let formatted = '';
-                if (targetCurrency === 'JPY') {
-                    formatted = new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(converted);
-                } else if (targetCurrency === 'EUR') {
-                    formatted = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(converted);
-                } else {
-                    formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(converted);
-                }
-                currencyValue.textContent = formatted + ' ' + targetCurrency;
-                currencyBox.classList.remove('hidden');
-            } else {
-                currencyBox.classList.add('hidden');
-            }
-        }
-
-        if (breakdownCard) breakdownCard.classList.remove('hidden');
-
-        if (details.isValid === false) {
-            if (minStayWarning) {
-                const minStayVal = details.minimumStayRequired || 2;
-                minStayWarning.textContent = t(
-                    'dbMinStayNotice',
-                    { minStay: minStayVal },
-                    ''
-                );
-                minStayWarning.classList.remove('hidden');
-            }
-            if (directForm) directForm.classList.add('hidden');
-            if (btnSubmit) btnSubmit.disabled = true;
-            if (btnBook) {
-                btnBook.removeAttribute('href');
-                btnBook.setAttribute('aria-disabled', 'true');
-                btnBook.setAttribute('tabindex', '-1');
-                btnBook.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-                btnBook.classList.remove('hover:scale-[1.02]');
-            }
-            if (btnBookText) {
-                btnBookText.textContent = txtReady;
-            }
-        } else {
-            if (minStayWarning) {
-                minStayWarning.classList.add('hidden');
-                minStayWarning.textContent = '';
-            }
-            if (btnBook && checkIn && checkOut) {
-                btnBook.href = airbnbUrl + "?check_in=" + formatDate(checkIn) + "&check_out=" + formatDate(checkOut);
-                btnBook.setAttribute('aria-disabled', 'false');
-                btnBook.removeAttribute('tabindex');
-                btnBook.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-                btnBook.classList.add('hover:scale-[1.02]');
-            }
-            if (btnBookText) {
-                btnBookText.textContent = txtReady;
-            }
-            if (btnSubmit) btnSubmit.disabled = false;
-            if (directForm) {
-                directForm.classList.remove('hidden');
-                // Proactively trigger background pre-loading of the MercadoPago SDK asynchronously
-                loadMercadoPagoSDK().catch(err => console.warn("Background SDK load error:", err));
-            }
-        }
-    }
-
-    async function fetchAuthoritativeQuote(start, end) {
-        const requestId = ++activeQuoteRequestId;
-        const checkInStr = formatDate(start);
-        const checkOutStr = formatDate(end);
-
-        if (typeof fetch !== 'function') {
-            const fallbackDetails = calculateStayDetails(start, end);
-            lastQuoteDetails = fallbackDetails;
-            renderQuoteDetails(fallbackDetails);
-            return;
-        }
-
-        try {
-            const quoteBase = resolveApiBase(pageConfig);
-            const url = `${quoteBase}quote.php?property_id=${encodeURIComponent(propertyId)}&check_in=${encodeURIComponent(checkInStr)}&check_out=${encodeURIComponent(checkOutStr)}`;
-            const response = await fetch(url);
-            if (requestId !== activeQuoteRequestId || !checkIn || !checkOut) return;
-            if (response && response.ok) {
-                const result = await response.json();
-                if (requestId !== activeQuoteRequestId || !checkIn || !checkOut) return;
-                const data = (result && result.success && result.data) ? result.data : (result && typeof result.total_cop === 'number' ? result : null);
-                if (data && typeof data.total_cop === 'number') {
-                    const authoritativeDetails = {
-                        nights: Number(data.nights_count ?? data.nightsCount ?? 0),
-                        accommodationTotal: Number(data.accommodation_total_cop ?? data.accommodationTotalCop ?? 0),
-                        cleaningFee: Number(data.cleaning_fee_cop ?? data.cleaningFeeCop ?? 0),
-                        totalCOP: Number(data.total_cop ?? data.totalCop ?? 0),
-                        minimumStayRequired: Number(data.minimum_stay_required ?? data.minimumStayRequired ?? 2),
-                        isValid: data.is_valid !== undefined ? Boolean(data.is_valid) : (data.isValid !== undefined ? Boolean(data.isValid) : true),
-                        violationReason: data.violation_reason ?? data.violationReason ?? null,
-                        source: 'authoritative'
-                    };
-                    lastQuoteDetails = authoritativeDetails;
-                    renderQuoteDetails(authoritativeDetails);
-                    return;
-                }
-            }
-            const fallbackDetails = calculateStayDetails(start, end);
-            lastQuoteDetails = fallbackDetails;
-            renderQuoteDetails(fallbackDetails);
-        } catch (err) {
-            console.error('Error fetching authoritative quote:', err);
-            if (requestId === activeQuoteRequestId && checkIn && checkOut) {
-                const fallbackDetails = calculateStayDetails(start, end);
-                lastQuoteDetails = fallbackDetails;
-                renderQuoteDetails(fallbackDetails);
-            }
-        }
-    }
-
-    function updateBookingDisplay() {
-        const isSlate = !window.location.pathname.includes('1606');
-        const textClass = isSlate ? "text-slate-900" : "text-stone-900";
-        const muteClass = isSlate ? "text-slate-300" : "text-stone-300";
-
-        dpIn.textContent = displayDate(checkIn);
-        dpIn.className = "font-semibold text-lg " + (checkIn ? textClass : muteClass);
-        
-        dpOut.textContent = displayDate(checkOut);
-        dpOut.className = "font-semibold text-lg " + (checkOut ? textClass : muteClass);
-
-        const breakdownCard = document.getElementById('price-breakdown-card');
-        const directForm = document.getElementById('direct-booking-form');
-        const minStayWarning = document.getElementById('min-stay-warning');
-
-        if (checkIn && checkOut) {
-            const formCheckIn = document.getElementById('form-check-in-date');
-            const formCheckOut = document.getElementById('form-check-out-date');
-            if (formCheckIn) formCheckIn.value = formatDate(checkIn);
-            if (formCheckOut) formCheckOut.value = formatDate(checkOut);
-            fetchAuthoritativeQuote(checkIn, checkOut);
-        } else {
-            activeQuoteRequestId++;
-            lastQuoteDetails = null;
-            if (minStayWarning) {
-                minStayWarning.classList.add('hidden');
-                minStayWarning.textContent = '';
-            }
-            if (btnBook) {
-                btnBook.removeAttribute('href');
-                btnBook.setAttribute('aria-disabled', 'true');
-                btnBook.setAttribute('tabindex', '-1');
-                btnBook.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-                btnBook.classList.remove('hover:scale-[1.02]');
-            }
-            if (btnBookText) {
-                btnBookText.textContent = txtReady;
-            }
-
-            if (breakdownCard) breakdownCard.classList.add('hidden');
-            if (directForm) directForm.classList.add('hidden');
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // MercadoPago Checkout Bricks Implementation
-    // -------------------------------------------------------------------------
-    let mpInstance = null;
-    let paymentBrickController = null;
-
-    // Proactively lazy-load the MercadoPago JS SDK v2 asynchronously
-    function loadMercadoPagoSDK() {
-        return new Promise((resolve, reject) => {
-            if (window.MercadoPago) {
-                resolve();
-                return;
-            }
-            // Check if there is already a script loading
-            const existing = document.querySelector('script[src="https://sdk.mercadopago.com/js/v2"]');
-            if (existing) {
-                existing.addEventListener('load', resolve);
-                existing.addEventListener('error', () => reject(new Error('Failed to load MercadoPago SDK')));
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.src = 'https://sdk.mercadopago.com/js/v2';
-            script.async = true;
-            script.onload = () => {
-                if (window.MercadoPago) {
-                    resolve();
-                } else {
-                    reject(new Error('MercadoPago SDK loaded but window.MercadoPago is missing'));
-                }
-            };
-            script.onerror = () => {
-                reject(new Error('Failed to load MercadoPago SDK'));
-            };
-            document.head.appendChild(script);
-        });
-    }
-
-    async function initPaymentBrick(publicKey, totalAmount, reservationUid, guestEmail, guestName) {
-        if (!window.MercadoPago) {
-            try {
-                await loadMercadoPagoSDK();
-            } catch (err) {
-                console.error("Failed to load MercadoPago SDK:", err);
-                const msgBox = document.getElementById('booking-form-message');
-                if (msgBox) {
-                    msgBox.textContent = t('dbGatewayError', {}, "Unable to load the payment gateway. Please check your internet connection or try again.");
-                    msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
-                }
-                const btnSubmit = document.getElementById('btn-direct-submit');
-                const btnSubmitText = document.getElementById('btn-direct-submit-text');
-                const formEl = document.getElementById('direct-booking-form');
-                const msgSubmitDefault = t('dbSubmit', {}, "Send Booking Request");
-                if (btnSubmit) btnSubmit.disabled = false;
-                if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
-                return;
-            }
-        }
-
-        if (!mpInstance) {
-            mpInstance = new window.MercadoPago(publicKey, { locale: 'es-CO' });
-        }
-
-        if (paymentBrickController) {
-            try {
-                await paymentBrickController.unmount();
-            } catch (unmountErr) {
-                console.warn("Unmount failed or container already empty:", unmountErr);
-            }
-        }
-
-        const bricksBuilder = mpInstance.bricks();
-        const container = document.getElementById('payment-brick-container');
-        if (container) {
-            container.classList.remove('hidden');
-        }
-
-        const propertyId = window.location.pathname.includes('1606') ? '1606' : '1707';
-
-        try {
-            paymentBrickController = await bricksBuilder.create('payment', 'payment-brick-container', {
-                initialization: {
-                    amount: totalAmount,
-                    payer: {
-                        email: guestEmail,
-                        firstName: guestName.split(' ')[0] || '',
-                        lastName: guestName.split(' ').slice(1).join(' ') || '',
-                    }
-                },
-                customization: {
-                    visual: {
-                        style: {
-                            theme: 'default',
-                            customVariables: {
-                                borderRadiusStyle: '16px',
-                                colorPrimary: '#10b981', // Emerald matching the system theme colors
-                            }
-                        }
-                    },
-                    paymentMethods: {
-                        creditCard: 'all',
-                        debitCard: 'all',
-                        bankTransfer: ['pse'],
-                        ticket: ['efecty'],
-                        maxInstallments: 12
-                    }
-                },
-                callbacks: {
-                    onReady: () => {
-                        console.log('Payment Brick mounted successfully.');
-                        const btnSubmit = document.getElementById('btn-direct-submit');
-                        if (btnSubmit) btnSubmit.style.display = 'none'; // Hide old submit button permanently
-                    },
-                    onSubmit: ({ selectedPaymentMethod, formData }) => {
-                        return new Promise((resolve, reject) => {
-                            processBricksPayment(selectedPaymentMethod, formData, reservationUid, guestEmail, guestName, propertyId)
-                                .then(resolve)
-                                .catch(reject);
-                        });
-                    },
-                    onError: (error) => {
-                        console.error('Payment Brick initialization error:', error);
-                    }
-                }
-            });
-        } catch (brickErr) {
-            console.error("Error creating Payment Brick:", brickErr);
-        }
-    }
-
-    async function processBricksPayment(selectedPaymentMethod, formData, reservationUid, guestEmail, guestName, propertyId) {
-        const privacyCheckboxEl = document.getElementById('booking-privacy-consent');
-        const privacyVersionEl = document.getElementById('booking-privacy-policy-version');
-        const payload = {
-            reservation_uid: reservationUid,
-            property_id: propertyId,
-            guest_name: guestName,
-            guest_email: guestEmail,
-            guest_phone: document.getElementById('booking-guest-phone').value.trim(),
-            check_in: document.getElementById('form-check-in-date').value,
-            check_out: document.getElementById('form-check-out-date').value,
-            payment_method_id: selectedPaymentMethod,
-            lang: lang || document.documentElement.lang || 'en',
-            privacy_consent: Boolean(privacyCheckboxEl && privacyCheckboxEl.checked),
-            privacy_policy_version: (privacyVersionEl && privacyVersionEl.value) ? privacyVersionEl.value : '2026-10',
-            captcha_challenge: document.getElementById('booking-captcha-challenge') ? document.getElementById('booking-captcha-challenge').value : '',
-            captcha_response: document.getElementById('booking-captcha-response') ? document.getElementById('booking-captcha-response').value.trim() : '',
-            captcha_signature: bookingCaptchaSignature || '',
-            ...formData
-        };
-
-        const msgBox = document.getElementById('booking-form-message');
-        const formEl = document.getElementById('direct-booking-form');
-        const msgDeclined = t('dbDeclined', {}, "Your payment was declined. Please try another payment option or verify your details.");
-
-        try {
-            const paymentEndpoint = `${resolveApiBase(pageConfig)}payment.php`;
-            const response = await fetch(paymentEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-                // Track Successful Direct Booking Conversion (Goal 5)
-                if (window._paq) {
-                    window._paq.push(['trackEvent', 'Booking', 'Transparent Payment Success', propertyId]);
-                    window._paq.push(['trackGoal', 5]);
-                }
-
-                if (result.reservation_code && typeof sessionStorage !== 'undefined') {
-                    try {
-                        sessionStorage.setItem('ovf_last_reservation_code', result.reservation_code);
-                        sessionStorage.setItem('ovf_checkout_context', JSON.stringify({
-                            code: result.reservation_code,
-                            guest_name: guestName,
-                            guest_email: guestEmail,
-                            guest_phone: payload.guest_phone,
-                            property_id: propertyId,
-                            check_in: payload.check_in,
-                            check_out: payload.check_out
-                        }));
-                    } catch (storageErr) {
-                        console.warn('Unable to persist checkout context in sessionStorage:', storageErr);
-                    }
-                }
-
-                const BOOKING_SUCCESS_PAGES = {
-                    en: 'booking-success/index.html',
-                    es: 'booking-success/es.html',
-                    fr: 'booking-success/fr.html',
-                    it: 'booking-success/it.html',
-                    de: 'booking-success/de.html',
-                    ja: 'booking-success/ja.html'
-                };
-                const BOOKING_PENDING_PAGES = {
-                    en: 'booking-pending/index.html',
-                    es: 'booking-pending/es.html',
-                    fr: 'booking-pending/fr.html',
-                    it: 'booking-pending/it.html',
-                    de: 'booking-pending/de.html',
-                    ja: 'booking-pending/ja.html'
-                };
-                const rawCurrentLang = lang || pageConfig.lang || (document.documentElement && document.documentElement.lang) || 'en';
-                const safeLang = Object.prototype.hasOwnProperty.call(BOOKING_SUCCESS_PAGES, rawCurrentLang) ? rawCurrentLang : 'en';
-                const assetPrefix = (pageConfig.assetPrefix === './' || pageConfig.assetPrefix === '/') ? pageConfig.assetPrefix : '../';
-                const successPage = BOOKING_SUCCESS_PAGES[safeLang];
-                const pendingPage = BOOKING_PENDING_PAGES[safeLang];
-
-                // Route dynamically based on status and method
-                if (result.status === 'approved') {
-                    const params = new URLSearchParams({
-                        id: String(result.payment_id || ''),
-                        code: String(result.reservation_code || ''),
-                        status: 'approved'
-                    });
-                    window.location.href = `${assetPrefix}${successPage}?${params.toString()}`;
-                } else if (selectedPaymentMethod === 'pse' && result.external_resource_url) {
-                    // Redirection for bank payment authorization
-                    window.location.href = result.external_resource_url;
-                } else if (selectedPaymentMethod === 'efecty') {
-                    // Redirection to booking-pending page, passing Efecty voucher print parameters
-                    const params = new URLSearchParams({
-                        id: String(result.payment_id || ''),
-                        code: String(result.reservation_code || ''),
-                        status: 'pending',
-                        method: 'efecty',
-                        barcode: String(result.barcode || ''),
-                        verif_code: String(result.verification_code || ''),
-                        voucher_url: String(result.printable_voucher_url || '')
-                    });
-                    window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
-                } else {
-                    // Standard pending screen fallback
-                    const params = new URLSearchParams({
-                        id: String(result.payment_id || ''),
-                        code: String(result.reservation_code || ''),
-                        status: String(result.status || 'pending')
-                    });
-                    window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
-                }
-            } else {
-                throw new Error(result.error || msgDeclined);
-            }
-        } catch (err) {
-            console.error("Transparent Payment Error:", err);
-            if (msgBox) {
-                msgBox.textContent = err.message || msgDeclined;
-                msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
-            }
-            throw err; // Forces Brick to reset its internal loader
-        }
-    }
-
-    // Direct Booking Form AJAX submit logic
-    const directFormElement = document.getElementById('direct-booking-form');
-    if (directFormElement) {
-        directFormElement.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const btnSubmit = document.getElementById('btn-direct-submit');
-            const btnSubmitText = document.getElementById('btn-direct-submit-text');
-            const msgBox = document.getElementById('booking-form-message');
-
-            const msgVerifying = t('dbVerifying', {}, "Verifying details...");
-            const msgSecured = t('dbSecured', {}, "Booking secured! Please select your payment method below to guarantee your reservation.");
-            const msgFillFields = t('dbFillFields', {}, "Please fill in all required fields.");
-            const msgPrivacyConsent = t('dbErrPrivacyConsent', {}, "Please accept the Personal Data Processing Policy before proceeding with your booking.");
-            const msgSubmitDefault = t('dbSubmit', {}, "Send Booking Request");
-            const msgNetworkError = t('dbNetworkError', {}, "Network error. Please verify connection and try again.");
-
-            const name = document.getElementById('booking-guest-name').value.trim();
-            const email = document.getElementById('booking-guest-email').value.trim();
-            const phone = document.getElementById('booking-guest-phone').value.trim();
-            const captchaVal = bookingCaptchaResponse.value.trim();
-            const privacyCheckbox = document.getElementById('booking-privacy-consent');
-
-            if (!name || !email || !phone || !captchaVal || !checkIn || !checkOut) {
-                if (msgBox) {
-                    msgBox.textContent = msgFillFields;
-                    msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
-                }
-                return;
-            }
-
-            if (!privacyCheckbox || !privacyCheckbox.checked) {
-                if (msgBox) {
-                    msgBox.textContent = msgPrivacyConsent;
-                    msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
-                }
-                return;
-            }
-
-            if (btnSubmit) btnSubmit.disabled = true;
-            if (btnSubmitText) btnSubmitText.textContent = msgVerifying;
-
-            try {
-                const formData = new URLSearchParams(new FormData(directFormElement));
-                formData.append('lang', lang || document.documentElement.lang || 'en');
-                formData.append('captcha_signature', bookingCaptchaSignature);
-                formData.append('captcha_response', captchaVal);
-
-                const bookEndpoint = `${resolveApiBase(pageConfig)}book-request.php`;
-                const response = await fetch(bookEndpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    if (msgBox) {
-                        msgBox.innerHTML = msgSecured;
-                        msgBox.className = "p-4 rounded-xl text-sm font-semibold mb-4 bg-emerald-50 text-emerald-800 border border-emerald-200 block leading-relaxed";
-                    }
-
-                    const publicKey = directFormElement.getAttribute('data-mp-public-key');
-                    const totalAmount = parseFloat(result.total_price);
-                    const reservationUid = result.reservation_uid;
-
-                    // Initialize the MercadoPago Payment Brick natively
-                    await initPaymentBrick(publicKey, totalAmount, reservationUid, email, name);
-                } else {
-                    if (msgBox) {
-                        msgBox.textContent = result.error || msgNetworkError;
-                        msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
-                    }
-                    if (btnSubmit) btnSubmit.disabled = false;
-                    if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
-                    loadBookingCaptcha(); // Reset captcha on failure
-                }
-            } catch (err) {
-                console.error('Error submitting direct booking inquiry:', err);
-                if (msgBox) {
-                    msgBox.textContent = msgNetworkError;
-                    msgBox.className = "p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
-                }
-                if (btnSubmit) btnSubmit.disabled = false;
-                if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
-            }
-        });
-    }
-
-    btnPrev.addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        renderCalendar();
-    });
-
-    btnNext.addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
-    });
-
-    // Matomo Tracking for Airbnb booking redirection (Goal 3)
-    if (btnBook) {
-        btnBook.addEventListener('click', (e) => {
-            if (!checkIn || !checkOut || btnBook.getAttribute('aria-disabled') === 'true') {
-                if (e && typeof e.preventDefault === 'function') {
-                    e.preventDefault();
-                }
-                return;
-            }
-            if (window._paq) {
-                const propId = window.location.pathname.includes('1606') ? '1606' : '1707';
-                window._paq.push(['trackEvent', 'Booking', 'Redirect to Airbnb', propId]);
-                window._paq.push(['trackGoal', 3]);
-            }
-        });
-    }
-
-    // Matomo Tracking for WhatsApp direct booking click (Goal 4)
-    const btnWhatsapp = document.getElementById('whatsapp-booking-link');
-    if (btnWhatsapp) {
-        btnWhatsapp.addEventListener('click', () => {
-            if (window._paq) {
-                const propId = window.location.pathname.includes('1606') ? '1606' : '1707';
-                window._paq.push(['trackEvent', 'Contact', 'WhatsApp Booking Click', propId]);
-                window._paq.push(['trackGoal', 4]);
-            }
-        });
-    }
-
-    updateBookingDisplay();
-    renderCalendar();
-    fetchBlockedDates(); // Fetch live availability on load
+document.addEventListener("DOMContentLoaded", () => {
+	const widget = document.getElementById("calendar-widget");
+	if (!widget) return;
+
+	const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
+	const t = (key, params, fallback) =>
+		window.t
+			? window.t(key, params, fallback)
+			: fallback !== undefined
+				? fallback
+				: key;
+
+	let currentDate = new Date();
+	let checkIn = null;
+	let checkOut = null;
+	let blockedDates = []; // Array of YYYY-MM-DD strings of booked dates
+
+	const SUPPORTED_LANGS = ["en", "es", "fr", "it", "de", "ja"];
+	const rawWidgetLang =
+		pageConfig.lang || widget.getAttribute("data-lang") || "en";
+	const lang = SUPPORTED_LANGS.find((l) => l === rawWidgetLang) || "en";
+	const monthNames = JSON.parse(widget.getAttribute("data-month-names"));
+	const dayNames = JSON.parse(widget.getAttribute("data-day-names"));
+
+	const btnPrev = document.getElementById("btn-prev-month");
+	const btnNext = document.getElementById("btn-next-month");
+	const monthLabel = document.getElementById("month-label");
+	const grid = document.getElementById("calendar-grid");
+
+	const dpIn = document.getElementById("check-in-display");
+	const dpOut = document.getElementById("check-out-display");
+	const btnBook = document.getElementById("btn-book");
+	const btnBookText = document.getElementById("btn-book-text");
+	const airbnbUrl = btnBook.getAttribute("data-airbnb-url");
+	const txtReady = btnBook.getAttribute("data-text-ready");
+	const txtDefault = btnBook.getAttribute("data-text-default");
+
+	// Retrieve property ID from page path (defaults to 1707 if not 1606)
+	const propertyId = window.location.pathname.includes("1606")
+		? "1606"
+		: "1707";
+
+	// Fetch live blocked dates from local caching proxy
+	async function fetchBlockedDates() {
+		try {
+			const availBase = resolveApiBase(pageConfig);
+			const response = await fetch(
+				`${availBase}availability.php?property=${propertyId}`,
+			);
+			if (response.ok) {
+				blockedDates = await response.json();
+				renderCalendar();
+			}
+		} catch (err) {
+			console.error(
+				"Error retrieving live Airbnb calendar blocked dates:",
+				err,
+			);
+		}
+	}
+
+	function renderCalendar() {
+		grid.innerHTML = "";
+		const year = currentDate.getFullYear();
+		const month = currentDate.getMonth();
+
+		monthLabel.textContent = monthNames[lang][month] + " " + year;
+
+		const firstDay = new Date(year, month, 1).getDay();
+		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		for (let i = 0; i < firstDay; i++) {
+			const empty = document.createElement("div");
+			empty.className = "w-8 h-8 md:w-10 md:h-10";
+			grid.appendChild(empty);
+		}
+
+		const isCheckoutSelectionMode = Boolean(checkIn && !checkOut);
+		const checkInDateStr = checkIn ? formatDate(checkIn) : null;
+		const firstBlockedAfterCheckIn = isCheckoutSelectionMode
+			? blockedDates
+					.slice()
+					.sort()
+					.find((dStr) => dStr > checkInDateStr) || null
+			: null;
+
+		for (let i = 1; i <= daysInMonth; i++) {
+			const btn = document.createElement("button");
+			const thisDate = new Date(year, month, i);
+			const dateStr = formatDate(thisDate);
+
+			const isPast = thisDate < today;
+			const isBlocked = blockedDates.includes(dateStr);
+			const isCheckIn = Boolean(
+				checkIn && thisDate.getTime() === checkIn.getTime(),
+			);
+			const isCheckOut = Boolean(
+				checkOut && thisDate.getTime() === checkOut.getTime(),
+			);
+			const isBetween = Boolean(
+				checkIn && checkOut && thisDate > checkIn && thisDate < checkOut,
+			);
+			const isTurnoverCheckoutCandidate = Boolean(
+				isCheckoutSelectionMode &&
+					firstBlockedAfterCheckIn &&
+					dateStr === firstBlockedAfterCheckIn,
+			);
+			const isBeyondFirstBlocked = Boolean(
+				isCheckoutSelectionMode &&
+					firstBlockedAfterCheckIn &&
+					dateStr > firstBlockedAfterCheckIn,
+			);
+			const isDisabled = isCheckoutSelectionMode
+				? isPast ||
+					(isBlocked && !isTurnoverCheckoutCandidate) ||
+					isBeyondFirstBlocked
+				: isPast || isBlocked;
+
+			let bgClass = "bg-white hover:bg-slate-100 text-slate-700";
+			if (isPast) {
+				bgClass = "bg-transparent text-slate-300 cursor-not-allowed";
+			} else if (isCheckIn || isCheckOut) {
+				bgClass = "bg-[#FF5A5F] text-white font-medium";
+			} else if (isTurnoverCheckoutCandidate) {
+				bgClass = "bg-white hover:bg-slate-100 text-slate-700";
+			} else if (isBlocked) {
+				bgClass =
+					"bg-slate-50 text-slate-300 cursor-not-allowed line-through relative after:content-[''] after:absolute after:w-full after:h-[1px] after:bg-slate-300 after:rotate-[-45deg]";
+			} else if (isBeyondFirstBlocked) {
+				bgClass = "bg-transparent text-slate-300 cursor-not-allowed";
+			} else if (isBetween) {
+				bgClass = "bg-[#FF5A5F]/10 text-[#FF5A5F] font-medium";
+			}
+
+			btn.className =
+				"calendar-day w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm transition-all relative overflow-hidden " +
+				bgClass;
+			btn.textContent = i;
+			btn.disabled = isDisabled;
+			btn.setAttribute("data-date", dateStr);
+
+			// Accessible label for screen readers
+			if (isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut) {
+				btn.setAttribute("title", "Already Booked");
+				btn.setAttribute(
+					"aria-label",
+					`${i} ${monthNames[lang][month]}, Booked`,
+				);
+			}
+
+			if (!isDisabled) {
+				btn.addEventListener("click", () => {
+					if (!checkIn || (checkIn && checkOut)) {
+						checkIn = thisDate;
+						checkOut = null;
+					} else if (thisDate > checkIn) {
+						// Secure dates allocation: prevent selecting ranges spanning across existing bookings
+						let hasOverlap = false;
+						let d = new Date(checkIn);
+						d.setDate(d.getDate() + 1);
+						while (d < thisDate) {
+							if (blockedDates.includes(formatDate(d))) {
+								hasOverlap = true;
+								break;
+							}
+							d.setDate(d.getDate() + 1);
+						}
+
+						if (hasOverlap) {
+							checkIn = thisDate;
+							checkOut = null;
+						} else {
+							checkOut = thisDate;
+						}
+					} else {
+						checkIn = thisDate;
+						checkOut = null;
+					}
+					renderCalendar();
+					updateBookingDisplay();
+				});
+			}
+
+			grid.appendChild(btn);
+		}
+	}
+
+	function formatDate(d) {
+		const y = d.getFullYear();
+		const m = String(d.getMonth() + 1).padStart(2, "0");
+		const day = String(d.getDate()).padStart(2, "0");
+		return y + "-" + m + "-" + day;
+	}
+
+	function displayDate(d) {
+		if (!d) return dpIn.getAttribute("data-text-add-date") || "Add date";
+		const options = { month: "short", day: "numeric", year: "numeric" };
+		const locMap = {
+			es: "es-ES",
+			fr: "fr-FR",
+			it: "it-IT",
+			de: "de-DE",
+			ja: "ja-JP",
+		};
+		return d.toLocaleDateString(locMap[lang] || "en-US", options);
+	}
+
+	let pricesData = [];
+	let exchangeRates = null;
+	let activeQuoteRequestId = 0;
+	let lastQuoteDetails = null;
+
+	// Fetch build-time or admin-synced seasonal prices json
+	async function fetchPrices() {
+		try {
+			const prefix = pageConfig.assetPrefix || "/";
+			const normalizedPrefix = prefix.endsWith("/") ? prefix : `${prefix}/`;
+			const response = await fetch(`${normalizedPrefix}cache/prices.json`);
+			if (response.ok) {
+				const payload = await response.json();
+				if (Array.isArray(payload)) {
+					pricesData = payload;
+				} else if (payload && Array.isArray(payload.tiers)) {
+					pricesData = payload.tiers;
+				} else if (
+					payload &&
+					payload.data &&
+					Array.isArray(payload.data.tiers)
+				) {
+					pricesData = payload.data.tiers;
+				}
+				if (
+					checkIn &&
+					checkOut &&
+					lastQuoteDetails &&
+					lastQuoteDetails.source === "fallback"
+				) {
+					const fallbackDetails = calculateStayDetails(checkIn, checkOut);
+					lastQuoteDetails = fallbackDetails;
+					renderQuoteDetails(fallbackDetails);
+				}
+			}
+		} catch (err) {
+			console.error("Error fetching seasonal prices:", err);
+		}
+	}
+
+	// Fetch COP exchange rates with 1-hour client-side caching
+	async function fetchExchangeRates() {
+		try {
+			const cachedRates = localStorage.getItem("cop_exchange_rates");
+			const cachedTime = localStorage.getItem("cop_exchange_rates_time");
+
+			if (
+				cachedRates &&
+				cachedTime &&
+				Date.now() - parseInt(cachedTime, 10) < 3600000
+			) {
+				exchangeRates = JSON.parse(cachedRates);
+				return;
+			}
+
+			const response = await fetch("https://open.er-api.com/v6/latest/COP");
+			if (response.ok) {
+				const data = await response.json();
+				if (data && data.rates) {
+					exchangeRates = data.rates;
+					localStorage.setItem(
+						"cop_exchange_rates",
+						JSON.stringify(data.rates),
+					);
+					localStorage.setItem(
+						"cop_exchange_rates_time",
+						Date.now().toString(),
+					);
+					if (checkIn && checkOut) {
+						if (lastQuoteDetails) {
+							renderQuoteDetails(lastQuoteDetails);
+						} else {
+							updateBookingDisplay();
+						}
+					}
+				}
+			}
+		} catch (err) {
+			console.error("Error fetching currency exchange rates:", err);
+		}
+	}
+
+	fetchPrices();
+	fetchExchangeRates();
+
+	// Captcha Logic for Direct Booking Form
+	let bookingCaptchaSignature = "";
+	const bookingCaptchaLabel = document.getElementById("booking-captcha-label");
+	const bookingCaptchaChallenge = document.getElementById(
+		"booking-captcha-challenge",
+	);
+	const bookingCaptchaResponse = document.getElementById(
+		"booking-captcha-response",
+	);
+
+	async function loadBookingCaptcha() {
+		if (!bookingCaptchaLabel) return;
+		try {
+			const currentLang =
+				pageConfig.lang || document.documentElement.lang || "en";
+			const bookBase = resolveApiBase(pageConfig);
+			const response = await fetch(
+				`${bookBase}book-request.php?action=captcha&lang=${encodeURIComponent(currentLang)}`,
+			);
+			if (response.ok) {
+				const data = await response.json();
+				const originalText =
+					bookingCaptchaLabel.getAttribute("data-original") ||
+					bookingCaptchaLabel.textContent;
+				if (!bookingCaptchaLabel.getAttribute("data-original")) {
+					bookingCaptchaLabel.setAttribute("data-original", originalText);
+				}
+				bookingCaptchaLabel.textContent = `${originalText} (${data.challenge})`;
+				bookingCaptchaChallenge.value = data.challenge;
+				bookingCaptchaSignature = data.signature;
+				bookingCaptchaResponse.value = "";
+			}
+		} catch (err) {
+			console.error("Error loading booking captcha:", err);
+		}
+	}
+
+	if (bookingCaptchaLabel) {
+		loadBookingCaptcha();
+	}
+
+	function calculateStayDetails(start, end) {
+		let current = new Date(start);
+		const endLimit = new Date(end);
+		let nights = 0;
+		let accommodationTotal = 0;
+		let maxMinStay = 2;
+
+		while (current < endLimit) {
+			nights++;
+			const dateStr = formatDate(current);
+			const tier = pricesData.find(
+				(p) =>
+					p.property_id === propertyId &&
+					dateStr >= p.start_date &&
+					dateStr <= p.end_date,
+			);
+			const rate = tier
+				? parseFloat(tier.nightly_rate_cop)
+				: propertyId === "1707"
+					? 450000
+					: 350000;
+			const tierMinStay = tier
+				? parseInt(tier.minimum_stay || tier.min_stay || 2, 10)
+				: 2;
+			if (tierMinStay > maxMinStay) {
+				maxMinStay = tierMinStay;
+			}
+			accommodationTotal += rate;
+			current.setDate(current.getDate() + 1);
+		}
+
+		const cleaningFee = propertyId === "1707" ? 100000 : 80000;
+		const totalCOP = accommodationTotal + cleaningFee;
+		const isValid = nights >= maxMinStay;
+
+		return {
+			nights,
+			accommodationTotal,
+			cleaningFee,
+			totalCOP,
+			minimumStayRequired: maxMinStay,
+			isValid,
+			violationReason: isValid ? null : "min_stay",
+			source: "fallback",
+		};
+	}
+
+	function renderQuoteDetails(details) {
+		const breakdownCard = document.getElementById("price-breakdown-card");
+		const directForm = document.getElementById("direct-booking-form");
+		const minStayWarning = document.getElementById("min-stay-warning");
+		const btnSubmit = document.getElementById("btn-direct-submit");
+
+		// Form bindings
+		const formCheckIn = document.getElementById("form-check-in-date");
+		const formCheckOut = document.getElementById("form-check-out-date");
+		const formTotalPrice = document.getElementById("form-total-price-cop");
+		if (formCheckIn && checkIn) formCheckIn.value = formatDate(checkIn);
+		if (formCheckOut && checkOut) formCheckOut.value = formatDate(checkOut);
+		if (formTotalPrice) formTotalPrice.value = details.totalCOP;
+
+		// Populate Breakdown UI
+		const accommodationValue = document.getElementById("rate-breakdown-value");
+		const cleaningValue = document.getElementById("cleaning-fee-value");
+		const totalValue = document.getElementById("total-cop-value");
+
+		const copFormatter = new Intl.NumberFormat("es-CO", {
+			style: "currency",
+			currency: "COP",
+			maximumFractionDigits: 0,
+		});
+
+		if (accommodationValue) {
+			const nightsText = t(
+				"dbNightsFormat",
+				{ nights: details.nights },
+				accommodationValue.getAttribute("data-nights-format") || "",
+			);
+			accommodationValue.textContent =
+				copFormatter.format(details.accommodationTotal) +
+				(nightsText ? " " + nightsText : "");
+		}
+		if (cleaningValue)
+			cleaningValue.textContent = copFormatter.format(details.cleaningFee);
+		if (totalValue)
+			totalValue.textContent = copFormatter.format(details.totalCOP) + " COP";
+
+		// Convert to selected language's suggested currency
+		const currencyBox = document.getElementById("converted-currency-box");
+		const currencyValue = document.getElementById("converted-currency-value");
+
+		if (currencyBox && currencyValue && exchangeRates) {
+			const langToCurrency = {
+				en: "USD",
+				es: "USD",
+				fr: "EUR",
+				de: "EUR",
+				it: "EUR",
+				ja: "JPY",
+			};
+			const targetCurrency = langToCurrency[lang] || "USD";
+			const rate = exchangeRates[targetCurrency];
+
+			if (rate) {
+				const converted = details.totalCOP * rate;
+				let formatted = "";
+				if (targetCurrency === "JPY") {
+					formatted = new Intl.NumberFormat("ja-JP", {
+						style: "currency",
+						currency: "JPY",
+					}).format(converted);
+				} else if (targetCurrency === "EUR") {
+					formatted = new Intl.NumberFormat("fr-FR", {
+						style: "currency",
+						currency: "EUR",
+					}).format(converted);
+				} else {
+					formatted = new Intl.NumberFormat("en-US", {
+						style: "currency",
+						currency: "USD",
+					}).format(converted);
+				}
+				currencyValue.textContent = formatted + " " + targetCurrency;
+				currencyBox.classList.remove("hidden");
+			} else {
+				currencyBox.classList.add("hidden");
+			}
+		}
+
+		if (breakdownCard) breakdownCard.classList.remove("hidden");
+
+		if (details.isValid === false) {
+			if (minStayWarning) {
+				const minStayVal = details.minimumStayRequired || 2;
+				minStayWarning.textContent = t(
+					"dbMinStayNotice",
+					{ minStay: minStayVal },
+					"",
+				);
+				minStayWarning.classList.remove("hidden");
+			}
+			if (directForm) directForm.classList.add("hidden");
+			if (btnSubmit) btnSubmit.disabled = true;
+			if (btnBook) {
+				btnBook.removeAttribute("href");
+				btnBook.setAttribute("aria-disabled", "true");
+				btnBook.setAttribute("tabindex", "-1");
+				btnBook.classList.add(
+					"opacity-50",
+					"cursor-not-allowed",
+					"pointer-events-none",
+				);
+				btnBook.classList.remove("hover:scale-[1.02]");
+			}
+			if (btnBookText) {
+				btnBookText.textContent = txtReady;
+			}
+		} else {
+			if (minStayWarning) {
+				minStayWarning.classList.add("hidden");
+				minStayWarning.textContent = "";
+			}
+			if (btnBook && checkIn && checkOut) {
+				btnBook.href =
+					airbnbUrl +
+					"?check_in=" +
+					formatDate(checkIn) +
+					"&check_out=" +
+					formatDate(checkOut);
+				btnBook.setAttribute("aria-disabled", "false");
+				btnBook.removeAttribute("tabindex");
+				btnBook.classList.remove(
+					"opacity-50",
+					"cursor-not-allowed",
+					"pointer-events-none",
+				);
+				btnBook.classList.add("hover:scale-[1.02]");
+			}
+			if (btnBookText) {
+				btnBookText.textContent = txtReady;
+			}
+			if (btnSubmit) btnSubmit.disabled = false;
+			if (directForm) {
+				directForm.classList.remove("hidden");
+				// Proactively trigger background pre-loading of the MercadoPago SDK asynchronously
+				loadMercadoPagoSDK().catch((err) =>
+					console.warn("Background SDK load error:", err),
+				);
+			}
+		}
+	}
+
+	async function fetchAuthoritativeQuote(start, end) {
+		const requestId = ++activeQuoteRequestId;
+		const checkInStr = formatDate(start);
+		const checkOutStr = formatDate(end);
+
+		if (typeof fetch !== "function") {
+			const fallbackDetails = calculateStayDetails(start, end);
+			lastQuoteDetails = fallbackDetails;
+			renderQuoteDetails(fallbackDetails);
+			return;
+		}
+
+		try {
+			const quoteBase = resolveApiBase(pageConfig);
+			const url = `${quoteBase}quote.php?property_id=${encodeURIComponent(propertyId)}&check_in=${encodeURIComponent(checkInStr)}&check_out=${encodeURIComponent(checkOutStr)}`;
+			const response = await fetch(url);
+			if (requestId !== activeQuoteRequestId || !checkIn || !checkOut) return;
+			if (response && response.ok) {
+				const result = await response.json();
+				if (requestId !== activeQuoteRequestId || !checkIn || !checkOut) return;
+				const data =
+					result && result.success && result.data
+						? result.data
+						: result && typeof result.total_cop === "number"
+							? result
+							: null;
+				if (data && typeof data.total_cop === "number") {
+					const authoritativeDetails = {
+						nights: Number(data.nights_count ?? data.nightsCount ?? 0),
+						accommodationTotal: Number(
+							data.accommodation_total_cop ?? data.accommodationTotalCop ?? 0,
+						),
+						cleaningFee: Number(
+							data.cleaning_fee_cop ?? data.cleaningFeeCop ?? 0,
+						),
+						totalCOP: Number(data.total_cop ?? data.totalCop ?? 0),
+						minimumStayRequired: Number(
+							data.minimum_stay_required ?? data.minimumStayRequired ?? 2,
+						),
+						isValid:
+							data.is_valid !== undefined
+								? Boolean(data.is_valid)
+								: data.isValid !== undefined
+									? Boolean(data.isValid)
+									: true,
+						violationReason:
+							data.violation_reason ?? data.violationReason ?? null,
+						source: "authoritative",
+					};
+					lastQuoteDetails = authoritativeDetails;
+					renderQuoteDetails(authoritativeDetails);
+					return;
+				}
+			}
+			const fallbackDetails = calculateStayDetails(start, end);
+			lastQuoteDetails = fallbackDetails;
+			renderQuoteDetails(fallbackDetails);
+		} catch (err) {
+			console.error("Error fetching authoritative quote:", err);
+			if (requestId === activeQuoteRequestId && checkIn && checkOut) {
+				const fallbackDetails = calculateStayDetails(start, end);
+				lastQuoteDetails = fallbackDetails;
+				renderQuoteDetails(fallbackDetails);
+			}
+		}
+	}
+
+	function updateBookingDisplay() {
+		const isSlate = !window.location.pathname.includes("1606");
+		const textClass = isSlate ? "text-slate-900" : "text-stone-900";
+		const muteClass = isSlate ? "text-slate-300" : "text-stone-300";
+
+		dpIn.textContent = displayDate(checkIn);
+		dpIn.className =
+			"font-semibold text-lg " + (checkIn ? textClass : muteClass);
+
+		dpOut.textContent = displayDate(checkOut);
+		dpOut.className =
+			"font-semibold text-lg " + (checkOut ? textClass : muteClass);
+
+		const breakdownCard = document.getElementById("price-breakdown-card");
+		const directForm = document.getElementById("direct-booking-form");
+		const minStayWarning = document.getElementById("min-stay-warning");
+
+		if (checkIn && checkOut) {
+			const formCheckIn = document.getElementById("form-check-in-date");
+			const formCheckOut = document.getElementById("form-check-out-date");
+			if (formCheckIn) formCheckIn.value = formatDate(checkIn);
+			if (formCheckOut) formCheckOut.value = formatDate(checkOut);
+			fetchAuthoritativeQuote(checkIn, checkOut);
+		} else {
+			activeQuoteRequestId++;
+			lastQuoteDetails = null;
+			if (minStayWarning) {
+				minStayWarning.classList.add("hidden");
+				minStayWarning.textContent = "";
+			}
+			if (btnBook) {
+				btnBook.removeAttribute("href");
+				btnBook.setAttribute("aria-disabled", "true");
+				btnBook.setAttribute("tabindex", "-1");
+				btnBook.classList.add(
+					"opacity-50",
+					"cursor-not-allowed",
+					"pointer-events-none",
+				);
+				btnBook.classList.remove("hover:scale-[1.02]");
+			}
+			if (btnBookText) {
+				btnBookText.textContent = txtReady;
+			}
+
+			if (breakdownCard) breakdownCard.classList.add("hidden");
+			if (directForm) directForm.classList.add("hidden");
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// MercadoPago Checkout Bricks Implementation
+	// -------------------------------------------------------------------------
+	let mpInstance = null;
+	let paymentBrickController = null;
+
+	// Proactively lazy-load the MercadoPago JS SDK v2 asynchronously
+	function loadMercadoPagoSDK() {
+		return new Promise((resolve, reject) => {
+			if (window.MercadoPago) {
+				resolve();
+				return;
+			}
+			// Check if there is already a script loading
+			const existing = document.querySelector(
+				'script[src="https://sdk.mercadopago.com/js/v2"]',
+			);
+			if (existing) {
+				existing.addEventListener("load", resolve);
+				existing.addEventListener("error", () =>
+					reject(new Error("Failed to load MercadoPago SDK")),
+				);
+				return;
+			}
+
+			const script = document.createElement("script");
+			script.src = "https://sdk.mercadopago.com/js/v2";
+			script.async = true;
+			script.onload = () => {
+				if (window.MercadoPago) {
+					resolve();
+				} else {
+					reject(
+						new Error(
+							"MercadoPago SDK loaded but window.MercadoPago is missing",
+						),
+					);
+				}
+			};
+			script.onerror = () => {
+				reject(new Error("Failed to load MercadoPago SDK"));
+			};
+			document.head.appendChild(script);
+		});
+	}
+
+	async function initPaymentBrick(
+		publicKey,
+		totalAmount,
+		reservationUid,
+		guestEmail,
+		guestName,
+	) {
+		if (!window.MercadoPago) {
+			try {
+				await loadMercadoPagoSDK();
+			} catch (err) {
+				console.error("Failed to load MercadoPago SDK:", err);
+				const msgBox = document.getElementById("booking-form-message");
+				if (msgBox) {
+					msgBox.textContent = t(
+						"dbGatewayError",
+						{},
+						"Unable to load the payment gateway. Please check your internet connection or try again.",
+					);
+					msgBox.className =
+						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+				}
+				const btnSubmit = document.getElementById("btn-direct-submit");
+				const btnSubmitText = document.getElementById("btn-direct-submit-text");
+				const formEl = document.getElementById("direct-booking-form");
+				const msgSubmitDefault = t("dbSubmit", {}, "Send Booking Request");
+				if (btnSubmit) btnSubmit.disabled = false;
+				if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
+				return;
+			}
+		}
+
+		if (!mpInstance) {
+			mpInstance = new window.MercadoPago(publicKey, { locale: "es-CO" });
+		}
+
+		if (paymentBrickController) {
+			try {
+				await paymentBrickController.unmount();
+			} catch (unmountErr) {
+				console.warn("Unmount failed or container already empty:", unmountErr);
+			}
+		}
+
+		const bricksBuilder = mpInstance.bricks();
+		const container = document.getElementById("payment-brick-container");
+		if (container) {
+			container.classList.remove("hidden");
+		}
+
+		const propertyId = window.location.pathname.includes("1606")
+			? "1606"
+			: "1707";
+
+		try {
+			paymentBrickController = await bricksBuilder.create(
+				"payment",
+				"payment-brick-container",
+				{
+					initialization: {
+						amount: totalAmount,
+						payer: {
+							email: guestEmail,
+							firstName: guestName.split(" ")[0] || "",
+							lastName: guestName.split(" ").slice(1).join(" ") || "",
+						},
+					},
+					customization: {
+						visual: {
+							style: {
+								theme: "default",
+								customVariables: {
+									borderRadiusStyle: "16px",
+									colorPrimary: "#10b981", // Emerald matching the system theme colors
+								},
+							},
+						},
+						paymentMethods: {
+							creditCard: "all",
+							debitCard: "all",
+							bankTransfer: ["pse"],
+							ticket: ["efecty"],
+							maxInstallments: 12,
+						},
+					},
+					callbacks: {
+						onReady: () => {
+							console.log("Payment Brick mounted successfully.");
+							const btnSubmit = document.getElementById("btn-direct-submit");
+							if (btnSubmit) btnSubmit.style.display = "none"; // Hide old submit button permanently
+						},
+						onSubmit: ({ selectedPaymentMethod, formData }) => {
+							return new Promise((resolve, reject) => {
+								processBricksPayment(
+									selectedPaymentMethod,
+									formData,
+									reservationUid,
+									guestEmail,
+									guestName,
+									propertyId,
+								)
+									.then(resolve)
+									.catch(reject);
+							});
+						},
+						onError: (error) => {
+							console.error("Payment Brick initialization error:", error);
+						},
+					},
+				},
+			);
+		} catch (brickErr) {
+			console.error("Error creating Payment Brick:", brickErr);
+		}
+	}
+
+	async function processBricksPayment(
+		selectedPaymentMethod,
+		formData,
+		reservationUid,
+		guestEmail,
+		guestName,
+		propertyId,
+	) {
+		const privacyCheckboxEl = document.getElementById(
+			"booking-privacy-consent",
+		);
+		const privacyVersionEl = document.getElementById(
+			"booking-privacy-policy-version",
+		);
+		const payload = {
+			reservation_uid: reservationUid,
+			property_id: propertyId,
+			guest_name: guestName,
+			guest_email: guestEmail,
+			guest_phone: document.getElementById("booking-guest-phone").value.trim(),
+			check_in: document.getElementById("form-check-in-date").value,
+			check_out: document.getElementById("form-check-out-date").value,
+			payment_method_id: selectedPaymentMethod,
+			lang: lang || document.documentElement.lang || "en",
+			privacy_consent: Boolean(privacyCheckboxEl && privacyCheckboxEl.checked),
+			privacy_policy_version:
+				privacyVersionEl && privacyVersionEl.value
+					? privacyVersionEl.value
+					: "2026-10",
+			captcha_challenge: document.getElementById("booking-captcha-challenge")
+				? document.getElementById("booking-captcha-challenge").value
+				: "",
+			captcha_response: document.getElementById("booking-captcha-response")
+				? document.getElementById("booking-captcha-response").value.trim()
+				: "",
+			captcha_signature: bookingCaptchaSignature || "",
+			...formData,
+		};
+
+		const msgBox = document.getElementById("booking-form-message");
+		const formEl = document.getElementById("direct-booking-form");
+		const msgDeclined = t(
+			"dbDeclined",
+			{},
+			"Your payment was declined. Please try another payment option or verify your details.",
+		);
+
+		try {
+			const paymentEndpoint = `${resolveApiBase(pageConfig)}payment.php`;
+			const response = await fetch(paymentEndpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(payload),
+			});
+
+			const result = await response.json();
+
+			if (response.ok && result.success) {
+				// Track Successful Direct Booking Conversion (Goal 5)
+				if (window._paq) {
+					window._paq.push([
+						"trackEvent",
+						"Booking",
+						"Transparent Payment Success",
+						propertyId,
+					]);
+					window._paq.push(["trackGoal", 5]);
+				}
+
+				if (result.reservation_code && typeof sessionStorage !== "undefined") {
+					try {
+						sessionStorage.setItem(
+							"ovf_last_reservation_code",
+							result.reservation_code,
+						);
+						sessionStorage.setItem(
+							"ovf_checkout_context",
+							JSON.stringify({
+								code: result.reservation_code,
+								guest_name: guestName,
+								guest_email: guestEmail,
+								guest_phone: payload.guest_phone,
+								property_id: propertyId,
+								check_in: payload.check_in,
+								check_out: payload.check_out,
+							}),
+						);
+					} catch (storageErr) {
+						console.warn(
+							"Unable to persist checkout context in sessionStorage:",
+							storageErr,
+						);
+					}
+				}
+
+				const BOOKING_SUCCESS_PAGES = {
+					en: "booking-success/index.html",
+					es: "booking-success/es.html",
+					fr: "booking-success/fr.html",
+					it: "booking-success/it.html",
+					de: "booking-success/de.html",
+					ja: "booking-success/ja.html",
+				};
+				const BOOKING_PENDING_PAGES = {
+					en: "booking-pending/index.html",
+					es: "booking-pending/es.html",
+					fr: "booking-pending/fr.html",
+					it: "booking-pending/it.html",
+					de: "booking-pending/de.html",
+					ja: "booking-pending/ja.html",
+				};
+				const rawCurrentLang =
+					lang ||
+					pageConfig.lang ||
+					(document.documentElement && document.documentElement.lang) ||
+					"en";
+				const safeLang = Object.prototype.hasOwnProperty.call(
+					BOOKING_SUCCESS_PAGES,
+					rawCurrentLang,
+				)
+					? rawCurrentLang
+					: "en";
+				const assetPrefix =
+					pageConfig.assetPrefix === "./" || pageConfig.assetPrefix === "/"
+						? pageConfig.assetPrefix
+						: "../";
+				const successPage = BOOKING_SUCCESS_PAGES[safeLang];
+				const pendingPage = BOOKING_PENDING_PAGES[safeLang];
+
+				// Route dynamically based on status and method
+				if (result.status === "approved") {
+					const params = new URLSearchParams({
+						id: String(result.payment_id || ""),
+						code: String(result.reservation_code || ""),
+						status: "approved",
+					});
+					window.location.href = `${assetPrefix}${successPage}?${params.toString()}`;
+				} else if (
+					selectedPaymentMethod === "pse" &&
+					isTrustedPaymentRedirectUrl(result.external_resource_url)
+				) {
+					// Redirection for bank payment authorization (strict HTTPS allowlist)
+					window.location.href = result.external_resource_url;
+				} else if (selectedPaymentMethod === "efecty") {
+					// Redirection to booking-pending page, passing Efecty voucher print parameters
+					const params = new URLSearchParams({
+						id: String(result.payment_id || ""),
+						code: String(result.reservation_code || ""),
+						status: "pending",
+						method: "efecty",
+						barcode: String(result.barcode || ""),
+						verif_code: String(result.verification_code || ""),
+						voucher_url: String(result.printable_voucher_url || ""),
+					});
+					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
+				} else {
+					// Standard pending screen fallback
+					const params = new URLSearchParams({
+						id: String(result.payment_id || ""),
+						code: String(result.reservation_code || ""),
+						status: String(result.status || "pending"),
+					});
+					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
+				}
+			} else {
+				throw new Error(result.error || msgDeclined);
+			}
+		} catch (err) {
+			console.error("Transparent Payment Error:", err);
+			if (msgBox) {
+				msgBox.textContent = err.message || msgDeclined;
+				msgBox.className =
+					"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+			}
+			throw err; // Forces Brick to reset its internal loader
+		}
+	}
+
+	// Direct Booking Form AJAX submit logic
+	const directFormElement = document.getElementById("direct-booking-form");
+	if (directFormElement) {
+		directFormElement.addEventListener("submit", async (e) => {
+			e.preventDefault();
+
+			const btnSubmit = document.getElementById("btn-direct-submit");
+			const btnSubmitText = document.getElementById("btn-direct-submit-text");
+			const msgBox = document.getElementById("booking-form-message");
+
+			const msgVerifying = t("dbVerifying", {}, "Verifying details...");
+			const msgSecured = t(
+				"dbSecured",
+				{},
+				"Booking secured! Please select your payment method below to guarantee your reservation.",
+			);
+			const msgFillFields = t(
+				"dbFillFields",
+				{},
+				"Please fill in all required fields.",
+			);
+			const msgPrivacyConsent = t(
+				"dbErrPrivacyConsent",
+				{},
+				"Please accept the Personal Data Processing Policy before proceeding with your booking.",
+			);
+			const msgSubmitDefault = t("dbSubmit", {}, "Send Booking Request");
+			const msgNetworkError = t(
+				"dbNetworkError",
+				{},
+				"Network error. Please verify connection and try again.",
+			);
+
+			const name = document.getElementById("booking-guest-name").value.trim();
+			const email = document.getElementById("booking-guest-email").value.trim();
+			const phone = document.getElementById("booking-guest-phone").value.trim();
+			const captchaVal = bookingCaptchaResponse.value.trim();
+			const privacyCheckbox = document.getElementById(
+				"booking-privacy-consent",
+			);
+
+			if (!name || !email || !phone || !captchaVal || !checkIn || !checkOut) {
+				if (msgBox) {
+					msgBox.textContent = msgFillFields;
+					msgBox.className =
+						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+				}
+				return;
+			}
+
+			if (!privacyCheckbox || !privacyCheckbox.checked) {
+				if (msgBox) {
+					msgBox.textContent = msgPrivacyConsent;
+					msgBox.className =
+						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+				}
+				return;
+			}
+
+			if (btnSubmit) btnSubmit.disabled = true;
+			if (btnSubmitText) btnSubmitText.textContent = msgVerifying;
+
+			try {
+				const formData = new URLSearchParams(new FormData(directFormElement));
+				formData.append("lang", lang || document.documentElement.lang || "en");
+				formData.append("captcha_signature", bookingCaptchaSignature);
+				formData.append("captcha_response", captchaVal);
+
+				const bookEndpoint = `${resolveApiBase(pageConfig)}book-request.php`;
+				const response = await fetch(bookEndpoint, {
+					method: "POST",
+					body: formData,
+				});
+
+				const result = await response.json();
+
+				if (response.ok && result.success) {
+					if (msgBox) {
+						msgBox.textContent = msgSecured;
+						msgBox.className =
+							"p-4 rounded-xl text-sm font-semibold mb-4 bg-emerald-50 text-emerald-800 border border-emerald-200 block leading-relaxed";
+					}
+
+					const publicKey =
+						directFormElement.getAttribute("data-mp-public-key");
+					const totalAmount = parseFloat(result.total_price);
+					const reservationUid = result.reservation_uid;
+
+					// Initialize the MercadoPago Payment Brick natively
+					await initPaymentBrick(
+						publicKey,
+						totalAmount,
+						reservationUid,
+						email,
+						name,
+					);
+				} else {
+					if (msgBox) {
+						msgBox.textContent = result.error || msgNetworkError;
+						msgBox.className =
+							"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+					}
+					if (btnSubmit) btnSubmit.disabled = false;
+					if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
+					loadBookingCaptcha(); // Reset captcha on failure
+				}
+			} catch (err) {
+				console.error("Error submitting direct booking inquiry:", err);
+				if (msgBox) {
+					msgBox.textContent = msgNetworkError;
+					msgBox.className =
+						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
+				}
+				if (btnSubmit) btnSubmit.disabled = false;
+				if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
+			}
+		});
+	}
+
+	btnPrev.addEventListener("click", () => {
+		currentDate.setMonth(currentDate.getMonth() - 1);
+		renderCalendar();
+	});
+
+	btnNext.addEventListener("click", () => {
+		currentDate.setMonth(currentDate.getMonth() + 1);
+		renderCalendar();
+	});
+
+	// Matomo Tracking for Airbnb booking redirection (Goal 3)
+	if (btnBook) {
+		btnBook.addEventListener("click", (e) => {
+			if (
+				!checkIn ||
+				!checkOut ||
+				btnBook.getAttribute("aria-disabled") === "true"
+			) {
+				if (e && typeof e.preventDefault === "function") {
+					e.preventDefault();
+				}
+				return;
+			}
+			if (window._paq) {
+				const propId = window.location.pathname.includes("1606")
+					? "1606"
+					: "1707";
+				window._paq.push([
+					"trackEvent",
+					"Booking",
+					"Redirect to Airbnb",
+					propId,
+				]);
+				window._paq.push(["trackGoal", 3]);
+			}
+		});
+	}
+
+	// Matomo Tracking for WhatsApp direct booking click (Goal 4)
+	const btnWhatsapp = document.getElementById("whatsapp-booking-link");
+	if (btnWhatsapp) {
+		btnWhatsapp.addEventListener("click", () => {
+			if (window._paq) {
+				const propId = window.location.pathname.includes("1606")
+					? "1606"
+					: "1707";
+				window._paq.push([
+					"trackEvent",
+					"Contact",
+					"WhatsApp Booking Click",
+					propId,
+				]);
+				window._paq.push(["trackGoal", 4]);
+			}
+		});
+	}
+
+	updateBookingDisplay();
+	renderCalendar();
+	fetchBlockedDates(); // Fetch live availability on load
 });
 
 // Contact Form Logic
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('contact-form');
-    if (!form) return;
+document.addEventListener("DOMContentLoaded", () => {
+	const form = document.getElementById("contact-form");
+	if (!form) return;
 
-    const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
-    const t = (key, params, fallback) => (window.t ? window.t(key, params, fallback) : (fallback !== undefined ? fallback : key));
+	const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
+	const t = (key, params, fallback) =>
+		window.t
+			? window.t(key, params, fallback)
+			: fallback !== undefined
+				? fallback
+				: key;
 
-    // Matomo Tracking for WhatsApp Sidebar Link (Goal 4)
-    const whatsappContactLink = document.getElementById('whatsapp-contact-link');
-    if (whatsappContactLink) {
-        whatsappContactLink.addEventListener('click', () => {
-            if (window._paq) {
-                window._paq.push(['trackEvent', 'Contact', 'WhatsApp Sidebar Click', 'Contact Page']);
-                window._paq.push(['trackGoal', 4]);
-            }
-        });
-    }
+	// Matomo Tracking for WhatsApp Sidebar Link (Goal 4)
+	const whatsappContactLink = document.getElementById("whatsapp-contact-link");
+	if (whatsappContactLink) {
+		whatsappContactLink.addEventListener("click", () => {
+			if (window._paq) {
+				window._paq.push([
+					"trackEvent",
+					"Contact",
+					"WhatsApp Sidebar Click",
+					"Contact Page",
+				]);
+				window._paq.push(["trackGoal", 4]);
+			}
+		});
+	}
 
-    const btnSubmit = document.getElementById('submit-button');
-    const txtSubmit = document.getElementById('submit-text');
-    const msgBox = document.getElementById('form-message');
-    const checkInInput = document.getElementById('check-in');
-    const checkOutInput = document.getElementById('check-out');
-    const captchaLabel = document.getElementById('captcha-label');
-    const captchaChallenge = document.getElementById('captcha-challenge');
-    const captchaResponse = document.getElementById('captcha-response');
+	const btnSubmit = document.getElementById("submit-button");
+	const txtSubmit = document.getElementById("submit-text");
+	const msgBox = document.getElementById("form-message");
+	const checkInInput = document.getElementById("check-in");
+	const checkOutInput = document.getElementById("check-out");
+	const captchaLabel = document.getElementById("captcha-label");
+	const captchaChallenge = document.getElementById("captcha-challenge");
+	const captchaResponse = document.getElementById("captcha-response");
 
-    // Retrieve localized messages via window.t
-    const msgSuccess = t('contactSuccess', {}, 'Thank you! Your message has been sent successfully.');
-    const msgError = t('contactError', {}, 'Something went wrong. Please check the fields and try again.');
-    const msgPrivacyError = t('contactErrPrivacyConsent', {}, 'Please accept the Personal Data Processing Policy before sending your inquiry.');
-    const msgSubmitting = t('contactSubmitting', {}, 'Sending...');
-    const msgDefaultSubmit = t('contactSubmit', {}, 'Send Inquiry');
-    const msgDateError = t('contactDateError', {}, 'Check-out date must be after check-in date.');
+	// Retrieve localized messages via window.t
+	const msgSuccess = t(
+		"contactSuccess",
+		{},
+		"Thank you! Your message has been sent successfully.",
+	);
+	const msgError = t(
+		"contactError",
+		{},
+		"Something went wrong. Please check the fields and try again.",
+	);
+	const msgPrivacyError = t(
+		"contactErrPrivacyConsent",
+		{},
+		"Please accept the Personal Data Processing Policy before sending your inquiry.",
+	);
+	const msgSubmitting = t("contactSubmitting", {}, "Sending...");
+	const msgDefaultSubmit = t("contactSubmit", {}, "Send Inquiry");
+	const msgDateError = t(
+		"contactDateError",
+		{},
+		"Check-out date must be after check-in date.",
+	);
 
-    // Check URL query parameters for success/error redirect state (traditional post fallback)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
-        showMsg(msgSuccess, true);
-    } else if (urlParams.has('error')) {
-        const errorVal = urlParams.get('error');
-        showMsg(errorVal ? decodeURIComponent(errorVal) : msgError, false);
-    }
+	// Check URL query parameters for success/error redirect state (traditional post fallback)
+	const urlParams = new URLSearchParams(window.location.search);
+	if (urlParams.get("success") === "1") {
+		showMsg(msgSuccess, true);
+	} else if (urlParams.has("error")) {
+		const errorVal = urlParams.get("error");
+		showMsg(errorVal ? decodeURIComponent(errorVal) : msgError, false);
+	}
 
-    // Setup Date picker min constraints
-    const today = new Date().toISOString().split('T')[0];
-    if (checkInInput) {
-        checkInInput.min = today;
-        checkInInput.addEventListener('change', () => {
-            if (checkInInput.value) {
-                checkOutInput.min = checkInInput.value;
-                if (checkOutInput.value && checkOutInput.value <= checkInInput.value) {
-                    const checkInDate = new Date(checkInInput.value);
-                    checkInDate.setDate(checkInDate.getDate() + 1);
-                    checkOutInput.value = checkInDate.toISOString().split('T')[0];
-                }
-            } else {
-                checkOutInput.min = today;
-            }
-        });
-    }
-    if (checkOutInput) {
-        checkOutInput.min = today;
-    }
+	// Setup Date picker min constraints
+	const today = new Date().toISOString().split("T")[0];
+	if (checkInInput) {
+		checkInInput.min = today;
+		checkInInput.addEventListener("change", () => {
+			if (checkInInput.value) {
+				checkOutInput.min = checkInInput.value;
+				if (checkOutInput.value && checkOutInput.value <= checkInInput.value) {
+					const checkInDate = new Date(checkInInput.value);
+					checkInDate.setDate(checkInDate.getDate() + 1);
+					checkOutInput.value = checkInDate.toISOString().split("T")[0];
+				}
+			} else {
+				checkOutInput.min = today;
+			}
+		});
+	}
+	if (checkOutInput) {
+		checkOutInput.min = today;
+	}
 
-    // Dynamic Math Captcha Fetch
-    let captchaSignature = '';
-    async function loadCaptcha() {
-        try {
-            const processorBase = resolveApiBase(pageConfig);
-            
-            const currentLang = pageConfig.lang || document.documentElement.lang || 'en';
-            const response = await fetch(`${processorBase}contact-processor.php?action=captcha&lang=${encodeURIComponent(currentLang)}`);
-            if (response.ok) {
-                const data = await response.json();
-                const originalText = captchaLabel.getAttribute('data-original') || captchaLabel.textContent;
-                if (!captchaLabel.getAttribute('data-original')) {
-                    captchaLabel.setAttribute('data-original', originalText);
-                }
-                captchaLabel.textContent = `${originalText} (${data.challenge})`;
-                captchaChallenge.value = data.challenge;
-                captchaSignature = data.signature;
-                captchaResponse.value = '';
-            }
-        } catch (err) {
-            console.error('Error loading captcha:', err);
-        }
-    }
+	// Dynamic Math Captcha Fetch
+	let captchaSignature = "";
+	async function loadCaptcha() {
+		try {
+			const processorBase = resolveApiBase(pageConfig);
 
-    // Initial load of Captcha
-    loadCaptcha();
+			const currentLang =
+				pageConfig.lang || document.documentElement.lang || "en";
+			const response = await fetch(
+				`${processorBase}contact-processor.php?action=captcha&lang=${encodeURIComponent(currentLang)}`,
+			);
+			if (response.ok) {
+				const data = await response.json();
+				const originalText =
+					captchaLabel.getAttribute("data-original") ||
+					captchaLabel.textContent;
+				if (!captchaLabel.getAttribute("data-original")) {
+					captchaLabel.setAttribute("data-original", originalText);
+				}
+				captchaLabel.textContent = `${originalText} (${data.challenge})`;
+				captchaChallenge.value = data.challenge;
+				captchaSignature = data.signature;
+				captchaResponse.value = "";
+			}
+		} catch (err) {
+			console.error("Error loading captcha:", err);
+		}
+	}
 
-    // Form Submit Handler
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+	// Initial load of Captcha
+	loadCaptcha();
 
-        // Clear messages
-        msgBox.className = 'hidden';
-        msgBox.textContent = '';
+	// Form Submit Handler
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
 
-        // Front-end Validation
-        const nameVal = document.getElementById('name').value.trim();
-        const emailVal = document.getElementById('email').value.trim();
-        const phoneVal = document.getElementById('phone-number').value.trim();
-        const messageVal = document.getElementById('message').value.trim();
-        const captchaVal = captchaResponse.value.trim();
-        const privacyConsent = document.getElementById('privacy-consent');
+		// Clear messages
+		msgBox.className = "hidden";
+		msgBox.textContent = "";
 
-        if (!nameVal || !emailVal || !phoneVal || !messageVal || !captchaVal) {
-            showMsg(msgError, false);
-            return;
-        }
+		// Front-end Validation
+		const nameVal = document.getElementById("name").value.trim();
+		const emailVal = document.getElementById("email").value.trim();
+		const phoneVal = document.getElementById("phone-number").value.trim();
+		const messageVal = document.getElementById("message").value.trim();
+		const captchaVal = captchaResponse.value.trim();
+		const privacyConsent = document.getElementById("privacy-consent");
 
-        if (!privacyConsent || !privacyConsent.checked) {
-            showMsg(msgPrivacyError, false);
-            return;
-        }
+		if (!nameVal || !emailVal || !phoneVal || !messageVal || !captchaVal) {
+			showMsg(msgError, false);
+			return;
+		}
 
-        // Date Validation
-        if (checkInInput && checkOutInput && checkInInput.value && checkOutInput.value) {
-            if (new Date(checkInInput.value) >= new Date(checkOutInput.value)) {
-                showMsg(msgDateError, false);
-                if (window._paq) {
-                    window._paq.push(['trackEvent', 'Contact Form', 'Validation Error', 'Check-out date before check-in']);
-                }
-                return;
-            }
-        }
+		if (!privacyConsent || !privacyConsent.checked) {
+			showMsg(msgPrivacyError, false);
+			return;
+		}
 
-        // Prepare Form Data (encoded as application/x-www-form-urlencoded to avoid multipart/form-data)
-        const formData = new URLSearchParams(new FormData(form));
-        formData.append('lang', document.documentElement.lang || 'en');
-        formData.append('captcha_signature', captchaSignature);
+		// Date Validation
+		if (
+			checkInInput &&
+			checkOutInput &&
+			checkInInput.value &&
+			checkOutInput.value
+		) {
+			if (new Date(checkInInput.value) >= new Date(checkOutInput.value)) {
+				showMsg(msgDateError, false);
+				if (window._paq) {
+					window._paq.push([
+						"trackEvent",
+						"Contact Form",
+						"Validation Error",
+						"Check-out date before check-in",
+					]);
+				}
+				return;
+			}
+		}
 
-        // Submitting State
-        btnSubmit.disabled = true;
-        txtSubmit.textContent = msgSubmitting;
-        btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
+		// Prepare Form Data (encoded as application/x-www-form-urlencoded to avoid multipart/form-data)
+		const formData = new URLSearchParams(new FormData(form));
+		formData.append("lang", document.documentElement.lang || "en");
+		formData.append("captcha_signature", captchaSignature);
 
-        try {
-            const actionUrl = `${resolveApiBase(pageConfig)}contact-processor.php`;
-            const response = await fetch(actionUrl, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
+		// Submitting State
+		btnSubmit.disabled = true;
+		txtSubmit.textContent = msgSubmitting;
+		btnSubmit.classList.add("opacity-75", "cursor-not-allowed");
 
-            const result = await response.json();
+		try {
+			const actionUrl = `${resolveApiBase(pageConfig)}contact-processor.php`;
+			const response = await fetch(actionUrl, {
+				method: "POST",
+				body: formData,
+				headers: {
+					"X-Requested-With": "XMLHttpRequest",
+				},
+			});
 
-            if (response.ok && result.success) {
-                showMsg(msgSuccess, true);
+			const result = await response.json();
 
-                // Matomo Goal & Event Tracking
-                if (window._paq) {
-                    const hasDates = checkInInput && checkOutInput && checkInInput.value && checkOutInput.value;
-                    if (hasDates) {
-                        // Goal 2: Booking Form Submitted
-                        window._paq.push(['trackEvent', 'Contact Form', 'Booking Inquiry Success', `${checkInInput.value} to ${checkOutInput.value}`]);
-                        window._paq.push(['trackGoal', 2]);
-                    } else {
-                        // Goal 1: Contact Form Inquiry
-                        window._paq.push(['trackEvent', 'Contact Form', 'Contact Inquiry Success']);
-                        window._paq.push(['trackGoal', 1]);
-                    }
-                }
+			if (response.ok && result.success) {
+				showMsg(msgSuccess, true);
 
-                form.reset();
-                loadCaptcha();
-            } else {
-                const errorMsg = result.message || msgError;
-                showMsg(errorMsg, false);
+				// Matomo Goal & Event Tracking
+				if (window._paq) {
+					const hasDates =
+						checkInInput &&
+						checkOutInput &&
+						checkInInput.value &&
+						checkOutInput.value;
+					if (hasDates) {
+						// Goal 2: Booking Form Submitted
+						window._paq.push([
+							"trackEvent",
+							"Contact Form",
+							"Booking Inquiry Success",
+							`${checkInInput.value} to ${checkOutInput.value}`,
+						]);
+						window._paq.push(["trackGoal", 2]);
+					} else {
+						// Goal 1: Contact Form Inquiry
+						window._paq.push([
+							"trackEvent",
+							"Contact Form",
+							"Contact Inquiry Success",
+						]);
+						window._paq.push(["trackGoal", 1]);
+					}
+				}
 
-                // Matomo Event Tracking for submission failure
-                if (window._paq) {
-                    window._paq.push(['trackEvent', 'Contact Form', 'Submission Failure', errorMsg]);
-                }
+				form.reset();
+				loadCaptcha();
+			} else {
+				const errorMsg = result.message || msgError;
+				showMsg(errorMsg, false);
 
-                loadCaptcha();
-            }
-        } catch (err) {
-            showMsg(msgError, false);
+				// Matomo Event Tracking for submission failure
+				if (window._paq) {
+					window._paq.push([
+						"trackEvent",
+						"Contact Form",
+						"Submission Failure",
+						errorMsg,
+					]);
+				}
 
-            // Matomo Event Tracking for network or script error
-            if (window._paq) {
-                window._paq.push(['trackEvent', 'Contact Form', 'Submission Error', err.message || 'Network Error']);
-            }
+				loadCaptcha();
+			}
+		} catch (err) {
+			showMsg(msgError, false);
 
-            loadCaptcha();
-        } finally {
-            btnSubmit.disabled = false;
-            txtSubmit.textContent = msgDefaultSubmit;
-            btnSubmit.classList.remove('opacity-75', 'cursor-not-allowed');
-        }
-    });
+			// Matomo Event Tracking for network or script error
+			if (window._paq) {
+				window._paq.push([
+					"trackEvent",
+					"Contact Form",
+					"Submission Error",
+					err.message || "Network Error",
+				]);
+			}
 
-    function showMsg(message, isSuccess) {
-        msgBox.textContent = message;
-        msgBox.className = isSuccess 
-            ? 'p-4 rounded-2xl text-sm font-medium mb-6 bg-emerald-50 text-emerald-800 border border-emerald-100' 
-            : 'p-4 rounded-2xl text-sm font-medium mb-6 bg-rose-50 text-rose-800 border border-rose-100';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+			loadCaptcha();
+		} finally {
+			btnSubmit.disabled = false;
+			txtSubmit.textContent = msgDefaultSubmit;
+			btnSubmit.classList.remove("opacity-75", "cursor-not-allowed");
+		}
+	});
+
+	function showMsg(message, isSuccess) {
+		msgBox.textContent = message;
+		msgBox.className = isSuccess
+			? "p-4 rounded-2xl text-sm font-medium mb-6 bg-emerald-50 text-emerald-800 border border-emerald-100"
+			: "p-4 rounded-2xl text-sm font-medium mb-6 bg-rose-50 text-rose-800 border border-rose-100";
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	}
 });
 
 // Property Image Gallery Lightbox Interactivity
-document.addEventListener('DOMContentLoaded', () => {
-    const dialog = document.getElementById('lightbox-dialog');
-    if (!dialog) return; // Exit if current page has no gallery
+document.addEventListener("DOMContentLoaded", () => {
+	const dialog = document.getElementById("lightbox-dialog");
+	if (!dialog) return; // Exit if current page has no gallery
 
-    const triggers = document.querySelectorAll('.gallery-trigger');
-    const btnViewAll = document.getElementById('btn-view-all-photos');
-    const imgActive = document.getElementById('lightbox-active-img');
-    const txtCounter = document.getElementById('lightbox-counter');
-    const txtCaption = document.getElementById('lightbox-caption');
-    const btnClose = document.getElementById('lightbox-close');
-    const btnPrev = document.getElementById('lightbox-prev');
-    const btnNext = document.getElementById('lightbox-next');
-    const announcer = document.getElementById('lightbox-announcer');
+	const triggers = document.querySelectorAll(".gallery-trigger");
+	const btnViewAll = document.getElementById("btn-view-all-photos");
+	const imgActive = document.getElementById("lightbox-active-img");
+	const txtCounter = document.getElementById("lightbox-counter");
+	const txtCaption = document.getElementById("lightbox-caption");
+	const btnClose = document.getElementById("lightbox-close");
+	const btnPrev = document.getElementById("lightbox-prev");
+	const btnNext = document.getElementById("lightbox-next");
+	const announcer = document.getElementById("lightbox-announcer");
 
-    let currentIndex = 0;
-    let lastFocusedElement = null;
-    const imagesData = [];
+	let currentIndex = 0;
+	let lastFocusedElement = null;
+	const imagesData = [];
 
-    // Parse image configurations from HTML attributes
-    triggers.forEach(trigger => {
-        const index = parseInt(trigger.getAttribute('data-index'), 10);
-        if (isNaN(index)) return;
-        imagesData[index] = {
-            src: trigger.getAttribute('data-src'),
-            alt: trigger.getAttribute('data-alt') || '',
-            caption: trigger.getAttribute('data-caption') || ''
-        };
-    });
+	// Parse image configurations from HTML attributes
+	triggers.forEach((trigger) => {
+		const index = parseInt(trigger.getAttribute("data-index"), 10);
+		if (isNaN(index)) return;
+		imagesData[index] = {
+			src: trigger.getAttribute("data-src"),
+			alt: trigger.getAttribute("data-alt") || "",
+			caption: trigger.getAttribute("data-caption") || "",
+		};
+	});
 
-    // Remove any empty slots from the parsed images
-    const cleanImages = imagesData.filter(item => item !== undefined);
+	// Remove any empty slots from the parsed images
+	const cleanImages = imagesData.filter((item) => item !== undefined);
 
-    function showImage(index) {
-        if (cleanImages.length === 0) return;
+	function showImage(index) {
+		if (cleanImages.length === 0) return;
 
-        // Wrap around circular navigation
-        if (index < 0) {
-            currentIndex = cleanImages.length - 1;
-        } else if (index >= cleanImages.length) {
-            currentIndex = 0;
-        } else {
-            currentIndex = index;
-        }
+		// Wrap around circular navigation
+		if (index < 0) {
+			currentIndex = cleanImages.length - 1;
+		} else if (index >= cleanImages.length) {
+			currentIndex = 0;
+		} else {
+			currentIndex = index;
+		}
 
-        const activeImg = cleanImages[currentIndex];
+		const activeImg = cleanImages[currentIndex];
 
-        // Soft visual fade cross-transition
-        imgActive.classList.remove('opacity-100', 'scale-100');
-        imgActive.classList.add('opacity-0', 'scale-95');
+		// Soft visual fade cross-transition
+		imgActive.classList.remove("opacity-100", "scale-100");
+		imgActive.classList.add("opacity-0", "scale-95");
 
-        // Wait brief transition tick to swap resources to avoid flash
-        setTimeout(() => {
-            imgActive.src = activeImg.src;
-            imgActive.alt = activeImg.alt;
-            txtCaption.textContent = activeImg.caption;
-            txtCounter.textContent = `${currentIndex + 1} / ${cleanImages.length}`;
+		// Wait brief transition tick to swap resources to avoid flash
+		setTimeout(() => {
+			imgActive.src = activeImg.src;
+			imgActive.alt = activeImg.alt;
+			txtCaption.textContent = activeImg.caption;
+			txtCounter.textContent = `${currentIndex + 1} / ${cleanImages.length}`;
 
-            imgActive.onload = () => {
-                imgActive.classList.remove('opacity-0', 'scale-95');
-                imgActive.classList.add('opacity-100', 'scale-100');
-            };
+			imgActive.onload = () => {
+				imgActive.classList.remove("opacity-0", "scale-95");
+				imgActive.classList.add("opacity-100", "scale-100");
+			};
 
-            // Accessibility: Update screen-reader polite status announcer
-            if (announcer) {
-                announcer.textContent = `Showing image ${currentIndex + 1} of ${cleanImages.length}: ${activeImg.caption}`;
-            }
-        }, 150);
-    }
+			// Accessibility: Update screen-reader polite status announcer
+			if (announcer) {
+				announcer.textContent = `Showing image ${currentIndex + 1} of ${cleanImages.length}: ${activeImg.caption}`;
+			}
+		}, 150);
+	}
 
-    function openLightbox(index) {
-        lastFocusedElement = document.activeElement;
-        
-        // Open natively
-        dialog.showModal();
+	function openLightbox(index) {
+		lastFocusedElement = document.activeElement;
 
-        // Reveal with fade-in transition
-        dialog.classList.remove('opacity-0', 'pointer-events-none');
-        dialog.classList.add('opacity-100', 'pointer-events-auto');
+		// Open natively
+		dialog.showModal();
 
-        // Prevent body backdrop scrolling
-        document.body.style.overflow = 'hidden';
+		// Reveal with fade-in transition
+		dialog.classList.remove("opacity-0", "pointer-events-none");
+		dialog.classList.add("opacity-100", "pointer-events-auto");
 
-        showImage(index);
+		// Prevent body backdrop scrolling
+		document.body.style.overflow = "hidden";
 
-        // Position initial focus on Close button
-        if (btnClose) {
-            setTimeout(() => btnClose.focus(), 50);
-        }
-    }
+		showImage(index);
 
-    function closeLightbox() {
-        // Hide with fade transition
-        dialog.classList.remove('opacity-100', 'pointer-events-auto');
-        dialog.classList.add('opacity-0', 'pointer-events-none');
+		// Position initial focus on Close button
+		if (btnClose) {
+			setTimeout(() => btnClose.focus(), 50);
+		}
+	}
 
-        // Wait transition duration before closing natively
-        setTimeout(() => {
-            dialog.close();
-            document.body.style.overflow = '';
-            
-            // Restore accessibility focus to triggering element
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }, 300);
-    }
+	function closeLightbox() {
+		// Hide with fade transition
+		dialog.classList.remove("opacity-100", "pointer-events-auto");
+		dialog.classList.add("opacity-0", "pointer-events-none");
 
-    // Set up click handlers for triggers
-    triggers.forEach(trigger => {
-        trigger.addEventListener('click', (e) => {
-            e.preventDefault();
-            const index = parseInt(trigger.getAttribute('data-index'), 10);
-            openLightbox(isNaN(index) ? 0 : index);
-        });
-    });
+		// Wait transition duration before closing natively
+		setTimeout(() => {
+			dialog.close();
+			document.body.style.overflow = "";
 
-    if (btnViewAll) {
-        btnViewAll.addEventListener('click', (e) => {
-            e.preventDefault();
-            openLightbox(0);
-        });
-    }
+			// Restore accessibility focus to triggering element
+			if (lastFocusedElement) {
+				lastFocusedElement.focus();
+			}
+		}, 300);
+	}
 
-    if (btnClose) btnClose.addEventListener('click', closeLightbox);
-    if (btnPrev) btnPrev.addEventListener('click', () => showImage(currentIndex - 1));
-    if (btnNext) btnNext.addEventListener('click', () => showImage(currentIndex + 1));
+	// Set up click handlers for triggers
+	triggers.forEach((trigger) => {
+		trigger.addEventListener("click", (e) => {
+			e.preventDefault();
+			const index = parseInt(trigger.getAttribute("data-index"), 10);
+			openLightbox(isNaN(index) ? 0 : index);
+		});
+	});
 
-    // Native Dialog Cancel/Escape Event Hook
-    dialog.addEventListener('cancel', (e) => {
-        e.preventDefault(); // Override immediate close to play transition
-        closeLightbox();
-    });
+	if (btnViewAll) {
+		btnViewAll.addEventListener("click", (e) => {
+			e.preventDefault();
+			openLightbox(0);
+		});
+	}
 
-    // Light-Dismiss Backdrop Fallback (for older Safari)
-    if (!('closedBy' in HTMLDialogElement.prototype)) {
-        dialog.addEventListener('click', (event) => {
-            if (event.target !== dialog) return;
+	if (btnClose) btnClose.addEventListener("click", closeLightbox);
+	if (btnPrev)
+		btnPrev.addEventListener("click", () => showImage(currentIndex - 1));
+	if (btnNext)
+		btnNext.addEventListener("click", () => showImage(currentIndex + 1));
 
-            const rect = dialog.getBoundingClientRect();
-            const isDialogContent = (
-                rect.top <= event.clientY &&
-                event.clientY <= rect.top + rect.height &&
-                rect.left <= event.clientX &&
-                event.clientX <= rect.left + rect.width
-            );
+	// Native Dialog Cancel/Escape Event Hook
+	dialog.addEventListener("cancel", (e) => {
+		e.preventDefault(); // Override immediate close to play transition
+		closeLightbox();
+	});
 
-            if (!isDialogContent) {
-                closeLightbox();
-            }
-        });
-    }
+	// Light-Dismiss Backdrop Fallback (for older Safari)
+	if (!("closedBy" in HTMLDialogElement.prototype)) {
+		dialog.addEventListener("click", (event) => {
+			if (event.target !== dialog) return;
 
-    // Keyboard Navigation Arrow Handlers
-    dialog.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            showImage(currentIndex + 1);
-        } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            showImage(currentIndex - 1);
-        }
-    });
+			const rect = dialog.getBoundingClientRect();
+			const isDialogContent =
+				rect.top <= event.clientY &&
+				event.clientY <= rect.top + rect.height &&
+				rect.left <= event.clientX &&
+				event.clientX <= rect.left + rect.width;
 
-    // Keyboard Accessibility Focus Trap cycling
-    dialog.addEventListener('keydown', (e) => {
-        if (e.key === 'Tab') {
-            const focusables = dialog.querySelectorAll('button:not([disabled])');
-            if (focusables.length === 0) return;
+			if (!isDialogContent) {
+				closeLightbox();
+			}
+		});
+	}
 
-            const first = focusables[0];
-            const last = focusables[focusables.length - 1];
+	// Keyboard Navigation Arrow Handlers
+	dialog.addEventListener("keydown", (e) => {
+		if (e.key === "ArrowRight") {
+			e.preventDefault();
+			showImage(currentIndex + 1);
+		} else if (e.key === "ArrowLeft") {
+			e.preventDefault();
+			showImage(currentIndex - 1);
+		}
+	});
 
-            if (e.shiftKey) {
-                if (document.activeElement === first) {
-                    last.focus();
-                    e.preventDefault();
-                }
-            } else {
-                if (document.activeElement === last) {
-                    first.focus();
-                    e.preventDefault();
-                }
-            }
-        }
-    });
+	// Keyboard Accessibility Focus Trap cycling
+	dialog.addEventListener("keydown", (e) => {
+		if (e.key === "Tab") {
+			const focusables = dialog.querySelectorAll("button:not([disabled])");
+			if (focusables.length === 0) return;
 
-    // Mobile Swipe Gesture Event Hooks
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
+			const first = focusables[0];
+			const last = focusables[focusables.length - 1];
 
-    dialog.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
+			if (e.shiftKey) {
+				if (document.activeElement === first) {
+					last.focus();
+					e.preventDefault();
+				}
+			} else {
+				if (document.activeElement === last) {
+					first.focus();
+					e.preventDefault();
+				}
+			}
+		}
+	});
 
-    dialog.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipe();
-    }, { passive: true });
+	// Mobile Swipe Gesture Event Hooks
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let touchEndX = 0;
+	let touchEndY = 0;
 
-    function handleSwipe() {
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
+	dialog.addEventListener(
+		"touchstart",
+		(e) => {
+			touchStartX = e.changedTouches[0].screenX;
+			touchStartY = e.changedTouches[0].screenY;
+		},
+		{ passive: true },
+	);
 
-        // Verify it is a valid horizontal swipe gesture
-        if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 40) {
-            if (deltaX < 0) {
-                showImage(currentIndex + 1); // Swiped Left -> Next
-            } else {
-                showImage(currentIndex - 1); // Swiped Right -> Prev
-            }
-        }
-    }
+	dialog.addEventListener(
+		"touchend",
+		(e) => {
+			touchEndX = e.changedTouches[0].screenX;
+			touchEndY = e.changedTouches[0].screenY;
+			handleSwipe();
+		},
+		{ passive: true },
+	);
+
+	function handleSwipe() {
+		const deltaX = touchEndX - touchStartX;
+		const deltaY = touchEndY - touchStartY;
+
+		// Verify it is a valid horizontal swipe gesture
+		if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 40) {
+			if (deltaX < 0) {
+				showImage(currentIndex + 1); // Swiped Left -> Next
+			} else {
+				showImage(currentIndex - 1); // Swiped Right -> Prev
+			}
+		}
+	}
 });
-

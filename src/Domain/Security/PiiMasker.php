@@ -28,6 +28,31 @@ final class PiiMasker
     }
 
     /**
+     * Masks an email address, preserving only the first character of the local part and the domain.
+     */
+    public static function maskEmail(?string $email): ?string
+    {
+        if ($email === null) {
+            return null;
+        }
+
+        $trimmed = trim($email);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        $atPos = strpos($trimmed, '@');
+        if ($atPos === false || $atPos === 0) {
+            return '****';
+        }
+
+        $local = substr($trimmed, 0, $atPos);
+        $domain = substr($trimmed, $atPos);
+
+        return substr($local, 0, 1) . '****' . $domain;
+    }
+
+    /**
      * Masks a contact phone number, preserving only the last 4 digits prefixed with '****'.
      */
     public static function maskPhone(?string $phone): ?string

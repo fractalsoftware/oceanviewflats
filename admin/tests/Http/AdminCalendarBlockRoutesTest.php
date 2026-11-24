@@ -56,6 +56,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
     {
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'admin_email' => 'admin@oceanviewflats.com',
             'csrf_token' => 'route_test_csrf',
         ];
@@ -82,6 +83,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
     {
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'admin_email' => 'admin@oceanviewflats.com',
             'csrf_token' => 'route_test_csrf',
         ];
@@ -107,6 +109,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
     {
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'admin_email' => 'admin@oceanviewflats.com',
             'csrf_token' => 'route_test_csrf',
         ];
@@ -136,6 +139,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
     {
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(method: 'GET', uri: '/calendar-blocks/new');
@@ -149,6 +153,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
     {
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(
@@ -171,6 +176,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
     {
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'admin_email' => 'admin@oceanviewflats.com',
             'csrf_token' => 'route_test_csrf',
         ];
@@ -222,6 +228,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
 
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(
@@ -251,6 +258,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
 
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(
@@ -273,6 +281,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
 
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(
@@ -304,6 +313,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
 
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(
@@ -326,6 +336,7 @@ final class AdminCalendarBlockRoutesTest extends TestCase
 
         $session = [
             'admin_user_id' => 1,
+            'admin_user_role' => 'admin',
             'csrf_token' => 'route_test_csrf',
         ];
         $request = new Request(

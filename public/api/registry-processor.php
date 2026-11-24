@@ -41,9 +41,10 @@ if (!is_array($data)) {
 if (!empty($_POST)) {
     $data = array_merge($_POST, $data);
 }
-if (empty($data['ip_address']) && isset($_SERVER['REMOTE_ADDR'])) {
-    $data['ip_address'] = $_SERVER['REMOTE_ADDR'];
-}
+// Always derive client IP authoritatively from server transport (Ley 1581 consent proof integrity)
+$data['ip_address'] = (isset($_SERVER['REMOTE_ADDR']) && is_string($_SERVER['REMOTE_ADDR']) && trim($_SERVER['REMOTE_ADDR']) !== '')
+    ? trim($_SERVER['REMOTE_ADDR'])
+    : '127.0.0.1';
 
 // Sanitize input array
 $sanitizedData = [];

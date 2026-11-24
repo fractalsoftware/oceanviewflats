@@ -417,7 +417,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertStringNotContainsString('lang=', $guideUrl);
     }
 
-    public function testSubmitRegistryMatchesByPropertyAndStayDatesWhenCodeIsEmpty(): void
+    public function testSubmitRegistryRejectsEmptyCodeWithoutDateFallback(): void
     {
         $payload = $this->createValidRegistryData([
             'reservation_code' => '',
@@ -429,11 +429,10 @@ final class GuestRegistryEndpointTest extends TestCase
         $res = $this->callRegistryEndpoint($payload);
 
         $this->assertSame(0, $res['exitCode'], $res['stderr']);
-        $this->assertSame(200, $res['statusCode']);
+        $this->assertSame(400, $res['statusCode']);
         $this->assertIsArray($res['json']);
-        $this->assertTrue($res['json']['success']);
-        $this->assertSame('ovf_conf_100', $res['json']['reservation_code']);
-        $this->assertMatchesRegularExpression('/^0[1-9]\d{5}#$/', (string) $res['json']['door_code']);
+        $this->assertFalse($res['json']['success']);
+        $this->assertArrayNotHasKey('door_code', $res['json']);
     }
 
     public function testInvalidSubmissionRejectsZeroOccupantsWith400(): void

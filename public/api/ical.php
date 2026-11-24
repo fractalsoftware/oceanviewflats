@@ -19,6 +19,7 @@ require_once __DIR__ . '/utils.php';
 
 use OceanViewFlats\Domain\Reservation\PdoMaintenanceBlockSource;
 use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
+use OceanViewFlats\Domain\Support\AppEnvironment;
 
 // Enforce security headers & CORS policy dynamically
 enforce_security_headers_and_cors(['GET', 'OPTIONS']);
@@ -59,6 +60,21 @@ try {
     exit("Internal Server Error: Failed to fetch calendar records.");
 }
 
+// Derive opaque HMAC-SHA256 iCal UIDs per ADR 0014; fail closed in production if no secret key is configured
+$icalUidSecret = trim((string) (
+    ($_ENV['ICAL_UID_SECRET'] ?? $_SERVER['ICAL_UID_SECRET'] ?? (getenv('ICAL_UID_SECRET') ?: ''))
+    ?: ($_ENV['APP_ENCRYPTION_KEY'] ?? $_SERVER['APP_ENCRYPTION_KEY'] ?? (getenv('APP_ENCRYPTION_KEY') ?: ''))
+));
+
+if ($icalUidSecret === '') {
+    if (AppEnvironment::isProduction()) {
+        error_log('[iCal Outbound Feed Error] Missing ICAL_UID_SECRET / APP_ENCRYPTION_KEY in production.');
+        http_response_code(500);
+        exit("Internal Server Error: Outbound feed secret not configured.");
+    }
+    $icalUidSecret = 'ovf-local-dev-ical-hmac-key';
+}
+
 // 6. Set proper iCalendar headers
 header('Content-Type: text/calendar; charset=utf-8');
 header('Content-Disposition: attachment; filename="oceanviewflats-' . $propertyId . '.ics"');
@@ -87,7 +103,8 @@ foreach ($activeReservations as $res) {
         continue;
     }
 
-    $uid = $res->reservationUid . '@oceanviewflats.com';
+    $opaqueToken = substr(hash_hmac('sha256', 'ovf-ical-v1:' . $res->reservationUid, $icalUidSecret), 0, 32);
+    $uid = 'ovf-evt-' . $opaqueToken . '@oceanviewflats.com';
     $dtstamp = formatICalDateTime($res->createdAt->format('Y-m-d H:i:s'));
     $dtstart = formatICalDate($res->checkIn);
     $dtend = formatICalDate($res->checkOut);

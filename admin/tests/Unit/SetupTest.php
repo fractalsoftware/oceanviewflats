@@ -42,12 +42,13 @@ final class SetupTest extends TestCase
         $this->assertFalse($response['data']['success']);
     }
 
-    public function testAcceptsValidTokenViaQueryParam(): void
+    public function testRejectsTokenPassedViaQueryParam(): void
     {
+        // Security hardening: query-string tokens leak in access logs & Referer headers and must be rejected
         $response = $this->runner->handleRequest([], ['token' => $this->validToken], []);
 
-        $this->assertSame(200, $response['status']);
-        $this->assertTrue($response['data']['success']);
+        $this->assertSame(403, $response['status']);
+        $this->assertFalse($response['data']['success']);
     }
 
     public function testAcceptsValidTokenViaHeader(): void
@@ -62,8 +63,8 @@ final class SetupTest extends TestCase
     public function testExecutesMigrationsWithValidToken(): void
     {
         $response = $this->runner->handleRequest(
-            ['REQUEST_METHOD' => 'POST'],
-            ['token' => $this->validToken],
+            ['REQUEST_METHOD' => 'POST', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            [],
             ['action' => 'migrate']
         );
 
@@ -92,8 +93,8 @@ final class SetupTest extends TestCase
         ];
 
         $response = $this->runner->handleRequest(
-            ['REQUEST_METHOD' => 'POST'],
-            ['token' => $this->validToken],
+            ['REQUEST_METHOD' => 'POST', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            [],
             $postData
         );
 
@@ -110,8 +111,8 @@ final class SetupTest extends TestCase
 
         // Attempting ANY subsequent setup action must immediately fail with HTTP 403 Locked
         $subsequentResponse = $this->runner->handleRequest(
-            ['REQUEST_METHOD' => 'GET'],
-            ['token' => $this->validToken],
+            ['REQUEST_METHOD' => 'GET', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            [],
             []
         );
 
@@ -126,8 +127,8 @@ final class SetupTest extends TestCase
 
         // 1. Invalid email
         $response = $this->runner->handleRequest(
-            ['REQUEST_METHOD' => 'POST'],
-            ['token' => $this->validToken],
+            ['REQUEST_METHOD' => 'POST', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            [],
             ['action' => 'create_admin', 'name' => 'Admin', 'email' => 'invalid-email', 'password' => 'validPass123']
         );
         $this->assertSame(400, $response['status']);
@@ -135,23 +136,60 @@ final class SetupTest extends TestCase
 
         // 2. Short password
         $response = $this->runner->handleRequest(
-            ['REQUEST_METHOD' => 'POST'],
-            ['token' => $this->validToken],
+            ['REQUEST_METHOD' => 'POST', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            [],
             ['action' => 'create_admin', 'name' => 'Admin', 'email' => 'admin@test.com', 'password' => 'short']
         );
         $this->assertSame(400, $response['status']);
         $this->assertStringContainsString('at least 8 characters', (string) $response['data']['error']);
+
+        // 3. Invalid role rejected
+        $response = $this->runner->handleRequest(
+            ['REQUEST_METHOD' => 'POST', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            [],
+            ['action' => 'create_admin', 'name' => 'Admin', 'email' => 'admin@test.com', 'password' => 'validPass123', 'role' => 'root_shell']
+        );
+        $this->assertSame(400, $response['status']);
+        $this->assertStringContainsString('Invalid administrator role', (string) $response['data']['error']);
     }
 
     public function testCreateAdminRequiresPost(): void
     {
         $response = $this->runner->handleRequest(
-            ['REQUEST_METHOD' => 'GET'],
-            ['token' => $this->validToken, 'action' => 'create_admin'],
+            ['REQUEST_METHOD' => 'GET', 'HTTP_X_SETUP_TOKEN' => $this->validToken],
+            ['action' => 'create_admin'],
             []
         );
 
         $this->assertSame(405, $response['status']);
         $this->assertStringContainsString('requires an HTTP POST', (string) $response['data']['error']);
+    }
+
+    public function testProductionRequiresNativeHttpsAndIgnoresSpoofedForwardedProto(): void
+    {
+        $spoofedResponse = $this->runner->handleRequest(
+            [
+                'APP_ENV' => 'production',
+                'REQUEST_METHOD' => 'GET',
+                'HTTP_X_SETUP_TOKEN' => $this->validToken,
+                'HTTP_X_FORWARDED_PROTO' => 'https',
+            ],
+            [],
+            []
+        );
+        $this->assertSame(403, $spoofedResponse['status']);
+        $this->assertStringContainsString('HTTPS is required', (string) $spoofedResponse['data']['error']);
+
+        $nativeHttpsResponse = $this->runner->handleRequest(
+            [
+                'APP_ENV' => 'production',
+                'HTTPS' => 'on',
+                'REQUEST_METHOD' => 'GET',
+                'HTTP_X_SETUP_TOKEN' => $this->validToken,
+            ],
+            [],
+            []
+        );
+        $this->assertSame(200, $nativeHttpsResponse['status']);
     }
 }

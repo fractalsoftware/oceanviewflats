@@ -10,6 +10,8 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once __DIR__ . '/utils.php';
 
 use OceanViewFlats\Admin\Audit\AuditLogger;
+use OceanViewFlats\Admin\Auth\AdminRole;
+use OceanViewFlats\Admin\Middleware\SessionMiddleware;
 use OceanViewFlats\Domain\Fulfillment\AdminContext;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceRepositoryInterface;
 use OceanViewFlats\Domain\Fulfillment\CondominiumClearanceSyncInterface;
@@ -22,29 +24,32 @@ use OceanViewFlats\Domain\Reservation\PdoReservationRepository;
 use OceanViewFlats\Domain\Reservation\ReservationNotFoundException;
 use OceanViewFlats\Domain\Reservation\Search\PdoReservationSearchAdapter;
 
-// 1. Enforce Security Headers, CORS, and Allowed Methods
+// 1. Enforce Security Headers, CORS, Rate Limiting, and Allowed Methods
 enforce_security_headers_and_cors(['POST', 'OPTIONS']);
+enforce_rate_limit('ovf_admin_clearance_retry_rate_limits.json', 20, 600, 'Too many requests. Please wait a few minutes and try again.');
 
-// 2. Manage Session State Safely
-if (session_status() === PHP_SESSION_NONE) {
-    $lifetime = 28800; // 8 hours
-    session_set_cookie_params([
-        'lifetime' => $lifetime,
-        'path' => '/',
-        'domain' => '',
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    session_start();
+// 2. Manage Isolated Admin Session State via SessionMiddleware
+SessionMiddleware::startNativeSession();
+
+// 3. Authenticate Administrative Session & Enforce Idle/Absolute Session Timeouts
+if (SessionMiddleware::isSessionExpired($_SESSION)) {
+    SessionMiddleware::destroySession();
+    http_response_code(401);
+    send_json_response(false, 'Unauthorized: Administrative session expired.');
 }
 
-// 3. Authenticate Administrative Session
 $adminUserId = $_SESSION['admin_user_id'] ?? null;
 if ($adminUserId === null || (int) $adminUserId <= 0) {
     http_response_code(401);
     send_json_response(false, 'Unauthorized: Active administrative session required.');
 }
+
+// 3b. Fail-Closed RBAC Check (viewer and missing roles are denied)
+if (!AdminRole::fromSession($_SESSION)->canManage()) {
+    http_response_code(403);
+    send_json_response(false, 'Forbidden: Insufficient administrative privileges.');
+}
+$_SESSION['last_activity'] = time();
 
 // 4. Validate CSRF Token
 $sessionCsrf = (string) ($_SESSION['csrf_token'] ?? '');

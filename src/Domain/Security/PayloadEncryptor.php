@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Domain\Security;
 
+use OceanViewFlats\Domain\Support\AppEnvironment;
+use RuntimeException;
+
 /**
  * Authenticated symmetric encryption at rest for Guest Registry occupant payloads (ADR 0012).
  *
@@ -15,7 +18,7 @@ final class PayloadEncryptor
 {
     public const ENVELOPE_VERSION = 1;
     public const ALGORITHM = 'xsalsa20-poly1305';
-    private const FALLBACK_SEED = 'ovf-local-unit-test-seed';
+    public const LEGACY_FALLBACK_SEED = 'ovf-local-unit-test-seed';
 
     /**
      * Encrypts an array of occupant records into a JSON-wrapped XSalsa20-Poly1305 envelope.
@@ -128,8 +131,12 @@ final class PayloadEncryptor
 
     /**
      * Derives a 32-byte binary key for sodium_crypto_secretbox from APP_ENCRYPTION_KEY.
+     *
+     * Fails closed outside explicit local/testing environments to uphold Ley 1581 encryption at rest (ADR 0012).
+     *
+     * @throws RuntimeException When APP_ENCRYPTION_KEY is missing in production or unspecified environments.
      */
-    public static function resolveKey(?string $rawKey = null): string
+    public static function resolveKey(?string $rawKey = null, bool $allowFallback = false): string
     {
         $configured = $rawKey;
         if ($configured === null || trim($configured) === '') {
@@ -142,7 +149,10 @@ final class PayloadEncryptor
 
         $trimmed = trim($configured);
         if ($trimmed === '') {
-            $trimmed = self::FALLBACK_SEED;
+            if (!$allowFallback && !AppEnvironment::isNonProduction()) {
+                throw new RuntimeException('APP_ENCRYPTION_KEY must be configured for Guest Registry PII encryption (ADR 0012).');
+            }
+            $trimmed = self::LEGACY_FALLBACK_SEED;
         }
 
         if (str_starts_with($trimmed, 'base64:')) {

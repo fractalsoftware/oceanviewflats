@@ -18,9 +18,11 @@ use OceanViewFlats\Admin\Controller\RateController;
 use OceanViewFlats\Admin\Controller\ReservationController;
 use OceanViewFlats\Admin\Http\Request;
 use OceanViewFlats\Admin\Http\Response;
+use OceanViewFlats\Admin\Http\RouteAccess;
 use OceanViewFlats\Admin\Http\Router;
 use OceanViewFlats\Admin\Middleware\AuthMiddleware;
 use OceanViewFlats\Admin\Middleware\CsrfMiddleware;
+use OceanViewFlats\Admin\Middleware\RbacMiddleware;
 use OceanViewFlats\Admin\Middleware\SessionMiddleware;
 use OceanViewFlats\Admin\Repository\AdminAuditLogRepository;
 use OceanViewFlats\Admin\Repository\AdminCalendarBlockRepository;
@@ -385,70 +387,72 @@ final class AdminApp
         $sessionMiddleware = new SessionMiddleware();
         $csrfMiddleware = new CsrfMiddleware();
         $authMiddleware = new AuthMiddleware();
+        $rbacMiddleware = new RbacMiddleware($viewRenderer);
 
         $router = new Router(
             sessionMiddleware: $sessionMiddleware,
             csrfMiddleware: $csrfMiddleware,
-            authMiddleware: $authMiddleware
+            authMiddleware: $authMiddleware,
+            rbacMiddleware: $rbacMiddleware
         );
 
-        // 11. Register Declarative Administrative Routes
-        $router->get('/login', [$authController, 'showLogin'])
-            ->post('/login', [$authController, 'login'])
-            ->get('/logout', [$authController, 'logout'])
-            ->get('/', [$dashboardController, 'index'])
-            ->get('/dashboard/hub', [$dashboardController, 'hub'])
-            ->get('/dashboard/day', [$dashboardController, 'dayDrawer'])
-            ->post('/dashboard/alerts/dismiss', [$dashboardController, 'dismissAlert'])
-            ->get('/channel-sync/card', [$channelSyncController, 'card'])
-            ->get('/channel-sync/panel', [$channelSyncController, 'panel'])
-            ->post('/channel-sync', [$channelSyncController, 'sync'])
-            ->get('/reservations', [$reservationController, 'list'])
-            ->get('/reservations/new', [$reservationController, 'newReservation'])
-            ->post('/reservations/quote-preview', [$reservationController, 'quotePreview'])
-            ->post('/reservations/create-manual', [$reservationController, 'createManual'])
-            ->get('/reservations/{uid}', [$reservationController, 'show'])
-            ->get('/reservations/{uid}/edit', [$reservationController, 'editReservation'])
-            ->post('/reservations/{uid}/edit', [$reservationController, 'updateReservation'])
-            ->get('/reservations/{uid}/registry', [$reservationController, 'showRegistry'])
-            ->post('/reservations/{uid}/registry/complete', [$reservationController, 'completeRegistry'])
-            ->post('/reservations/{uid}/clearance-retry', [$reservationController, 'retryClearance'])
-            ->post('/reservations/{uid}/door-code/override', [$reservationController, 'overrideDoorCode'])
-            ->post('/reservations/{uid}/door-code/regenerate', [$reservationController, 'regenerateDoorCode'])
-            ->post('/reservations/{uid}/redact-pii', [$reservationController, 'redactPii'])
-            ->get('/reservations/{uid}/cancel-modal', [$reservationController, 'cancelModal'])
-            ->post('/reservations/{uid}/cancel', [$reservationController, 'cancel'])
-            ->get('/rates', [$rateController, 'index'])
-            ->get('/rates/new', [$rateController, 'newTier'])
-            ->post('/rates', [$rateController, 'create'])
-            ->get('/rates/{id}/edit', [$rateController, 'edit'])
-            ->post('/rates/{id}', [$rateController, 'update'])
-            ->delete('/rates/{id}', [$rateController, 'delete'])
-            ->post('/rates/seed-from-csv', [$rateController, 'seedFromCsv'])
-            ->get('/calendar-blocks', [$calendarBlockController, 'index'])
-            ->get('/calendar/blocks', [$calendarBlockController, 'index'])
-            ->get('/calendar-blocks/new', [$calendarBlockController, 'newHold'])
-            ->get('/calendar/blocks/new', [$calendarBlockController, 'newHold'])
-            ->post('/calendar-blocks', [$calendarBlockController, 'create'])
-            ->post('/calendar/blocks', [$calendarBlockController, 'create'])
-            ->delete('/calendar-blocks/{id}', [$calendarBlockController, 'delete'])
-            ->post('/calendar-blocks/{id}/delete', [$calendarBlockController, 'delete'])
-            ->post('/calendar-blocks/{id}/release', [$calendarBlockController, 'delete'])
-            ->get('/financial-report', [$financialReportController, 'index'])
-            ->get('/financial-report/export/expenses.csv', [$financialReportController, 'exportExpensesCsv'])
-            ->get('/financial-report/export/reservations.csv', [$financialReportController, 'exportReservationsCsv'])
-            ->get('/financial-report/expenses/new', [$financialReportController, 'newExpense'])
-            ->post('/financial-report/expenses', [$financialReportController, 'createExpense'])
-            ->get('/financial-report/expenses/{id}/edit', [$financialReportController, 'editExpense'])
-            ->post('/financial-report/expenses/{id}', [$financialReportController, 'updateExpense'])
-            ->delete('/financial-report/expenses/{id}', [$financialReportController, 'deleteExpense'])
-            ->post('/financial-report/expenses/{id}/delete', [$financialReportController, 'deleteExpense'])
-            ->get('/financial-report/parafiscal/{periodKey}/{propertyId}/modal', [$financialReportController, 'parafiscalModal'])
-            ->get('/financial-report/parafiscal/{periodKey}/{propertyId}/settle', [$financialReportController, 'parafiscalModal'])
-            ->post('/financial-report/parafiscal/{periodKey}/{propertyId}/settle', [$financialReportController, 'settleParafiscal'])
-            ->post('/financial-report/parafiscal/{periodKey}/{propertyId}/revert', [$financialReportController, 'revertParafiscal'])
-            ->get('/audit-logs', [$auditLogController, 'index'])
-            ->get('/audit-logs/{id}', [$auditLogController, 'show']);
+        // 11. Register Declarative Administrative Routes with Single-Source-of-Truth RBAC Access Tiers
+        $router->get('/login', [$authController, 'showLogin'], RouteAccess::PUBLIC)
+            ->post('/login', [$authController, 'login'], RouteAccess::PUBLIC)
+            ->post('/logout', [$authController, 'logout'], RouteAccess::PUBLIC)
+            ->get('/', [$dashboardController, 'index'], RouteAccess::AUTHENTICATED)
+            ->get('/dashboard/hub', [$dashboardController, 'hub'], RouteAccess::AUTHENTICATED)
+            ->get('/dashboard/day', [$dashboardController, 'dayDrawer'], RouteAccess::AUTHENTICATED)
+            ->post('/dashboard/alerts/dismiss', [$dashboardController, 'dismissAlert'], RouteAccess::MANAGER)
+            ->get('/channel-sync/card', [$channelSyncController, 'card'], RouteAccess::AUTHENTICATED)
+            ->get('/channel-sync/panel', [$channelSyncController, 'panel'], RouteAccess::AUTHENTICATED)
+            ->post('/channel-sync', [$channelSyncController, 'sync'], RouteAccess::MANAGER)
+            ->get('/reservations', [$reservationController, 'list'], RouteAccess::AUTHENTICATED)
+            ->get('/reservations/new', [$reservationController, 'newReservation'], RouteAccess::MANAGER)
+            ->post('/reservations/quote-preview', [$reservationController, 'quotePreview'], RouteAccess::MANAGER)
+            ->post('/reservations/create-manual', [$reservationController, 'createManual'], RouteAccess::MANAGER)
+            ->get('/reservations/{uid}', [$reservationController, 'show'], RouteAccess::AUTHENTICATED)
+            ->get('/reservations/{uid}/edit', [$reservationController, 'editReservation'], RouteAccess::MANAGER)
+            ->post('/reservations/{uid}/edit', [$reservationController, 'updateReservation'], RouteAccess::MANAGER)
+            ->get('/reservations/{uid}/registry', [$reservationController, 'showRegistry'], RouteAccess::AUTHENTICATED)
+            ->post('/reservations/{uid}/registry/complete', [$reservationController, 'completeRegistry'], RouteAccess::MANAGER)
+            ->post('/reservations/{uid}/clearance-retry', [$reservationController, 'retryClearance'], RouteAccess::MANAGER)
+            ->post('/reservations/{uid}/door-code/override', [$reservationController, 'overrideDoorCode'], RouteAccess::PRIVILEGED)
+            ->post('/reservations/{uid}/door-code/regenerate', [$reservationController, 'regenerateDoorCode'], RouteAccess::PRIVILEGED)
+            ->post('/reservations/{uid}/redact-pii', [$reservationController, 'redactPii'], RouteAccess::PRIVILEGED)
+            ->get('/reservations/{uid}/cancel-modal', [$reservationController, 'cancelModal'], RouteAccess::PRIVILEGED)
+            ->post('/reservations/{uid}/cancel', [$reservationController, 'cancel'], RouteAccess::PRIVILEGED)
+            ->get('/rates', [$rateController, 'index'], RouteAccess::AUTHENTICATED)
+            ->get('/rates/new', [$rateController, 'newTier'], RouteAccess::PRIVILEGED)
+            ->post('/rates', [$rateController, 'create'], RouteAccess::PRIVILEGED)
+            ->get('/rates/{id}/edit', [$rateController, 'edit'], RouteAccess::PRIVILEGED)
+            ->post('/rates/{id}', [$rateController, 'update'], RouteAccess::PRIVILEGED)
+            ->delete('/rates/{id}', [$rateController, 'delete'], RouteAccess::PRIVILEGED)
+            ->post('/rates/seed-from-csv', [$rateController, 'seedFromCsv'], RouteAccess::PRIVILEGED)
+            ->get('/calendar-blocks', [$calendarBlockController, 'index'], RouteAccess::AUTHENTICATED)
+            ->get('/calendar/blocks', [$calendarBlockController, 'index'], RouteAccess::AUTHENTICATED)
+            ->get('/calendar-blocks/new', [$calendarBlockController, 'newHold'], RouteAccess::MANAGER)
+            ->get('/calendar/blocks/new', [$calendarBlockController, 'newHold'], RouteAccess::MANAGER)
+            ->post('/calendar-blocks', [$calendarBlockController, 'create'], RouteAccess::MANAGER)
+            ->post('/calendar/blocks', [$calendarBlockController, 'create'], RouteAccess::MANAGER)
+            ->delete('/calendar-blocks/{id}', [$calendarBlockController, 'delete'], RouteAccess::MANAGER)
+            ->post('/calendar-blocks/{id}/delete', [$calendarBlockController, 'delete'], RouteAccess::MANAGER)
+            ->post('/calendar-blocks/{id}/release', [$calendarBlockController, 'delete'], RouteAccess::MANAGER)
+            ->get('/financial-report', [$financialReportController, 'index'], RouteAccess::PRIVILEGED)
+            ->get('/financial-report/export/expenses.csv', [$financialReportController, 'exportExpensesCsv'], RouteAccess::PRIVILEGED)
+            ->get('/financial-report/export/reservations.csv', [$financialReportController, 'exportReservationsCsv'], RouteAccess::PRIVILEGED)
+            ->get('/financial-report/expenses/new', [$financialReportController, 'newExpense'], RouteAccess::PRIVILEGED)
+            ->post('/financial-report/expenses', [$financialReportController, 'createExpense'], RouteAccess::PRIVILEGED)
+            ->get('/financial-report/expenses/{id}/edit', [$financialReportController, 'editExpense'], RouteAccess::PRIVILEGED)
+            ->post('/financial-report/expenses/{id}', [$financialReportController, 'updateExpense'], RouteAccess::PRIVILEGED)
+            ->delete('/financial-report/expenses/{id}', [$financialReportController, 'deleteExpense'], RouteAccess::PRIVILEGED)
+            ->post('/financial-report/expenses/{id}/delete', [$financialReportController, 'deleteExpense'], RouteAccess::PRIVILEGED)
+            ->get('/financial-report/parafiscal/{periodKey}/{propertyId}/modal', [$financialReportController, 'parafiscalModal'], RouteAccess::PRIVILEGED)
+            ->get('/financial-report/parafiscal/{periodKey}/{propertyId}/settle', [$financialReportController, 'parafiscalModal'], RouteAccess::PRIVILEGED)
+            ->post('/financial-report/parafiscal/{periodKey}/{propertyId}/settle', [$financialReportController, 'settleParafiscal'], RouteAccess::PRIVILEGED)
+            ->post('/financial-report/parafiscal/{periodKey}/{propertyId}/revert', [$financialReportController, 'revertParafiscal'], RouteAccess::PRIVILEGED)
+            ->get('/audit-logs', [$auditLogController, 'index'], RouteAccess::PRIVILEGED)
+            ->get('/audit-logs/{id}', [$auditLogController, 'show'], RouteAccess::PRIVILEGED);
 
         return new self($router);
     }

@@ -400,6 +400,24 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
         $this->assertNotEmpty($auditLog);
     }
 
+    public function testEndpointRejectsViewerRoleWith403(): void
+    {
+        $res = $this->callEndpoint(
+            ['reservation_uid' => 'res-ready-1'],
+            'POST',
+            ['HTTP_X_CSRF_TOKEN' => 'valid-csrf-token'],
+            '',
+            true,
+            'valid-csrf-token',
+            'viewer'
+        );
+
+        $this->assertSame(403, $res['statusCode']);
+        $this->assertIsArray($res['json']);
+        $this->assertFalse($res['json']['success']);
+        $this->assertStringContainsString('Insufficient administrative privileges', (string) $res['json']['error']);
+    }
+
     /**
      * @param array<string, mixed> $bodyData
      * @param string $method
@@ -407,6 +425,7 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
      * @param string $prependCode
      * @param bool $authenticated
      * @param string $sessionCsrf
+     * @param string $sessionRole
      * @return array{exitCode: int, stdout: string, stderr: string, statusCode: int, json: ?array<string, mixed>}
      */
     private function callEndpoint(
@@ -415,7 +434,8 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
         array $serverVars = [],
         string $prependCode = '',
         bool $authenticated = true,
-        string $sessionCsrf = 'valid-csrf-token'
+        string $sessionCsrf = 'valid-csrf-token',
+        string $sessionRole = 'admin'
     ): array {
         $defaultServer = [
             'REQUEST_METHOD' => $method,
@@ -429,7 +449,8 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
         $sessionInit = '';
         if ($authenticated) {
             $sessionInit = sprintf(
-                'if (session_status() === PHP_SESSION_NONE) { session_start(); } $_SESSION["admin_user_id"] = 1; $_SESSION["csrf_token"] = %s;',
+                '$_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; if (session_status() === PHP_SESSION_NONE) { session_start(); } $_SESSION["admin_user_id"] = 1; $_SESSION["admin_user_role"] = %s; $_SESSION["csrf_token"] = %s;',
+                var_export($sessionRole, true),
                 var_export($sessionCsrf, true)
             );
         } else {

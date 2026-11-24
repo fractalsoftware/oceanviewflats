@@ -13,7 +13,7 @@
 
 $condominiumClearance = $condominiumClearance ?? null;
 $clearanceAlertDismissed = (bool) ($clearanceAlertDismissed ?? false);
-$currentUserRole = (string) ($currentUserRole ?? 'admin');
+$currentUserRole = (string) ($currentUserRole ?? \OceanViewFlats\Admin\Auth\AdminRole::VIEWER->value);
 $urlBuilder = $urlBuilder ?? new \OceanViewFlats\Admin\Service\PublicUrlBuilder($publicSiteUrl);
 
 $refunds = $refunds ?? [];

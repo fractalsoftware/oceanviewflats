@@ -1,0 +1,27 @@
+# =============================================================================
+# OceanViewFlats - Cache Directory Apache Access Control
+# =============================================================================
+# Disable directory browsing and block direct web access to internal sync metadata
+# and raw availability caches, while permitting public/js/main.js to read prices.json.
+
+Options -Indexes
+
+<FilesMatch "^(channel_sync_status|avail_.*)\.json$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>

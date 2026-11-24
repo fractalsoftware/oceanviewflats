@@ -35,6 +35,6 @@ Run the relevant verification suite before marking any task complete:
 ## Context Pointers
 
 - **Domain Glossary**: Read [`CONTEXT.md`](CONTEXT.md) for canonical ubiquitous language and forbidden synonyms (`docs/agents/domain.md`).
-- **Architecture Decisions**: Read [`docs/adr/`](docs/adr/) (`0001`–`0013`) before modifying domain rules, fulfillment, privacy, or financial/parafiscal logic.
+- **Architecture Decisions**: Read [`docs/adr/`](docs/adr/) (`0001`–`0014`) before modifying domain rules, fulfillment, privacy, or financial/parafiscal logic.
 - **Operations & Deployment**: Read [`docs/operations/administrator-operational-guide.md`](docs/operations/administrator-operational-guide.md) when working on cPanel Pattern A topology, CI/CD secrets, cron jobs, or CLI scripts.
 - **Issue Tracker & Triage**: Use `gh` CLI against `fractalsoftware/oceanviewflats` per [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md) and [`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).

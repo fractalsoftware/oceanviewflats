@@ -21,10 +21,10 @@ To preserve high reliability and prevent third-party platform instability from d
 
 ### 2. Multi-Property Configuration
 
-External access endpoints and security check tokens are configured via environment variables with defaults:
+External access endpoints and security check tokens are configured strictly via environment variables (no live tokens committed to source control):
 - `HUESPED_MANAGER_BASE_URL`: Base portal endpoint (`https://salguerosunset.huespedmanager.com.co/propietarios/production`).
-- `HUESPED_MANAGER_1707_CHECK`: Property 1707 check token (`ep92449222`).
-- `HUESPED_MANAGER_1606_CHECK`: Property 1606 check token (`ep24281580`).
+- `HUESPED_MANAGER_1707_CHECK`: Property 1707 pre-shared check token (stored in GitHub Secrets / production environment).
+- `HUESPED_MANAGER_1606_CHECK`: Property 1606 pre-shared check token (stored in GitHub Secrets / production environment).
 
 ### 3. Guest Registry Data Fidelity, Smart Inheritance & Portal v2.0.0 Sanitization
 

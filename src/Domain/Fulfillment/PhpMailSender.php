@@ -16,6 +16,9 @@ final class PhpMailSender implements EmailSenderInterface
      */
     public function send(string $to, string $subject, string $htmlBody, array $headers = []): bool
     {
+        $cleanTo = self::stripHeaderBreak($to);
+        $cleanSubject = self::stripHeaderBreak($subject);
+
         $defaultHeaders = [
             'MIME-Version' => '1.0',
             'Content-Type' => 'text/html; charset=UTF-8',
@@ -28,10 +31,19 @@ final class PhpMailSender implements EmailSenderInterface
 
         $headerLines = [];
         foreach ($mergedHeaders as $name => $value) {
-            $headerLines[] = sprintf('%s: %s', $name, $value);
+            $cleanName = self::stripHeaderBreak((string) $name);
+            $cleanValue = self::stripHeaderBreak((string) $value);
+            if ($cleanName !== '') {
+                $headerLines[] = sprintf('%s: %s', $cleanName, $cleanValue);
+            }
         }
         $headerString = implode("\r\n", $headerLines);
 
-        return mail($to, $subject, $htmlBody, $headerString);
+        return mail($cleanTo, $cleanSubject, $htmlBody, $headerString);
+    }
+
+    private static function stripHeaderBreak(string $value): string
+    {
+        return str_replace(["\r", "\n", "\0", '%0a', '%0d', '%0A', '%0D'], '', $value);
     }
 }

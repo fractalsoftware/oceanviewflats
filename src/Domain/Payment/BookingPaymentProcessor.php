@@ -339,13 +339,15 @@ final class BookingPaymentProcessor implements BookingPaymentProcessorInterface
         try {
             $gatewayResult = $this->gateway->createPayment($intent);
         } catch (PaymentGatewayException $e) {
+            error_log('[Booking Payment Gateway Exception] ' . $e->getMessage());
             return BookingPaymentResult::error(
-                'Direct payment declined: ' . $e->getMessage(),
+                'Payment gateway declined or rejected the transaction.',
                 $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 502
             );
         } catch (Throwable $e) {
+            error_log('[Booking Payment Error] ' . $e->getMessage());
             return BookingPaymentResult::error(
-                'Gateway communication error: ' . $e->getMessage(),
+                'Payment gateway communication error. Please try again later.',
                 500
             );
         }

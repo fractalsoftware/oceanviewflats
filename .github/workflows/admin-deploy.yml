@@ -1,17 +1,10 @@
 name: Admin Interface Deployment (SFTP)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'admin/**'
-      - 'src/Domain/**'
-      - 'src/Infrastructure/**'
-      - 'scripts/**'
-      - 'composer.json'
-      - 'composer.lock'
-      - '.github/workflows/admin-deploy.yml'
+  workflow_run:
+    workflows: ["Admin CI"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -21,13 +14,18 @@ jobs:
   admin-deploy:
     name: Admin Interface Deployment (SFTP)
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup PHP 8.3
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.3'
           extensions: mbstring, pdo, pdo_mysql, sqlite3, argon2, json
@@ -51,51 +49,76 @@ jobs:
       - name: Install Production Composer Dependencies
         run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
-      - name: Inject Environment Variables into .htaccess
+      - name: Inject Environment Variables into .htaccess (Safe Escaping)
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          APP_ENCRYPTION_KEY: ${{ secrets.APP_ENCRYPTION_KEY }}
+          ICAL_FEED_1606: ${{ secrets.ICAL_FEED_1606 }}
+          ICAL_FEED_1707: ${{ secrets.ICAL_FEED_1707 }}
+          MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+          MERCADOPAGO_PUBLIC_KEY: ${{ secrets.MERCADOPAGO_PUBLIC_KEY }}
+          PROPERTY_1606_DOOR_CODE: ${{ secrets.PROPERTY_1606_DOOR_CODE }}
+          PROPERTY_1606_WIFI_SSID: ${{ secrets.PROPERTY_1606_WIFI_SSID }}
+          PROPERTY_1606_WIFI_PASSWORD: ${{ secrets.PROPERTY_1606_WIFI_PASSWORD }}
+          PROPERTY_1707_DOOR_CODE: ${{ secrets.PROPERTY_1707_DOOR_CODE }}
+          PROPERTY_1707_WIFI_SSID: ${{ secrets.PROPERTY_1707_WIFI_SSID }}
+          PROPERTY_1707_WIFI_PASSWORD: ${{ secrets.PROPERTY_1707_WIFI_PASSWORD }}
+          HUESPED_MANAGER_BASE_URL: ${{ secrets.HUESPED_MANAGER_BASE_URL }}
+          HUESPED_MANAGER_1707_CHECK: ${{ secrets.HUESPED_MANAGER_1707_CHECK }}
+          HUESPED_MANAGER_1606_CHECK: ${{ secrets.HUESPED_MANAGER_1606_CHECK }}
+          OVF_ADMIN_SESSION_SECRET: ${{ secrets.OVF_ADMIN_SESSION_SECRET }}
         run: |
-          echo "" >> admin/public/.htaccess
-          echo "SetEnv APP_ENV \"production\"" >> admin/public/.htaccess
-          echo "SetEnv DB_HOST \"${{ secrets.DB_HOST }}\"" >> admin/public/.htaccess
-          echo "SetEnv DB_NAME \"${{ secrets.DB_NAME }}\"" >> admin/public/.htaccess
-          echo "SetEnv DB_USER \"${{ secrets.DB_USER }}\"" >> admin/public/.htaccess
-          echo "SetEnv DB_PASS \"${{ secrets.DB_PASS }}\"" >> admin/public/.htaccess
-          echo "SetEnv MERCADOPAGO_ACCESS_TOKEN \"${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}\"" >> admin/public/.htaccess
-          echo "SetEnv MERCADOPAGO_PUBLIC_KEY \"${{ secrets.MERCADOPAGO_PUBLIC_KEY }}\"" >> admin/public/.htaccess
-          echo "SetEnv PROPERTY_1606_DOOR_CODE \"${{ secrets.PROPERTY_1606_DOOR_CODE }}\"" >> admin/public/.htaccess
-          echo "SetEnv PROPERTY_1606_WIFI_SSID \"${{ secrets.PROPERTY_1606_WIFI_SSID }}\"" >> admin/public/.htaccess
-          echo "SetEnv PROPERTY_1606_WIFI_PASSWORD \"${{ secrets.PROPERTY_1606_WIFI_PASSWORD }}\"" >> admin/public/.htaccess
-          echo "SetEnv PROPERTY_1707_DOOR_CODE \"${{ secrets.PROPERTY_1707_DOOR_CODE }}\"" >> admin/public/.htaccess
-          echo "SetEnv PROPERTY_1707_WIFI_SSID \"${{ secrets.PROPERTY_1707_WIFI_SSID }}\"" >> admin/public/.htaccess
-          echo "SetEnv PROPERTY_1707_WIFI_PASSWORD \"${{ secrets.PROPERTY_1707_WIFI_PASSWORD }}\"" >> admin/public/.htaccess
-          echo "SetEnv HUESPED_MANAGER_BASE_URL \"${{ secrets.HUESPED_MANAGER_BASE_URL }}\"" >> admin/public/.htaccess
-          echo "SetEnv HUESPED_MANAGER_1707_CHECK \"${{ secrets.HUESPED_MANAGER_1707_CHECK }}\"" >> admin/public/.htaccess
-          echo "SetEnv HUESPED_MANAGER_1606_CHECK \"${{ secrets.HUESPED_MANAGER_1606_CHECK }}\"" >> admin/public/.htaccess
-          if [ -n "${{ secrets.OVF_ADMIN_SESSION_SECRET }}" ]; then
-            echo "SetEnv OVF_ADMIN_SESSION_SECRET \"${{ secrets.OVF_ADMIN_SESSION_SECRET }}\"" >> admin/public/.htaccess
-          fi
+          set -euo pipefail
+          append_setenv() {
+            local key="$1"
+            local val="${!key-}"
+            if [ -n "$val" ]; then
+              local escaped="${val//\\/\\\\}"
+              escaped="${escaped//\"/\\\"}"
+              printf 'SetEnv %s "%s"\n' "$key" "$escaped" >> admin/public/.htaccess
+            fi
+          }
+          printf '\nSetEnv APP_ENV "production"\n' >> admin/public/.htaccess
+          for var in \
+            DB_HOST DB_NAME DB_USER DB_PASS APP_ENCRYPTION_KEY \
+            ICAL_FEED_1606 ICAL_FEED_1707 \
+            MERCADOPAGO_ACCESS_TOKEN MERCADOPAGO_PUBLIC_KEY \
+            PROPERTY_1606_DOOR_CODE PROPERTY_1606_WIFI_SSID PROPERTY_1606_WIFI_PASSWORD \
+            PROPERTY_1707_DOOR_CODE PROPERTY_1707_WIFI_SSID PROPERTY_1707_WIFI_PASSWORD \
+            HUESPED_MANAGER_BASE_URL HUESPED_MANAGER_1707_CHECK HUESPED_MANAGER_1606_CHECK \
+            OVF_ADMIN_SESSION_SECRET; do
+            append_setenv "$var"
+          done
 
-      - name: Stage Deployment Payload
+      - name: Stage Deployment Payload (Excluding Tests & setup.php)
         run: |
           rm -rf staging
           mkdir -p staging/src
           cp -R admin staging/admin
           rm -rf staging/admin/tests staging/admin/phpunit.xml staging/admin/phpstan.neon staging/admin/.phpunit*
+          rm -f staging/admin/public/setup.php
           cp -R src/Domain staging/src/
           cp -R src/Infrastructure staging/src/
           cp -R vendor staging/vendor
           cp -R scripts staging/scripts
 
       - name: Compute Remote Destination Path
+        env:
+          FTP_ADMIN_REMOTE_PATH: ${{ secrets.FTP_ADMIN_REMOTE_PATH }}
+          FTP_REMOTE_PATH: ${{ secrets.FTP_REMOTE_PATH }}
         run: |
-          if [ -n "${{ secrets.FTP_ADMIN_REMOTE_PATH }}" ]; then
-            REMOTE_DEST="${{ secrets.FTP_ADMIN_REMOTE_PATH }}"
+          if [ -n "$FTP_ADMIN_REMOTE_PATH" ]; then
+            REMOTE_DEST="$FTP_ADMIN_REMOTE_PATH"
           else
-            REMOTE_DEST="$(dirname "${{ secrets.FTP_REMOTE_PATH }}")"
+            REMOTE_DEST="$(dirname "$FTP_REMOTE_PATH")"
           fi
-          echo "REMOTE_DESTINATION=$REMOTE_DEST" >> $GITHUB_ENV
+          echo "REMOTE_DESTINATION=$REMOTE_DEST" >> "$GITHUB_ENV"
 
       - name: Deploy to SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        uses: wlixcc/SFTP-Deploy-Action@a5ccb9c6211a94cc59404f0fdb2a9936a6dfee64 # v1.2.6
         with:
           username: ${{ secrets.FTP_USERNAME }}
           server: ${{ secrets.FTP_SERVER }}

@@ -24,7 +24,8 @@ final class PaymentDetails implements JsonSerializable
         public readonly float $totalRefundedAmount,
         public readonly string $paymentMethodId,
         public readonly array $refunds = [],
-        public readonly array $rawResponse = []
+        public readonly array $rawResponse = [],
+        public readonly string $currencyId = 'COP'
     ) {
     }
 
@@ -101,7 +102,8 @@ final class PaymentDetails implements JsonSerializable
             totalRefundedAmount: $totalRefunded,
             paymentMethodId: (string) ($data['payment_method_id'] ?? ''),
             refunds: $refunds,
-            rawResponse: $data
+            rawResponse: $data,
+            currencyId: strtoupper(trim((string) ($data['currency_id'] ?? '')))
         );
     }
 

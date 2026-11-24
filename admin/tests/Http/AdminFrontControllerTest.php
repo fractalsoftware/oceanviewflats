@@ -255,8 +255,14 @@ final class AdminFrontControllerTest extends TestCase
         $session = [
             'admin_user_id' => 99,
             'admin_user_name' => 'Operator Bob',
+            'admin_user_role' => 'admin',
+            'csrf_token' => 'logout_csrf_token',
         ];
-        $request = new Request('GET', '/logout');
+        // GET /logout must be rejected with 405 Method Not Allowed (CSRF logout protection)
+        $getResponse = $this->app->handle(new Request('GET', '/logout'), $session);
+        $this->assertSame(405, $getResponse->getStatusCode());
+
+        $request = new Request('POST', '/logout', post: ['csrf_token' => 'logout_csrf_token']);
 
         $response = $this->app->handle($request, $session);
 
@@ -505,7 +511,7 @@ final class AdminFrontControllerTest extends TestCase
 
     public function testAuthenticatedChannelSyncEndpointsDispatchSuccessfully(): void
     {
-        $session = ['admin_user_id' => 1, 'csrf_token' => 'valid_secret_csrf'];
+        $session = ['admin_user_id' => 1, 'admin_user_role' => 'admin', 'csrf_token' => 'valid_secret_csrf'];
 
         // 1. GET /channel-sync/card
         $getReq = new Request('GET', '/channel-sync/card');
@@ -542,7 +548,7 @@ final class AdminFrontControllerTest extends TestCase
 
     public function testAuthenticatedChannelSyncPanelEndpointsDispatchSuccessfully(): void
     {
-        $session = ['admin_user_id' => 1, 'admin_email' => 'admin@oceanviewflats.com', 'csrf_token' => 'valid_secret_csrf'];
+        $session = ['admin_user_id' => 1, 'admin_user_role' => 'admin', 'admin_email' => 'admin@oceanviewflats.com', 'csrf_token' => 'valid_secret_csrf'];
 
         // 1. GET /channel-sync/panel
         $getPanelReq = new Request('GET', '/channel-sync/panel');

@@ -756,7 +756,7 @@ final class RateController
             'id' => isset($session['admin_user_id']) ? (int) $session['admin_user_id'] : null,
             'name' => (string) ($session['admin_user_name'] ?? 'Admin'),
             'email' => (string) ($session['admin_user_email'] ?? ''),
-            'role' => (string) ($session['admin_user_role'] ?? 'admin'),
+            'role' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
         ];
     }
 }

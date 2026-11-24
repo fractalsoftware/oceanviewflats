@@ -13,6 +13,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 use OceanViewFlats\Domain\Fulfillment\EmailSenderInterface;
+use OceanViewFlats\Domain\Fulfillment\MaskedLogEmailSender;
 use OceanViewFlats\Domain\Fulfillment\PhpMailSender;
 use OceanViewFlats\Domain\Reservation\ActorContext;
 use OceanViewFlats\Domain\Reservation\DirectHoldRequest;
@@ -22,6 +23,7 @@ use OceanViewFlats\Domain\Reservation\PrimaryGuest;
 use OceanViewFlats\Domain\Reservation\ReservationConflictException;
 use OceanViewFlats\Domain\Reservation\ReservationValidationException;
 use OceanViewFlats\Domain\Security\PiiMasker;
+use OceanViewFlats\Domain\Support\AppEnvironment;
 use OceanViewFlats\Domain\Support\PathResolver;
 use OceanViewFlats\Infrastructure\Reservation\ReservationLifecycleEngineFactory;
 
@@ -289,17 +291,12 @@ $html_message = "
 </html>
 ";
 
-// Dispatch via PhpMailSender
+// Dispatch via PhpMailSender (mock strictly gated on explicit non-production APP_ENV)
 /** @var EmailSenderInterface $mailSender */
 if (isset($GLOBALS['TEST_EMAIL_SENDER'])) {
     $mailSender = $GLOBALS['TEST_EMAIL_SENDER'];
-} elseif (($_ENV['APP_ENV'] ?? 'production') !== 'production' || ($_SERVER['SERVER_NAME'] ?? '') === 'localhost' || isset($_SERVER['HTTP_NGROK_SKIP_BROWSER_WARNING'])) {
-    $mailSender = new class implements OceanViewFlats\Domain\Fulfillment\EmailSenderInterface {
-        public function send(string $to, string $subject, string $htmlBody, array $headers = []): bool {
-            error_log("Mock Email Sent to: $to, Subject: $subject");
-            return true;
-        }
-    };
+} elseif (AppEnvironment::isNonProduction(allowPhpUnit: false)) {
+    $mailSender = new MaskedLogEmailSender();
 } else {
     $mailSender = new PhpMailSender();
 }

@@ -141,7 +141,7 @@ $endEntry = min($total, $page * $per_page);
                                         </div>
                                         <div>
                                             <span class="font-medium text-gray-900"><?= htmlspecialchars($item['admin_user_name'], ENT_QUOTES, 'UTF-8') ?></span>
-                                            <span class="text-2xs text-gray-400">(<?= htmlspecialchars($item['admin_user_role'] ?? 'admin', ENT_QUOTES, 'UTF-8') ?>)</span>
+                                            <span class="text-2xs text-gray-400">(<?= htmlspecialchars($item['admin_user_role'] ?? 'viewer', ENT_QUOTES, 'UTF-8') ?>)</span>
                                         </div>
                                     </div>
                                 <?php else: ?>
@@ -194,7 +194,7 @@ $endEntry = min($total, $page * $per_page);
                 <!-- Prev Button -->
                 <button type="button"
                         <?= $page <= 1 ? 'disabled' : '' ?>
-                        hx-get="/audit-logs?<?= http_build_query($prevParams) ?>"
+                        hx-get="/audit-logs?<?= htmlspecialchars(http_build_query($prevParams), ENT_QUOTES, 'UTF-8') ?>"
                         hx-target="#audit-table-container"
                         class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition">
                     &larr; Previous
@@ -208,7 +208,7 @@ $endEntry = min($total, $page * $per_page);
                 <!-- Next Button -->
                 <button type="button"
                         <?= $page >= $total_pages ? 'disabled' : '' ?>
-                        hx-get="/audit-logs?<?= http_build_query($nextParams) ?>"
+                        hx-get="/audit-logs?<?= htmlspecialchars(http_build_query($nextParams), ENT_QUOTES, 'UTF-8') ?>"
                         hx-target="#audit-table-container"
                         class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition">
                     Next &rarr;
