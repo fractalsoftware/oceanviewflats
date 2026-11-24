@@ -54,8 +54,8 @@ final class GuideAccessServiceTest extends TestCase
         string $property = '1707',
         ReservationStatus $status = ReservationStatus::CONFIRMED,
         bool $registryCompleted = false,
-        string $checkIn = '2026-11-10',
-        string $checkOut = '2026-11-15'
+        string $checkIn = '2027-11-10',
+        string $checkOut = '2027-11-15'
     ): Reservation {
         return new Reservation(
             reservationUid: $uid,
@@ -150,8 +150,8 @@ final class GuideAccessServiceTest extends TestCase
         // Verify registry URL contains necessary parameters
         $this->assertStringContainsString('/registry/es.html?', $result->registryUrl);
         $this->assertStringContainsString('property=1707', $result->registryUrl);
-        $this->assertStringContainsString('check_in=2026-11-10', $result->registryUrl);
-        $this->assertStringContainsString('check_out=2026-11-15', $result->registryUrl);
+        $this->assertStringContainsString('check_in=2027-11-10', $result->registryUrl);
+        $this->assertStringContainsString('check_out=2027-11-15', $result->registryUrl);
         $this->assertStringContainsString('code=ovf_confirmed_noreg', $result->registryUrl);
         $this->assertStringNotContainsString('lang=', $result->registryUrl);
 

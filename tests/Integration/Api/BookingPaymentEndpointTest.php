@@ -133,8 +133,8 @@ final class BookingPaymentEndpointTest extends TestCase
     {
         $data = array_merge([
             'property_id' => '1606',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
             'guest_name' => 'Carlos Rodriguez',
             'guest_email' => 'carlos@example.com',
             'guest_phone' => '+57 300 987 6543',
@@ -298,13 +298,13 @@ final class BookingPaymentEndpointTest extends TestCase
         // Pre-insert an active confirmed reservation covering overlapping dates
         $this->pdo->exec("
             INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
-            VALUES ('ovf-exist-123', '1606', 'Existing Guest', 'exist@example.com', '+573001234567', '2026-11-12', '2026-11-16', 1500000.00, 'confirmed', 'approved');
+            VALUES ('ovf-exist-123', '1606', 'Existing Guest', 'exist@example.com', '+573001234567', '2027-11-12', '2027-11-16', 1500000.00, 'confirmed', 'approved');
         ");
 
         $request = $this->createValidRequest([
             'property_id' => '1606',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
         ]);
 
         $result = $this->processor->processBookingPayment($request);
@@ -326,8 +326,8 @@ final class BookingPaymentEndpointTest extends TestCase
         // Property 1606 requires at least 2 nights. Request only 1 night.
         $request = $this->createValidRequest([
             'property_id' => '1606',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-11', // 1 night
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-11', // 1 night
         ]);
 
         $result = $this->processor->processBookingPayment($request);
@@ -376,7 +376,7 @@ final class BookingPaymentEndpointTest extends TestCase
 
         // 5. Check-out date before or equal to check-in
         $resReversedDates = $this->processor->processBookingPayment(
-            $this->createValidRequest(['check_in' => '2026-11-15', 'check_out' => '2026-11-10'])
+            $this->createValidRequest(['check_in' => '2027-11-15', 'check_out' => '2027-11-10'])
         );
         $this->assertFalse($resReversedDates->success);
         $this->assertSame(400, $resReversedDates->httpStatusCode);
@@ -427,7 +427,7 @@ final class BookingPaymentEndpointTest extends TestCase
         $paymentId = 'pay_conf_888';
         $this->pdo->exec("INSERT INTO payment_idempotency (idempotency_key, payment_id) VALUES ('{$idempotencyKey}', '{$paymentId}')");
         $this->pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, mercadopago_payment_id)
-            VALUES ('ovf_int_conf_1', '1606', 'Maria Gomez', 'maria@example.com', '+573009998888', '2026-11-10', '2026-11-14', 1610000, 'confirmed', '{$paymentId}')");
+            VALUES ('ovf_int_conf_1', '1606', 'Maria Gomez', 'maria@example.com', '+573009998888', '2027-11-10', '2027-11-14', 1610000, 'confirmed', '{$paymentId}')");
 
         $request = $this->createValidRequest([
             'idempotency_key' => $idempotencyKey,
@@ -449,7 +449,7 @@ final class BookingPaymentEndpointTest extends TestCase
         $paymentId = 'pay_pend_888';
         $this->pdo->exec("INSERT INTO payment_idempotency (idempotency_key, payment_id) VALUES ('{$idempotencyKey}', '{$paymentId}')");
         $this->pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, mercadopago_payment_id)
-            VALUES ('ovf_int_pend_1', '1606', 'Maria Gomez', 'maria@example.com', '+573009998888', '2026-11-10', '2026-11-14', 1610000, 'pending_payment', '{$paymentId}')");
+            VALUES ('ovf_int_pend_1', '1606', 'Maria Gomez', 'maria@example.com', '+573009998888', '2027-11-10', '2027-11-14', 1610000, 'pending_payment', '{$paymentId}')");
 
         $request = $this->createValidRequest([
             'idempotency_key' => $idempotencyKey,
@@ -540,7 +540,7 @@ final class BookingPaymentEndpointTest extends TestCase
 
         // Seed a stale cache (> 300s old) with no conflict on 2026-12-15
         $availFile = $tempCacheDir . '/avail_1606.json';
-        file_put_contents($availFile, json_encode(['2026-11-01']));
+        file_put_contents($availFile, json_encode(['2027-11-01']));
         touch($availFile, time() - 360);
 
         $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
@@ -758,14 +758,14 @@ PHP;
         // Insert a database Seasonal Rate Tier for 1606 in November 2026: 500,000 COP/night, 4-night minimum stay
         $this->pdo->exec("
             INSERT INTO property_rates (property_id, start_date, end_date, season_name, price_per_night, min_stay)
-            VALUES ('1606', '2026-11-01', '2026-11-30', 'November Special Tier', 500000, 4)
+            VALUES ('1606', '2027-11-01', '2027-11-30', 'November Special Tier', 500000, 4)
         ");
 
         // 1. BookingPaymentProcessor rejects a 3-night stay (violating DB 4-night min_stay)
         $shortPaymentReq = $this->createValidRequest([
             'property_id' => '1606',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-13',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-13',
         ]);
         $shortResult = $this->processor->processBookingPayment($shortPaymentReq);
         $this->assertFalse($shortResult->success);
@@ -788,8 +788,8 @@ PHP;
 
         $validPaymentReq = $this->createValidRequest([
             'property_id' => '1606',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
         ]);
         $validResult = $this->processor->processBookingPayment($validPaymentReq);
         $this->assertTrue($validResult->success);
@@ -876,7 +876,7 @@ require_once {$autoloadPath};
 )");
 \$pdo->exec("
     INSERT INTO property_rates (property_id, start_date, end_date, season_name, price_per_night, min_stay)
-    VALUES ('1606', '2026-11-01', '2026-11-30', 'November Special Tier', 500000, 4)
+    VALUES ('1606', '2027-11-01', '2027-11-30', 'November Special Tier', 500000, 4)
 ");
 \$GLOBALS['TEST_PDO'] = \$pdo;
 \$GLOBALS['TEST_CACHE_DIR'] = {$cacheDirExport};
@@ -886,8 +886,8 @@ PHP;
         try {
             $resHold = $this->callBookRequestEndpoint([
                 'property_id' => '1606',
-                'check_in' => '2026-11-20',
-                'check_out' => '2026-11-24',
+                'check_in' => '2027-11-20',
+                'check_out' => '2027-11-24',
                 'guest_name' => 'Carlos Rodriguez',
                 'guest_email' => 'carlos@example.com',
                 'guest_phone' => '+573001234567',

@@ -127,7 +127,11 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
             hostRegistryRenderer: $this->hostRegistryRenderer,
             emailSender: $this->emailSender,
             hostNotificationEmail: 'rentals@oceanviewflats.com',
-            publicSiteUrl: 'https://oceanviewflats.com'
+            publicSiteUrl: 'https://oceanviewflats.com',
+            credentialsProvider: new \OceanViewFlats\Domain\Access\ConfigPropertyCredentialsProvider([
+                '1606' => ['door_code' => '0111606#', 'wifi_password' => 'TestPass1606'],
+                '1707' => ['door_code' => '0111707#', 'wifi_password' => 'TestPass1707'],
+            ])
         );
     }
 
@@ -136,8 +140,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         ReservationStatus $status = ReservationStatus::CONFIRMED,
         ?string $doorCode = null,
         bool $registryCompleted = false,
-        string $checkIn = '2026-11-15',
-        string $checkOut = '2026-11-20'
+        string $checkIn = '2027-11-15',
+        string $checkOut = '2027-11-20'
     ): Reservation {
         $reservation = new Reservation(
             reservationUid: $uid,
@@ -166,8 +170,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
     private function createSubmission(
         string $code = 'ovf_sample_100',
         string $propertyId = '1606',
-        string $checkIn = '2026-11-15',
-        string $checkOut = '2026-11-20',
+        string $checkIn = '2027-11-15',
+        string $checkOut = '2027-11-20',
         ?string $carPlates = 'XYZ-123',
         ?string $carModel = 'Mazda CX-5'
     ): GuestRegistrySubmission {
@@ -309,8 +313,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submission = $this->createSubmission(
             code: '',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20'
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20'
         );
 
         $result = $this->service->submitRegistry($submission);
@@ -329,8 +333,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submissionZero = new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_count',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [],
             primaryGuestEmail: 'jane.smith@example.com'
         );
@@ -352,8 +356,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submissionSeven = new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_count',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: $sevenOccupants,
             primaryGuestEmail: 'jane.smith@example.com'
         );
@@ -385,8 +389,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $resultNine = $this->service->submitRegistry(new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_max8',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: $nineOccupants,
             primaryGuestEmail: 'jane.smith@example.com'
         ));
@@ -396,8 +400,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $resultEight = $this->service->submitRegistry(new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_max8',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: $eightOccupants,
             primaryGuestEmail: 'jane.smith@example.com'
         ));
@@ -407,8 +411,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $resubmitResult = $this->service->submitRegistry(new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_max8',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [$eightOccupants[0]],
             primaryGuestEmail: 'jane.smith@example.com'
         ));
@@ -433,8 +437,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submission = new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_invalid_occ',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [$occupant],
             primaryGuestEmail: 'jane.smith@example.com'
         );
@@ -896,8 +900,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submission = new GuestRegistrySubmission(
             reservationCode: 'ovf_sample_dates',
             propertyId: '1606',
-            checkIn: '2026-11-20',
-            checkOut: '2026-11-10', // checkOut before checkIn
+            checkIn: '2027-11-20',
+            checkOut: '2027-11-10', // checkOut before checkIn
             occupants: [$occupant],
             primaryGuestEmail: 'jane.smith@example.com'
         );
@@ -916,7 +920,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'res-abnb-testemail1', '1606', 'Airbnb Traveler', 'automated-relay@guest.airbnb.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 0.0, 'confirmed', 'airbnb', 'HMTEST123',
+                '2027-11-15', '2027-11-20', 0.0, 'confirmed', 'airbnb', 'HMTEST123',
                 0, datetime('now')
             )
         ");
@@ -943,7 +947,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_placeholder_test', '1606', 'Placeholder Guest', 'guest@oceanviewflats.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 1000000.0, 'confirmed', 'web',
+                '2027-11-15', '2027-11-20', 1000000.0, 'confirmed', 'web',
                 0, datetime('now')
             )
         ");
@@ -970,7 +974,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_direct_billing_test', '1606', 'Direct Buyer', 'buyer.billing@personal.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 1000000.0, 'confirmed', 'web',
+                '2027-11-15', '2027-11-20', 1000000.0, 'confirmed', 'web',
                 0, datetime('now')
             )
         ");
@@ -998,7 +1002,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'res-abnb-external99', '1606', 'OTA Guest', 'relay123@external.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 0.0, 'confirmed', 'channel_sync',
+                '2027-11-15', '2027-11-20', 0.0, 'confirmed', 'channel_sync',
                 0, datetime('now')
             )
         ");
@@ -1025,7 +1029,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_none_placeholder', '1606', 'OTA Guest', 'none@domain.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 0.0, 'confirmed', 'channel_sync',
+                '2027-11-15', '2027-11-20', 0.0, 'confirmed', 'channel_sync',
                 0, datetime('now')
             )
         ");
@@ -1044,7 +1048,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_empty_email', '1606', 'No Email Guest', '', '+12025550199',
-                '2026-11-15', '2026-11-20', 0.0, 'confirmed', 'direct_phone',
+                '2027-11-15', '2027-11-20', 0.0, 'confirmed', 'direct_phone',
                 0, datetime('now')
             )
         ");
@@ -1100,7 +1104,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_clearance_success', '1606', 'Jane Smith', 'jane.smith@example.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 450.0, 'confirmed', 'airbnb',
+                '2027-11-15', '2027-11-20', 450.0, 'confirmed', 'airbnb',
                 0, datetime('now')
             )
         ");
@@ -1136,7 +1140,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_clearance_throws', '1606', 'Jane Smith', 'jane.smith@example.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 450.0, 'confirmed', 'airbnb',
+                '2027-11-15', '2027-11-20', 450.0, 'confirmed', 'airbnb',
                 0, datetime('now')
             )
         ");
@@ -1176,7 +1180,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_clearance_fails', '1606', 'Jane Smith', 'jane.smith@example.com', '+12025550199',
-                '2026-11-15', '2026-11-20', 450.0, 'confirmed', 'airbnb',
+                '2027-11-15', '2027-11-20', 450.0, 'confirmed', 'airbnb',
                 0, datetime('now')
             )
         ");
@@ -1221,7 +1225,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
                 registry_completed, created_at
             ) VALUES (
                 'ovf_1707_car_test', '1707', 'Maria Rodriguez', 'maria@example.com', '+573009876543',
-                '2026-11-15', '2026-11-20', 500.0, 'confirmed', 'direct',
+                '2027-11-15', '2027-11-20', 500.0, 'confirmed', 'direct',
                 0, datetime('now')
             )
         ");
@@ -1260,8 +1264,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submissionEn = new GuestRegistrySubmission(
             reservationCode: 'ovf_no_privacy_consent',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [$adultOccupant],
             primaryGuestEmail: 'jane.smith@example.com',
             lang: 'en',
@@ -1275,8 +1279,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $submissionEs = new GuestRegistrySubmission(
             reservationCode: 'ovf_no_privacy_consent',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [$adultOccupant],
             primaryGuestEmail: 'jane.smith@example.com',
             lang: 'es',
@@ -1296,8 +1300,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $minorByAgeSub = new GuestRegistrySubmission(
             reservationCode: 'ovf_minor_no_guardian',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [
                 new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
                 new OccupantDetails(2, 'Tommy Smith', 14, 'Passport', 'US87654321'),
@@ -1319,8 +1323,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $minorByDocSub = new GuestRegistrySubmission(
             reservationCode: 'ovf_minor_no_guardian',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [
                 new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
                 new OccupantDetails(2, 'Camila Smith', 18, 'Tarjeta de Identidad', 'TI99887766'),
@@ -1346,8 +1350,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $adultSub = new GuestRegistrySubmission(
             reservationCode: 'ovf_adults_only',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [
                 new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
                 new OccupantDetails(2, 'John Smith', 38, 'Passport', 'US87654321'),
@@ -1381,8 +1385,8 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $unconsentedMinorSub = new GuestRegistrySubmission(
             reservationCode: 'ovf_admin_manual_exempt',
             propertyId: '1606',
-            checkIn: '2026-11-15',
-            checkOut: '2026-11-20',
+            checkIn: '2027-11-15',
+            checkOut: '2027-11-20',
             occupants: [
                 new OccupantDetails(1, 'Jane Smith', 35, 'Passport', 'US12345678'),
                 new OccupantDetails(2, 'Minor Child', 8, 'Registro Civil', 'RC112233'),

@@ -165,8 +165,8 @@ final class BookingPaymentProcessorTest extends TestCase
     {
         $data = array_merge([
             'property_id' => '1606',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
             'guest_name' => 'Carlos Rodriguez',
             'guest_email' => 'carlos@example.com',
             'guest_phone' => '+57 300 987 6543',
@@ -210,8 +210,8 @@ final class BookingPaymentProcessorTest extends TestCase
     public function testCheckOutBeforeCheckInReturnsError(): void
     {
         $request = $this->createValidRequest([
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-10',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-10',
         ]);
         $result = $this->processor->processBookingPayment($request);
 
@@ -275,14 +275,14 @@ final class BookingPaymentProcessorTest extends TestCase
     {
         $this->channelBlockSource->addBlock(new ChannelBlock(
             propertyId: '1606',
-            startDate: '2026-11-12',
-            endDate: '2026-11-16',
+            startDate: '2027-11-12',
+            endDate: '2027-11-16',
             summary: 'Airbnb Reservation'
         ));
 
         $request = $this->createValidRequest([
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
         ]);
         $result = $this->processor->processBookingPayment($request);
 
@@ -296,14 +296,14 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->maintenanceBlockSource->addBlock(new MaintenanceBlock(
             id: 1,
             propertyId: '1606',
-            startDate: '2026-11-11',
-            endDate: '2026-11-13',
+            startDate: '2027-11-11',
+            endDate: '2027-11-13',
             reason: 'Painting balcony'
         ));
 
         $request = $this->createValidRequest([
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
         ]);
         $result = $this->processor->processBookingPayment($request);
 
@@ -320,8 +320,8 @@ final class BookingPaymentProcessorTest extends TestCase
             guestName: 'Prior Guest',
             guestEmail: 'prior@example.com',
             guestPhone: '+57 300 111 2233',
-            checkIn: '2026-11-12',
-            checkOut: '2026-11-15',
+            checkIn: '2027-11-12',
+            checkOut: '2027-11-15',
             totalPrice: 1500000.0,
             status: ReservationStatus::CONFIRMED,
             paymentMethodId: 'card',
@@ -329,8 +329,8 @@ final class BookingPaymentProcessorTest extends TestCase
         ));
 
         $request = $this->createValidRequest([
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
         ]);
         $result = $this->processor->processBookingPayment($request);
 
@@ -377,7 +377,7 @@ final class BookingPaymentProcessorTest extends TestCase
         $paymentId = 'pay_confirmed_123';
         $this->pdo->exec("INSERT INTO payment_idempotency (idempotency_key, payment_id) VALUES ('{$idempotencyKey}', '{$paymentId}')");
         $this->pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, mercadopago_payment_id)
-            VALUES ('ovf_conf_1', '1606', 'John Doe', 'john@example.com', '+573001234567', '2026-11-10', '2026-11-14', 1610000, 'confirmed', '{$paymentId}')");
+            VALUES ('ovf_conf_1', '1606', 'John Doe', 'john@example.com', '+573001234567', '2027-11-10', '2027-11-14', 1610000, 'confirmed', '{$paymentId}')");
 
         $request = $this->createValidRequest([
             'idempotency_key' => $idempotencyKey,
@@ -400,7 +400,7 @@ final class BookingPaymentProcessorTest extends TestCase
         $paymentId = 'pay_pending_456';
         $this->pdo->exec("INSERT INTO payment_idempotency (idempotency_key, payment_id) VALUES ('{$idempotencyKey}', '{$paymentId}')");
         $this->pdo->exec("INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, mercadopago_payment_id)
-            VALUES ('ovf_pend_1', '1606', 'John Doe', 'john@example.com', '+573001234567', '2026-11-10', '2026-11-14', 1610000, 'pending_payment', '{$paymentId}')");
+            VALUES ('ovf_pend_1', '1606', 'John Doe', 'john@example.com', '+573001234567', '2027-11-10', '2027-11-14', 1610000, 'pending_payment', '{$paymentId}')");
 
         $request = $this->createValidRequest([
             'idempotency_key' => $idempotencyKey,
@@ -421,8 +421,8 @@ final class BookingPaymentProcessorTest extends TestCase
     {
         $request = BookingPaymentRequest::fromArray([
             'property_id' => '  1606  ',
-            'check_in' => '2026-11-10',
-            'check_out' => '2026-11-14',
+            'check_in' => '2027-11-10',
+            'check_out' => '2027-11-14',
             'guest_name' => '<script>alert("xss")</script>Carlos',
             'guest_email' => 'carlos@example.com',
             'guest_phone' => '+57 300 987 6543',
@@ -647,7 +647,8 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertFalse($result->success);
         $this->assertSame(504, $result->httpStatusCode);
         $this->assertSame('error', $result->status);
-        $this->assertStringContainsString('Card network timeout', $result->message);
+        $this->assertSame('Payment gateway declined or rejected the transaction.', $result->message);
+        $this->assertStringNotContainsString('Card network timeout', $result->message);
     }
 
     public function testCreateDefaultFactoryInstantiation(): void

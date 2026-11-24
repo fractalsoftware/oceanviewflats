@@ -15,15 +15,15 @@ _paq.push(["enableLinkTracking"]);
 	s.parentNode.insertBefore(g, s);
 })();
 
-// Trusted HTTPS hostname allowlist for external payment/voucher redirects (Mercado Pago / PSE / Efecty)
-function isTrustedPaymentRedirectUrl(rawUrl) {
+// Trusted HTTPS hostname allowlist sanitizer for external payment/voucher redirects (Mercado Pago / PSE / Efecty)
+function sanitizeTrustedPaymentUrl(rawUrl) {
 	if (typeof rawUrl !== "string" || !rawUrl.trim()) {
-		return false;
+		return null;
 	}
 	try {
 		const parsed = new URL(rawUrl.trim());
 		if (parsed.protocol !== "https:") {
-			return false;
+			return null;
 		}
 		const host = parsed.hostname.toLowerCase();
 		const allowedSuffixes = [
@@ -39,11 +39,42 @@ function isTrustedPaymentRedirectUrl(rawUrl) {
 			"achcolombia.com.co",
 			"efecty.com.co",
 		];
-		return allowedSuffixes.some(
+		const matched = allowedSuffixes.some(
 			(suffix) => host === suffix || host.endsWith(`.${suffix}`),
 		);
+		if (!matched) {
+			return null;
+		}
+		const safePath = parsed.pathname.replace(/[^A-Za-z0-9\-._~/%]/g, "");
+		const safeParams = new URLSearchParams(parsed.search);
+		const safeQuery = safeParams.toString();
+		return `https://${host}${safePath}${safeQuery ? `?${safeQuery}` : ""}`;
 	} catch (_) {
-		return false;
+		return null;
+	}
+}
+
+function buildSafeAirbnbBookingUrl(rawUrl, checkInDate, checkOutDate) {
+	if (typeof rawUrl !== "string" || !rawUrl.trim()) {
+		return null;
+	}
+	try {
+		const parsed = new URL(rawUrl.trim());
+		const host = parsed.hostname.toLowerCase();
+		if (
+			parsed.protocol !== "https:" ||
+			(host !== "airbnb.com" && !host.endsWith(".airbnb.com"))
+		) {
+			return null;
+		}
+		const safePath = parsed.pathname.replace(/[^A-Za-z0-9\-._~/]/g, "");
+		const params = new URLSearchParams({
+			check_in: String(checkInDate),
+			check_out: String(checkOutDate),
+		});
+		return `https://${host}${safePath}?${params.toString()}`;
+	} catch (_) {
+		return null;
 	}
 }
 
@@ -388,9 +419,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			voucherVerifCode.textContent = verifCode || "—";
 		}
 		if (btnPrintVoucher) {
-			if (isTrustedPaymentRedirectUrl(voucherUrl)) {
-				btnPrintVoucher.setAttribute("href", voucherUrl);
-				btnPrintVoucher.href = voucherUrl;
+			const safeVoucherUrl = sanitizeTrustedPaymentUrl(voucherUrl);
+			if (safeVoucherUrl) {
+				btnPrintVoucher.setAttribute("href", safeVoucherUrl);
 				btnPrintVoucher.classList.remove("hidden");
 				btnPrintVoucher.classList.add("inline-flex");
 			} else {
@@ -993,12 +1024,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				minStayWarning.textContent = "";
 			}
 			if (btnBook && checkIn && checkOut) {
-				btnBook.href =
-					airbnbUrl +
-					"?check_in=" +
-					formatDate(checkIn) +
-					"&check_out=" +
-					formatDate(checkOut);
+				const safeAirbnbHref = buildSafeAirbnbBookingUrl(
+					airbnbUrl,
+					formatDate(checkIn),
+					formatDate(checkOut),
+				);
+				if (safeAirbnbHref) {
+					btnBook.setAttribute("href", safeAirbnbHref);
+				}
 				btnBook.setAttribute("aria-disabled", "false");
 				btnBook.removeAttribute("tabindex");
 				btnBook.classList.remove(
@@ -1432,6 +1465,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				const successPage = BOOKING_SUCCESS_PAGES[safeLang];
 				const pendingPage = BOOKING_PENDING_PAGES[safeLang];
 
+				const safePseUrl =
+					selectedPaymentMethod === "pse"
+						? sanitizeTrustedPaymentUrl(result.external_resource_url)
+						: null;
+
 				// Route dynamically based on status and method
 				if (result.status === "approved") {
 					const params = new URLSearchParams({
@@ -1440,12 +1478,9 @@ document.addEventListener("DOMContentLoaded", () => {
 						status: "approved",
 					});
 					window.location.href = `${assetPrefix}${successPage}?${params.toString()}`;
-				} else if (
-					selectedPaymentMethod === "pse" &&
-					isTrustedPaymentRedirectUrl(result.external_resource_url)
-				) {
+				} else if (safePseUrl) {
 					// Redirection for bank payment authorization (strict HTTPS allowlist)
-					window.location.href = result.external_resource_url;
+					window.location.href = safePseUrl;
 				} else if (selectedPaymentMethod === "efecty") {
 					// Redirection to booking-pending page, passing Efecty voucher print parameters
 					const params = new URLSearchParams({

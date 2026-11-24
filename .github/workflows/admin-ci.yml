@@ -21,6 +21,7 @@ on:
       - 'scripts/**'
       - 'composer.json'
       - 'composer.lock'
+  workflow_call:
   workflow_dispatch:
 
 permissions:

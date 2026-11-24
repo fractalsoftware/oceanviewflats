@@ -39,15 +39,15 @@ Rather than nesting the administrative application inside `public_html/admin` (P
 ```
 
 ### 2. Dual-Pipeline CI/CD Deployment Architecture
-Deployments are strictly segregated across two independent GitHub Actions workflows, both gated via `workflow_run` on passing CI/Security verification on `main` (with `workflow_dispatch` for controlled manual deploys):
+Deployments are strictly segregated across two independent GitHub Actions workflows, both gated via reusable `workflow_call` CI/Security prerequisite jobs on `main` (with `workflow_dispatch` for controlled manual deploys):
 
 1. **Public Static Site Pipeline (`.github/workflows/deploy.yml`)**:
-   - Triggered after `CI` (backend, frontend, security) completes with `success` on `main`.
+   - Invokes reusable `.github/workflows/ci.yml` (`needs: [ci]`) and deploys only after backend, frontend, and security gates succeed.
    - Compiles React components and Tailwind CSS into static assets (`dist/`) and strips non-public `api/openapi.{json,yaml}` and `api/docs/`.
    - Injects public environment secrets (`RECIPIENT_EMAIL`, `CAPTCHA_SECRET`, `APP_ENCRYPTION_KEY`, `ICAL_UID_SECRET`, `ICAL_FEED_*`, `DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`) safely into `public/.htaccess`.
    - Transfers `./dist/.` to `/home/<user>/public_html/` via SFTP on port 2223.
 2. **Admin & Backend Pipeline (`.github/workflows/admin-deploy.yml`)**:
-   - Triggered after `Admin CI` completes with `success` on `main` (or `workflow_dispatch`).
+   - Triggers on `push` to `main` for changes under `admin/**`, `src/Domain/**`, `src/Infrastructure/**`, `scripts/**`, `composer.json`, or `composer.lock` (plus `workflow_dispatch`), and invokes reusable `.github/workflows/admin-ci.yml` (`needs: [admin-ci]`) before staging/deploying.
    - Installs production Composer dependencies (`composer install --no-dev --prefer-dist --optimize-autoloader`).
    - Injects production secrets (`DB_*`, `APP_ENCRYPTION_KEY`, `ICAL_FEED_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`, `OVF_ADMIN_SESSION_SECRET`) safely into `admin/public/.htaccess`.
    - Stages a clean payload containing `admin/`, `src/Domain/`, `src/Infrastructure/`, `vendor/`, and `scripts/` (explicitly excluding test suites, dev configs, and `admin/public/setup.php`).

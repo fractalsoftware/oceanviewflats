@@ -138,7 +138,7 @@ final class GuestRegistryEndpointTest extends TestCase
                 check_in, check_out, total_price, status, payment_status, registry_completed
             ) VALUES (
                 'ovf_conf_100', '1606', 'Maria Gomez', 'maria@example.com', '+573001234567',
-                '2026-11-15', '2026-11-20', 1600000.0, 'confirmed', 'approved', 0
+                '2027-11-15', '2027-11-20', 1600000.0, 'confirmed', 'approved', 0
             );
 
             INSERT INTO reservations (
@@ -187,8 +187,8 @@ final class GuestRegistryEndpointTest extends TestCase
         return array_merge([
             'reservation_code' => 'ovf_conf_100',
             'property' => '1606',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
             'guest_count' => 2,
             'guest_email_1' => 'maria.gomez@example.com',
             'guest_name_1' => 'Maria Gomez',
@@ -357,8 +357,8 @@ final class GuestRegistryEndpointTest extends TestCase
         $reg = $stmtReg->fetch();
         $this->assertIsArray($reg);
         $this->assertSame('1606', $reg['property_id']);
-        $this->assertSame('2026-11-15', $reg['check_in']);
-        $this->assertSame('2026-11-20', $reg['check_out']);
+        $this->assertSame('2027-11-15', $reg['check_in']);
+        $this->assertSame('2027-11-20', $reg['check_out']);
         $this->assertSame(2, (int) $reg['guest_count']);
         $this->assertSame('ABC-123', $reg['car_plates']);
         $this->assertSame('Mazda CX-5', $reg['car_model']);
@@ -389,8 +389,8 @@ final class GuestRegistryEndpointTest extends TestCase
         $payload = array_merge([
             'reservation_code' => 'ovf_conf_100',
             'property_id' => '1606',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
             'primary_guest_email' => 'maria.gomez@example.com',
             'occupants' => [
                 [
@@ -422,8 +422,8 @@ final class GuestRegistryEndpointTest extends TestCase
         $payload = $this->createValidRegistryData([
             'reservation_code' => '',
             'property' => '1606',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
         ]);
 
         $res = $this->callRegistryEndpoint($payload);
@@ -475,8 +475,8 @@ final class GuestRegistryEndpointTest extends TestCase
     public function testInvalidSubmissionRejectsReversedDatesWith400(): void
     {
         $payload = $this->createValidRegistryData([
-            'check_in' => '2026-11-20',
-            'check_out' => '2026-11-15',
+            'check_in' => '2027-11-20',
+            'check_out' => '2027-11-15',
         ]);
 
         $res = $this->callRegistryEndpoint($payload);
@@ -651,14 +651,14 @@ final class GuestRegistryEndpointTest extends TestCase
                 check_in, check_out, total_price, status, source, payment_status, registry_completed
             ) VALUES (
                 'res-abnb-endpoint-test', '1606', 'Airbnb Guest', 'relay-encrypted@guest.airbnb.com', '+12025550199',
-                '2026-11-22', '2026-11-25', 0.0, 'confirmed', 'airbnb', 'approved', 0
+                '2027-11-22', '2027-11-25', 0.0, 'confirmed', 'airbnb', 'approved', 0
             );
         ");
 
         $abnbPayload = $this->createValidRegistryData([
             'reservation_code' => 'res-abnb-endpoint-test',
-            'check_in' => '2026-11-22',
-            'check_out' => '2026-11-25',
+            'check_in' => '2027-11-22',
+            'check_out' => '2027-11-25',
             'guest_email_1' => 'verified.traveler@example.com',
             'guest_name_1' => 'Verified Traveler',
         ]);
@@ -673,8 +673,8 @@ final class GuestRegistryEndpointTest extends TestCase
         // 2. Direct web reservation with valid customer email: preserved, not overwritten
         $webPayload = $this->createValidRegistryData([
             'reservation_code' => 'ovf_conf_100',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
             'guest_email_1' => 'companion.traveler@example.com',
             'guest_name_1' => 'Companion Traveler',
         ]);
@@ -693,13 +693,13 @@ final class GuestRegistryEndpointTest extends TestCase
                 check_in, check_out, total_price, status, source, payment_status, registry_completed
             ) VALUES (
                 'ovf_web_placeholder_test', '1606', 'Web Placeholder', 'guest@oceanviewflats.com', '+12025550199',
-                '2026-11-26', '2026-11-30', 500000.0, 'confirmed', 'web', 'approved', 0
+                '2027-11-26', '2027-11-30', 500000.0, 'confirmed', 'web', 'approved', 0
             );
         ");
         $placeholderPayload = $this->createValidRegistryData([
             'reservation_code' => 'ovf_web_placeholder_test',
-            'check_in' => '2026-11-26',
-            'check_out' => '2026-11-30',
+            'check_in' => '2027-11-26',
+            'check_out' => '2027-11-30',
             'guest_email_1' => 'actual.guest@example.com',
             'guest_name_1' => 'Actual Guest',
         ]);
@@ -821,8 +821,8 @@ PHP;
         $payload = array_merge([
             'reservation_code' => 'ovf_conf_100',
             'property' => '1606',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
             'guest_count' => 2,
             'guest_email_1' => 'lucia.mendez@example.com',
             'guest_first_name_1' => 'Lucia',
@@ -874,8 +874,8 @@ PHP;
         $payload = array_merge([
             'reservation_code' => 'ovf_conf_100',
             'property' => '1606',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
             'guest_count' => 1,
             'guest_email_1' => 'lucia.mendez@example.com',
             'guest_first_name_1' => 'Lucia',
@@ -903,8 +903,8 @@ PHP;
         $payload = array_merge([
             'reservation_code' => 'ovf_conf_100',
             'property' => '1606',
-            'check_in' => '2026-11-15',
-            'check_out' => '2026-11-20',
+            'check_in' => '2027-11-15',
+            'check_out' => '2027-11-20',
             'guest_count' => 2,
             'guest_email_1' => 'lucia.mendez@example.com',
             'guest_first_name_1' => 'Lucia',
@@ -1007,8 +1007,8 @@ PHP;
         $sevenData = $this->createValidCaptcha();
         $sevenData['reservation_code'] = 'ovf_conf_100';
         $sevenData['property'] = '1606';
-        $sevenData['check_in'] = '2026-11-15';
-        $sevenData['check_out'] = '2026-11-20';
+        $sevenData['check_in'] = '2027-11-15';
+        $sevenData['check_out'] = '2027-11-20';
         $sevenData['guest_count'] = 7;
         $sevenData['guest_email_1'] = 'maria@example.com';
         $sevenData['guest_phone_1'] = '+573001234567';
@@ -1224,7 +1224,7 @@ PHP;
 
         $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
         $defaultClearanceTransport = sprintf(
-            'require_once %s; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_default_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            '$_ENV["APP_ENV"] = "testing"; $_ENV["APP_ENCRYPTION_KEY"] = "test-registry-encryption-key-32b"; $_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; $_ENV["PROPERTY_1606_DOOR_CODE"] = "0111606#"; $_ENV["PROPERTY_1606_WIFI_PASSWORD"] = "TestWifi1606!"; $_ENV["PROPERTY_1707_DOOR_CODE"] = "0111707#"; $_ENV["PROPERTY_1707_WIFI_PASSWORD"] = "TestWifi1707!"; require_once %s; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_default_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
             $autoloadPath
         );
 

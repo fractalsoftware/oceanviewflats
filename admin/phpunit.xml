@@ -11,6 +11,10 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="HUESPED_MANAGER_1606_CHECK" value="test-check-1606"/>
+        <env name="HUESPED_MANAGER_1707_CHECK" value="test-check-1707"/>
+    </php>
     <source>
         <include>
             <directory suffix=".php">src</directory>
