@@ -16,6 +16,8 @@ final class GuestRegistryEndpointTest extends TestCase
     {
         parent::setUp();
 
+        $_ENV['APP_ENCRYPTION_KEY'] = 'test-registry-encryption-key-32b';
+
         $this->dbPath = sys_get_temp_dir() . '/test_registry_' . bin2hex(random_bytes(6)) . '.sqlite';
         $this->pdo = new PDO('sqlite:' . $this->dbPath);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -32,6 +34,7 @@ final class GuestRegistryEndpointTest extends TestCase
 
     protected function tearDown(): void
     {
+        unset($_ENV['APP_ENCRYPTION_KEY']);
         parent::tearDown();
 
         $rateLimitFile = sys_get_temp_dir() . '/ovf_registry_rate_limits.json';

@@ -29,6 +29,8 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
     {
         parent::setUp();
 
+        $_ENV['APP_ENCRYPTION_KEY'] = 'test-e2e-encryption-key-32bytes!';
+
         $this->dbPath = sys_get_temp_dir() . '/test_airbnb_lifecycle_' . bin2hex(random_bytes(6)) . '.sqlite';
         $this->pdo = new PDO('sqlite:' . $this->dbPath);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -41,6 +43,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
 
     protected function tearDown(): void
     {
+        unset($_ENV['APP_ENCRYPTION_KEY']);
         parent::tearDown();
 
         $this->cleanRateLimitFiles();
