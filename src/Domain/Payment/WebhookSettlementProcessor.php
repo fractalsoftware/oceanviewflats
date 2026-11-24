@@ -152,16 +152,18 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
         try {
             $details = $this->gateway->getPayment($cleanPaymentId);
         } catch (PaymentGatewayException $e) {
+            error_log('[Webhook Settlement Gateway Exception] ' . $e->getMessage());
             $code = $e->getCode();
             $statusCode = ($code >= 400 && $code < 600) ? $code : 502;
             return WebhookSettlementResult::gatewayError(
-                message: $e->getMessage(),
+                message: 'Payment gateway communication error.',
                 httpStatusCode: $statusCode,
                 data: ['payment_id' => $cleanPaymentId, 'error_type' => $e->getErrorType()]
             );
         } catch (Throwable $e) {
+            error_log('[Webhook Settlement Gateway Error] ' . $e->getMessage());
             return WebhookSettlementResult::gatewayError(
-                message: 'Unexpected gateway communication failure: ' . $e->getMessage(),
+                message: 'Unexpected gateway communication failure.',
                 httpStatusCode: 502,
                 data: ['payment_id' => $cleanPaymentId]
             );
@@ -183,8 +185,9 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
             /** @var array<string, mixed>|false $reservation */
             $reservation = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Throwable $e) {
+            error_log('[Webhook Settlement DB Error] ' . $e->getMessage());
             return WebhookSettlementResult::databaseError(
-                message: 'Database query failure: ' . $e->getMessage(),
+                message: 'Database query failure.',
                 httpStatusCode: 500,
                 data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef],
                 reservationUid: $externalRef
@@ -224,8 +227,9 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
 
                     $this->lifecycleEngine->cancel($externalRef, $cancellationRequest);
                 } catch (Throwable $e) {
+                    error_log('[Webhook Full Refund Error] ' . $e->getMessage());
                     return WebhookSettlementResult::databaseError(
-                        message: 'Failed to process full refund cancellation: ' . $e->getMessage(),
+                        message: 'Failed to process full refund cancellation.',
                         httpStatusCode: 500,
                         data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef],
                         reservationUid: $externalRef
@@ -258,8 +262,9 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
 
                 $this->syncRefundItems($externalRef, $cleanPaymentId, $details->refunds, $actualRefundAmount);
             } catch (Throwable $e) {
+                error_log('[Webhook Refund Sync Error] ' . $e->getMessage());
                 return WebhookSettlementResult::databaseError(
-                    message: 'Failed to sync refund items on cancelled reservation: ' . $e->getMessage(),
+                    message: 'Failed to sync refund items on cancelled reservation.',
                     httpStatusCode: 500,
                     data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef],
                     reservationUid: $externalRef
@@ -316,8 +321,9 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
                 if ($this->pdo->inTransaction()) {
                     $this->pdo->rollBack();
                 }
+                error_log('[Webhook Partial Refund Error] ' . $e->getMessage());
                 return WebhookSettlementResult::databaseError(
-                    message: 'Failed to synchronize partial refund: ' . $e->getMessage(),
+                    message: 'Failed to synchronize partial refund.',
                     httpStatusCode: 500,
                     data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef],
                     reservationUid: $externalRef
@@ -355,6 +361,37 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
                         'payment_id' => $cleanPaymentId,
                         'current_status' => $resStatus,
                     ]
+                );
+            }
+
+            // Settlement integrity check: fail closed unless currency is COP and settled amount covers reservation Quote
+            $currencyId = strtoupper(trim($details->currencyId));
+            if ($currencyId !== 'COP') {
+                error_log(sprintf(
+                    '[Webhook Settlement Security] Currency mismatch or missing currency for %s (payment %s): expected COP, got %s',
+                    $externalRef,
+                    $cleanPaymentId,
+                    $currencyId !== '' ? $currencyId : '(empty)'
+                ));
+                return WebhookSettlementResult::gatewayError(
+                    message: 'Payment currency does not match settlement currency (COP).',
+                    httpStatusCode: 422,
+                    data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef]
+                );
+            }
+
+            if ($resTotalPrice <= 0.0 || $details->transactionAmount <= 0.0 || ($details->transactionAmount + 1.0) < $resTotalPrice) {
+                error_log(sprintf(
+                    '[Webhook Settlement Security] Amount mismatch for %s (payment %s): expected %.2f COP, got %.2f COP',
+                    $externalRef,
+                    $cleanPaymentId,
+                    $resTotalPrice,
+                    $details->transactionAmount
+                ));
+                return WebhookSettlementResult::gatewayError(
+                    message: 'Settled payment amount does not cover reservation quote.',
+                    httpStatusCode: 422,
+                    data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef]
                 );
             }
 
@@ -411,8 +448,9 @@ final class WebhookSettlementProcessor implements WebhookSettlementProcessorInte
                     ]
                 );
             } catch (Throwable $e) {
+                error_log('[Webhook Confirm Error] ' . $e->getMessage());
                 return WebhookSettlementResult::databaseError(
-                    message: 'Failed to confirm reservation: ' . $e->getMessage(),
+                    message: 'Failed to confirm reservation.',
                     httpStatusCode: 500,
                     data: ['payment_id' => $cleanPaymentId, 'reservation_uid' => $externalRef],
                     reservationUid: $externalRef

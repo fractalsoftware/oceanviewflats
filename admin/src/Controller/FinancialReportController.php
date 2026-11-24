@@ -1546,7 +1546,8 @@ final class FinancialReportController
         fputcsv($stream, $headerRow, ',', '"', '');
 
         foreach ($dataRows as $row) {
-            fputcsv($stream, $row, ',', '"', '');
+            $sanitizedRow = array_map(static fn (string $cell): string => self::neutralizeCsvFormula($cell), $row);
+            fputcsv($stream, $sanitizedRow, ',', '"', '');
         }
 
         rewind($stream);
@@ -1633,7 +1634,29 @@ final class FinancialReportController
             'id' => isset($session['admin_user_id']) ? (int) $session['admin_user_id'] : null,
             'name' => $session['admin_user_name'] ?? 'Admin',
             'email' => $session['admin_user_email'] ?? ($session['admin_email'] ?? 'admin@oceanviewflats.com'),
-            'role' => $session['admin_user_role'] ?? ($session['admin_role'] ?? 'admin'),
+            'role' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
         ];
+    }
+
+    /**
+     * Neutralizes spreadsheet formula injection (DDE / CSV Injection) on cells starting with formula triggers.
+     */
+    private static function neutralizeCsvFormula(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        // Preserve valid signed numeric literals (e.g. -12500.00) while neutralizing formulas
+        if (preg_match('/^-[0-9]+(?:\.[0-9]+)?$/', $value) === 1) {
+            return $value;
+        }
+
+        $firstChar = $value[0];
+        if (in_array($firstChar, ['=', '+', '-', '@', "\t", "\r"], true)) {
+            return "'" . $value;
+        }
+
+        return $value;
     }
 }

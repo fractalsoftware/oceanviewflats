@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace OceanViewFlats\Admin\Setup;
 
 use InvalidArgumentException;
+use OceanViewFlats\Admin\Auth\AdminRole;
 use OceanViewFlats\Admin\Cli\AdminUserProvisioner;
 use OceanViewFlats\Admin\Config\ConfigPathResolver;
 use OceanViewFlats\Admin\Db\DatabaseFactory;
 use OceanViewFlats\Domain\Database\MigrationRunner;
+use OceanViewFlats\Domain\Support\AppEnvironment;
 use OceanViewFlats\Domain\Support\EnvLoader;
 use PDO;
 use PDOException;
@@ -59,10 +61,10 @@ final class SetupRunner
             : MigrationRunner::connect($dbConfig);
 
         $allowedTokens = [];
+        // Never accept DB_PASS as a web setup token; require dedicated OVF_SETUP_TOKEN (or OVF_ADMIN_SESSION_SECRET)
         $candidates = [
             getenv('OVF_SETUP_TOKEN') ?: ($_ENV['OVF_SETUP_TOKEN'] ?? $_SERVER['OVF_SETUP_TOKEN'] ?? null),
             getenv('OVF_ADMIN_SESSION_SECRET') ?: ($_ENV['OVF_ADMIN_SESSION_SECRET'] ?? $_SERVER['OVF_ADMIN_SESSION_SECRET'] ?? null),
-            getenv('DB_PASS') ?: ($_ENV['DB_PASS'] ?? $_SERVER['DB_PASS'] ?? null),
         ];
 
         foreach ($candidates as $token) {
@@ -144,7 +146,10 @@ final class SetupRunner
         $name = trim((string) ($input['name'] ?? ''));
         $email = trim((string) ($input['email'] ?? ''));
         $password = (string) ($input['password'] ?? '');
-        $role = trim((string) ($input['role'] ?? 'admin'));
+        $role = trim((string) ($input['role'] ?? AdminRole::ADMIN->value));
+        if (!in_array($role, AdminRole::values(), true)) {
+            throw new InvalidArgumentException('Invalid administrator role specified.');
+        }
 
         if ($name === '') {
             throw new InvalidArgumentException('Administrator name is required.');
@@ -163,7 +168,7 @@ final class SetupRunner
             $email,
             $name,
             $password,
-            $role !== '' ? $role : 'admin'
+            $role
         );
     }
 
@@ -177,7 +182,21 @@ final class SetupRunner
      */
     public function handleRequest(array $server, array $get, array $post): array
     {
-        $token = (string) ($get['token'] ?? $server['HTTP_X_SETUP_TOKEN'] ?? $post['token'] ?? '');
+        // Reject insecure HTTP in production (native HTTPS only; never trust spoofable forwarded headers)
+        $isHttps = (!empty($server['HTTPS']) && strtolower((string) $server['HTTPS']) !== 'off')
+            || (isset($server['SERVER_PORT']) && (int) $server['SERVER_PORT'] === 443);
+        if (AppEnvironment::isProductionForRequest($server) && !$isHttps) {
+            return [
+                'status' => 403,
+                'data' => [
+                    'success' => false,
+                    'error' => 'HTTPS is required to access the setup utility in production.',
+                ],
+            ];
+        }
+
+        // Only accept token from X-Setup-Token header or POST body (never query string, preventing URL/Referer/log leakage)
+        $token = (string) ($server['HTTP_X_SETUP_TOKEN'] ?? $post['token'] ?? '');
 
         if (!$this->isTokenValid($token)) {
             return [
@@ -249,12 +268,21 @@ final class SetupRunner
                     'actions' => ['migrate', 'create_admin'],
                 ],
             ];
-        } catch (Throwable $e) {
+        } catch (InvalidArgumentException $e) {
             return [
                 'status' => 400,
                 'data' => [
                     'success' => false,
                     'error' => $e->getMessage(),
+                ],
+            ];
+        } catch (Throwable $e) {
+            error_log('[Admin Setup Runner Error] ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'data' => [
+                    'success' => false,
+                    'error' => 'Internal server error executing setup action.',
                 ],
             ];
         }

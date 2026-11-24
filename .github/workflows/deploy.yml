@@ -4,18 +4,31 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
+  ci:
+    name: CI & Security Gate
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
   build-and-deploy:
+    name: Build & Deploy Public Site (SFTP)
+    needs: [ci]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -23,38 +36,64 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Inject Environment Variables into .htaccess
+      - name: Inject Environment Variables into .htaccess (Safe Escaping)
+        env:
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          CAPTCHA_SECRET: ${{ secrets.CAPTCHA_SECRET }}
+          APP_ENCRYPTION_KEY: ${{ secrets.APP_ENCRYPTION_KEY }}
+          ICAL_UID_SECRET: ${{ secrets.ICAL_UID_SECRET }}
+          ICAL_FEED_1606: ${{ secrets.ICAL_FEED_1606 }}
+          ICAL_FEED_1707: ${{ secrets.ICAL_FEED_1707 }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+          MERCADOPAGO_PUBLIC_KEY: ${{ secrets.MERCADOPAGO_PUBLIC_KEY }}
+          MERCADOPAGO_WEBHOOK_SECRET: ${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
+          PROPERTY_1606_DOOR_CODE: ${{ secrets.PROPERTY_1606_DOOR_CODE }}
+          PROPERTY_1606_WIFI_SSID: ${{ secrets.PROPERTY_1606_WIFI_SSID }}
+          PROPERTY_1606_WIFI_PASSWORD: ${{ secrets.PROPERTY_1606_WIFI_PASSWORD }}
+          PROPERTY_1707_DOOR_CODE: ${{ secrets.PROPERTY_1707_DOOR_CODE }}
+          PROPERTY_1707_WIFI_SSID: ${{ secrets.PROPERTY_1707_WIFI_SSID }}
+          PROPERTY_1707_WIFI_PASSWORD: ${{ secrets.PROPERTY_1707_WIFI_PASSWORD }}
+          HUESPED_MANAGER_BASE_URL: ${{ secrets.HUESPED_MANAGER_BASE_URL }}
+          HUESPED_MANAGER_1707_CHECK: ${{ secrets.HUESPED_MANAGER_1707_CHECK }}
+          HUESPED_MANAGER_1606_CHECK: ${{ secrets.HUESPED_MANAGER_1606_CHECK }}
         run: |
-          echo "" >> public/.htaccess
-          echo "SetEnv RECIPIENT_EMAIL \"${{ secrets.RECIPIENT_EMAIL }}\"" >> public/.htaccess
-          echo "SetEnv CAPTCHA_SECRET \"${{ secrets.CAPTCHA_SECRET }}\"" >> public/.htaccess
-          echo "SetEnv GOOGLE_SHEET_WEBAPP_URL \"${{ secrets.GOOGLE_SHEET_WEBAPP_URL }}\"" >> public/.htaccess
-          echo "SetEnv DB_HOST \"${{ secrets.DB_HOST }}\"" >> public/.htaccess
-          echo "SetEnv DB_NAME \"${{ secrets.DB_NAME }}\"" >> public/.htaccess
-          echo "SetEnv DB_USER \"${{ secrets.DB_USER }}\"" >> public/.htaccess
-          echo "SetEnv DB_PASS \"${{ secrets.DB_PASS }}\"" >> public/.htaccess
-          echo "SetEnv MERCADOPAGO_ACCESS_TOKEN \"${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}\"" >> public/.htaccess
-          echo "SetEnv MERCADOPAGO_PUBLIC_KEY \"${{ secrets.MERCADOPAGO_PUBLIC_KEY }}\"" >> public/.htaccess
-          echo "SetEnv MERCADOPAGO_WEBHOOK_SECRET \"${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}\"" >> public/.htaccess
-          echo "SetEnv PROPERTY_1606_DOOR_CODE \"${{ secrets.PROPERTY_1606_DOOR_CODE }}\"" >> public/.htaccess
-          echo "SetEnv PROPERTY_1606_WIFI_SSID \"${{ secrets.PROPERTY_1606_WIFI_SSID }}\"" >> public/.htaccess
-          echo "SetEnv PROPERTY_1606_WIFI_PASSWORD \"${{ secrets.PROPERTY_1606_WIFI_PASSWORD }}\"" >> public/.htaccess
-          echo "SetEnv PROPERTY_1707_DOOR_CODE \"${{ secrets.PROPERTY_1707_DOOR_CODE }}\"" >> public/.htaccess
-          echo "SetEnv PROPERTY_1707_WIFI_SSID \"${{ secrets.PROPERTY_1707_WIFI_SSID }}\"" >> public/.htaccess
-          echo "SetEnv PROPERTY_1707_WIFI_PASSWORD \"${{ secrets.PROPERTY_1707_WIFI_PASSWORD }}\"" >> public/.htaccess
-          echo "SetEnv HUESPED_MANAGER_BASE_URL \"${{ secrets.HUESPED_MANAGER_BASE_URL }}\"" >> public/.htaccess
-          echo "SetEnv HUESPED_MANAGER_1707_CHECK \"${{ secrets.HUESPED_MANAGER_1707_CHECK }}\"" >> public/.htaccess
-          echo "SetEnv HUESPED_MANAGER_1606_CHECK \"${{ secrets.HUESPED_MANAGER_1606_CHECK }}\"" >> public/.htaccess
-
-      - name: Inject MercadoPago Public Key into Config
-        run: |
-          perl -0777 -pi -e 's/export const MERCADOPAGO_PUBLIC_KEY\s*=\s*"[^"]*";/export const MERCADOPAGO_PUBLIC_KEY = "${{ secrets.MERCADOPAGO_PUBLIC_KEY }}";/g' src/constants/config.ts
+          set -euo pipefail
+          append_setenv() {
+            local key="$1"
+            local val="${!key-}"
+            if [ -n "$val" ]; then
+              local escaped="${val//\\/\\\\}"
+              escaped="${escaped//\"/\\\"}"
+              printf 'SetEnv %s "%s"\n' "$key" "$escaped" >> public/.htaccess
+            fi
+          }
+          printf '\nSetEnv APP_ENV "production"\n' >> public/.htaccess
+          for var in \
+            RECIPIENT_EMAIL CAPTCHA_SECRET APP_ENCRYPTION_KEY ICAL_UID_SECRET \
+            ICAL_FEED_1606 ICAL_FEED_1707 DB_HOST DB_NAME DB_USER DB_PASS \
+            MERCADOPAGO_ACCESS_TOKEN MERCADOPAGO_PUBLIC_KEY MERCADOPAGO_WEBHOOK_SECRET \
+            PROPERTY_1606_DOOR_CODE PROPERTY_1606_WIFI_SSID PROPERTY_1606_WIFI_PASSWORD \
+            PROPERTY_1707_DOOR_CODE PROPERTY_1707_WIFI_SSID PROPERTY_1707_WIFI_PASSWORD \
+            HUESPED_MANAGER_BASE_URL HUESPED_MANAGER_1707_CHECK HUESPED_MANAGER_1606_CHECK; do
+            append_setenv "$var"
+          done
 
       - name: Build Project
+        env:
+          MERCADOPAGO_PUBLIC_KEY: ${{ secrets.MERCADOPAGO_PUBLIC_KEY }}
         run: npm run build
 
+      - name: Strip Non-Public OpenAPI Specs & Swagger UI from Production Bundle
+        run: |
+          rm -f dist/api/openapi.json dist/api/openapi.yaml
+          rm -rf dist/api/docs
+
       - name: Deploy to SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        uses: wlixcc/SFTP-Deploy-Action@a5ccb9c6211a94cc59404f0fdb2a9936a6dfee64 # v1.2.6
         with:
           username: ${{ secrets.FTP_USERNAME }}
           server: ${{ secrets.FTP_SERVER }}

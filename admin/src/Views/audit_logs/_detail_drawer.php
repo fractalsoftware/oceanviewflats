@@ -215,7 +215,7 @@ window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
                             <span class="font-medium text-gray-900"><?= htmlspecialchars((string) $actorName, ENT_QUOTES, 'UTF-8') ?></span>
                             <span class="text-2xs text-gray-500 block"><?= htmlspecialchars((string) ($actorEmail ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
                             <span class="inline-block mt-0.5 text-2xs px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold uppercase">
-                                <?= htmlspecialchars((string) ($actorRole ?? 'admin'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars((string) ($actorRole ?? 'viewer'), ENT_QUOTES, 'UTF-8') ?>
                             </span>
                         <?php else: ?>
                             <span class="inline-flex items-center text-xs text-gray-700 font-medium">

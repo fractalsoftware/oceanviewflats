@@ -400,6 +400,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
             'external_reference' => 'ovf-pending-approve',
             'transaction_amount' => 750000.00,
             'transaction_amount_refunded' => 0.0,
+            'currency_id' => 'COP',
             'payment_method_id' => 'pse',
         ];
 
@@ -466,6 +467,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
             'external_reference' => 'ovf-pending-cont',
             'transaction_amount' => 750000.00,
             'transaction_amount_refunded' => 0.0,
+            'currency_id' => 'COP',
             'payment_method_id' => 'visa',
         ];
 
@@ -495,7 +497,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $paymentId = '77889900';
         $secret = 'test_mp_webhook_secret_key_2026';
         $requestId = 'req-valid-12345';
-        $ts = '1704908010';
+        $ts = (string) time();
         $manifest = "id:{$paymentId};request-id:{$requestId};ts:{$ts};";
         $v1 = hash_hmac('sha256', $manifest, $secret);
 
@@ -506,6 +508,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
             'external_reference' => 'ovf-sig-valid',
             'transaction_amount' => 750000.00,
             'transaction_amount_refunded' => 0.0,
+            'currency_id' => 'COP',
             'payment_method_id' => 'visa',
         ];
 
@@ -652,6 +655,27 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertIsArray($resWrongHash['json']);
         $this->assertFalse($resWrongHash['json']['success'] ?? true);
         $this->assertStringContainsString('[MercadoPago Webhook Security]', $resWrongHash['stderr']);
+
+        // 2b. Valid HMAC signature but expired timestamp (>5 min replay window)
+        $staleTs = (string) (time() - 600);
+        $staleManifest = "id:{$paymentId};request-id:{$requestId};ts:{$staleTs};";
+        $staleV1 = hash_hmac('sha256', $staleManifest, $secret);
+        $resExpiredTs = $this->callWebhookHttpEndpoint(
+            body: ['type' => 'payment', 'data' => ['id' => $paymentId]],
+            query: [],
+            server: [
+                'HTTP_X_SIGNATURE' => "ts={$staleTs},v1={$staleV1}",
+                'HTTP_X_REQUEST_ID' => $requestId,
+                'MERCADOPAGO_WEBHOOK_SECRET' => $secret,
+                'DB_HOST' => 'unreachable.invalid.local',
+            ],
+            stagedPayment: null,
+            injectTestPdo: false
+        );
+        $this->assertSame(403, $resExpiredTs['statusCode']);
+        $this->assertIsArray($resExpiredTs['json']);
+        $this->assertFalse($resExpiredTs['json']['success'] ?? true);
+        $this->assertStringContainsString('Expired webhook signature', (string) ($resExpiredTs['json']['error'] ?? ''));
 
         // 3. Altered timestamp in x-signature header
         $resAlteredTs = $this->callWebhookHttpEndpoint(

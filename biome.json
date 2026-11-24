@@ -16,7 +16,6 @@
 			"!public/cache",
 			"!public/api",
 			"!public/api/openapi.json",
-			"!public/js",
 			"!public/site.webmanifest",
 			"!admin/public/site.webmanifest",
 			"!composer.json",

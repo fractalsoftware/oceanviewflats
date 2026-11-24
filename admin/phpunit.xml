@@ -11,6 +11,14 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="HUESPED_MANAGER_1606_CHECK" value="test-check-1606"/>
+        <env name="HUESPED_MANAGER_1707_CHECK" value="test-check-1707"/>
+        <env name="PROPERTY_1606_DOOR_CODE" value="0111606#"/>
+        <env name="PROPERTY_1606_WIFI_PASSWORD" value="TestWifi1606!"/>
+        <env name="PROPERTY_1707_DOOR_CODE" value="0111707#"/>
+        <env name="PROPERTY_1707_WIFI_PASSWORD" value="TestWifi1707!"/>
+    </php>
     <source>
         <include>
             <directory suffix=".php">src</directory>

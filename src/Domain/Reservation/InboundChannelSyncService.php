@@ -109,6 +109,7 @@ final class InboundChannelSyncService implements InboundChannelSyncServiceInterf
         }
 
         $feedUrl = $this->feedUrls[$propertyId];
+        $sanitizedFeedUrl = self::sanitizeFeedUrlForStorage($feedUrl);
         $existingStatus = $this->getStatus($propertyId);
 
         // Check 60-second cooldown window unless force override is requested
@@ -156,7 +157,7 @@ final class InboundChannelSyncService implements InboundChannelSyncServiceInterf
                 blockedNightsCount: count($blockedNights),
                 errorMessage: null,
                 initiatedBy: $initiatedBy,
-                feedUrl: $feedUrl,
+                feedUrl: $sanitizedFeedUrl,
             );
             $this->saveStatus($newStatus);
 
@@ -186,7 +187,7 @@ final class InboundChannelSyncService implements InboundChannelSyncServiceInterf
                 blockedNightsCount: count($existingNights),
                 errorMessage: $diagnosticError,
                 initiatedBy: $initiatedBy,
-                feedUrl: $feedUrl,
+                feedUrl: $sanitizedFeedUrl,
             );
             $this->saveStatus($degradedStatus);
 
@@ -209,7 +210,7 @@ final class InboundChannelSyncService implements InboundChannelSyncServiceInterf
             blockedNightsCount: 0,
             errorMessage: $diagnosticError,
             initiatedBy: $initiatedBy,
-            feedUrl: $feedUrl,
+            feedUrl: $sanitizedFeedUrl,
         );
         $this->saveStatus($errorStatus);
 
@@ -499,5 +500,21 @@ final class InboundChannelSyncService implements InboundChannelSyncServiceInterf
         }
 
         return 'Unknown sync error';
+    }
+
+    /**
+     * Strips secret query parameters (e.g. Airbnb ?t=...) and fragments before persisting feed metadata on disk.
+     */
+    public static function sanitizeFeedUrlForStorage(string $feedUrl): string
+    {
+        $parts = parse_url($feedUrl);
+        if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
+            return '';
+        }
+
+        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+        $path = $parts['path'] ?? '';
+
+        return sprintf('%s://%s%s%s', $parts['scheme'], $parts['host'], $port, $path);
     }
 }

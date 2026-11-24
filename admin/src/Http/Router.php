@@ -6,6 +6,7 @@ namespace OceanViewFlats\Admin\Http;
 
 use OceanViewFlats\Admin\Middleware\AuthMiddleware;
 use OceanViewFlats\Admin\Middleware\CsrfMiddleware;
+use OceanViewFlats\Admin\Middleware\RbacMiddleware;
 use OceanViewFlats\Admin\Middleware\SessionMiddleware;
 
 /**
@@ -21,16 +22,24 @@ final class Router
     private array $staticRoutes = [];
 
     /**
+     * Declarative RBAC access policies for static routes: [METHOD => [normalizedPath => RouteAccess]]
+     *
+     * @var array<string, array<string, RouteAccess>>
+     */
+    private array $staticRouteAccess = [];
+
+    /**
      * Dynamic regex-compiled routes: [METHOD => list of route definitions]
      *
-     * @var array<string, list<array{pattern: string, handler: callable(Request, array<string, mixed>&): Response}>>
+     * @var array<string, list<array{pattern: string, handler: callable(Request, array<string, mixed>&): Response, access: ?RouteAccess}>>
      */
     private array $dynamicRoutes = [];
 
     public function __construct(
         private readonly ?SessionMiddleware $sessionMiddleware = null,
         private readonly ?CsrfMiddleware $csrfMiddleware = null,
-        private readonly ?AuthMiddleware $authMiddleware = null
+        private readonly ?AuthMiddleware $authMiddleware = null,
+        private readonly ?RbacMiddleware $rbacMiddleware = null
     ) {
     }
 
@@ -40,9 +49,9 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function registerRoute(string $method, string $path, callable $handler): void
+    public function registerRoute(string $method, string $path, callable $handler, ?RouteAccess $access = null): void
     {
-        $this->addRoute($method, $path, $handler);
+        $this->addRoute($method, $path, $handler, $access);
     }
 
     /**
@@ -50,7 +59,7 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function addRoute(string $method, string $path, callable $handler): self
+    public function addRoute(string $method, string $path, callable $handler, ?RouteAccess $access = null): self
     {
         $method = strtoupper(trim($method));
         $normalizedPath = $this->normalizePath($path);
@@ -59,9 +68,13 @@ final class Router
             $this->dynamicRoutes[$method][] = [
                 'pattern' => $this->compileRoutePattern($normalizedPath),
                 'handler' => $handler,
+                'access' => $access,
             ];
         } else {
             $this->staticRoutes[$method][$normalizedPath] = $handler;
+            if ($access !== null) {
+                $this->staticRouteAccess[$method][$normalizedPath] = $access;
+            }
         }
 
         return $this;
@@ -72,9 +85,9 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function get(string $path, callable $handler): self
+    public function get(string $path, callable $handler, ?RouteAccess $access = null): self
     {
-        return $this->addRoute('GET', $path, $handler);
+        return $this->addRoute('GET', $path, $handler, $access);
     }
 
     /**
@@ -82,9 +95,9 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function post(string $path, callable $handler): self
+    public function post(string $path, callable $handler, ?RouteAccess $access = null): self
     {
-        return $this->addRoute('POST', $path, $handler);
+        return $this->addRoute('POST', $path, $handler, $access);
     }
 
     /**
@@ -92,9 +105,9 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function delete(string $path, callable $handler): self
+    public function delete(string $path, callable $handler, ?RouteAccess $access = null): self
     {
-        return $this->addRoute('DELETE', $path, $handler);
+        return $this->addRoute('DELETE', $path, $handler, $access);
     }
 
     /**
@@ -102,9 +115,9 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function put(string $path, callable $handler): self
+    public function put(string $path, callable $handler, ?RouteAccess $access = null): self
     {
-        return $this->addRoute('PUT', $path, $handler);
+        return $this->addRoute('PUT', $path, $handler, $access);
     }
 
     /**
@@ -112,9 +125,9 @@ final class Router
      *
      * @param callable(Request, array<string, mixed>&): Response $handler
      */
-    public function patch(string $path, callable $handler): self
+    public function patch(string $path, callable $handler, ?RouteAccess $access = null): self
     {
-        return $this->addRoute('PATCH', $path, $handler);
+        return $this->addRoute('PATCH', $path, $handler, $access);
     }
 
     /**
@@ -153,6 +166,16 @@ final class Router
 
         // 4. Fast constant-time lookup for static routes
         if (isset($this->staticRoutes[$method][$normalizedUri])) {
+            if ($this->rbacMiddleware !== null) {
+                $rbacResponse = $this->rbacMiddleware->process(
+                    $request,
+                    $session,
+                    $this->staticRouteAccess[$method][$normalizedUri] ?? null
+                );
+                if ($rbacResponse !== null) {
+                    return $rbacResponse;
+                }
+            }
             return ($this->staticRoutes[$method][$normalizedUri])($request, $session);
         }
 
@@ -160,6 +183,12 @@ final class Router
         if (isset($this->dynamicRoutes[$method])) {
             foreach ($this->dynamicRoutes[$method] as $route) {
                 if (preg_match($route['pattern'], $normalizedUri, $matches) === 1) {
+                    if ($this->rbacMiddleware !== null) {
+                        $rbacResponse = $this->rbacMiddleware->process($request, $session, $route['access']);
+                        if ($rbacResponse !== null) {
+                            return $rbacResponse;
+                        }
+                    }
                     $params = [];
                     foreach ($matches as $key => $val) {
                         if (is_string($key)) {
@@ -194,7 +223,7 @@ final class Router
      * Normalizes a URI or route pattern by stripping query/hash and trailing slashes,
      * ensuring leading slash, while preserving root '/'.
      */
-    private function normalizePath(string $path): string
+    public static function normalizePath(string $path): string
     {
         $path = explode('?', $path, 2)[0];
         $path = explode('#', $path, 2)[0];

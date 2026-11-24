@@ -77,7 +77,7 @@ ICAL;
         };
 
         $service = new InboundChannelSyncService(
-            feedUrls: ['1606' => 'https://example.com/ical/1606.ics'],
+            feedUrls: ['1606' => 'https://example.com/ical/1606.ics?t=secret_token_should_not_persist'],
             cacheDir: $this->tempCacheDir,
             httpTransport: $mockTransport
         );

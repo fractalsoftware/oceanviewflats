@@ -197,7 +197,7 @@ PHP;
     private function callEndpoint(array $params = [], string $prependCode = ''): array
     {
         $phpCode = sprintf(
-            '%s; $_SERVER["REQUEST_METHOD"] = "GET"; $_GET = %s; require %s;',
+            '$_ENV["ICAL_FEED_1606"] = "https://example.test/ical/1606.ics"; $_ENV["ICAL_FEED_1707"] = "https://example.test/ical/1707.ics"; %s; $_SERVER["REQUEST_METHOD"] = "GET"; $_GET = %s; require %s;',
             $prependCode,
             var_export($params, true),
             var_export(dirname(__DIR__, 3) . '/public/api/availability.php', true)

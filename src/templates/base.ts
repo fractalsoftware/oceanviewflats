@@ -65,11 +65,11 @@ export const baseTemplate = ({
 
     <!-- favicons -->
     <link rel="icon" type="image/svg+xml" href="${assetPrefix}favicon.svg?v=20260614">
-    <link rel="icon" type="image/png" href=${assetPrefix}favicon-96x96.png?v=20260614" sizes="96x96" />
-    <link rel="shortcut icon" href=${assetPrefix}favicon.ico?v=20260614" />
-    <link rel="apple-touch-icon" sizes="180x180" href=${assetPrefix}apple-touch-icon.png?v=20260614" />
+    <link rel="icon" type="image/png" href="${assetPrefix}favicon-96x96.png?v=20260614" sizes="96x96" />
+    <link rel="shortcut icon" href="${assetPrefix}favicon.ico?v=20260614" />
+    <link rel="apple-touch-icon" sizes="180x180" href="${assetPrefix}apple-touch-icon.png?v=20260614" />
     <meta name="apple-mobile-web-app-title" content="${description}" />
-    <link rel="manifest" href=${assetPrefix}site.webmanifest?v=20260614" />
+    <link rel="manifest" href="${assetPrefix}site.webmanifest?v=20260614" />
     
     <!-- Open Graph / Social Sharing -->
     <meta property="og:site_name" content="OceanViewFlats">

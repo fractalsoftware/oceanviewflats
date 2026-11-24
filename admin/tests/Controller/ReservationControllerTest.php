@@ -1693,7 +1693,7 @@ final class ReservationControllerTest extends TestCase
                 check_in, check_out, total_price, status, source, registry_completed
             ) VALUES (
                 'res-unregistered-fail', '1606', 'Unregistered Guest', 'unreg@example.com', '+573001112233',
-                '2026-11-10', '2026-11-15', 1000000.00, 'confirmed', 'web', 0
+                '2027-11-10', '2027-11-15', 1000000.00, 'confirmed', 'web', 0
             );
             INSERT INTO condominium_clearances (
                 reservation_uid, property_id, status, error_message, attempts

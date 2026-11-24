@@ -30,11 +30,12 @@ try {
     $runner = SetupRunner::create();
     $result = $runner->handleRequest($_SERVER, $_GET, $_POST);
 } catch (Throwable $e) {
+    error_log('[Admin Setup Error] ' . $e->getMessage());
     $result = [
         'status' => 500,
         'data' => [
             'success' => false,
-            'error' => 'Database or configuration failure: ' . $e->getMessage(),
+            'error' => 'Internal database or configuration failure.',
         ],
     ];
 }
@@ -53,7 +54,7 @@ if ($isJson) {
 
 // Render HTML interface
 header('Content-Type: text/html; charset=utf-8');
-$token = htmlspecialchars((string) ($_GET['token'] ?? $_POST['token'] ?? ''), ENT_QUOTES, 'UTF-8');
+$token = htmlspecialchars((string) ($_SERVER['HTTP_X_SETUP_TOKEN'] ?? $_POST['token'] ?? ''), ENT_QUOTES, 'UTF-8');
 $status = $result['status'];
 $data = $result['data'];
 $isSuccess = $status === 200 && ($data['success'] ?? false);
@@ -248,11 +249,7 @@ $createdUser = $data['user'] ?? null;
         <strong>Access Denied (403):</strong> <?= htmlspecialchars($errorMessage ?? 'Unauthorized', ENT_QUOTES, 'UTF-8') ?>
       </div>
       <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
-        To access this utility, append your pre-shared secret token in the URL:
-        <br>
-        <code>https://admin.oceanviewflats.com/setup.php?token=YOUR_SECRET_TOKEN</code>
-        <br><br>
-        Acceptable tokens include your <code>OVF_SETUP_TOKEN</code>, <code>OVF_ADMIN_SESSION_SECRET</code>, or <code>DB_PASS</code>.
+        Authenticate using the <code>X-Setup-Token</code> HTTP header or a POST body parameter with your dedicated <code>OVF_SETUP_TOKEN</code> (or <code>OVF_ADMIN_SESSION_SECRET</code>) over HTTPS. Query-string tokens and database passwords are not accepted.
       </p>
 
     <?php else: ?>
@@ -283,7 +280,7 @@ $createdUser = $data['user'] ?? null;
             Verifies and creates all required tables (reservations, idempotency, audit logs, admin users, calendar blocks, and rates).
           </p>
 
-          <form method="POST" action="setup.php?token=<?= $token ?>">
+          <form method="POST" action="setup.php">
             <input type="hidden" name="action" value="migrate">
             <input type="hidden" name="token" value="<?= $token ?>">
             <button type="submit" class="btn btn-secondary">Run Database Migrations</button>
@@ -308,7 +305,7 @@ $createdUser = $data['user'] ?? null;
             Create the primary administrator account. Once created, setup will be permanently locked against further execution.
           </p>
 
-          <form method="POST" action="setup.php?token=<?= $token ?>">
+          <form method="POST" action="setup.php">
             <input type="hidden" name="action" value="create_admin">
             <input type="hidden" name="token" value="<?= $token ?>">
 

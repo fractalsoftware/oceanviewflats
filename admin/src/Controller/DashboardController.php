@@ -239,7 +239,7 @@ final class DashboardController
             'id' => $session['admin_user_id'] ?? null,
             'name' => $session['admin_user_name'] ?? 'Admin',
             'email' => $session['admin_user_email'] ?? '',
-            'role' => $session['admin_user_role'] ?? 'admin',
+            'role' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
         ];
 
         $csrfToken = (string) ($session['csrf_token'] ?? '');

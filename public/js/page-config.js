@@ -2,11 +2,11 @@
 	var cachedConfig = null;
 
 	function getPageConfig() {
+		var el;
 		if (!cachedConfig) {
 			try {
-				var el = document.getElementById("ovf-page-config");
-				cachedConfig =
-					el && el.textContent ? JSON.parse(el.textContent) : {};
+				el = document.getElementById("ovf-page-config");
+				cachedConfig = el && el.textContent ? JSON.parse(el.textContent) : {};
 			} catch (e) {
 				console.error("Failed to parse ovf-page-config", e);
 				cachedConfig = {};

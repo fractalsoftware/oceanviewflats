@@ -29,28 +29,28 @@ Rather than nesting the administrative application inside `public_html/admin` (P
 ├── admin/
 │   ├── public/                  <-- DocumentRoot for admin.oceanviewflats.com (Pattern A)
 │   │   ├── index.php            <-- Administrative Front-Controller
-│   │   ├── setup.php            <-- One-Time Bootstrap Utility (auto-locks once admin exists)
-│   │   └── .htaccess            <-- Rewrite & Security Headers
+│   │   └── .htaccess            <-- Rewrite & Security Headers (setup.php excluded from routine deploys)
 │   └── src/                     <-- Protected Admin Controllers, Repositories, & HTMX Views (Views/)
 ├── src/
 │   ├── Domain/                  <-- Shared Domain Models (Quote, Reservation, Finance, Privacy, Fulfillment)
 │   └── Infrastructure/          <-- Hexagonal Infrastructure Adapters (Persistence, Events, Refunds)
 ├── vendor/                      <-- Production Composer Autoloader & Dependencies
-└── scripts/                     <-- CLI Utilities (migrate.php, create-admin-user.php, sync-channels.php, redact-expired-pii.php)
+└── scripts/                     <-- CLI Utilities (migrate.php, create-admin-user.php, sync-channels.php, redact-expired-pii.php, reencrypt-guest-registries.php)
 ```
 
 ### 2. Dual-Pipeline CI/CD Deployment Architecture
-Deployments are strictly segregated across two independent GitHub Actions workflows:
+Deployments are strictly segregated across two independent GitHub Actions workflows, both gated via reusable `workflow_call` CI/Security prerequisite jobs on `main` (with `workflow_dispatch` for controlled manual deploys):
 
 1. **Public Static Site Pipeline (`.github/workflows/deploy.yml`)**:
-   - Compiles React components and Tailwind CSS into static assets (`dist/`).
-   - Injects public environment secrets (`RECIPIENT_EMAIL`, `CAPTCHA_SECRET`, `APP_ENCRYPTION_KEY`, `DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`) into `public/.htaccess`.
+   - Invokes reusable `.github/workflows/ci.yml` (`needs: [ci]`) and deploys only after backend, frontend, and security gates succeed.
+   - Compiles React components and Tailwind CSS into static assets (`dist/`) and strips non-public `api/openapi.{json,yaml}` and `api/docs/`.
+   - Injects public environment secrets (`RECIPIENT_EMAIL`, `CAPTCHA_SECRET`, `APP_ENCRYPTION_KEY`, `ICAL_UID_SECRET`, `ICAL_FEED_*`, `DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`) safely into `public/.htaccess`.
    - Transfers `./dist/.` to `/home/<user>/public_html/` via SFTP on port 2223.
 2. **Admin & Backend Pipeline (`.github/workflows/admin-deploy.yml`)**:
-   - Triggers on changes to `admin/**`, `src/Domain/**`, `src/Infrastructure/**`, `scripts/**`, `composer.json`, or `composer.lock`.
+   - Triggers on `push` to `main` for changes under `admin/**`, `src/Domain/**`, `src/Infrastructure/**`, `scripts/**`, `composer.json`, or `composer.lock` (plus `workflow_dispatch`), and invokes reusable `.github/workflows/admin-ci.yml` (`needs: [admin-ci]`) before staging/deploying.
    - Installs production Composer dependencies (`composer install --no-dev --prefer-dist --optimize-autoloader`).
-   - Injects production secrets (`DB_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`, `APP_ENCRYPTION_KEY`, `OVF_ADMIN_SESSION_SECRET`) into `admin/public/.htaccess`.
-   - Stages a clean payload containing `admin/`, `src/Domain/`, `src/Infrastructure/`, `vendor/`, and `scripts/` (omitting test files and dev configurations).
+   - Injects production secrets (`DB_*`, `APP_ENCRYPTION_KEY`, `ICAL_FEED_*`, `MERCADOPAGO_*`, `PROPERTY_*`, `HUESPED_MANAGER_*`, `OVF_ADMIN_SESSION_SECRET`) safely into `admin/public/.htaccess`.
+   - Stages a clean payload containing `admin/`, `src/Domain/`, `src/Infrastructure/`, `vendor/`, and `scripts/` (explicitly excluding test suites, dev configs, and `admin/public/setup.php`).
    - Transfers the payload to `/home/<user>/` via SFTP on port 2223.
 
 ### 3. Shared Runtime Autoloading, Path Resilience, and Environment Discovery
@@ -60,12 +60,13 @@ Deployments are strictly segregated across two independent GitHub Actions workfl
 
 ### 4. Administrative Security, Setup Gating, and Session Perimeter
 * **Authentication**: Password hashes are generated via `PASSWORD_ARGON2ID` with hardened memory and iteration parameters.
-* **Session Cookies**: Native PHP sessions are hardened via `SessionMiddleware` (`Secure`, `HttpOnly`, `SameSite=Lax`, name: `ovf_admin_session`) and restricted to the `admin.oceanviewflats.com` subdomain.
+* **Session Cookies & CSRF Logout**: Native PHP sessions are hardened via `SessionMiddleware` (`Secure`, `HttpOnly`, `SameSite=Strict`, `session.use_strict_mode=1`, `session.use_only_cookies=1`, name: `OVF_ADMIN_SESSID`), restricted to the `admin.oceanviewflats.com` host, and terminated exclusively via CSRF-protected `POST /logout`.
+* **Fail-Closed RBAC**: `RbacMiddleware` enforces declarative `RouteAccess` tiers (`PUBLIC`, `AUTHENTICATED`, `MANAGER`, `PRIVILEGED`) using the canonical `AdminRole` enum, defaulting missing/unknown roles to read-only `viewer`.
 * **Brute-Force Defense**: Automated lockout after 5 consecutive failed login attempts tracked in `admin_users.failed_login_attempts` and `admin_users.locked_until`.
 * **Immutable Audit Logging**: All mutations (reservation edits, cancellations, calendar holds, door code overrides) are recorded in `admin_audit_logs`.
 * **Dual-Method Initial Bootstrap with Permanent Lockout**:
   - **CLI / Cron Provisioner**: `scripts/create-admin-user.php` and `scripts/migrate.php` allow zero-web execution.
-  - **Secure Web Setup Utility**: `admin/public/setup.php` allows zero-SSH bootstrapping for restricted cPanel environments, protected by pre-shared token authorization (`OVF_SETUP_TOKEN`, `OVF_ADMIN_SESSION_SECRET`, or `DB_PASS`) and permanent auto-lockout (returns HTTP 403 once an administrator user exists).
+  - **One-Time Web Setup Utility**: `admin/public/setup.php` is excluded from routine production deployments and, when explicitly uploaded for zero-SSH bootstrap, requires native HTTPS in production and a dedicated `X-Setup-Token` header or POST body matching `OVF_SETUP_TOKEN` (or `OVF_ADMIN_SESSION_SECRET` — never `DB_PASS` and never URL query parameters), with permanent auto-lockout (HTTP 403 once any administrator user exists).
 
 ### 5. Client-Side Async Feedback & HTMX Request Lifecycle (Dual-Layer Loading Bar & Mutation Locking)
 

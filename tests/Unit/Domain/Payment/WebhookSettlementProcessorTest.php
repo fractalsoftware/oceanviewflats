@@ -567,7 +567,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertFalse($result->success);
         $this->assertSame(WebhookSettlementResult::STATUS_GATEWAY_ERROR, $result->status);
         $this->assertSame(504, $result->httpStatusCode);
-        $this->assertSame('Upstream cURL timeout', $result->message);
+        $this->assertSame('Payment gateway communication error.', $result->message);
         $this->assertSame('network_timeout', $result->data['error_type'] ?? null);
     }
 
@@ -709,11 +709,80 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertFalse($result->success);
         $this->assertSame(WebhookSettlementResult::STATUS_DATABASE_ERROR, $result->status);
         $this->assertSame(500, $result->httpStatusCode);
-        $this->assertStringContainsString('Simulated fatal DB update failure', (string) $result->message);
+        // Must return generic error message without leaking raw SQLite/PDO exception details
+        $this->assertSame('Failed to confirm reservation.', (string) $result->message);
+        $this->assertStringNotContainsString('Simulated fatal DB update failure', (string) $result->message);
         $this->assertFalse($this->pdo->inTransaction());
 
         // Verify fulfillment was not called
         $this->assertSame(0, $this->fulfillmentSpy->calls);
+    }
+
+    public function testApprovedPaymentRejectsUnderpaymentOrWrongCurrency(): void
+    {
+        $this->pdo->exec("
+            INSERT INTO reservations (reservation_uid, property_id, guest_name, guest_email, guest_phone, check_in, check_out, total_price, status, payment_status)
+            VALUES ('ovf-underpay', '1606', 'Underpay Guest', 'under@example.com', '+573001112233', '2026-12-20', '2026-12-25', 1500000.00, 'pending_payment', 'pending');
+        ");
+
+        $this->gateway->stagePayment(PaymentDetails::fromArray([
+            'id' => 'pay-underpay',
+            'status' => 'approved',
+            'status_detail' => 'accredited',
+            'external_reference' => 'ovf-underpay',
+            'transaction_amount' => 100.00,
+            'currency_id' => 'COP',
+            'payment_method_id' => 'visa',
+        ]));
+
+        $resUnderpay = $this->processor->settlePayment('pay-underpay');
+        $this->assertFalse($resUnderpay->success);
+        $this->assertSame(422, $resUnderpay->httpStatusCode);
+        $this->assertStringContainsString('does not cover reservation quote', (string) $resUnderpay->message);
+
+        $this->gateway->stagePayment(PaymentDetails::fromArray([
+            'id' => 'pay-wrong-ccy',
+            'status' => 'approved',
+            'status_detail' => 'accredited',
+            'external_reference' => 'ovf-underpay',
+            'transaction_amount' => 1500000.00,
+            'currency_id' => 'ARS',
+            'payment_method_id' => 'visa',
+        ]));
+
+        $resWrongCcy = $this->processor->settlePayment('pay-wrong-ccy');
+        $this->assertFalse($resWrongCcy->success);
+        $this->assertSame(422, $resWrongCcy->httpStatusCode);
+        $this->assertStringContainsString('settlement currency (COP)', (string) $resWrongCcy->message);
+
+        // Missing currency_id must fail closed
+        $this->gateway->stagePayment(PaymentDetails::fromArray([
+            'id' => 'pay-missing-ccy',
+            'status' => 'approved',
+            'status_detail' => 'accredited',
+            'external_reference' => 'ovf-underpay',
+            'transaction_amount' => 1500000.00,
+            'payment_method_id' => 'visa',
+        ]));
+        $resMissingCcy = $this->processor->settlePayment('pay-missing-ccy');
+        $this->assertFalse($resMissingCcy->success);
+        $this->assertSame(422, $resMissingCcy->httpStatusCode);
+        $this->assertStringContainsString('settlement currency (COP)', (string) $resMissingCcy->message);
+
+        // Zero transaction_amount must fail closed
+        $this->gateway->stagePayment(PaymentDetails::fromArray([
+            'id' => 'pay-zero-amt',
+            'status' => 'approved',
+            'status_detail' => 'accredited',
+            'external_reference' => 'ovf-underpay',
+            'transaction_amount' => 0.0,
+            'currency_id' => 'COP',
+            'payment_method_id' => 'visa',
+        ]));
+        $resZeroAmt = $this->processor->settlePayment('pay-zero-amt');
+        $this->assertFalse($resZeroAmt->success);
+        $this->assertSame(422, $resZeroAmt->httpStatusCode);
+        $this->assertStringContainsString('does not cover reservation quote', (string) $resZeroAmt->message);
     }
 
     /**

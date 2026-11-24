@@ -27,23 +27,24 @@ Options -Indexes
     </IfModule>
 </FilesMatch>
 
-# 4. Explicitly allow public OpenAPI specification files
+# 4. Deny public production access to OpenAPI specifications (validated in Git/CI only)
 <FilesMatch "^openapi\.(json|yaml)$">
     <IfModule mod_authz_core.c>
-        Require all granted
+        Require all denied
     </IfModule>
     <IfModule !mod_authz_core.c>
-        Order Allow,Deny
-        Allow from all
+        Order Deny,Allow
+        Deny from all
     </IfModule>
 </FilesMatch>
 
-# 4. Enforce basic frame protection and mime sniffing headers via Apache (if mod_headers is active)
+# 5. Enforce HTTP security headers via Apache (if mod_headers is active)
 <IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
     Header set X-Frame-Options "DENY"
     Header set X-Content-Type-Options "nosniff"
-    Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self)"
 </IfModule>
 
 # 5. Mitigate PHP Request Startup & Stale State Vulnerabilities (CVE-2026-109618 & CVE-2026-109619)

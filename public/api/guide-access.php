@@ -25,10 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Rate limiting (60 requests per 10 minutes per IP)
+// Rate limiting (20 requests per 10 minutes per IP to resist UID brute-force probing)
 enforce_rate_limit(
     'ovf_guide_access_rate_limits.json',
-    60,
+    20,
     600,
     'Too many requests. Please wait a few moments and try again.'
 );

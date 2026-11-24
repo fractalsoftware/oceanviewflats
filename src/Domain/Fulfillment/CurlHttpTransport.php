@@ -46,7 +46,7 @@ final class CurlHttpTransport implements HttpTransportInterface
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $followRedirects);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        \OceanViewFlats\Domain\Support\CurlSecurityOptions::apply($ch, $url, includeRedirects: true);
 
         // Prepare post payload
         if (is_array($data)) {

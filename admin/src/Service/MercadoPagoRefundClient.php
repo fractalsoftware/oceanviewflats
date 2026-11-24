@@ -60,15 +60,15 @@ final class MercadoPagoRefundClient implements MercadoPagoRefundClientInterface
             throw new MercadoPagoRefundException('Failed to initialize cURL session', 500, 'curl_init_failed');
         }
 
-        curl_setopt_array($ch, [
+        $curlOptions = [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $jsonPayload,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => $this->timeoutSeconds,
             CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_SSL_VERIFYPEER => true,
-        ]);
+        ] + \OceanViewFlats\Domain\Support\CurlSecurityOptions::build($url);
+        curl_setopt_array($ch, $curlOptions);
 
         /** @var string|false $responseBody */
         $responseBody = curl_exec($ch);

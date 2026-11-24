@@ -28,8 +28,8 @@ use Throwable;
 final class HuespedManagerClearanceSync implements CondominiumClearanceSyncInterface
 {
     public const DEFAULT_BASE_URL = 'https://salguerosunset.huespedmanager.com.co';
-    public const DEFAULT_1707_CHECK = 'ep92449222';
-    public const DEFAULT_1606_CHECK = 'ep24281580';
+    public const DEFAULT_1707_CHECK = '';
+    public const DEFAULT_1606_CHECK = '';
 
     private readonly string $baseUrl;
     private readonly string $token1707;

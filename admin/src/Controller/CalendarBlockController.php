@@ -398,7 +398,7 @@ final class CalendarBlockController
             'id' => $session['admin_user_id'] ?? null,
             'name' => $session['admin_user_name'] ?? 'Admin',
             'email' => $session['admin_email'] ?? 'admin@oceanviewflats.com',
-            'role' => $session['admin_role'] ?? 'admin',
+            'role' => \OceanViewFlats\Admin\Auth\AdminRole::fromSession($session)->value,
         ];
     }
 }

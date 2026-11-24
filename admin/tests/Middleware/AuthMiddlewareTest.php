@@ -51,7 +51,7 @@ final class AuthMiddlewareTest extends TestCase
     public function testAllowsWhitelistedLogoutRoute(): void
     {
         $session = [];
-        $request = new Request('GET', '/logout');
+        $request = new Request('POST', '/logout');
 
         $response = $this->middleware->process($request, $session);
 

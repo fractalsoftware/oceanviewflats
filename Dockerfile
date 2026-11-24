@@ -69,14 +69,18 @@ RUN mkdir -p /var/www/ovf/public_html \
     && ln -sfn /var/www/ovf/public_html/cache /var/www/ovf/public/cache \
     && chown -R www-data:www-data /var/www/ovf/public_html/cache
 
-# Configure Apache VirtualHosts (Port 80 -> Public Portal, Port 8081 / admin.localhost -> Admin Console)
+# Configure Apache VirtualHosts (Unprivileged Ports 8080 -> Public Portal, 8081 -> Admin Console)
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf \
+    && chown -R www-data:www-data /var/www/ovf/public_html /var/www/ovf/public /var/run/apache2 /var/log/apache2 /var/lock/apache2
 
 # Configure entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 80 8081
+USER www-data
+
+EXPOSE 8080 8081
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

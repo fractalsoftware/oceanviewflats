@@ -29,6 +29,8 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
     {
         parent::setUp();
 
+        $_ENV['APP_ENCRYPTION_KEY'] = 'test-e2e-encryption-key-32bytes!';
+
         $this->dbPath = sys_get_temp_dir() . '/test_airbnb_lifecycle_' . bin2hex(random_bytes(6)) . '.sqlite';
         $this->pdo = new PDO('sqlite:' . $this->dbPath);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -41,6 +43,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
 
     protected function tearDown(): void
     {
+        unset($_ENV['APP_ENCRYPTION_KEY']);
         parent::tearDown();
 
         $this->cleanRateLimitFiles();
@@ -161,8 +164,8 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
         $guestName = 'Jane Doe';
         $confirmationCode = 'HM48291038';
         $channelBlockUid = 'ical-block-airbnb-4829';
-        $checkIn = '2026-11-20';
-        $checkOut = '2026-11-25';
+        $checkIn = '2027-11-20';
+        $checkOut = '2027-11-25';
 
         $this->seedAirbnbReservation([
             'uid' => $reservationUid,
@@ -418,7 +421,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
                 total_price, status, source, created_at
             ) VALUES (
                 'res-web-direct-100', '{$propertyId}', 'Direct Guest', 'direct@example.com',
-                '2026-11-10', '2026-11-15', 2500000.0, 'confirmed', 'web', datetime('now')
+                '2027-11-10', '2027-11-15', 2500000.0, 'confirmed', 'web', datetime('now')
             );
 
             INSERT INTO reservations (
@@ -426,14 +429,16 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
                 total_price, status, source, external_confirmation_code, created_at
             ) VALUES (
                 'res-abnb-export-test', '{$propertyId}', 'Airbnb Guest', 'airbnb@example.com',
-                '2026-11-16', '2026-11-20', 0.0, 'confirmed', 'airbnb', 'HMEXPORT99', datetime('now')
+                '2027-11-16', '2027-11-20', 0.0, 'confirmed', 'airbnb', 'HMEXPORT99', datetime('now')
             );
         ");
 
         $icalRes = $this->callEndpoint('ical.php', ['property' => $propertyId]);
         $this->assertSame(0, $icalRes['exitCode'], $icalRes['stderr']);
         $this->assertStringContainsString('BEGIN:VCALENDAR', $icalRes['stdout']);
-        $this->assertStringContainsString('res-web-direct-100', $icalRes['stdout']);
+        // ADR 0014: Opaque HMAC-derived UID is emitted instead of raw reservation_uid
+        $this->assertMatchesRegularExpression('/UID:ovf-evt-[a-f0-9]{32}@oceanviewflats\.com/', $icalRes['stdout']);
+        $this->assertStringNotContainsString('res-web-direct-100', $icalRes['stdout']);
         $this->assertStringNotContainsString('res-abnb-export-test', $icalRes['stdout']);
     }
 
@@ -509,7 +514,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
         $autoloadPath = var_export(dirname(__DIR__, 2) . '/vendor/autoload.php', true);
 
         return sprintf(
-            'require_once %s; $pdo = new PDO("sqlite:%s"); $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); $GLOBALS["TEST_PDO"] = $pdo; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_e2e_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            '$_ENV["APP_ENV"] = "testing"; $_ENV["APP_ENCRYPTION_KEY"] = "test-e2e-encryption-key-32bytes!"; $_ENV["ICAL_UID_SECRET"] = "test-e2e-ical-uid-secret"; $_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; $_ENV["PROPERTY_1606_DOOR_CODE"] = "0111606#"; $_ENV["PROPERTY_1606_WIFI_PASSWORD"] = "TestWifi1606!"; $_ENV["PROPERTY_1707_DOOR_CODE"] = "0111707#"; $_ENV["PROPERTY_1707_WIFI_PASSWORD"] = "TestWifi1707!"; require_once %s; $pdo = new PDO("sqlite:%s"); $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); $GLOBALS["TEST_PDO"] = $pdo; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_e2e_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
             $autoloadPath,
             addslashes($this->dbPath)
         );

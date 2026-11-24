@@ -118,17 +118,10 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             }
         }
 
-        // 2. Resolve reservation (if available) to determine effective max_guests capacity
+        // 2. Resolve reservation strictly by authoritative reservation_uid (ADR 0014: no public date-only fallback)
         $reservation = null;
         if ($submission->reservationCode !== '') {
             $reservation = $this->reservationRepository->findByUid($submission->reservationCode);
-        }
-        if ($reservation === null && $submission->propertyId !== '' && $submission->checkIn !== '' && $submission->checkOut !== '') {
-            $reservation = $this->reservationRepository->findByPropertyAndDates(
-                $submission->propertyId,
-                $submission->checkIn,
-                $submission->checkOut
-            );
         }
 
         $maxGuests = $reservation !== null
@@ -282,7 +275,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return RegistryFulfillmentResult::systemError('Database transaction failed: ' . $e->getMessage());
+            error_log('[Guest Registry Transaction Failure] ' . $e->getMessage());
+            return RegistryFulfillmentResult::systemError('Database transaction failed. Please try again later.');
         }
 
         // 7. Side effects (after commit, catching exceptions)
@@ -431,7 +425,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return RegistryFulfillmentResult::systemError('Database transaction failed: ' . $e->getMessage());
+            error_log('[Guest Registry Transaction Failure] ' . $e->getMessage());
+            return RegistryFulfillmentResult::systemError('Database transaction failed. Please try again later.');
         }
 
         // Condominium clearance synchronization (out-of-band side effect, ADR 0008, Ticket #156)
@@ -509,7 +504,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return DoorCodeResult::failure('Failed to update door PIN: ' . $e->getMessage());
+            error_log('[Door PIN Override Error] ' . $e->getMessage());
+            return DoorCodeResult::failure('Failed to update door PIN.');
         }
     }
 
@@ -559,7 +555,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return DoorCodeResult::failure('Failed to regenerate door PIN: ' . $e->getMessage());
+            error_log('[Door PIN Regenerate Error] ' . $e->getMessage());
+            return DoorCodeResult::failure('Failed to regenerate door PIN.');
         }
     }
 

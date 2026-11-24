@@ -543,7 +543,7 @@ class WebhookEndpoints
         path: '/mercadopago-webhook.php',
         operationId: 'handleMercadoPagoWebhook',
         summary: 'Mercado Pago asynchronous IPN & Webhook receiver',
-        description: 'Receives real-time payment status updates from Mercado Pago, verifies payment status server-to-server, updates database reservation and refund records with Resurrection Defense, and dispatches localized guest confirmation or cancellation emails.',
+        description: 'Receives real-time payment status updates from Mercado Pago, validates HMAC-SHA256 signatures within a strict +/-5 minute timestamp replay window, verifies settled COP currency and transaction amount server-to-server, updates database reservation and refund records with Resurrection Defense, and dispatches localized guest confirmation or cancellation emails.',
         tags: ['Webhooks'],
         parameters: [
             new OA\Parameter(
@@ -635,8 +635,9 @@ class RegistryEndpoints
             content: new OA\MediaType(
                 mediaType: 'application/x-www-form-urlencoded',
                 schema: new OA\Schema(
-                    required: ['property', 'check_in', 'check_out', 'guests', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
+                    required: ['reservation_code', 'property', 'check_in', 'check_out', 'guests', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
                     properties: [
+                        new OA\Property(property: 'reservation_code', type: 'string', example: 'ovf_20260910_a1b2c3', description: 'Authoritative reservation_uid required for public Guest Registry submission (ADR 0014)'),
                         new OA\Property(property: 'property', type: 'string', enum: ['1606', '1707'], example: '1606'),
                         new OA\Property(property: 'check_in', type: 'string', format: 'date', example: '2026-09-10'),
                         new OA\Property(property: 'check_out', type: 'string', format: 'date', example: '2026-09-15'),
@@ -704,7 +705,7 @@ class ICalEndpoints
                     mediaType: 'text/calendar',
                     schema: new OA\Schema(
                         type: 'string',
-                        example: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//OceanViewFlats//Direct Booking Sync//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:RES-1606-1234@oceanviewflats.com\r\nDTSTART;VALUE=DATE:20260910\r\nDTEND;VALUE=DATE:20260915\r\nSUMMARY:Blocked - OceanViewFlats Direct Booking\r\nEND:VEVENT\r\nEND:VCALENDAR"
+                        example: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//OceanViewFlats//Direct Booking Sync//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:ovf-evt-9f86d081884c7d659a2feaa0c55ad015@oceanviewflats.com\r\nDTSTART;VALUE=DATE:20260910\r\nDTEND;VALUE=DATE:20260915\r\nSUMMARY:Blocked - OceanViewFlats Direct Booking\r\nEND:VEVENT\r\nEND:VCALENDAR"
                     )
                 )
             ),

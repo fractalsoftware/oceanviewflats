@@ -5,7 +5,43 @@
 ErrorDocument 404 /404.html
 
 # =============================================================================
-# Security Hardening (CVE-2026-109618 & CVE-2026-109619 Mitigations)
+# Security Hardening & Directory Protection
+# =============================================================================
+
+# 0. Disable directory listing and deny access to dotfiles / sensitive operational files
+Options -Indexes
+
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "\.(sql|bak|log|env|lock|ini|sh)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# HTTP Security Headers (safe initial HSTS without preload)
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self)"
+</IfModule>
+
+# =============================================================================
+# Request Hardening (CVE-2026-109618 & CVE-2026-109619 Mitigations)
 # =============================================================================
 
 # 1. Cap HTTP request body size at Apache layer (64 KB max)

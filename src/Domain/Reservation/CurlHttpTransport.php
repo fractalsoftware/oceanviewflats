@@ -47,7 +47,7 @@ final class CurlHttpTransport implements HttpTransportInterface
         curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        \OceanViewFlats\Domain\Support\CurlSecurityOptions::apply($ch, $url, includeRedirects: true);
 
         $body = curl_exec($ch);
         $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);

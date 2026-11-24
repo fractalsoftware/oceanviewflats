@@ -29,20 +29,14 @@ final class ConfigPropertyCredentialsProvider implements PropertyCredentialsProv
 
         $conf = $this->config[$cleanId] ?? $this->config[$propertyId] ?? [];
 
-        $doorCode = $envDoorCode ?: ($conf['door_code'] ?? null);
-        $wifiSsid = $envWifiSsid ?: ($conf['wifi_ssid'] ?? null);
-        $wifiPassword = $envWifiPassword ?: ($conf['wifi_password'] ?? null);
-        $parkingSpot = $envParkingSpot ?: ($conf['parking_spot'] ?? null);
+        $doorCode = self::resolveNonEmpty($envDoorCode, $conf['door_code'] ?? null);
+        $wifiSsid = self::resolveNonEmpty($envWifiSsid, $conf['wifi_ssid'] ?? null);
+        $wifiPassword = self::resolveNonEmpty($envWifiPassword, $conf['wifi_password'] ?? null);
+        $parkingSpot = self::resolveNonEmpty($envParkingSpot, $conf['parking_spot'] ?? null);
 
-        // Authoritative defaults for known properties 1606 and 1707
-        if ($doorCode === null && $cleanId !== '') {
-            $doorCode = "{$cleanId}#";
-        }
-        if ($wifiSsid === null && $cleanId !== '') {
+        // Non-secret property metadata defaults (never embed live door codes or Wi-Fi passwords in source code)
+        if ($wifiSsid === null && ($cleanId === '1606' || $cleanId === '1707')) {
             $wifiSsid = "APTO{$cleanId}";
-        }
-        if ($wifiPassword === null && $cleanId !== '') {
-            $wifiPassword = "Invitado@{$cleanId}@HN";
         }
         if ($parkingSpot === null && $cleanId === '1606') {
             $parkingSpot = '87';
@@ -61,5 +55,16 @@ final class ConfigPropertyCredentialsProvider implements PropertyCredentialsProv
             wifiPassword: $wifiPassword,
             parkingSpot: $parkingSpot
         );
+    }
+
+    private static function resolveNonEmpty(mixed $primary, mixed $fallback): ?string
+    {
+        if ($primary !== null && trim((string) $primary) !== '') {
+            return (string) $primary;
+        }
+        if ($fallback !== null && trim((string) $fallback) !== '') {
+            return (string) $fallback;
+        }
+        return null;
     }
 }

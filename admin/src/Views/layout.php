@@ -95,7 +95,7 @@
                     <a href="/calendar-blocks" class="px-3 py-2 rounded-md text-sm font-medium <?= ($currentRoute ?? '') === '/calendar-blocks' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
                         Calendar Blocks
                     </a>
-                    <?php if (in_array($currentUser['role'] ?? '', ['admin', 'superadmin'], true)): ?>
+                    <?php if (\OceanViewFlats\Admin\Auth\AdminRole::tryFrom((string) ($currentUser['role'] ?? ''))?->isPrivileged() === true): ?>
                     <a href="/financial-report" class="px-3 py-2 rounded-md text-sm font-medium <?= ($currentRoute ?? '') === '/financial-report' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
                         Financial Report
                     </a>
@@ -109,11 +109,14 @@
                 <div class="flex items-center space-x-2 text-sm text-gray-700">
                     <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
                     <span class="font-medium"><?= htmlspecialchars((string) ($currentUser['name'] ?? 'Admin'), ENT_QUOTES, 'UTF-8') ?></span>
-                    <span class="text-xs text-gray-500">(<?= htmlspecialchars((string) ($currentUser['role'] ?? 'admin'), ENT_QUOTES, 'UTF-8') ?>)</span>
+                    <span class="text-xs text-gray-500">(<?= htmlspecialchars((string) ($currentUser['role'] ?? 'viewer'), ENT_QUOTES, 'UTF-8') ?>)</span>
                 </div>
-                <a href="/logout" class="text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-md hover:bg-red-50 border border-transparent transition">
-                    Sign Out
-                </a>
+                <form method="POST" action="/logout" class="inline">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($effectiveCsrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                    <button type="submit" class="text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-md hover:bg-red-50 border border-transparent transition cursor-pointer">
+                        Sign Out
+                    </button>
+                </form>
             </div>
             <div class="flex items-center md:hidden">
                 <button type="button"
@@ -146,7 +149,7 @@
             <a href="/calendar-blocks" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/calendar-blocks' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
                 Calendar Blocks
             </a>
-            <?php if (in_array($currentUser['role'] ?? '', ['admin', 'superadmin'], true)): ?>
+            <?php if (\OceanViewFlats\Admin\Auth\AdminRole::tryFrom((string) ($currentUser['role'] ?? ''))?->isPrivileged() === true): ?>
             <a href="/financial-report" class="block px-3 py-2 rounded-md text-base font-medium <?= ($currentRoute ?? '') === '/financial-report' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' ?>">
                 Financial Report
             </a>
@@ -159,11 +162,14 @@
             <div class="flex items-center space-x-2 text-sm text-gray-700">
                 <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
                 <span class="font-medium"><?= htmlspecialchars((string) ($currentUser['name'] ?? 'Admin'), ENT_QUOTES, 'UTF-8') ?></span>
-                <span class="text-xs text-gray-500">(<?= htmlspecialchars((string) ($currentUser['role'] ?? 'admin'), ENT_QUOTES, 'UTF-8') ?>)</span>
+                <span class="text-xs text-gray-500">(<?= htmlspecialchars((string) ($currentUser['role'] ?? 'viewer'), ENT_QUOTES, 'UTF-8') ?>)</span>
             </div>
-            <a href="/logout" class="text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-md hover:bg-red-50 border border-transparent transition">
-                Sign Out
-            </a>
+            <form method="POST" action="/logout" class="inline">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($effectiveCsrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                <button type="submit" class="text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-md hover:bg-red-50 border border-transparent transition cursor-pointer">
+                    Sign Out
+                </button>
+            </form>
         </div>
     </div>
 </header>

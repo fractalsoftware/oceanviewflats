@@ -73,7 +73,9 @@ PHP;
 
         $this->assertSame(0, $res['exitCode'], $res['stderr']);
         $this->assertStringContainsString('BEGIN:VCALENDAR', $res['stdout']);
-        $this->assertStringContainsString('UID:ovf_test_uid@oceanviewflats.com', $res['stdout']);
+        // ADR 0014: Opaque HMAC-derived UID is emitted instead of raw reservation_uid
+        $this->assertMatchesRegularExpression('/UID:ovf-evt-[a-f0-9]{32}@oceanviewflats\.com/', $res['stdout']);
+        $this->assertStringNotContainsString('ovf_test_uid', $res['stdout']);
         $this->assertStringContainsString('DTSTART;VALUE=DATE:20260801', $res['stdout']);
         $this->assertStringContainsString('DTEND;VALUE=DATE:20260805', $res['stdout']);
         $this->assertStringContainsString('SUMMARY:Blocked - OceanViewFlats Direct Booking', $res['stdout']);
@@ -252,8 +254,9 @@ PHP;
         $this->assertSame(0, $res['exitCode'], $res['stderr']);
         $this->assertStringContainsString('BEGIN:VCALENDAR', $res['stdout']);
 
-        // Direct booking is present
-        $this->assertStringContainsString('UID:res-direct-101@oceanviewflats.com', $res['stdout']);
+        // Direct Reservation is present with opaque HMAC-derived UID (ADR 0014: never expose raw reservation_uid)
+        $this->assertMatchesRegularExpression('/UID:ovf-evt-[a-f0-9]{32}@oceanviewflats\.com/', $res['stdout']);
+        $this->assertStringNotContainsString('res-direct-101', $res['stdout']);
         $this->assertStringContainsString('SUMMARY:Blocked - OceanViewFlats Direct Booking', $res['stdout']);
 
         // External Airbnb reservation is filtered out (ADR 0007 echo prevention)
@@ -273,7 +276,7 @@ PHP;
     private function callEndpoint(array $params = [], string $prependCode = ''): array
     {
         $phpCode = sprintf(
-            '%s; $_SERVER["REQUEST_METHOD"] = "GET"; $_GET = %s; require %s;',
+            '$_ENV["ICAL_UID_SECRET"] = "test_ical_hmac_secret"; %s; $_SERVER["REQUEST_METHOD"] = "GET"; $_GET = %s; require %s;',
             $prependCode,
             var_export($params, true),
             var_export(dirname(__DIR__, 3) . '/public/api/ical.php', true)

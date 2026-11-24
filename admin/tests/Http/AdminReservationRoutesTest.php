@@ -723,20 +723,20 @@ final class AdminReservationRoutesTest extends TestCase
             ) VALUES
             (
                 'res-edit-stay', '1606', 'Stay Mover', 'mover@test.com', '+573001112233',
-                '2026-11-10', '2026-11-14', 1250000.00, 'confirmed', 'web', 1
+                '2027-11-10', '2027-11-14', 1250000.00, 'confirmed', 'web', 1
             ),
             (
                 'res-other-conflict', '1606', 'Blocking Neighbor', 'neighbor@test.com', '+573004445566',
-                '2026-11-16', '2026-11-20', 1500000.00, 'confirmed', 'web', 0
+                '2027-11-16', '2027-11-20', 1500000.00, 'confirmed', 'web', 0
             );
 
             INSERT INTO calendar_blocks (property_id, start_date, end_date, reason)
-            VALUES ('1707', '2026-11-22', '2026-11-25', 'Deep HVAC Maintenance');
+            VALUES ('1707', '2027-11-22', '2027-11-25', 'Deep HVAC Maintenance');
 
             INSERT INTO guest_registries (
                 reservation_uid, property_id, check_in, check_out, guest_count, guests_payload
             ) VALUES (
-                'res-edit-stay', '1606', '2026-11-10', '2026-11-14', 2,
+                'res-edit-stay', '1606', '2027-11-10', '2027-11-14', 2,
                 '[{\"name\":\"Stay Mover\"},{\"name\":\"Companion\"}]'
             );
         ");
@@ -747,8 +747,8 @@ final class AdminReservationRoutesTest extends TestCase
             '/reservations/quote-preview',
             post: [
                 'property_id' => '1606',
-                'check_in' => '2026-11-10',
-                'check_out' => '2026-11-15',
+                'check_in' => '2027-11-10',
+                'check_out' => '2027-11-15',
                 'source' => 'web',
                 'exclude_reservation_uid' => 'res-edit-stay',
                 'edit_mode' => '1',
@@ -764,14 +764,14 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertStringContainsString('Apply Calculated Quote', $previewSelf->getBody());
         $this->assertStringNotContainsString("document.getElementById('manual-total-price')", $previewSelf->getBody());
 
-        // 2. Extending into res-other-conflict (2026-11-10..2026-11-18) fails with 422
+        // 2. Extending into res-other-conflict (2027-11-10..2027-11-18) fails with 422
         $conflictRes = $this->dispatchAdmin(new Request(
             'POST',
             '/reservations/res-edit-stay/edit',
             post: [
                 'property_id' => '1606',
-                'check_in' => '2026-11-10',
-                'check_out' => '2026-11-18',
+                'check_in' => '2027-11-10',
+                'check_out' => '2027-11-18',
                 'total_price' => '1250000',
                 'max_guests' => '6',
                 'guest_name' => 'Stay Mover',
@@ -788,14 +788,14 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertSame(422, $conflictRes->getStatusCode());
         $this->assertStringContainsString('res-other-conflict', $conflictRes->getBody());
 
-        // 3. Relocating to 1707 overlapping maintenance block (2026-11-21..2026-11-24) fails with 422
+        // 3. Relocating to 1707 overlapping maintenance block (2027-11-21..2027-11-24) fails with 422
         $maintConflictRes = $this->dispatchAdmin(new Request(
             'POST',
             '/reservations/res-edit-stay/edit',
             post: [
                 'property_id' => '1707',
-                'check_in' => '2026-11-21',
-                'check_out' => '2026-11-24',
+                'check_in' => '2027-11-21',
+                'check_out' => '2027-11-24',
                 'total_price' => '1250000',
                 'max_guests' => '6',
                 'guest_name' => 'Stay Mover',
@@ -812,15 +812,15 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertSame(422, $maintConflictRes->getStatusCode());
         $this->assertStringContainsString('Deep HVAC Maintenance', $maintConflictRes->getBody());
 
-        // 4. Extending stay on 1606 by 2 nights (2026-11-10..2026-11-16, adjacent to res-other-conflict) succeeds,
+        // 4. Extending stay on 1606 by 2 nights (2027-11-10..2027-11-16, adjacent to res-other-conflict) succeeds,
         // preserves custom total_price (1250000), and cascades dates/property to guest_registries!
         $extendSuccess = $this->dispatchAdmin(new Request(
             'POST',
             '/reservations/res-edit-stay/edit',
             post: [
                 'property_id' => '1707',
-                'check_in' => '2026-11-10',
-                'check_out' => '2026-11-16',
+                'check_in' => '2027-11-10',
+                'check_out' => '2027-11-16',
                 'total_price' => '1250000',
                 'max_guests' => '6',
                 'guest_name' => 'Stay Mover',
@@ -842,8 +842,8 @@ final class AdminReservationRoutesTest extends TestCase
         $updatedRes = $stmtRes->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($updatedRes);
         $this->assertSame('1707', $updatedRes['property_id']);
-        $this->assertSame('2026-11-10', $updatedRes['check_in']);
-        $this->assertSame('2026-11-16', $updatedRes['check_out']);
+        $this->assertSame('2027-11-10', $updatedRes['check_in']);
+        $this->assertSame('2027-11-16', $updatedRes['check_out']);
         $this->assertEquals(1250000.0, (float) $updatedRes['total_price']);
 
         // Verify guest_registries cascaded atomically
@@ -852,8 +852,8 @@ final class AdminReservationRoutesTest extends TestCase
         $updatedReg = $stmtReg->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($updatedReg);
         $this->assertSame('1707', $updatedReg['property_id']);
-        $this->assertSame('2026-11-10', $updatedReg['check_in']);
-        $this->assertSame('2026-11-16', $updatedReg['check_out']);
+        $this->assertSame('2027-11-10', $updatedReg['check_in']);
+        $this->assertSame('2027-11-16', $updatedReg['check_out']);
     }
 
     public function testReservationEditorCreatesGuestRegistryFromScratchEnrichesPlaceholderEmailAndGeneratesOrPreservesDoorCode(): void

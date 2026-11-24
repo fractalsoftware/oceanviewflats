@@ -2760,6 +2760,7 @@ test("main.js #calendar-widget fetches blocked dates via pageConfig.apiBase and 
 		},
 		Intl,
 		Date,
+		URL,
 		URLSearchParams,
 		FormData: class {},
 		console: {
@@ -3397,6 +3398,7 @@ test("Property Page #calendar-widget fetches authoritative Quote from quote.php 
 		},
 		Intl,
 		Date,
+		URL,
 		URLSearchParams,
 		FormData: class {},
 		console: { log: () => {}, warn: () => {}, error: () => {} },
@@ -3792,6 +3794,7 @@ const runBookingPaymentRedirectHarness = async (options: {
 		},
 		Intl,
 		Date,
+		URL,
 		URLSearchParams,
 		FormData: class {},
 		console: { log: () => {}, warn: () => {}, error: () => {} },
@@ -3807,9 +3810,12 @@ const runBookingPaymentRedirectHarness = async (options: {
 	nextMonthBtn.dispatchEvent("click");
 	const calendarGridNode = nodesById.get("calendar-grid");
 	assert.ok(calendarGridNode);
-	const gridChildren = calendarGridNode.querySelectorAll("*");
-	gridChildren[10].dispatchEvent("click");
-	gridChildren[14].dispatchEvent("click");
+	const enabledDays = calendarGridNode
+		.querySelectorAll("*")
+		.filter((n) => !n.disabled && Boolean(n.getAttribute("data-date")));
+	assert.ok(enabledDays.length >= 6);
+	enabledDays[enabledDays.length - 6].dispatchEvent("click");
+	enabledDays[enabledDays.length - 2].dispatchEvent("click");
 	formCheckIn.value = checkIn;
 	formCheckOut.value = checkOut;
 
@@ -4154,6 +4160,7 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 				getItem: () => null,
 				setItem: () => {},
 			},
+			URL,
 			URLSearchParams,
 			setTimeout,
 			console: { log: () => {}, warn: () => {}, error: () => {} },
@@ -4901,6 +4908,7 @@ test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PEN
 				getItem: () => null,
 				setItem: () => {},
 			},
+			URL,
 			URLSearchParams,
 			setTimeout,
 			console: { log: () => {}, warn: () => {}, error: () => {} },
