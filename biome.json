@@ -19,7 +19,8 @@
 			"!public/site.webmanifest",
 			"!admin/public/site.webmanifest",
 			"!composer.json",
-			"!composer.lock"
+			"!composer.lock",
+			"!**/*.md"
 		]
 	},
 	"formatter": {
