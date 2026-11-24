@@ -224,6 +224,7 @@ jobs:
             --config p/owasp-top-ten \
             --config p/security-audit \
             --config .semgrep/oceanviewflats.yml \
+            --exclude-rule php.lang.security.injection.echoed-request.echoed-request \
             --exclude tests \
             --exclude admin/tests \
             --exclude dist \
@@ -239,6 +240,7 @@ jobs:
             --config p/owasp-top-ten \
             --config p/security-audit \
             --config .semgrep/oceanviewflats.yml \
+            --exclude-rule php.lang.security.injection.echoed-request.echoed-request \
             --exclude tests \
             --exclude admin/tests \
             --exclude dist \

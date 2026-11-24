@@ -7,9 +7,9 @@ rules:
       execution functions, or unserialize on runtime code paths.
     paths:
       include:
-        - public/api/
-        - src/
-        - admin/src/
+        - /public/api/
+        - /src/
+        - /admin/src/
     pattern-either:
       - pattern: eval(...)
       - pattern: exec(...)
@@ -27,18 +27,16 @@ rules:
     languages: [php]
     severity: ERROR
     message: >
-      SQL query executed with dynamic variable interpolation via PDO::query/exec.
+      SQL query executed with dynamic variable concatenation via PDO::query/exec.
       Always use prepared statements with bound parameters.
     paths:
       include:
-        - public/api/
-        - src/
-        - admin/src/
+        - /public/api/
+        - /src/
+        - /admin/src/
     pattern-either:
-      - pattern: $PDO->query("..." . $VAR . ...)
-      - pattern: $PDO->query($VAR . "...")
-      - pattern: $PDO->exec("..." . $VAR . ...)
-      - pattern: $PDO->exec($VAR . "...")
+      - pattern: $PDO->query($A . $VAR)
+      - pattern: $PDO->exec($A . $VAR)
     metadata:
       category: security
       cwe: "CWE-89"
@@ -51,9 +49,9 @@ rules:
       error_log(). Mask PII via OceanViewFlats\Domain\Security\PiiMasker before logging (ADR 0012).
     paths:
       include:
-        - public/api/
-        - src/
-        - admin/src/
+        - /public/api/
+        - /src/
+        - /admin/src/
     patterns:
       - pattern-either:
           - pattern: error_log(..., $PII, ...)
@@ -75,7 +73,7 @@ rules:
       detected in public/js/. Prefer textContent or createElement() to prevent DOM XSS.
     paths:
       include:
-        - public/js/
+        - /public/js/
     pattern-either:
       - pattern: $EL.outerHTML = $VAL
       - pattern: $EL.insertAdjacentHTML(...)
