@@ -193,23 +193,13 @@ final class ContactProcessorTest extends TestCase
         $mergedPost = $this->withValidCaptcha($postData);
         $mergedServer = array_merge($this->defaultContactServerVars(), $serverVars);
 
-        $phpCode = sprintf(
-            '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
-            . '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
-            . '$GLOBALS["__ovf_contact_mail_callback"] = function ($to, $subject, $body, $headers) { '
+        $callbackPreamble = sprintf(
+            '$GLOBALS["__ovf_contact_mail_callback"] = function ($to, $subject, $body, $headers) { '
             . 'file_put_contents(%s, json_encode(["to" => $to, "subject" => $subject, "body" => $body, "headers" => $headers])); '
-            . 'return true; }; '
-            . 'register_shutdown_function(function () { file_put_contents(%s, (string) (http_response_code() ?: 200)); }); '
-            . 'require %s;',
-            var_export(self::TEST_CAPTCHA_SECRET, true),
-            var_export(self::TEST_CAPTCHA_SECRET, true),
-            var_export($this->nonceStorePath, true),
-            var_export($mergedServer, true),
-            var_export($mergedPost, true),
-            var_export($mailCaptureFile, true),
-            var_export($statusCaptureFile, true),
-            var_export(dirname(__DIR__, 3) . '/public/api/contact-processor.php', true)
+            . 'return true; }; ',
+            var_export($mailCaptureFile, true)
         );
+        $phpCode = $this->buildContactBootstrapPhp($mergedServer, $mergedPost, $statusCaptureFile, $callbackPreamble);
 
         $result = $this->runPhpSubprocess(['php', '-r', $phpCode], $statusCaptureFile);
         $mail = $this->readAndRemoveJsonFile($mailCaptureFile);
@@ -240,29 +230,22 @@ final class ContactProcessorTest extends TestCase
             'RECIPIENT_EMAIL' => $recipientEmail,
         ]);
 
+        $envPreamble = sprintf(
+            'ini_set("error_log", %s); $_ENV["APP_ENV"] = %s; $_ENV["RECIPIENT_EMAIL"] = %s; ',
+            var_export($errorLogFile, true),
+            var_export($appEnv, true),
+            var_export($recipientEmail, true)
+        );
+        $bootstrap = $this->buildContactBootstrapPhp($mergedServer, $mergedPost, $statusCaptureFile, $envPreamble);
+
         $phpCode = sprintf(
             'namespace OceanViewFlats\\Domain\\Fulfillment { '
             . 'function mail(string $to, string $subject, string $message, array|string $additional_headers = [], string $additional_params = ""): bool { '
             . 'file_put_contents(%s, json_encode(["to" => $to, "subject" => $subject, "body" => $message, "headers" => $additional_headers])); '
             . 'return true; } } '
-            . 'namespace { '
-            . 'ini_set("error_log", %s); '
-            . '$_ENV["APP_ENV"] = %s; $_ENV["RECIPIENT_EMAIL"] = %s; '
-            . '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
-            . '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
-            . 'register_shutdown_function(function () { file_put_contents(%s, (string) (http_response_code() ?: 200)); }); '
-            . 'require %s; }',
+            . 'namespace { %s }',
             var_export($phpMailCaptureFile, true),
-            var_export($errorLogFile, true),
-            var_export($appEnv, true),
-            var_export($recipientEmail, true),
-            var_export(self::TEST_CAPTCHA_SECRET, true),
-            var_export(self::TEST_CAPTCHA_SECRET, true),
-            var_export($this->nonceStorePath, true),
-            var_export($mergedServer, true),
-            var_export($mergedPost, true),
-            var_export($statusCaptureFile, true),
-            var_export(dirname(__DIR__, 3) . '/public/api/contact-processor.php', true)
+            $bootstrap
         );
 
         $result = $this->runPhpSubprocess(['php', '-d', 'sendmail_path=/usr/bin/false', '-r', $phpCode], $statusCaptureFile);
@@ -278,6 +261,32 @@ final class ContactProcessorTest extends TestCase
             'phpMail' => $phpMail,
             'errorLog' => $errorLog,
         ]);
+    }
+
+    /**
+     * @param array<string, string> $mergedServer
+     * @param array<string, string> $mergedPost
+     */
+    private function buildContactBootstrapPhp(
+        array $mergedServer,
+        array $mergedPost,
+        string|false $statusCaptureFile,
+        string $preamble = ''
+    ): string {
+        return sprintf(
+            '%s$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
+            . '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
+            . 'register_shutdown_function(function () { file_put_contents(%s, (string) (http_response_code() ?: 200)); }); '
+            . 'require %s;',
+            $preamble,
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
+            var_export($mergedServer, true),
+            var_export($mergedPost, true),
+            var_export($statusCaptureFile, true),
+            var_export(dirname(__DIR__, 3) . '/public/api/contact-processor.php', true)
+        );
     }
 
     private function clearRateLimitFile(string $filename): void
