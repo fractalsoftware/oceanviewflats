@@ -115,8 +115,8 @@ paths:
               properties:
                 property_id:
                   type: string
-                  enum: ['1606', '1707']
                   example: '1606'
+                  enum: ['1606', '1707']
                 check_in:
                   type: string
                   format: date
@@ -146,8 +146,8 @@ paths:
                 privacy_consent:
                   description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'
                   type: string
-                  enum: ['1', 'true', 'on']
                   example: '1'
+                  enum: ['1', 'true', 'on']
                 captcha_challenge:
                   type: string
                   example: '5 + 3 = ?'
@@ -248,8 +248,8 @@ paths:
                 privacy_consent:
                   description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'
                   type: string
-                  enum: ['1', 'true', 'on']
                   example: '1'
+                  enum: ['1', 'true', 'on']
                 captcha_challenge:
                   type: string
                   example: '9 + 2 = ?'
@@ -309,8 +309,8 @@ paths:
               properties:
                 property_id:
                   type: string
-                  enum: ['1606', '1707']
                   example: '1606'
+                  enum: ['1606', '1707']
                 check_in:
                   type: string
                   format: date
@@ -347,8 +347,8 @@ paths:
                   nullable: true
                 installments:
                   type: integer
-                  default: 1
                   example: 1
+                  default: 1
                 transaction_amount:
                   type: number
                   format: float
@@ -526,8 +526,8 @@ paths:
                   example: ovf_20260910_a1b2c3
                 property:
                   type: string
-                  enum: ['1606', '1707']
                   example: '1606'
+                  enum: ['1606', '1707']
                 check_in:
                   type: string
                   format: date
@@ -551,14 +551,14 @@ paths:
                 privacy_consent:
                   description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'
                   type: string
-                  enum: ['1', 'true', 'on']
                   example: '1'
+                  enum: ['1', 'true', 'on']
                 minor_guardian_consent:
                   description: 'Mandatory Minor Guardian Attestation when any guest is under 18 or holds a minor ID'
                   type: string
-                  enum: ['1', 'true', 'on']
                   example: '1'
                   nullable: true
+                  enum: ['1', 'true', 'on']
                 lang:
                   type: string
                   default: es
@@ -606,10 +606,10 @@ paths:
           required: true
           schema:
             type: string
+            example: '1606'
             enum:
               - '1606'
               - '1707'
-            example: '1606'
       responses:
         '200':
           description: 'Valid iCalendar file stream (text/calendar)'
@@ -657,10 +657,10 @@ paths:
           required: false
           schema:
             type: string
+            example: '1606'
             enum:
               - '1606'
               - '1707'
-            example: '1606'
         -
           name: check_in
           in: query
@@ -756,6 +756,7 @@ components:
         doc_type:
           description: 'Identity document type'
           type: string
+          example: PASSPORT
           enum:
             - CC
             - CE
@@ -763,7 +764,6 @@ components:
             - DNI
             - TI
             - OTHER
-          example: PASSPORT
         doc_number:
           description: 'Document or passport number'
           type: string
@@ -826,13 +826,13 @@ components:
           example: 1234567890
         status:
           type: string
+          example: approved
           enum:
             - approved
             - in_process
             - pending
             - rejected
             - cancelled
-          example: approved
         status_detail:
           type: string
           example: accredited
@@ -877,10 +877,10 @@ components:
       properties:
         property_id:
           type: string
+          example: '1606'
           enum:
             - '1606'
             - '1707'
-          example: '1606'
         check_in:
           type: string
           format: date
@@ -933,10 +933,10 @@ components:
       properties:
         property_id:
           type: string
+          example: '1606'
           enum:
             - '1606'
             - '1707'
-          example: '1606'
         current_nightly_rate_cop:
           type: integer
           example: 350000
@@ -989,10 +989,10 @@ components:
       properties:
         property_id:
           type: string
+          example: '1606'
           enum:
             - '1606'
             - '1707'
-          example: '1606'
         start_date:
           type: string
           format: date

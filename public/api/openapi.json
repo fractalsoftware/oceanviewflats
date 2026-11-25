@@ -158,11 +158,11 @@
                                 "properties": {
                                     "property_id": {
                                         "type": "string",
+                                        "example": "1606",
                                         "enum": [
                                             "1606",
                                             "1707"
-                                        ],
-                                        "example": "1606"
+                                        ]
                                     },
                                     "check_in": {
                                         "type": "string",
@@ -207,12 +207,12 @@
                                     "privacy_consent": {
                                         "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
                                         "type": "string",
+                                        "example": "1",
                                         "enum": [
                                             "1",
                                             "true",
                                             "on"
-                                        ],
-                                        "example": "1"
+                                        ]
                                     },
                                     "captcha_challenge": {
                                         "type": "string",
@@ -364,12 +364,12 @@
                                     "privacy_consent": {
                                         "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
                                         "type": "string",
+                                        "example": "1",
                                         "enum": [
                                             "1",
                                             "true",
                                             "on"
-                                        ],
-                                        "example": "1"
+                                        ]
                                     },
                                     "captcha_challenge": {
                                         "type": "string",
@@ -453,11 +453,11 @@
                                 "properties": {
                                     "property_id": {
                                         "type": "string",
+                                        "example": "1606",
                                         "enum": [
                                             "1606",
                                             "1707"
-                                        ],
-                                        "example": "1606"
+                                        ]
                                     },
                                     "check_in": {
                                         "type": "string",
@@ -511,8 +511,8 @@
                                     },
                                     "installments": {
                                         "type": "integer",
-                                        "default": 1,
-                                        "example": 1
+                                        "example": 1,
+                                        "default": 1
                                     },
                                     "transaction_amount": {
                                         "type": "number",
@@ -783,11 +783,11 @@
                                     },
                                     "property": {
                                         "type": "string",
+                                        "example": "1606",
                                         "enum": [
                                             "1606",
                                             "1707"
-                                        ],
-                                        "example": "1606"
+                                        ]
                                     },
                                     "check_in": {
                                         "type": "string",
@@ -819,23 +819,23 @@
                                     "privacy_consent": {
                                         "description": "Explicit Ley 1581 of 2012 Personal Data Authorization",
                                         "type": "string",
+                                        "example": "1",
                                         "enum": [
                                             "1",
                                             "true",
                                             "on"
-                                        ],
-                                        "example": "1"
+                                        ]
                                     },
                                     "minor_guardian_consent": {
                                         "description": "Mandatory Minor Guardian Attestation when any guest is under 18 or holds a minor ID",
                                         "type": "string",
+                                        "example": "1",
+                                        "nullable": true,
                                         "enum": [
                                             "1",
                                             "true",
                                             "on"
-                                        ],
-                                        "example": "1",
-                                        "nullable": true
+                                        ]
                                     },
                                     "lang": {
                                         "type": "string",
@@ -914,11 +914,11 @@
                         "required": true,
                         "schema": {
                             "type": "string",
+                            "example": "1606",
                             "enum": [
                                 "1606",
                                 "1707"
-                            ],
-                            "example": "1606"
+                            ]
                         }
                     }
                 ],
@@ -986,11 +986,11 @@
                         "required": false,
                         "schema": {
                             "type": "string",
+                            "example": "1606",
                             "enum": [
                                 "1606",
                                 "1707"
-                            ],
-                            "example": "1606"
+                            ]
                         }
                     },
                     {
@@ -1129,6 +1129,7 @@
                     "doc_type": {
                         "description": "Identity document type",
                         "type": "string",
+                        "example": "PASSPORT",
                         "enum": [
                             "CC",
                             "CE",
@@ -1136,8 +1137,7 @@
                             "DNI",
                             "TI",
                             "OTHER"
-                        ],
-                        "example": "PASSPORT"
+                        ]
                     },
                     "doc_number": {
                         "description": "Document or passport number",
@@ -1221,14 +1221,14 @@
                     },
                     "status": {
                         "type": "string",
+                        "example": "approved",
                         "enum": [
                             "approved",
                             "in_process",
                             "pending",
                             "rejected",
                             "cancelled"
-                        ],
-                        "example": "approved"
+                        ]
                     },
                     "status_detail": {
                         "type": "string",
@@ -1287,11 +1287,11 @@
                 "properties": {
                     "property_id": {
                         "type": "string",
+                        "example": "1606",
                         "enum": [
                             "1606",
                             "1707"
-                        ],
-                        "example": "1606"
+                        ]
                     },
                     "check_in": {
                         "type": "string",
@@ -1362,11 +1362,11 @@
                 "properties": {
                     "property_id": {
                         "type": "string",
+                        "example": "1606",
                         "enum": [
                             "1606",
                             "1707"
-                        ],
-                        "example": "1606"
+                        ]
                     },
                     "current_nightly_rate_cop": {
                         "type": "integer",
@@ -1436,11 +1436,11 @@
                 "properties": {
                     "property_id": {
                         "type": "string",
+                        "example": "1606",
                         "enum": [
                             "1606",
                             "1707"
-                        ],
-                        "example": "1606"
+                        ]
                     },
                     "start_date": {
                         "type": "string",
