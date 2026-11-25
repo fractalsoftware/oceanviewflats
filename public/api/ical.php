@@ -8,6 +8,8 @@
  * Query: GET /api/ical.php?property=[1606|1707]
  */
 
+declare(strict_types=1);
+
 // 1. Prevent direct web execution if included (Security Best Practice)
 if (count(get_included_files()) === 1 && !defined('ALLOW_ICAL_RUN')) {
     define('ALLOW_ICAL_RUN', true);

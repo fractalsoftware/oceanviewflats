@@ -616,13 +616,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         /** @var array<string, array{revenue: float, active_revenue: float, policy_retention: float, nights: int, count: int}> $bySource */
         $bySource = [];
         foreach (BookingSourceGroup::commercialCases() as $srcGroup) {
-            $bySource[$srcGroup->value] = [
-                'revenue' => 0.0,
-                'active_revenue' => 0.0,
-                'policy_retention' => 0.0,
-                'nights' => 0,
-                'count' => 0,
-            ];
+            $bySource[$srcGroup->value] = $this->emptySourceBucket();
         }
 
         foreach ($reservations as $reservation) {
@@ -675,13 +669,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                 }
 
                 $sourceKey = $channelGroup->value;
-                $sourceBucket = $bySource[$sourceKey] ?? [
-                    'revenue' => 0.0,
-                    'active_revenue' => 0.0,
-                    'policy_retention' => 0.0,
-                    'nights' => 0,
-                    'count' => 0,
-                ];
+                $sourceBucket = $bySource[$sourceKey] ?? $this->emptySourceBucket();
                 $sourceBucket['revenue'] = round($sourceBucket['revenue'] + $proratedNet, 2);
                 $sourceBucket['active_revenue'] = round($sourceBucket['active_revenue'] + $proratedNet, 2);
                 $sourceBucket['nights'] += $inPeriodNights;
@@ -756,13 +744,7 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                 }
 
                 $sourceKey = $channelGroup->value;
-                $sourceBucket = $bySource[$sourceKey] ?? [
-                    'revenue' => 0.0,
-                    'active_revenue' => 0.0,
-                    'policy_retention' => 0.0,
-                    'nights' => 0,
-                    'count' => 0,
-                ];
+                $sourceBucket = $bySource[$sourceKey] ?? $this->emptySourceBucket();
                 $sourceBucket['revenue'] = round($sourceBucket['revenue'] + $proratedNet, 2);
                 $sourceBucket['policy_retention'] = round($sourceBucket['policy_retention'] + $proratedNet, 2);
                 $bySource[$sourceKey] = $sourceBucket;
@@ -1036,5 +1018,19 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
         }
 
         return $dates;
+    }
+
+    /**
+     * @return array{revenue: float, active_revenue: float, policy_retention: float, nights: int, count: int}
+     */
+    private function emptySourceBucket(): array
+    {
+        return [
+            'revenue' => 0.0,
+            'active_revenue' => 0.0,
+            'policy_retention' => 0.0,
+            'nights' => 0,
+            'count' => 0,
+        ];
     }
 }

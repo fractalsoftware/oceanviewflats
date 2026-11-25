@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Tests\Integration\Api;
 
+use OceanViewFlats\Tests\Support\PdoQueryAssertionsTrait;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
 final class GuestRegistryEndpointTest extends TestCase
 {
+    use PdoQueryAssertionsTrait;
     private string $dbPath;
     private PDO $pdo;
 
@@ -267,7 +269,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame('Guest registration completed successfully.', $resWithHp['json']['message']);
 
         // Database must remain unaffected
-        $regCount = (int) $this->queryColumn('SELECT COUNT(*) FROM guest_registries');
+        $regCount = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCount);
 
         $resWithUrl = $this->callRegistryEndpoint($this->createValidRegistryData([
@@ -280,7 +282,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertTrue($resWithUrl['json']['success']);
         $this->assertSame('Guest registration completed successfully.', $resWithUrl['json']['message']);
 
-        $regCountAfter = (int) $this->queryColumn('SELECT COUNT(*) FROM guest_registries');
+        $regCountAfter = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCountAfter);
     }
 
@@ -313,7 +315,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertNotEmpty($resSign['json']['error']);
 
         // Ensure database was not altered
-        $regCount = (int) $this->queryColumn('SELECT COUNT(*) FROM guest_registries');
+        $regCount = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCount);
     }
 
@@ -550,7 +552,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertFalse($res['json']['success']);
         $this->assertStringContainsString('matches the provided booking details', (string) $res['json']['error']);
 
-        $regCount = (int) $this->queryColumn('SELECT COUNT(*) FROM guest_registries');
+        $regCount = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCount);
     }
 
@@ -670,7 +672,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame(200, $resAbnb['statusCode']);
         $this->assertTrue($resAbnb['json']['success'] ?? false);
 
-        $abnbEmail = $this->queryColumn("SELECT guest_email FROM reservations WHERE reservation_uid = 'res-abnb-endpoint-test'");
+        $abnbEmail = $this->assertQueryColumn($this->pdo, "SELECT guest_email FROM reservations WHERE reservation_uid = 'res-abnb-endpoint-test'");
         $this->assertSame('verified.traveler@example.com', $abnbEmail);
 
         // 2. Direct web reservation with valid customer email: preserved, not overwritten
@@ -686,7 +688,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame(200, $resWeb['statusCode']);
         $this->assertTrue($resWeb['json']['success'] ?? false);
 
-        $webEmail = $this->queryColumn("SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_conf_100'");
+        $webEmail = $this->assertQueryColumn($this->pdo, "SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_conf_100'");
         $this->assertSame('maria@example.com', $webEmail);
 
         // 3. Direct web reservation with placeholder email: enriched
@@ -711,7 +713,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame(200, $resPlaceholder['statusCode']);
         $this->assertTrue($resPlaceholder['json']['success'] ?? false);
 
-        $placeholderEmail = $this->queryColumn("SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_web_placeholder_test'");
+        $placeholderEmail = $this->assertQueryColumn($this->pdo, "SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_web_placeholder_test'");
         $this->assertSame('actual.guest@example.com', $placeholderEmail);
     }
 
@@ -1286,14 +1288,5 @@ PHP;
             'statusCode' => $statusCode,
             'json' => json_decode((string) $stdout, true),
         ];
-    }
-
-    private function queryColumn(string $sql): mixed
-    {
-        $stmt = $this->pdo->query($sql);
-        $this->assertNotFalse($stmt);
-        $value = $stmt->fetchColumn();
-        $stmt->closeCursor();
-        return $value;
     }
 }

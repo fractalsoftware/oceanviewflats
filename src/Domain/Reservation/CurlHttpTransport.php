@@ -45,7 +45,7 @@ final class CurlHttpTransport implements HttpTransportInterface
             ? $options['timeout']
             : $this->defaultTimeoutSeconds;
 
-        $userAgent = isset($options['userAgent']) && is_string($options['userAgent']) && $options['userAgent'] !== ''
+        $userAgent = isset($options['userAgent']) && is_string($options['userAgent'])
             ? $options['userAgent']
             : $this->defaultUserAgent;
 
