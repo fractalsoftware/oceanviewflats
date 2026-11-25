@@ -18,7 +18,7 @@ We establish a dedicated administrative application served from an isolated subd
 Rather than nesting the administrative application inside `public_html/admin` (Pattern B), we configure cPanel with Pattern A:
 * **Subdomain DocumentRoot**: Explicitly mapped to `/home/<user>/admin/public`.
 * **Out-of-Webroot Isolation**: All sensitive application code (`admin/src/`), server-rendered views (`admin/src/Views/`), domain core (`src/Domain/`), infrastructure adapters (`src/Infrastructure/`), Composer dependencies (`vendor/`), and CLI management utilities (`scripts/`) reside directly under `/home/<user>/`, outside all DocumentRoots.
-* **Apache Front-Controller**: An `.htaccess` file inside `admin/public/` enforces `DirectoryIndex index.php`, disables directory indexing (`Options -Indexes`), applies strict security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`), and rewrites all non-file/non-directory HTTP requests through `index.php`.
+* **Apache Front-Controller**: An `.htaccess` file inside `admin/public/` enforces `DirectoryIndex index.php`, disables directory indexing (`Options -Indexes`), applies strict security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and strict `Content-Security-Policy` with `script-src 'self'`), and rewrites all non-file/non-directory HTTP requests through `index.php`.
 
 ```text
 /home/<user>/
@@ -28,8 +28,9 @@ Rather than nesting the administrative application inside `public_html/admin` (P
 │   └── api/                     <-- Public REST APIs (calls ../../vendor/autoload.php)
 ├── admin/
 │   ├── public/                  <-- DocumentRoot for admin.oceanviewflats.com (Pattern A)
+│   │   ├── assets/              <-- Local static Admin Console bundles (admin.css, htmx.min.js, admin.js)
 │   │   ├── index.php            <-- Administrative Front-Controller
-│   │   └── .htaccess            <-- Rewrite & Security Headers (setup.php excluded from routine deploys)
+│   │   └── .htaccess            <-- Rewrite, Strict CSP & Security Headers (setup.php excluded from routine deploys)
 │   └── src/                     <-- Protected Admin Controllers, Repositories, & HTMX Views (Views/)
 ├── src/
 │   ├── Domain/                  <-- Shared Domain Models (Quote, Reservation, Finance, Privacy, Fulfillment)
@@ -77,7 +78,7 @@ Administrative workflows involve frequent asynchronous HTMX operations (filters,
 3. Network disconnects or backend 5xx failures leave buttons in a disabled or ambiguous limbo state without actionable guidance.
 
 #### Architecture
-We implement a zero-dependency, dual-layer feedback and error-resilient request lifecycle integrated directly into `admin/src/Views/layout.php`:
+We implement a zero-CDN, dual-layer feedback and error-resilient request lifecycle bundled into local static assets (`admin/public/assets/admin.css`, `admin/public/assets/htmx.min.js`, and `admin/public/assets/admin.js`, compiled via `npm run build:admin` and verified in CI) loaded by `admin/src/Views/layout.php` under an enforcing `script-src 'self'` Content-Security-Policy (with zero inline `<script>` blocks or `on*=` event handler attributes):
 
 1. **Global Top Progress Bar (`#global-progress-bar`)**:
    - Pinned to the top of the viewport (`fixed top-0 left-0 h-1 bg-indigo-600 z-50`).

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Admin\Tests\Integration\Security;
 
+use OceanViewFlats\Admin\Http\Response;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -44,8 +45,37 @@ final class AdminCspAndLocalAssetsTest extends TestCase
         $this->assertStringContainsString('.htmx-indicator', $adminCss);
         $this->assertStringContainsString('@keyframes progress-shimmer', $adminCss);
 
+        // Domain presenter classes (ExpenseCategory, ParafiscalPeriod, HeatmapCellPresenter in src/Domain/)
+        foreach ([
+            'bg-sky-50',
+            'text-sky-700',
+            'bg-sky-500',
+            'bg-orange-500',
+            'text-orange-700',
+            'bg-teal-500',
+            'text-teal-700',
+            'border-rose-700',
+            'ring-amber-400',
+        ] as $domainClass) {
+            $this->assertStringContainsString(
+                '.' . $domainClass,
+                $adminCss,
+                "Compiled admin.css must include domain presenter utility class '{$domainClass}' from src/Domain/."
+            );
+        }
+
         $this->assertStringContainsString('version:"2.0.4"', $htmxJs, 'Vendored htmx.min.js must be pinned to 2.0.4.');
         $this->assertNotEmpty($adminJs, 'Extracted admin.js must not be empty.');
+        $this->assertMatchesRegularExpression(
+            '/document\.addEventListener\(\s*"change"[\s\S]+?true,\s*\);/',
+            $adminJs,
+            'admin.js must register capture-phase change listener so dependent inputs mutate before HTMX serializes requests.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/document\.addEventListener\(\s*"click"[\s\S]+?true,\s*\);/',
+            $adminJs,
+            'admin.js must register capture-phase click listener so pre-HTMX state mutations run before hx-get dispatch.'
+        );
     }
 
     public function testLayoutUsesLocalAssetsOnlyAndStrictHtmxConfig(): void
@@ -122,8 +152,9 @@ final class AdminCspAndLocalAssetsTest extends TestCase
         $publicHtaccess = (string) file_get_contents($this->rootDir . '/public/.htaccess');
 
         // Admin Console enforces strict CSP without 'unsafe-inline' or 'unsafe-eval' in script-src
+        $quotedAdminCsp = preg_quote(Response::CONTENT_SECURITY_POLICY, '/');
         $this->assertMatchesRegularExpression(
-            '/Header\s+always\s+set\s+Content-Security-Policy\s+"default-src \'self\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data:; form-action \'self\'; frame-ancestors \'none\'; base-uri \'self\'"/',
+            '/Header\s+always\s+set\s+Content-Security-Policy\s+"' . $quotedAdminCsp . '"/',
             $adminHtaccess
         );
         $this->assertMatchesRegularExpression('/^\s*Header\s+unset\s+Content-Security-Policy\s*$/m', $adminHtaccess);

@@ -1,4 +1,5 @@
 @import "tailwindcss" source("../");
+@source "../../../src/Domain";
 @source "../../public/assets/admin.js";
 
 @theme {

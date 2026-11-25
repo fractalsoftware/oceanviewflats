@@ -55,36 +55,84 @@
 		}
 	}
 
+	function syncMinEndDate(checkInInput, checkOutInput, clearMinWhenEmpty) {
+		if (!checkInInput || !checkOutInput) return;
+		if (!checkInInput.value) {
+			if (clearMinWhenEmpty) {
+				checkOutInput.removeAttribute("min");
+			}
+			return;
+		}
+		const parts = checkInInput.value.split("-");
+		if (parts.length !== 3) return;
+		const start = new Date(
+			Number.parseInt(parts[0], 10),
+			Number.parseInt(parts[1], 10) - 1,
+			Number.parseInt(parts[2], 10),
+		);
+		if (Number.isNaN(start.getTime())) return;
+
+		const minEnd = new Date(start);
+		minEnd.setDate(minEnd.getDate() + 1);
+		const y = minEnd.getFullYear();
+		const m = String(minEnd.getMonth() + 1).padStart(2, "0");
+		const d = String(minEnd.getDate()).padStart(2, "0");
+		const minEndStr = `${y}-${m}-${d}`;
+		checkOutInput.min = minEndStr;
+
+		if (checkOutInput.value && checkOutInput.value <= checkInInput.value) {
+			checkOutInput.value = minEndStr;
+		}
+	}
+
+	function applyFormValidationState(btnId, helperId, unmetRequirement) {
+		const btn = document.getElementById(btnId);
+		const helper = document.getElementById(helperId);
+
+		if (unmetRequirement) {
+			if (btn) {
+				btn.disabled = true;
+				btn.setAttribute("aria-disabled", "true");
+				btn.classList.add("opacity-50", "cursor-not-allowed");
+				btn.classList.remove("cursor-pointer");
+			}
+			if (helper) {
+				helper.textContent = unmetRequirement;
+				helper.classList.remove("hidden");
+			}
+			return false;
+		}
+
+		if (btn) {
+			btn.disabled = false;
+			btn.setAttribute("aria-disabled", "false");
+			btn.classList.remove("opacity-50", "cursor-not-allowed");
+			btn.classList.add("cursor-pointer");
+		}
+		if (helper) {
+			helper.textContent = "";
+			helper.classList.add("hidden");
+		}
+		return true;
+	}
+
 	// =========================================================================
-	// 1. Global Drawer, Dispatch, and Clipboard Helpers
+	// 1. Drawer, Dispatch, and Clipboard Helpers
 	// =========================================================================
-	window.closeReservationDrawer = () => {
+	function closeDrawer(basePath) {
 		const container = document.getElementById("drawer-container");
 		if (container) {
 			container.replaceChildren();
 		} else {
-			window.location.href = "/reservations";
+			window.location.href = basePath;
 			return;
 		}
-		if (window.location.pathname.startsWith("/reservations/")) {
-			window.history.pushState(null, "", "/reservations");
+		if (window.location.pathname.startsWith(`${basePath}/`)) {
+			window.history.pushState(null, "", basePath);
 		}
-	};
+	}
 
-	window.closeAuditDrawer = () => {
-		const container = document.getElementById("drawer-container");
-		if (container) {
-			container.replaceChildren();
-		} else {
-			window.location.href = "/audit-logs";
-			return;
-		}
-		if (window.location.pathname.startsWith("/audit-logs/")) {
-			window.history.pushState(null, "", "/audit-logs");
-		}
-	};
-
-	window.copyAuditJson = (btnId, targetId) => {
+	function copyAuditJson(btnId, targetId) {
 		const elem = document.getElementById(targetId);
 		if (!elem) return;
 		const text = elem.textContent || "";
@@ -99,9 +147,9 @@
 				btn.classList.remove("text-emerald-600");
 			}, 2000);
 		});
-	};
+	}
 
-	window.switchDispatchLang = (uid, lang) => {
+	function switchDispatchLang(uid, lang) {
 		const ta = document.getElementById(`dispatch-snippet-${uid}`);
 		const btnEs = document.getElementById(`btn-lang-es-${uid}`);
 		const btnEn = document.getElementById(`btn-lang-en-${uid}`);
@@ -133,9 +181,9 @@
 			}
 			if (copyText) copyText.textContent = "Copy EN Message";
 		}
-	};
+	}
 
-	window.copyDispatchSnippet = (uid) => {
+	function copyDispatchSnippet(uid) {
 		const ta = document.getElementById(`dispatch-snippet-${uid}`);
 		const copyText = document.getElementById(`copy-text-${uid}`);
 		if (!ta) return;
@@ -148,7 +196,7 @@
 				copyText.textContent = orig;
 			}, 2000);
 		});
-	};
+	}
 
 	function showInviteCopyFeedback(button) {
 		const originalNodes = Array.from(button.childNodes);
@@ -164,7 +212,7 @@
 		}, 2000);
 	}
 
-	window.copyRegistryInvite = (button) => {
+	function copyRegistryInvite(button) {
 		if (!button) return;
 		const inviteUrl = button.getAttribute("data-invite-url") || "";
 		const guestName = button.getAttribute("data-guest-name") || "Guest";
@@ -178,7 +226,7 @@
 		copyTextWithFallback(textToCopy, () => {
 			showInviteCopyFeedback(button);
 		});
-	};
+	}
 
 	// =========================================================================
 	// 2. Global HTMX 422 Swap Handler & Async Lifecycle Manager
@@ -671,6 +719,47 @@
 	// =========================================================================
 	// 4. Declarative Delegated Event Handlers ([data-action])
 	// =========================================================================
+	// Capture-phase click listener ensures form/filter state mutations execute
+	// BEFORE target-phase HTMX listeners serialize and dispatch hx-get requests.
+	document.addEventListener(
+		"click",
+		(evt) => {
+			const el = evt.target?.closest?.("[data-action]");
+			if (!el) return;
+
+			const action = el.getAttribute("data-action");
+			if (action === "set-value") {
+				const targetId = el.getAttribute("data-target-id") || "";
+				const targetVal = el.getAttribute("data-target-value") ?? "";
+				const targetEl = document.getElementById(targetId);
+				if (targetEl) {
+					targetEl.value = targetVal;
+				}
+			} else if (action === "reset-financial-filters") {
+				const form = el.closest("form");
+				if (form) {
+					form.reset();
+					const defaults = {
+						"property-filter-select": "all",
+						"period-select": "this_month",
+						"compare-select": "prev_period",
+						"source-select": "all",
+						"category-select": "all",
+						"date-from-input": "",
+						"date-to-input": "",
+						"expense-search-input": "",
+						"financial-report-tab-input": "expenses",
+					};
+					for (const [id, value] of Object.entries(defaults)) {
+						const field = document.getElementById(id);
+						if (field) field.value = value;
+					}
+				}
+			}
+		},
+		true,
+	);
+
 	document.addEventListener("click", (evt) => {
 		const el = evt.target?.closest?.("[data-action]");
 		if (!el) return;
@@ -686,10 +775,10 @@
 				}
 				break;
 			case "close-reservation-drawer":
-				window.closeReservationDrawer();
+				closeDrawer("/reservations");
 				break;
 			case "close-audit-drawer":
-				window.closeAuditDrawer();
+				closeDrawer("/audit-logs");
 				break;
 			case "dismiss-parent":
 				if (el.parentElement) {
@@ -727,22 +816,22 @@
 			}
 			case "copy-audit-json": {
 				const targetId = el.getAttribute("data-copy-target") || "";
-				window.copyAuditJson(el.id, targetId);
+				copyAuditJson(el.id, targetId);
 				break;
 			}
 			case "switch-dispatch-lang": {
 				const uid = el.getAttribute("data-reservation-uid") || "";
 				const lang = el.getAttribute("data-lang") || "es";
-				window.switchDispatchLang(uid, lang);
+				switchDispatchLang(uid, lang);
 				break;
 			}
 			case "copy-dispatch-snippet": {
 				const uid = el.getAttribute("data-reservation-uid") || "";
-				window.copyDispatchSnippet(uid);
+				copyDispatchSnippet(uid);
 				break;
 			}
 			case "copy-registry-invite":
-				window.copyRegistryInvite(el);
+				copyRegistryInvite(el);
 				break;
 			case "apply-calculated-quote": {
 				const amount = el.getAttribute("data-quote-amount") || "";
@@ -753,74 +842,68 @@
 				}
 				break;
 			}
-			case "set-value": {
-				const targetId = el.getAttribute("data-target-id") || "";
-				const targetVal = el.getAttribute("data-target-value") ?? "";
-				const targetEl = document.getElementById(targetId);
-				if (targetEl) {
-					targetEl.value = targetVal;
-				}
-				break;
-			}
-			case "reset-financial-filters": {
-				const form = el.closest("form");
-				if (form) {
-					form.reset();
-					const defaults = {
-						"property-filter-select": "all",
-						"period-select": "this_month",
-						"compare-select": "prev_period",
-						"source-select": "all",
-						"category-select": "all",
-						"date-from-input": "",
-						"date-to-input": "",
-						"expense-search-input": "",
-						"financial-report-tab-input": "expenses",
-					};
-					for (const [id, value] of Object.entries(defaults)) {
-						const field = document.getElementById(id);
-						if (field) field.value = value;
-					}
-				}
-				break;
-			}
 			default:
 				break;
 		}
 	});
 
-	document.addEventListener("change", (evt) => {
-		const el = evt.target?.closest?.("[data-action]");
-		if (!el) return;
+	// Capture-phase change listener ensures dependent inputs (date ranges, period
+	// presets, and check-out minimums) mutate BEFORE HTMX serializes requests.
+	document.addEventListener(
+		"change",
+		(evt) => {
+			const target = evt.target;
+			if (!target) return;
 
-		const action = el.getAttribute("data-action");
-		if (action === "cancel-refund-type") {
-			const partialContainer = document.getElementById(
-				"partial-amount-container",
-			);
-			const partialInput = document.getElementById("partial-refund-amount");
-			const isPartial = el.value === "partial";
-			if (partialContainer) {
-				partialContainer.classList.toggle("hidden", !isPartial);
+			if (target.id === "create-check-in") {
+				syncMinEndDate(
+					target,
+					document.getElementById("create-check-out"),
+					true,
+				);
+			} else if (target.id === "edit-check-in") {
+				syncMinEndDate(target, document.getElementById("edit-check-out"), true);
+			} else if (target.id === "block-start-date") {
+				syncMinEndDate(
+					target,
+					document.getElementById("block-end-date"),
+					false,
+				);
 			}
-			if (partialInput) {
-				partialInput.disabled = !isPartial;
-				partialInput.required = isPartial;
+
+			const el = target.closest?.("[data-action]");
+			if (!el) return;
+
+			const action = el.getAttribute("data-action");
+			if (action === "cancel-refund-type") {
+				const partialContainer = document.getElementById(
+					"partial-amount-container",
+				);
+				const partialInput = document.getElementById("partial-refund-amount");
+				const isPartial = el.value === "partial";
+				if (partialContainer) {
+					partialContainer.classList.toggle("hidden", !isPartial);
+				}
+				if (partialInput) {
+					partialInput.disabled = !isPartial;
+					partialInput.required = isPartial;
+				}
+			} else if (action === "financial-period-change") {
+				if (el.value !== "custom") {
+					const df = document.getElementById("date-from-input");
+					const dt = document.getElementById("date-to-input");
+					if (df) df.value = "";
+					if (dt) dt.value = "";
+				}
+			} else if (action === "financial-custom-date") {
+				const pe = document.getElementById("period-select");
+				if (pe && el.value) {
+					pe.value = "custom";
+				}
 			}
-		} else if (action === "financial-period-change") {
-			if (el.value !== "custom") {
-				const df = document.getElementById("date-from-input");
-				const dt = document.getElementById("date-to-input");
-				if (df) df.value = "";
-				if (dt) dt.value = "";
-			}
-		} else if (action === "financial-custom-date") {
-			const pe = document.getElementById("period-select");
-			if (pe && el.value) {
-				pe.value = "custom";
-			}
-		}
-	});
+		},
+		true,
+	);
 
 	// =========================================================================
 	// 5. Occupancy Heatmap Popover Tooltip (DOM-safe, zero innerHTML)
@@ -888,7 +971,7 @@
 					? data.flats
 					: [];
 
-			for (const flat of propList) {
+			for (const property of propList) {
 				const card = document.createElement("div");
 				card.className =
 					"p-1.5 rounded bg-slate-800/80 border border-slate-700/50";
@@ -898,30 +981,31 @@
 				const labelSpan = document.createElement("span");
 				labelSpan.className = "font-semibold text-slate-200";
 				labelSpan.textContent = String(
-					flat.label || `Property ${flat.property_id}: ${flat.status}`,
+					property.label ||
+						`Property ${property.property_id}: ${property.status}`,
 				);
-				const flatRateSpan = document.createElement("span");
-				flatRateSpan.className = "text-slate-400 font-mono text-[10px]";
-				flatRateSpan.textContent = `$${String(flat.rate ?? "")}/nt`;
+				const propertyRateSpan = document.createElement("span");
+				propertyRateSpan.className = "text-slate-400 font-mono text-[10px]";
+				propertyRateSpan.textContent = `$${String(property.rate ?? "")}/nt`;
 				topRow.appendChild(labelSpan);
-				topRow.appendChild(flatRateSpan);
+				topRow.appendChild(propertyRateSpan);
 				card.appendChild(topRow);
 
-				if (flat.guest) {
+				if (property.guest) {
 					const guestRow = document.createElement("div");
 					guestRow.className =
 						"text-[11px] text-slate-300 mt-0.5 flex items-center justify-between";
 					const guestName = document.createElement("span");
 					guestName.className = "truncate max-w-[170px]";
-					guestName.title = String(flat.guest);
-					guestName.textContent = String(flat.guest);
+					guestName.title = String(property.guest);
+					guestName.textContent = String(property.guest);
 					guestRow.appendChild(guestName);
 
-					if (flat.movement) {
+					if (property.movement) {
 						const movementBadge = document.createElement("span");
 						movementBadge.className =
 							"text-[9px] px-1 py-0.5 rounded bg-slate-700 text-slate-200 font-medium";
-						movementBadge.textContent = String(flat.movement);
+						movementBadge.textContent = String(property.movement);
 						guestRow.appendChild(movementBadge);
 					}
 					card.appendChild(guestRow);
@@ -1034,33 +1118,8 @@
 		}
 		startInput.dataset.adminBound = "1";
 
-		function syncMinEndDate() {
-			if (!startInput.value) return;
-			const parts = startInput.value.split("-");
-			if (parts.length !== 3) return;
-			const start = new Date(
-				Number.parseInt(parts[0], 10),
-				Number.parseInt(parts[1], 10) - 1,
-				Number.parseInt(parts[2], 10),
-			);
-			if (Number.isNaN(start.getTime())) return;
-
-			const minEnd = new Date(start);
-			minEnd.setDate(minEnd.getDate() + 1);
-			const y = minEnd.getFullYear();
-			const m = String(minEnd.getMonth() + 1).padStart(2, "0");
-			const d = String(minEnd.getDate()).padStart(2, "0");
-			const minEndStr = `${y}-${m}-${d}`;
-			endInput.min = minEndStr;
-
-			if (endInput.value && endInput.value <= startInput.value) {
-				endInput.value = minEndStr;
-			}
-		}
-
-		startInput.addEventListener("change", syncMinEndDate);
 		if (startInput.value) {
-			syncMinEndDate();
+			syncMinEndDate(startInput, endInput, false);
 		}
 	}
 
@@ -1090,34 +1149,6 @@
 				isAvailable = resultEl.getAttribute("data-available") === "true";
 			} else {
 				isAvailable = false;
-			}
-		}
-
-		function syncMinEndDate() {
-			if (!checkInInput || !checkOutInput) return;
-			if (!checkInInput.value) {
-				checkOutInput.removeAttribute("min");
-				return;
-			}
-			const parts = checkInInput.value.split("-");
-			if (parts.length !== 3) return;
-			const start = new Date(
-				Number.parseInt(parts[0], 10),
-				Number.parseInt(parts[1], 10) - 1,
-				Number.parseInt(parts[2], 10),
-			);
-			if (Number.isNaN(start.getTime())) return;
-
-			const minEnd = new Date(start);
-			minEnd.setDate(minEnd.getDate() + 1);
-			const y = minEnd.getFullYear();
-			const m = String(minEnd.getMonth() + 1).padStart(2, "0");
-			const d = String(minEnd.getDate()).padStart(2, "0");
-			const minEndStr = `${y}-${m}-${d}`;
-			checkOutInput.min = minEndStr;
-
-			if (checkOutInput.value && checkOutInput.value <= checkInInput.value) {
-				checkOutInput.value = minEndStr;
 			}
 		}
 
@@ -1218,35 +1249,11 @@
 		}
 
 		function validateForm() {
-			const unmetRequirement = getUnmetRequirement();
-			const btn = document.getElementById("create-submit-btn");
-			const helper = document.getElementById("create-submit-helper");
-
-			if (unmetRequirement) {
-				if (btn) {
-					btn.disabled = true;
-					btn.setAttribute("aria-disabled", "true");
-					btn.classList.add("opacity-50", "cursor-not-allowed");
-					btn.classList.remove("cursor-pointer");
-				}
-				if (helper) {
-					helper.textContent = unmetRequirement;
-					helper.classList.remove("hidden");
-				}
-				return false;
-			}
-
-			if (btn) {
-				btn.disabled = false;
-				btn.setAttribute("aria-disabled", "false");
-				btn.classList.remove("opacity-50", "cursor-not-allowed");
-				btn.classList.add("cursor-pointer");
-			}
-			if (helper) {
-				helper.textContent = "";
-				helper.classList.add("hidden");
-			}
-			return true;
+			return applyFormValidationState(
+				"create-submit-btn",
+				"create-submit-helper",
+				getUnmetRequirement(),
+			);
 		}
 
 		if (priceInput) {
@@ -1289,16 +1296,12 @@
 		}
 
 		if (checkInInput) {
-			checkInInput.addEventListener("change", () => {
-				syncMinEndDate();
-				validateForm();
-			});
 			checkInInput.addEventListener("input", () => {
-				syncMinEndDate();
+				syncMinEndDate(checkInInput, checkOutInput, true);
 				validateForm();
 			});
 			if (checkInInput.value) {
-				syncMinEndDate();
+				syncMinEndDate(checkInInput, checkOutInput, true);
 			}
 		}
 
@@ -1461,7 +1464,6 @@
 			? Number.parseInt(guestCountInput.value, 10) || 0
 			: 0;
 		let isAvailable = true;
-		const isCheckingAvailability = false;
 
 		function markRegistryModified() {
 			if (hasSyncedClearance && clearanceModifiedIndicator) {
@@ -1693,39 +1695,7 @@
 			}
 		}
 
-		function syncMinEndDate() {
-			if (!checkInInput || !checkOutInput) return;
-			if (!checkInInput.value) {
-				checkOutInput.removeAttribute("min");
-				return;
-			}
-			const parts = checkInInput.value.split("-");
-			if (parts.length !== 3) return;
-			const start = new Date(
-				Number.parseInt(parts[0], 10),
-				Number.parseInt(parts[1], 10) - 1,
-				Number.parseInt(parts[2], 10),
-			);
-			if (Number.isNaN(start.getTime())) return;
-
-			const minEnd = new Date(start);
-			minEnd.setDate(minEnd.getDate() + 1);
-			const y = minEnd.getFullYear();
-			const m = String(minEnd.getMonth() + 1).padStart(2, "0");
-			const d = String(minEnd.getDate()).padStart(2, "0");
-			const minEndStr = `${y}-${m}-${d}`;
-			checkOutInput.min = minEndStr;
-
-			if (checkOutInput.value && checkOutInput.value <= checkInInput.value) {
-				checkOutInput.value = minEndStr;
-			}
-		}
-
 		function getUnmetRequirement() {
-			if (isCheckingAvailability) {
-				return "Checking availability...";
-			}
-
 			const propVal = propertySelect ? propertySelect.value : "";
 			if (propVal !== "1606" && propVal !== "1707") {
 				return "Select a valid property";
@@ -1857,46 +1827,21 @@
 		}
 
 		function validateForm() {
-			const unmetRequirement = getUnmetRequirement();
-			const btn = document.getElementById("edit-submit-btn");
-			const helper = document.getElementById("edit-submit-helper");
-
-			if (unmetRequirement) {
-				if (btn) {
-					btn.disabled = true;
-					btn.setAttribute("aria-disabled", "true");
-					btn.classList.add("opacity-50", "cursor-not-allowed");
-					btn.classList.remove("cursor-pointer");
-				}
-				if (helper) {
-					helper.textContent = unmetRequirement;
-					helper.classList.remove("hidden");
-				}
-				return false;
-			}
-
-			if (btn) {
-				btn.disabled = false;
-				btn.setAttribute("aria-disabled", "false");
-				btn.classList.remove("opacity-50", "cursor-not-allowed");
-				btn.classList.add("cursor-pointer");
-			}
-			if (helper) {
-				helper.textContent = "";
-				helper.classList.add("hidden");
-			}
-			return true;
+			return applyFormValidationState(
+				"edit-submit-btn",
+				"edit-submit-helper",
+				getUnmetRequirement(),
+			);
 		}
 
 		if (checkInInput) {
-			checkInInput.addEventListener("change", () => {
-				syncMinEndDate();
-				validateForm();
-			});
 			checkInInput.addEventListener("input", () => {
-				syncMinEndDate();
+				syncMinEndDate(checkInInput, checkOutInput, true);
 				validateForm();
 			});
+			if (checkInInput.value) {
+				syncMinEndDate(checkInInput, checkOutInput, true);
+			}
 		}
 
 		if (checkOutInput) {

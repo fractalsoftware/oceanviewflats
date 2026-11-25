@@ -476,18 +476,9 @@ final class ReservationController
         );
 
         if ($request->isHtmx()) {
-            $responseBody = '<div id="modal-container" hx-swap-oob="innerHTML"></div>';
-            $responseBody .= '<div id="drawer-container" hx-swap-oob="innerHTML">' . $drawerHtml . '</div>';
-
-            return new Response(
-                statusCode: 200,
-                headers: [
-                    'Content-Type' => 'text/html; charset=UTF-8',
-                    'HX-Trigger' => 'reservationUpdated',
-                    'HX-Push-Url' => '/reservations/' . urlencode($uid),
-                ],
-                body: $responseBody
-            );
+            return $this->buildCloseModalAndOpenDrawerResponse($drawerHtml, [
+                'HX-Push-Url' => '/reservations/' . urlencode($uid),
+            ]);
         }
 
         return Response::redirect('/reservations/' . urlencode($uid));
@@ -636,17 +627,7 @@ final class ReservationController
         );
 
         if ($request->isHtmx()) {
-            $responseBody = '<div id="modal-container" hx-swap-oob="innerHTML"></div>';
-            $responseBody .= '<div id="drawer-container" hx-swap-oob="innerHTML">' . $drawerHtml . '</div>';
-
-            return new Response(
-                statusCode: 200,
-                headers: [
-                    'Content-Type' => 'text/html; charset=UTF-8',
-                    'HX-Trigger' => 'reservationUpdated',
-                ],
-                body: $responseBody
-            );
+            return $this->buildCloseModalAndOpenDrawerResponse($drawerHtml);
         }
 
         return Response::redirect('/reservations/' . urlencode($uid));
@@ -1152,20 +1133,30 @@ final class ReservationController
         );
 
         if ($request->isHtmx()) {
-            $responseBody = '<div id="modal-container" hx-swap-oob="innerHTML"></div>';
-            $responseBody .= '<div id="drawer-container" hx-swap-oob="innerHTML">' . $drawerHtml . '</div>';
-
-            return new Response(
-                statusCode: 200,
-                headers: [
-                    'Content-Type' => 'text/html; charset=UTF-8',
-                    'HX-Trigger' => 'reservationUpdated',
-                ],
-                body: $responseBody
-            );
+            return $this->buildCloseModalAndOpenDrawerResponse($drawerHtml);
         }
 
         return Response::redirect('/reservations/' . urlencode($uid));
+    }
+
+    /**
+     * Builds an HTMX response that clears #modal-container and swaps the refreshed drawer OOB.
+     *
+     * @param array<string, string> $extraHeaders
+     */
+    private function buildCloseModalAndOpenDrawerResponse(string $drawerHtml, array $extraHeaders = []): Response
+    {
+        $responseBody = '<div id="modal-container" hx-swap-oob="innerHTML"></div>';
+        $responseBody .= '<div id="drawer-container" hx-swap-oob="innerHTML">' . $drawerHtml . '</div>';
+
+        return new Response(
+            statusCode: 200,
+            headers: array_merge([
+                'Content-Type' => 'text/html; charset=UTF-8',
+                'HX-Trigger' => 'reservationUpdated',
+            ], $extraHeaders),
+            body: $responseBody
+        );
     }
 
     /**

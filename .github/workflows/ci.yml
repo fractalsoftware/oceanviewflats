@@ -86,6 +86,9 @@ jobs:
       - name: Run build verification
         run: npm run build
 
+      - name: Verify compiled Admin Console assets are in sync
+        run: git diff --exit-code admin/public/assets/admin.css admin/public/assets/htmx.min.js
+
       - name: Run SSG & client interactivity tests
         run: npm test
 
