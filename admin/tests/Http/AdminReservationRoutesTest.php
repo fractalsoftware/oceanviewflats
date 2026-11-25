@@ -892,10 +892,12 @@ final class AdminReservationRoutesTest extends TestCase
         $this->assertStringContainsString('id="edit-clear-registry-btn"', $modalHtml);
         $this->assertStringContainsString('name="sync_condominium_clearance"', $modalHtml);
         $this->assertStringContainsString('name="send_access_dispatch"', $modalHtml);
-        // Verify JS pre-fill logic for Guest #1 from Primary Guest fields when starting from empty registry
-        $this->assertStringContainsString("var fn1 = document.getElementById('edit-guest-first-name-1')", $modalHtml);
-        $this->assertStringContainsString("var em1 = document.getElementById('edit-guest-email-1')", $modalHtml);
-        $this->assertStringContainsString("var ph1 = document.getElementById('edit-guest-phone-1')", $modalHtml);
+        // Verify JS pre-fill logic for Guest #1 from Primary Guest fields lives in /assets/admin.js (zero inline <script>)
+        $this->assertStringNotContainsString('<script>', $modalHtml);
+        $adminJs = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/admin.js');
+        $this->assertStringContainsString('document.getElementById("edit-guest-first-name-1")', $adminJs);
+        $this->assertStringContainsString('document.getElementById("edit-guest-email-1")', $adminJs);
+        $this->assertStringContainsString('document.getElementById("edit-guest-phone-1")', $adminJs);
 
         // 2. POST /reservations/res-abnb-scratch/edit with 2 Guests & vehicle creates guest_registries,
         // marks registry_completed = 1, enriches @airbnb-guest.local email with Guest #1's email, and generates door_code

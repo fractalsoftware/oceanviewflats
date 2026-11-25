@@ -9,6 +9,8 @@ namespace OceanViewFlats\Admin\Http;
  */
 final class Response
 {
+    public const CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'";
+
     /**
      * @param array<string, string> $headers
      */
@@ -118,6 +120,7 @@ final class Response
                 'X-Frame-Options' => 'DENY',
                 'X-Content-Type-Options' => 'nosniff',
                 'Referrer-Policy' => 'strict-origin-when-cross-origin',
+                'Content-Security-Policy' => self::CONTENT_SECURITY_POLICY,
             ], $this->headers);
 
             foreach ($headers as $name => $value) {

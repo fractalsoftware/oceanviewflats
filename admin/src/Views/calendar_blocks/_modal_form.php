@@ -21,7 +21,7 @@ $filter = !empty($filter) ? $filter : 'upcoming';
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
-         onclick="document.getElementById('modal-container').innerHTML = '';"
+         data-action="close-modal"
          aria-hidden="true"></div>
 
     <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
@@ -45,7 +45,7 @@ $filter = !empty($filter) ? $filter : 'upcoming';
                     </div>
                 </div>
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-100 transition cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -142,7 +142,7 @@ $filter = !empty($filter) ? $filter : 'upcoming';
                 <!-- Modal Actions -->
                 <div class="pt-4 border-t border-gray-200 flex items-center justify-end space-x-3">
                     <button type="button"
-                            onclick="document.getElementById('modal-container').innerHTML = '';"
+                            data-action="close-modal"
                             class="px-4 py-2 border border-gray-300 text-xs font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
                         Cancel
                     </button>
@@ -152,39 +152,6 @@ $filter = !empty($filter) ? $filter : 'upcoming';
                     </button>
                 </div>
             </form>
-
-            <script>
-            (function() {
-                var startInput = document.getElementById('block-start-date');
-                var endInput = document.getElementById('block-end-date');
-                if (!startInput || !endInput) return;
-
-                function syncMinEndDate() {
-                    if (!startInput.value) return;
-                    var parts = startInput.value.split('-');
-                    if (parts.length !== 3) return;
-                    var start = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                    if (isNaN(start.getTime())) return;
-
-                    var minEnd = new Date(start);
-                    minEnd.setDate(minEnd.getDate() + 1);
-                    var y = minEnd.getFullYear();
-                    var m = String(minEnd.getMonth() + 1).padStart(2, '0');
-                    var d = String(minEnd.getDate()).padStart(2, '0');
-                    var minEndStr = y + '-' + m + '-' + d;
-                    endInput.min = minEndStr;
-
-                    if (endInput.value && endInput.value <= startInput.value) {
-                        endInput.value = minEndStr;
-                    }
-                }
-
-                startInput.addEventListener('change', syncMinEndDate);
-                if (startInput.value) {
-                    syncMinEndDate();
-                }
-            })();
-            </script>
         </div>
     </div>
 </div>

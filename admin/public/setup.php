@@ -77,9 +77,6 @@ $createdUser = $data['user'] ?? null;
   <link rel="shortcut icon" href="/favicon.ico?v=20260614">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260614">
   <meta name="theme-color" content="#c084fc">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #0284c7;

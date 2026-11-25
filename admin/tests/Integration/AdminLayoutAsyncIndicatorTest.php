@@ -33,6 +33,8 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
 {
     private PDO $pdo;
     private AdminApp $app;
+    private string $adminJs;
+    private string $adminCss;
 
     /**
      * @var array<string, mixed>
@@ -43,6 +45,10 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
     {
         $this->pdo = AdminDatabaseTestHelper::createDatabaseWithDefaultAdmin();
         $this->app = AdminApp::createDefault($this->pdo);
+
+        $assetsDir = dirname(__DIR__, 2) . '/public/assets';
+        $this->adminJs = (string) file_get_contents($assetsDir . '/admin.js');
+        $this->adminCss = (string) file_get_contents($assetsDir . '/admin.css');
 
         $this->authenticatedSession = [
             'admin_user_id' => 1,
@@ -98,23 +104,27 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $html = $response->getBody();
 
-        // 1. HTMX lifecycle listeners
-        $this->assertStringContainsString('htmx:beforeRequest', $html);
-        $this->assertStringContainsString('htmx:afterRequest', $html);
+        // Layout loads external local admin.js (no inline <script> blocks under strict CSP)
+        $this->assertStringContainsString('<script src="/assets/admin.js"></script>', $html);
+        $this->assertStringNotContainsString('<script>', $html);
+
+        // 1. HTMX lifecycle listeners in /assets/admin.js
+        $this->assertStringContainsString('htmx:beforeRequest', $this->adminJs);
+        $this->assertStringContainsString('htmx:afterRequest', $this->adminJs);
 
         // 2. Active requests counter
-        $this->assertStringContainsString('activeRequests', $html);
+        $this->assertStringContainsString('activeRequests', $this->adminJs);
 
         // 3. 150ms debounce logic
-        $this->assertStringContainsString('150', $html);
-        $this->assertStringContainsString('150ms debounce', $html);
+        $this->assertStringContainsString('150', $this->adminJs);
+        $this->assertStringContainsString('150ms debounce', $this->adminJs);
 
         // 4. Smooth progression markers (25% -> 60% -> 85% -> 100% -> 0%)
-        $this->assertStringContainsString("25%", $html);
-        $this->assertStringContainsString("60%", $html);
-        $this->assertStringContainsString("85%", $html);
-        $this->assertStringContainsString("100%", $html);
-        $this->assertStringContainsString("0%", $html);
+        $this->assertStringContainsString('25%', $this->adminJs);
+        $this->assertStringContainsString('60%', $this->adminJs);
+        $this->assertStringContainsString('85%', $this->adminJs);
+        $this->assertStringContainsString('100%', $this->adminJs);
+        $this->assertStringContainsString('0%', $this->adminJs);
     }
 
     #[DataProvider('authenticatedRoutesProvider')]
@@ -126,20 +136,23 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $html = $response->getBody();
 
+        // Layout loads compiled local admin.css
+        $this->assertStringContainsString('<link rel="stylesheet" href="/assets/admin.css">', $html);
+
         // 1. Shimmer animation keyframes, reachable selector, and theme variables
-        $this->assertStringContainsString('@keyframes progress-shimmer', $html);
-        $this->assertStringContainsString('#global-progress-bar.loading', $html);
-        $this->assertStringContainsString('body.htmx-request #global-progress-bar', $html);
-        $this->assertStringContainsString('var(--color-indigo-600, #4f46e5)', $html);
-        $this->assertStringContainsString('var(--color-indigo-400, #818cf8)', $html);
+        $this->assertStringContainsString('@keyframes progress-shimmer', $this->adminCss);
+        $this->assertStringContainsString('#global-progress-bar.loading', $this->adminCss);
+        $this->assertStringContainsString('body.htmx-request #global-progress-bar', $this->adminCss);
+        $this->assertStringContainsString('var(--color-indigo-600,#4f46e5)', $this->adminCss);
+        $this->assertStringContainsString('var(--color-indigo-400,#818cf8)', $this->adminCss);
 
         // 2. Reduced motion media query
-        $this->assertStringContainsString('@media (prefers-reduced-motion: reduce)', $html);
-        $this->assertStringContainsString('animation: none !important', $html);
+        $this->assertStringContainsString('prefers-reduced-motion:reduce', $this->adminCss);
+        $this->assertStringContainsString('animation:none!important', $this->adminCss);
 
         // 3. Preserved existing .htmx-indicator rules
-        $this->assertStringContainsString('.htmx-indicator { display: none; }', $html);
-        $this->assertStringContainsString('.htmx-request .htmx-indicator', $html);
+        $this->assertStringContainsString('.htmx-indicator{display:none}', $this->adminCss);
+        $this->assertStringContainsString('.htmx-request .htmx-indicator', $this->adminCss);
     }
 
     #[DataProvider('authenticatedRoutesProvider')]
@@ -150,16 +163,17 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $html = $response->getBody();
+        $this->assertStringContainsString('<link rel="stylesheet" href="/assets/admin.css">', $html);
 
         // 1. Selector targeting mutation buttons and submit controls
-        $this->assertStringContainsString('.htmx-request:is(button, [type="submit"], a[hx-post], a[hx-delete], a[hx-put])', $html);
-        $this->assertStringContainsString('form.htmx-request button[type="submit"]', $html);
-        $this->assertStringContainsString('form.htmx-request input[type="submit"]', $html);
+        $this->assertStringContainsString('.htmx-request:is(button,[type=submit],a[hx-post],a[hx-delete],a[hx-put])', $this->adminCss);
+        $this->assertStringContainsString('form.htmx-request button[type=submit]', $this->adminCss);
+        $this->assertStringContainsString('form.htmx-request input[type=submit]', $this->adminCss);
 
         // 2. Button mutation lock styling rules
-        $this->assertStringContainsString('pointer-events: none !important;', $html);
-        $this->assertStringContainsString('opacity: 0.75 !important;', $html);
-        $this->assertStringContainsString('cursor: wait !important;', $html);
+        $this->assertStringContainsString('pointer-events:none!important', $this->adminCss);
+        $this->assertStringContainsString('opacity:.75!important', $this->adminCss);
+        $this->assertStringContainsString('cursor:wait!important', $this->adminCss);
     }
 
     #[DataProvider('authenticatedRoutesProvider')]
@@ -170,27 +184,28 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $html = $response->getBody();
+        $this->assertStringContainsString('<script src="/assets/admin.js"></script>', $html);
 
         // 1. Mutating HTTP verb detection (POST, DELETE, PUT)
-        $this->assertStringContainsString('isMutatingVerb', $html);
-        $this->assertStringContainsString('post', $html);
-        $this->assertStringContainsString('delete', $html);
-        $this->assertStringContainsString('put', $html);
+        $this->assertStringContainsString('isMutatingVerb', $this->adminJs);
+        $this->assertStringContainsString('post', $this->adminJs);
+        $this->assertStringContainsString('delete', $this->adminJs);
+        $this->assertStringContainsString('put', $this->adminJs);
 
         // 2. HTMX lifecycle hooks and error handlers for locking/unlocking
-        $this->assertStringContainsString('htmx:beforeRequest', $html);
-        $this->assertStringContainsString('htmx:afterRequest', $html);
-        $this->assertStringContainsString('htmx:sendError', $html);
-        $this->assertStringContainsString('htmx:responseError', $html);
+        $this->assertStringContainsString('htmx:beforeRequest', $this->adminJs);
+        $this->assertStringContainsString('htmx:afterRequest', $this->adminJs);
+        $this->assertStringContainsString('htmx:sendError', $this->adminJs);
+        $this->assertStringContainsString('htmx:responseError', $this->adminJs);
 
         // 3. Trigger locking and unlocking logic
-        $this->assertStringContainsString('requestConfig', $html);
-        $this->assertStringContainsString('verb', $html);
-        $this->assertStringContainsString('button[type="submit"]', $html);
-        $this->assertStringContainsString('input[type="submit"]', $html);
-        $this->assertStringContainsString('data-mutation-locked', $html);
-        $this->assertStringContainsString('lockMutatingTriggers', $html);
-        $this->assertStringContainsString('unlockMutatingTriggers', $html);
+        $this->assertStringContainsString('requestConfig', $this->adminJs);
+        $this->assertStringContainsString('verb', $this->adminJs);
+        $this->assertStringContainsString('button[type="submit"]', $this->adminJs);
+        $this->assertStringContainsString('input[type="submit"]', $this->adminJs);
+        $this->assertStringContainsString('data-mutation-locked', $this->adminJs);
+        $this->assertStringContainsString('lockMutatingTriggers', $this->adminJs);
+        $this->assertStringContainsString('unlockMutatingTriggers', $this->adminJs);
     }
 
     #[DataProvider('authenticatedRoutesProvider')]
@@ -223,37 +238,38 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $html = $response->getBody();
-
-        // 1. HTMX error event handlers
-        $this->assertStringContainsString('htmx:responseError', $html);
-        $this->assertStringContainsString('htmx:sendError', $html);
-
-        // 2. Error handling clears/decrements activeRequests counter
-        $this->assertStringContainsString('decrementActiveRequests', $html);
-
-        // 3. HTTP 500+ / network error detection
-        $this->assertStringContainsString('status >= 500', $html);
-
-        // 4. Progress bar rose error flash and duration
-        $this->assertStringContainsString('bg-rose-500', $html);
-        $this->assertStringContainsString('bg-indigo-600', $html);
-        $this->assertStringContainsString('1200', $html);
-
-        // 5. Floating alert toast creation, localization data-msg reading, and Tailwind rose tokens
-        $this->assertStringContainsString('global-alert-container', $html);
-        $this->assertStringContainsString('bg-rose-50', $html);
-        $this->assertStringContainsString('border-rose-200', $html);
-        $this->assertStringContainsString('text-rose-800', $html);
-        $this->assertStringContainsString('data-msg-error', $html);
-        $this->assertStringContainsString('data-msg-dismiss', $html);
+        $this->assertStringContainsString('<script src="/assets/admin.js"></script>', $html);
         $this->assertStringContainsString('Network or server error occurred. Please try again.', $html);
-
-        // 6. Toast auto-dismiss duration (4000ms) and manual close button
-        $this->assertStringContainsString('4000', $html);
         $this->assertStringContainsString('Dismiss alert', $html);
 
+        // 1. HTMX error event handlers
+        $this->assertStringContainsString('htmx:responseError', $this->adminJs);
+        $this->assertStringContainsString('htmx:sendError', $this->adminJs);
+
+        // 2. Error handling clears/decrements activeRequests counter
+        $this->assertStringContainsString('decrementActiveRequests', $this->adminJs);
+
+        // 3. HTTP 500+ / network error detection
+        $this->assertStringContainsString('status >= 500', $this->adminJs);
+
+        // 4. Progress bar rose error flash and duration
+        $this->assertStringContainsString('bg-rose-500', $this->adminJs);
+        $this->assertStringContainsString('bg-indigo-600', $this->adminJs);
+        $this->assertStringContainsString('1200', $this->adminJs);
+
+        // 5. Floating alert toast creation, localization data-msg reading, and Tailwind rose tokens
+        $this->assertStringContainsString('global-alert-container', $this->adminJs);
+        $this->assertStringContainsString('bg-rose-50', $this->adminJs);
+        $this->assertStringContainsString('border-rose-200', $this->adminJs);
+        $this->assertStringContainsString('text-rose-800', $this->adminJs);
+        $this->assertStringContainsString('data-msg-error', $this->adminJs);
+        $this->assertStringContainsString('data-msg-dismiss', $this->adminJs);
+
+        // 6. Toast auto-dismiss duration (4000ms)
+        $this->assertStringContainsString('4000', $this->adminJs);
+
         // 7. Mutation lock release on error for user retry
-        $this->assertStringContainsString('unlockAllButtons', $html);
+        $this->assertStringContainsString('unlockAllButtons', $this->adminJs);
     }
 
     #[DataProvider('authenticatedRoutesProvider')]
@@ -273,13 +289,16 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $html = $response->getBody();
 
+        $this->assertStringContainsString('<script src="/assets/admin.js"></script>', $html);
+        $this->assertStringContainsString('<link rel="stylesheet" href="/assets/admin.css">', $html);
+
         // 1. Prevent premature button locking when HTML5 form constraint validation fails
-        $this->assertStringContainsString('checkValidity', $html);
+        $this->assertStringContainsString('checkValidity', $this->adminJs);
 
         // 2. Global progress bar and alert container stack above z-40/z-50 modals via explicit z-index
-        $this->assertStringContainsString('z-index: 70', $html);
+        $this->assertStringContainsString('z-index:70', $this->adminCss);
 
         // 3. Surface non-422 4xx errors (e.g. 403 CSRF) via handleAsyncError()
-        $this->assertStringContainsString('status >= 400 && status !== 422', $html);
+        $this->assertStringContainsString('status >= 400 && status !== 422', $this->adminJs);
     }
 }

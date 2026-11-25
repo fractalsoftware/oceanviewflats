@@ -8,25 +8,10 @@
  */
 ?>
 
-<script>
-window.closeReservationDrawer = window.closeReservationDrawer || function() {
-    var container = document.getElementById('drawer-container');
-    if (container) {
-        container.innerHTML = '';
-    } else {
-        window.location.href = '/reservations';
-        return;
-    }
-    if (window.location.pathname.startsWith('/reservations/')) {
-        window.history.pushState(null, '', '/reservations');
-    }
-};
-</script>
-
 <div id="day-summary-drawer" class="fixed inset-0 z-40 overflow-hidden" aria-labelledby="slide-over-day-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-xs transition-opacity duration-300 cursor-pointer"
-         onclick="closeReservationDrawer();"
+         data-action="close-reservation-drawer"
          aria-hidden="true"></div>
 
     <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
@@ -85,7 +70,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                     </p>
                 </div>
                 <button type="button"
-                        onclick="closeReservationDrawer();"
+                        data-action="close-reservation-drawer"
                         class="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer">
                     <span class="sr-only">Close panel</span>
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,7 +381,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                                     hx-get="<?= htmlspecialchars($onboardHref, ENT_QUOTES, 'UTF-8') ?>"
                                                     hx-target="#modal-container"
                                                     hx-swap="innerHTML"
-                                                    onclick="closeReservationDrawer();"
+                                                    data-action="close-reservation-drawer"
                                                     class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition cursor-pointer">
                                                 Onboard Guest
                                             </button>
@@ -413,7 +398,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                                 hx-get="/reservations/new?check_in=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&property_id=<?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>"
                                                 hx-target="#modal-container"
                                                 hx-swap="innerHTML"
-                                                onclick="closeReservationDrawer();"
+                                                data-action="close-reservation-drawer"
                                                 class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition cursor-pointer">
                                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -424,7 +409,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                                                 hx-get="/calendar/blocks/new?property_id=<?= htmlspecialchars($prop->propertyId, ENT_QUOTES, 'UTF-8') ?>&start_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&end_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>"
                                                 hx-target="#modal-container"
                                                 hx-swap="innerHTML"
-                                                onclick="closeReservationDrawer();"
+                                                data-action="close-reservation-drawer"
                                                 class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 transition cursor-pointer">
                                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -474,7 +459,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                             hx-get="/reservations/new?check_in=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&property_id=<?= $summary->propertyFilter === 'all' ? '1606' : htmlspecialchars($summary->propertyFilter, ENT_QUOTES, 'UTF-8') ?>"
                             hx-target="#modal-container"
                             hx-swap="innerHTML"
-                            onclick="closeReservationDrawer();"
+                            data-action="close-reservation-drawer"
                             class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs transition cursor-pointer">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -485,7 +470,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                             hx-get="/calendar/blocks/new?property_id=<?= $summary->propertyFilter === 'all' ? '1606' : htmlspecialchars($summary->propertyFilter, ENT_QUOTES, 'UTF-8') ?>&start_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>&end_date=<?= htmlspecialchars($summary->date, ENT_QUOTES, 'UTF-8') ?>"
                             hx-target="#modal-container"
                             hx-swap="innerHTML"
-                            onclick="closeReservationDrawer();"
+                            data-action="close-reservation-drawer"
                             class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg shadow-2xs transition cursor-pointer">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -494,7 +479,7 @@ window.closeReservationDrawer = window.closeReservationDrawer || function() {
                     </button>
                 </div>
                 <button type="button"
-                        onclick="closeReservationDrawer();"
+                        data-action="close-reservation-drawer"
                         class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg shadow-2xs transition cursor-pointer">
                     Close
                 </button>

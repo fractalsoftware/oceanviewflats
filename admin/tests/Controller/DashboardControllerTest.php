@@ -69,12 +69,14 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('Calendar Blocks', $body);
         $this->assertStringNotContainsString('href="/audit-logs"', $body);
 
-        // Check mobile hamburger navigation & input zoom prevention in layout
+        // Check mobile hamburger navigation & input zoom prevention in layout / local admin.css
         $this->assertStringContainsString('id="mobile-menu-button"', $body);
         $this->assertStringContainsString('id="mobile-menu"', $body);
         $this->assertStringContainsString('aria-controls="mobile-menu"', $body);
         $this->assertStringContainsString('maximum-scale=1.0', $body);
-        $this->assertStringContainsString('font-size: 16px !important', $body);
+        $this->assertStringContainsString('<link rel="stylesheet" href="/assets/admin.css">', $body);
+        $adminCss = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/admin.css');
+        $this->assertStringContainsString('font-size:16px!important', $adminCss);
 
         // Check dashboard UI sections & verify removed clutter cards
         $this->assertStringNotContainsString('Reservations & Calendar', $body);
@@ -135,10 +137,12 @@ final class DashboardControllerTest extends TestCase
         $this->assertStringContainsString('"code": "422"', $body);
         $this->assertStringContainsString('"swap": true', $body);
 
-        // Global htmx:beforeSwap listener for resilient 422 swapping and error suppression
-        $this->assertStringContainsString('htmx:beforeSwap', $body);
-        $this->assertStringContainsString('422', $body);
-        $this->assertStringContainsString('shouldSwap', $body);
+        // Global htmx:beforeSwap listener for resilient 422 swapping loaded from /assets/admin.js
+        $this->assertStringContainsString('<script src="/assets/admin.js"></script>', $body);
+        $adminJs = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/admin.js');
+        $this->assertStringContainsString('htmx:beforeSwap', $adminJs);
+        $this->assertStringContainsString('422', $adminJs);
+        $this->assertStringContainsString('shouldSwap', $adminJs);
     }
 
     public function testIndexRendersOperationalHubWidgetsAndData(): void

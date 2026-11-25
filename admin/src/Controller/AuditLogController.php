@@ -92,7 +92,7 @@ class AuditLogController
                         <div class="bg-white rounded-xl shadow-xl p-6 max-w-sm text-center border border-gray-200">
                             <p class="text-sm font-semibold text-rose-600 mb-2">Audit log not found</p>
                             <p class="text-xs text-gray-500 mb-4">No audit entry exists with ID #' . htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8') . '</p>
-                            <button type="button" onclick="closeAuditDrawer();" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs rounded-md text-gray-700 font-medium cursor-pointer">Dismiss</button>
+                            <button type="button" data-action="close-audit-drawer" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs rounded-md text-gray-700 font-medium cursor-pointer">Dismiss</button>
                         </div>
                     </div>';
                 return Response::html($errorBanner, 404);

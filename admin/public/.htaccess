@@ -29,11 +29,13 @@ Options -Indexes
     Header unset X-Content-Type-Options
     Header unset Referrer-Policy
     Header unset Permissions-Policy
+    Header unset Content-Security-Policy
     Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
     Header always set X-Frame-Options "DENY"
     Header always set X-Content-Type-Options "nosniff"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'"
 </IfModule>
 
 # 4. Static Asset MIME Types (PWA Web App Manifest & Vector Icons)

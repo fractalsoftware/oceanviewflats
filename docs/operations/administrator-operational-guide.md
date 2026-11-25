@@ -16,9 +16,10 @@ The Admin Console runs on an isolated subdomain (`admin.oceanviewflats.com`) wit
 │   └── api/                     <-- Public REST APIs (loads /home/<user>/vendor/autoload.php)
 ├── admin/
 │   ├── public/                  <-- DocumentRoot for admin.oceanviewflats.com (Pattern A)
+│   │   ├── assets/              <-- Locally bundled Admin Console CSS/JS (admin.css, htmx.min.js, admin.js; built via npm run build:admin)
 │   │   ├── index.php            <-- Administrative Front-Controller
 │   │   ├── setup.php            <-- One-Time Bootstrap Utility (auto-locks once an admin user exists)
-│   │   └── .htaccess            <-- URL Rewriting & HTTP Security Headers
+│   │   └── .htaccess            <-- URL Rewriting, Strict CSP & HTTP Security Headers
 │   └── src/                     <-- Controllers, Repositories, Auth/CSRF Middleware, & HTMX Views (Views/)
 ├── src/
 │   ├── Domain/                  <-- Shared Domain Models (Access, Database, Finance, Fulfillment,

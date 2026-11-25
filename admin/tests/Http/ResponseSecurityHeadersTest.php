@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Admin\Tests\Http;
 
+use OceanViewFlats\Admin\Http\Response;
 use OceanViewFlats\Tests\Support\BuiltInHttpServer;
 use PHPUnit\Framework\TestCase;
 
@@ -105,5 +106,9 @@ PHP;
         $this->assertSame(['DENY'], $response['headerValues']['x-frame-options'] ?? null);
         $this->assertSame(['nosniff'], $response['headerValues']['x-content-type-options'] ?? null);
         $this->assertSame(['strict-origin-when-cross-origin'], $response['headerValues']['referrer-policy'] ?? null);
+        $this->assertSame(
+            [Response::CONTENT_SECURITY_POLICY],
+            $response['headerValues']['content-security-policy'] ?? null
+        );
     }
 }

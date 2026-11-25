@@ -25,7 +25,7 @@ $formAction = $isEdit ? "/rates/{$rateId}" : '/rates';
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="rate-modal-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
-         onclick="document.getElementById('modal-container').innerHTML = '';"
+         data-action="close-modal"
          aria-hidden="true"></div>
 
     <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
@@ -49,7 +49,7 @@ $formAction = $isEdit ? "/rates/{$rateId}" : '/rates';
                     </div>
                 </div>
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-100 transition cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -198,7 +198,7 @@ $formAction = $isEdit ? "/rates/{$rateId}" : '/rates';
                 <!-- Form Actions -->
                 <div class="pt-2 flex justify-end space-x-2 border-t border-gray-200">
                     <button type="button"
-                            onclick="document.getElementById('modal-container').innerHTML = '';"
+                            data-action="close-modal"
                             class="px-3.5 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
                         Cancel
                     </button>

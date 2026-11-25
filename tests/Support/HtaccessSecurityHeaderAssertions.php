@@ -14,12 +14,25 @@ final class HtaccessSecurityHeaderAssertions
 {
     public const HSTS_VALUE = '"max-age=15552000; includeSubDomains" "expr=%{HTTPS} == \'on\'"';
 
+    public const ADMIN_CSP_VALUE = '"default-src \'self\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data:; form-action \'self\'; frame-ancestors \'none\'; base-uri \'self\'"';
+
+    public const PUBLIC_CSP_REPORT_ONLY_VALUE = '"default-src \'self\'; script-src \'self\' https://sdk.mercadopago.com https://api-static.mercadopago.com https://http2.mlstatic.com https://stats.fractalserver.com; style-src \'self\' \'unsafe-inline\' https://fonts.googleapis.com https://http2.mlstatic.com; font-src \'self\' https://fonts.gstatic.com https://http2.mlstatic.com data:; img-src \'self\' data: https://http2.mlstatic.com https://api-static.mercadopago.com https://stats.fractalserver.com; connect-src \'self\' https://api.mercadopago.com https://api-static.mercadopago.com https://sdk.mercadopago.com https://http2.mlstatic.com https://stats.fractalserver.com https://open.er-api.com; frame-src \'self\' https://sdk.mercadopago.com https://api-static.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.co; form-action \'self\'; frame-ancestors \'self\'; base-uri \'self\'; object-src \'none\'"';
+
     /** @var list<string> */
     public const PHP_EMITTED_SECURITY_HEADERS = [
         'X-Frame-Options',
         'X-Content-Type-Options',
         'Referrer-Policy',
         'Permissions-Policy',
+    ];
+
+    /** @var list<string> */
+    public const ADMIN_PHP_EMITTED_SECURITY_HEADERS = [
+        'X-Frame-Options',
+        'X-Content-Type-Options',
+        'Referrer-Policy',
+        'Permissions-Policy',
+        'Content-Security-Policy',
     ];
 
     /**
@@ -74,6 +87,7 @@ final class HtaccessSecurityHeaderAssertions
             'X-Content-Type-Options' => '"nosniff"',
             'Referrer-Policy' => '"strict-origin-when-cross-origin"',
             'Permissions-Policy' => '"geolocation=(), microphone=(), camera=(), payment=(self)"',
+            'Content-Security-Policy-Report-Only' => self::PUBLIC_CSP_REPORT_ONLY_VALUE,
         ];
     }
 
@@ -102,6 +116,7 @@ final class HtaccessSecurityHeaderAssertions
             'X-Content-Type-Options' => '"nosniff"',
             'Referrer-Policy' => '"strict-origin-when-cross-origin"',
             'Permissions-Policy' => '"geolocation=(), microphone=(), camera=(), payment=()"',
+            'Content-Security-Policy' => self::ADMIN_CSP_VALUE,
         ];
     }
 }
