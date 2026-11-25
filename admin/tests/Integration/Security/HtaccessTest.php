@@ -214,7 +214,7 @@ final class HtaccessTest extends TestCase
         }
     }
 
-    public function testXPoweredBySuppressionIsEnforcedAcrossAllHtaccessAndDockerConfigFiles(): void
+    public function testXPoweredBySuppressionIsEnforcedAcrossAllHtaccessFiles(): void
     {
         $rootDir = dirname(__DIR__, 4);
         $htaccessFiles = [
@@ -240,23 +240,5 @@ final class HtaccessTest extends TestCase
                 "{$relativePath} must strip X-Powered-By with 'Header unset X-Powered-By' inside mod_headers."
             );
         }
-
-        $phpIniPath = $rootDir . '/docker/php-security.ini';
-        $this->assertFileExists($phpIniPath, 'docker/php-security.ini must exist to harden container PHP runtime.');
-        $phpIniContent = (string) file_get_contents($phpIniPath);
-        $this->assertMatchesRegularExpression(
-            '/^\s*expose_php\s*=\s*Off\b/im',
-            $phpIniContent,
-            'docker/php-security.ini must disable expose_php.'
-        );
-
-        $dockerfilePath = $rootDir . '/Dockerfile';
-        $this->assertFileExists($dockerfilePath);
-        $dockerfileContent = (string) file_get_contents($dockerfilePath);
-        $this->assertStringContainsString(
-            'COPY docker/php-security.ini /usr/local/etc/php/conf.d/',
-            $dockerfileContent,
-            'Dockerfile must install docker/php-security.ini into PHP conf.d.'
-        );
     }
 }

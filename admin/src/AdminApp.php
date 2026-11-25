@@ -115,10 +115,6 @@ final class AdminApp
      */
     public function handle(Request $request, array &$session): Response
     {
-        if (!headers_sent()) {
-            header_remove('X-Powered-By');
-        }
-
         return $this->router->dispatch($request, $session);
     }
 
