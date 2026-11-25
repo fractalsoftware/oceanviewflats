@@ -241,4 +241,85 @@ final class HtaccessTest extends TestCase
             );
         }
     }
+
+    public function testSecurityHeadersUseAlwaysSetAndUnsetOnsuccessToPreventDuplicates(): void
+    {
+        $rootDir = dirname(__DIR__, 4);
+        $htaccessExpectations = [
+            'public/.htaccess' => [
+                'content' => (string) file_get_contents($rootDir . '/public/.htaccess'),
+                'requireOnsuccessUnset' => false,
+                'headers' => [
+                    'Strict-Transport-Security' => '"max-age=15552000; includeSubDomains" "expr=%{HTTPS} == \'on\'"',
+                    'X-Frame-Options' => '"SAMEORIGIN"',
+                    'X-Content-Type-Options' => '"nosniff"',
+                    'Referrer-Policy' => '"strict-origin-when-cross-origin"',
+                    'Permissions-Policy' => '"geolocation=(), microphone=(), camera=(), payment=(self)"',
+                ],
+            ],
+            'public/api/.htaccess' => [
+                'content' => (string) file_get_contents($rootDir . '/public/api/.htaccess'),
+                'requireOnsuccessUnset' => true,
+                'headers' => [
+                    'Strict-Transport-Security' => '"max-age=15552000; includeSubDomains" "expr=%{HTTPS} == \'on\'"',
+                    'X-Frame-Options' => '"DENY"',
+                    'X-Content-Type-Options' => '"nosniff"',
+                    'Referrer-Policy' => '"strict-origin-when-cross-origin"',
+                    'Permissions-Policy' => '"geolocation=(), microphone=(), camera=(), payment=(self)"',
+                ],
+            ],
+            'admin/public/.htaccess' => [
+                'content' => $this->htaccessContent,
+                'requireOnsuccessUnset' => true,
+                'headers' => [
+                    'Strict-Transport-Security' => '"max-age=15552000; includeSubDomains" "expr=%{HTTPS} == \'on\'"',
+                    'X-Frame-Options' => '"DENY"',
+                    'X-Content-Type-Options' => '"nosniff"',
+                    'Referrer-Policy' => '"strict-origin-when-cross-origin"',
+                    'Permissions-Policy' => '"geolocation=(), microphone=(), camera=(), payment=()"',
+                ],
+            ],
+        ];
+
+        $phpEmittedHeaders = [
+            'X-Frame-Options',
+            'X-Content-Type-Options',
+            'Referrer-Policy',
+            'Permissions-Policy',
+        ];
+
+        foreach ($htaccessExpectations as $relativePath => $spec) {
+            $matched = preg_match('/<IfModule\s+mod_headers\.c>(.*?)<\/IfModule>/is', $spec['content'], $matches);
+            $this->assertSame(1, $matched, "{$relativePath} must contain a <IfModule mod_headers.c> block.");
+            $headersBlock = $matches[1];
+
+            foreach ($spec['headers'] as $headerName => $expectedValue) {
+                $quotedName = preg_quote($headerName, '/');
+                $quotedValue = preg_quote($expectedValue, '/');
+
+                $this->assertMatchesRegularExpression(
+                    '/^\s*Header\s+always\s+set\s+' . $quotedName . '\s+' . $quotedValue . '\s*$/im',
+                    $headersBlock,
+                    "{$relativePath} must set {$headerName} via 'Header always set' with expected value."
+                );
+
+                $this->assertDoesNotMatchRegularExpression(
+                    '/^\s*Header\s+set\s+' . $quotedName . '\b/im',
+                    $headersBlock,
+                    "{$relativePath} must not use bare 'Header set' for {$headerName} (causes onsuccess/always duplication)."
+                );
+            }
+
+            if ($spec['requireOnsuccessUnset']) {
+                foreach ($phpEmittedHeaders as $headerName) {
+                    $quotedName = preg_quote($headerName, '/');
+                    $this->assertMatchesRegularExpression(
+                        '/^\s*Header\s+unset\s+' . $quotedName . '\s*$/im',
+                        $headersBlock,
+                        "{$relativePath} must unset onsuccess {$headerName} so PHP header() calls do not duplicate Apache headers."
+                    );
+                }
+            }
+        }
+    }
 }

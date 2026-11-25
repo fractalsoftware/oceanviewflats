@@ -80,16 +80,17 @@ PHP;
         $direct = $server->get('/__direct-response');
         $this->assertSame(200, $direct['status']);
         $this->assertArrayNotHasKey('x-powered-by', $direct['headers'], 'Response::send() must remove X-Powered-By.');
-        $this->assertSame('DENY', $direct['headers']['x-frame-options'] ?? null);
-        $this->assertSame('nosniff', $direct['headers']['x-content-type-options'] ?? null);
-        $this->assertSame('strict-origin-when-cross-origin', $direct['headers']['referrer-policy'] ?? null);
+        $this->assertSame(['DENY'], $direct['headerValues']['x-frame-options'] ?? null);
+        $this->assertSame(['nosniff'], $direct['headerValues']['x-content-type-options'] ?? null);
+        $this->assertSame(['strict-origin-when-cross-origin'], $direct['headerValues']['referrer-policy'] ?? null);
 
         // 2. Full AdminApp::handle() + Response::send() on GET /login
         $login = $server->get('/login');
         $this->assertSame(200, $login['status']);
         $this->assertArrayNotHasKey('x-powered-by', $login['headers'], 'Admin Console /login response must not emit X-Powered-By.');
-        $this->assertSame('DENY', $login['headers']['x-frame-options'] ?? null);
-        $this->assertSame('nosniff', $login['headers']['x-content-type-options'] ?? null);
+        $this->assertSame(['DENY'], $login['headerValues']['x-frame-options'] ?? null);
+        $this->assertSame(['nosniff'], $login['headerValues']['x-content-type-options'] ?? null);
+        $this->assertSame(['strict-origin-when-cross-origin'], $login['headerValues']['referrer-policy'] ?? null);
 
         // 3. admin/public/setup.php bypasses Response::send() and must also remove X-Powered-By
         $setup = $server->get('/setup.php?format=json');

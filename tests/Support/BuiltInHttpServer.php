@@ -64,7 +64,7 @@ final class BuiltInHttpServer
     }
 
     /**
-     * @return array{status: int, headers: array<string, string>, body: string}
+     * @return array{status: int, headers: array<string, string>, headerValues: array<string, list<string>>, body: string}
      */
     public function request(string $method, string $path): array
     {
@@ -92,24 +92,27 @@ final class BuiltInHttpServer
         $status = isset($matches[1]) ? (int) $matches[1] : 0;
 
         $headers = [];
+        $headerValues = [];
         foreach ($lines as $line) {
             $colonPos = strpos($line, ':');
             if ($colonPos !== false) {
                 $name = strtolower(trim(substr($line, 0, $colonPos)));
                 $value = trim(substr($line, $colonPos + 1));
                 $headers[$name] = $value;
+                $headerValues[$name][] = $value;
             }
         }
 
         return [
             'status' => $status,
             'headers' => $headers,
+            'headerValues' => $headerValues,
             'body' => $body,
         ];
     }
 
     /**
-     * @return array{status: int, headers: array<string, string>, body: string}
+     * @return array{status: int, headers: array<string, string>, headerValues: array<string, list<string>>, body: string}
      */
     public function get(string $path): array
     {
@@ -117,7 +120,7 @@ final class BuiltInHttpServer
     }
 
     /**
-     * @return array{status: int, headers: array<string, string>, body: string}
+     * @return array{status: int, headers: array<string, string>, headerValues: array<string, list<string>>, body: string}
      */
     public function head(string $path): array
     {
