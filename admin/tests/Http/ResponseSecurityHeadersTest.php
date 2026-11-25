@@ -7,6 +7,9 @@ namespace OceanViewFlats\Admin\Tests\Http;
 use OceanViewFlats\Tests\Support\BuiltInHttpServer;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-import-type HttpResponse from BuiltInHttpServer
+ */
 final class ResponseSecurityHeadersTest extends TestCase
 {
     private ?BuiltInHttpServer $server = null;
@@ -80,21 +83,27 @@ PHP;
         $direct = $server->get('/__direct-response');
         $this->assertSame(200, $direct['status']);
         $this->assertArrayNotHasKey('x-powered-by', $direct['headers'], 'Response::send() must remove X-Powered-By.');
-        $this->assertSame(['DENY'], $direct['headerValues']['x-frame-options'] ?? null);
-        $this->assertSame(['nosniff'], $direct['headerValues']['x-content-type-options'] ?? null);
-        $this->assertSame(['strict-origin-when-cross-origin'], $direct['headerValues']['referrer-policy'] ?? null);
+        $this->assertAdminSecurityHeaders($direct);
 
         // 2. Full AdminApp::handle() + Response::send() on GET /login
         $login = $server->get('/login');
         $this->assertSame(200, $login['status']);
         $this->assertArrayNotHasKey('x-powered-by', $login['headers'], 'Admin Console /login response must not emit X-Powered-By.');
-        $this->assertSame(['DENY'], $login['headerValues']['x-frame-options'] ?? null);
-        $this->assertSame(['nosniff'], $login['headerValues']['x-content-type-options'] ?? null);
-        $this->assertSame(['strict-origin-when-cross-origin'], $login['headerValues']['referrer-policy'] ?? null);
+        $this->assertAdminSecurityHeaders($login);
 
         // 3. admin/public/setup.php bypasses Response::send() and must also remove X-Powered-By
         $setup = $server->get('/setup.php?format=json');
         $this->assertContains($setup['status'], [403, 500]);
         $this->assertArrayNotHasKey('x-powered-by', $setup['headers'], 'admin/public/setup.php must not emit X-Powered-By.');
+    }
+
+    /**
+     * @param HttpResponse $response
+     */
+    private function assertAdminSecurityHeaders(array $response): void
+    {
+        $this->assertSame(['DENY'], $response['headerValues']['x-frame-options'] ?? null);
+        $this->assertSame(['nosniff'], $response['headerValues']['x-content-type-options'] ?? null);
+        $this->assertSame(['strict-origin-when-cross-origin'], $response['headerValues']['referrer-policy'] ?? null);
     }
 }
