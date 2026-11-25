@@ -266,4 +266,20 @@ final class AdminLayoutAsyncIndicatorTest extends TestCase
         $this->assertSame(302, $response->getStatusCode(), "Unauthenticated GET {$route} must redirect");
         $this->assertSame('/login', $response->getHeader('Location'));
     }
+
+    public function testLayoutChecksHtml5FormValidityBeforeLockingAndStacksGlobalAlertsAboveModals(): void
+    {
+        $response = $this->app->handle(new Request('GET', '/financial-report'), $this->authenticatedSession);
+        $this->assertSame(200, $response->getStatusCode());
+        $html = $response->getBody();
+
+        // 1. Prevent premature button locking when HTML5 form constraint validation fails
+        $this->assertStringContainsString('checkValidity', $html);
+
+        // 2. Global progress bar and alert container stack above z-40/z-50 modals via explicit z-index
+        $this->assertStringContainsString('z-index: 70', $html);
+
+        // 3. Surface non-422 4xx errors (e.g. 403 CSRF) via handleAsyncError()
+        $this->assertStringContainsString('status >= 400 && status !== 422', $html);
+    }
 }

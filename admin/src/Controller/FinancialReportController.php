@@ -227,18 +227,32 @@ final class FinancialReportController
             createdByName: $adminUserName
         );
 
-        $saved = $this->expenseRepository->save($expense);
+        try {
+            $saved = $this->expenseRepository->save($expense);
 
-        $this->auditLogger->record(
-            action: 'operational_expense_created',
-            entityType: 'operational_expense',
-            entityId: $saved->expenseUid,
-            before: null,
-            after: $saved->toArray(),
-            adminUserId: $adminUserId,
-            ipAddress: $request->getClientIp(),
-            userAgent: (string) $request->getHeader('User-Agent', '')
-        );
+            $this->auditLogger->record(
+                action: 'operational_expense_created',
+                entityType: 'operational_expense',
+                entityId: $saved->expenseUid,
+                before: null,
+                after: $saved->toArray(),
+                adminUserId: $adminUserId,
+                ipAddress: $request->getClientIp(),
+                userAgent: (string) $request->getHeader('User-Agent', '')
+            );
+        } catch (Throwable $e) {
+            error_log('[FinancialReportController::createExpense] ' . $e->getMessage());
+            return $this->renderModalValidationError(
+                isEdit: false,
+                expenseId: null,
+                expenseUid: null,
+                form: $form,
+                errors: [$this->resolvePersistenceErrorMessage($e)],
+                fieldErrors: [],
+                filters: $filters,
+                session: $session
+            );
+        }
 
         $flashMessage = sprintf(
             'Operational expense "%s" (%s) recorded successfully.',
@@ -385,68 +399,82 @@ final class FinancialReportController
             createdAt: $existing->createdAt
         );
 
-        /** @var OperationalExpense $saved */
-        $saved = $this->runInTransaction(function () use (
-            $updated,
-            $beforePayload,
-            $linkedSettlement,
-            $adminUserId,
-            $request
-        ): OperationalExpense {
-            $savedExpense = $this->expenseRepository->save($updated);
-
-            $this->auditLogger->record(
-                action: 'operational_expense_updated',
-                entityType: 'operational_expense',
-                entityId: $savedExpense->expenseUid,
-                before: $beforePayload,
-                after: $savedExpense->toArray(),
-                adminUserId: $adminUserId,
-                ipAddress: $request->getClientIp(),
-                userAgent: (string) $request->getHeader('User-Agent', '')
-            );
-
-            // Two-way synchronization: if this OperationalExpense is linked to a ParafiscalSettlement, keep it synchronized
-            if ($linkedSettlement !== null) {
-                $beforeSettlementPayload = $linkedSettlement->toArray();
-                $syncedSettlement = new ParafiscalSettlement(
-                    propertyId: $linkedSettlement->propertyId,
-                    periodKey: $linkedSettlement->periodKey,
-                    periodStart: $linkedSettlement->periodStart,
-                    periodEnd: $linkedSettlement->periodEnd,
-                    dueDate: $linkedSettlement->dueDate,
-                    rntNumber: $linkedSettlement->rntNumber,
-                    status: $linkedSettlement->status,
-                    settledTaxableBase: $linkedSettlement->settledTaxableBase,
-                    settledCalculatedAmount: $linkedSettlement->settledCalculatedAmount,
-                    settledAmount: round($savedExpense->amount, 0),
-                    paymentDate: $savedExpense->expenseDate,
-                    referenceCode: $savedExpense->referenceCode,
-                    notes: $savedExpense->notes,
-                    operationalExpenseId: $savedExpense->id,
-                    settledBy: $linkedSettlement->settledBy ?? $adminUserId,
-                    settledByName: $linkedSettlement->settledByName,
-                    settledAt: $linkedSettlement->settledAt ?? ($this->now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota'))),
-                    settlementUid: $linkedSettlement->settlementUid,
-                    id: $linkedSettlement->id,
-                    createdAt: $linkedSettlement->createdAt
-                );
-                $savedSettlement = $this->parafiscalRepository->save($syncedSettlement);
+        try {
+            /** @var OperationalExpense $saved */
+            $saved = $this->runInTransaction(function () use (
+                $updated,
+                $beforePayload,
+                $linkedSettlement,
+                $adminUserId,
+                $request
+            ): OperationalExpense {
+                $savedExpense = $this->expenseRepository->save($updated);
 
                 $this->auditLogger->record(
-                    action: 'parafiscal_updated',
-                    entityType: 'parafiscal_settlement',
-                    entityId: $savedSettlement->settlementUid,
-                    before: $beforeSettlementPayload,
-                    after: $savedSettlement->toArray(),
+                    action: 'operational_expense_updated',
+                    entityType: 'operational_expense',
+                    entityId: $savedExpense->expenseUid,
+                    before: $beforePayload,
+                    after: $savedExpense->toArray(),
                     adminUserId: $adminUserId,
                     ipAddress: $request->getClientIp(),
                     userAgent: (string) $request->getHeader('User-Agent', '')
                 );
-            }
 
-            return $savedExpense;
-        });
+                // Two-way synchronization: if this OperationalExpense is linked to a ParafiscalSettlement, keep it synchronized
+                if ($linkedSettlement !== null) {
+                    $beforeSettlementPayload = $linkedSettlement->toArray();
+                    $syncedSettlement = new ParafiscalSettlement(
+                        propertyId: $linkedSettlement->propertyId,
+                        periodKey: $linkedSettlement->periodKey,
+                        periodStart: $linkedSettlement->periodStart,
+                        periodEnd: $linkedSettlement->periodEnd,
+                        dueDate: $linkedSettlement->dueDate,
+                        rntNumber: $linkedSettlement->rntNumber,
+                        status: $linkedSettlement->status,
+                        settledTaxableBase: $linkedSettlement->settledTaxableBase,
+                        settledCalculatedAmount: $linkedSettlement->settledCalculatedAmount,
+                        settledAmount: round($savedExpense->amount, 0),
+                        paymentDate: $savedExpense->expenseDate,
+                        referenceCode: $savedExpense->referenceCode,
+                        notes: $savedExpense->notes,
+                        operationalExpenseId: $savedExpense->id,
+                        settledBy: $linkedSettlement->settledBy ?? $adminUserId,
+                        settledByName: $linkedSettlement->settledByName,
+                        settledAt: $linkedSettlement->settledAt ?? ($this->now ?? new DateTimeImmutable('now', new DateTimeZone('America/Bogota'))),
+                        settlementUid: $linkedSettlement->settlementUid,
+                        id: $linkedSettlement->id,
+                        createdAt: $linkedSettlement->createdAt
+                    );
+                    $savedSettlement = $this->parafiscalRepository->save($syncedSettlement);
+
+                    $this->auditLogger->record(
+                        action: 'parafiscal_updated',
+                        entityType: 'parafiscal_settlement',
+                        entityId: $savedSettlement->settlementUid,
+                        before: $beforeSettlementPayload,
+                        after: $savedSettlement->toArray(),
+                        adminUserId: $adminUserId,
+                        ipAddress: $request->getClientIp(),
+                        userAgent: (string) $request->getHeader('User-Agent', '')
+                    );
+                }
+
+                return $savedExpense;
+            });
+        } catch (Throwable $e) {
+            error_log('[FinancialReportController::updateExpense] ' . $e->getMessage());
+            return $this->renderModalValidationError(
+                isEdit: true,
+                expenseId: $existing->id,
+                expenseUid: $existing->expenseUid,
+                form: $form,
+                errors: [$this->resolvePersistenceErrorMessage($e)],
+                fieldErrors: [],
+                filters: $filters,
+                session: $session
+            );
+        }
 
         $flashMessage = sprintf(
             'Operational expense "%s" (%s) updated successfully.',
@@ -1266,6 +1294,16 @@ final class FinancialReportController
             ],
             body: $modalHtml
         );
+    }
+
+    private function resolvePersistenceErrorMessage(Throwable $e): string
+    {
+        $msg = $e->getMessage();
+        if (str_contains($msg, 'no such table') || str_contains($msg, "doesn't exist")) {
+            return 'Database table "operational_expenses" is not initialized. Please run "php scripts/migrate.php" on the server and try again.';
+        }
+
+        return 'Unable to save operational expense due to a database error. Please try again.';
     }
 
     /**

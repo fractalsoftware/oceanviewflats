@@ -39,8 +39,13 @@ $modalHeading = $isEdit
     : ($isDuplicate ? 'Duplicate Operational Expense' : 'Record Operational Expense');
 ?>
 
-<div id="expense-modal" class="fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-lg w-full overflow-hidden">
+<div id="expense-modal"
+     class="fixed inset-0 z-40 overflow-y-auto bg-gray-900/50 backdrop-blur-xs flex items-center justify-center p-4"
+     onclick="if(event.target === this) document.getElementById('modal-container').innerHTML = '';"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-title">
+    <div class="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <div>
                 <h3 id="modal-title" class="text-base font-bold text-gray-900">
