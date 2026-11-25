@@ -104,6 +104,62 @@ final class ContactProcessorTest extends TestCase
         $this->assertStringContainsString('Privacy Consent IP:     181.55.102.44', $emailBody);
     }
 
+    public function testContactProcessorRoutesToMaskedLogEmailSenderInNonProductionEnvironment(): void
+    {
+        $res = $this->callContactProcessorWithRealDispatcher(
+            [
+                'name' => 'Ana Maria Lopez',
+                'email' => 'ana@example.com',
+                'phone_country_code' => '+57',
+                'phone_number' => '3001234567',
+                'message' => 'Hello, I would like to inquire about availability in November.',
+                'privacy_consent' => '1',
+                'lang' => 'en',
+            ],
+            appEnv: 'local',
+            recipientEmail: 'reservations@example.com'
+        );
+
+        $this->assertSame(0, $res['exitCode'], $res['stderr']);
+        $this->assertSame(200, $res['httpCode'], $res['stdout'] . "\n" . $res['stderr']);
+        $this->assertIsArray($res['json'], $res['stdout'] . "\n" . $res['stderr']);
+        $this->assertTrue($res['json']['success']);
+        $this->assertNull($res['phpMail']);
+        $this->assertStringContainsString('[Local Mock Email] To: r****@example.com, Subject:', $res['errorLog']);
+        $this->assertStringNotContainsString('reservations@example.com', $res['errorLog']);
+    }
+
+    public function testContactProcessorRoutesToPhpMailSenderInProductionPreservingPlainTextAndReplyTo(): void
+    {
+        $res = $this->callContactProcessorWithRealDispatcher(
+            [
+                'name' => 'Ana Maria%0ALopez',
+                'email' => 'ana@example.com',
+                'phone_country_code' => '+57',
+                'phone_number' => '3001234567',
+                'message' => 'Hello, I would like to inquire about availability in November.',
+                'privacy_consent' => '1',
+                'lang' => 'en',
+            ],
+            appEnv: 'production',
+            recipientEmail: 'reservations@example.com'
+        );
+
+        $this->assertSame(0, $res['exitCode'], $res['stderr']);
+        $this->assertSame(200, $res['httpCode'], $res['stdout'] . "\n" . $res['stderr']);
+        $this->assertIsArray($res['json'], $res['stdout'] . "\n" . $res['stderr']);
+        $this->assertTrue($res['json']['success']);
+        $this->assertNotNull($res['phpMail'], 'Expected contact-processor.php to dispatch via PhpMailSender in production.');
+        $this->assertSame('reservations@example.com', $res['phpMail']['to']);
+
+        $headers = (string) ($res['phpMail']['headers'] ?? '');
+        $this->assertStringContainsString('Content-Type: text/plain; charset=UTF-8', $headers);
+        $this->assertStringContainsString('From: no-reply@oceanviewflats.com', $headers);
+        $this->assertStringContainsString('Reply-To: Ana MariaLopez <ana@example.com>', $headers);
+        $this->assertStringNotContainsString('text/html', $headers);
+        $this->assertStringNotContainsString('%0a', strtolower($headers));
+    }
+
     public function testBookRequestEndpointRejectsMissingPrivacyConsentWith400(): void
     {
         $res = $this->callBookRequestEndpoint([
@@ -130,30 +186,12 @@ final class ContactProcessorTest extends TestCase
      */
     private function callContactProcessor(array $postData, array $serverVars = []): array
     {
-        $rateLimitFile = sys_get_temp_dir() . '/ovf_rate_limits.json';
-        if (file_exists($rateLimitFile)) {
-            @unlink($rateLimitFile);
-        }
-
+        $this->clearRateLimitFile('ovf_rate_limits.json');
         $mailCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_mail_');
         $statusCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_status_');
 
-        $generated = CaptchaChallengeService::generate(self::TEST_CAPTCHA_SECRET);
-        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
-
-        $mergedPost = array_merge([
-            'captcha_challenge' => $generated['challenge'],
-            'captcha_signature' => $generated['signature'],
-            'captcha_response' => (string) ($a + $b),
-        ], $postData);
-
-        $mergedServer = array_merge([
-            'REQUEST_METHOD' => 'POST',
-            'HTTP_HOST' => 'oceanviewflats.com',
-            'HTTP_REFERER' => 'https://oceanviewflats.com/contact/index.html',
-            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
-            'REMOTE_ADDR' => '127.0.0.1',
-        ], $serverVars);
+        $mergedPost = $this->withValidCaptcha($postData);
+        $mergedServer = array_merge($this->defaultContactServerVars(), $serverVars);
 
         $phpCode = sprintf(
             '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
@@ -173,8 +211,121 @@ final class ContactProcessorTest extends TestCase
             var_export(dirname(__DIR__, 3) . '/public/api/contact-processor.php', true)
         );
 
+        $result = $this->runPhpSubprocess(['php', '-r', $phpCode], $statusCaptureFile);
+        $mail = $this->readAndRemoveJsonFile($mailCaptureFile);
+
+        return array_merge($result, ['mail' => $mail]);
+    }
+
+    /**
+     * Invokes contact-processor.php without setting $__ovf_contact_mail_callback so
+     * production PhpMailSender vs non-production MaskedLogEmailSender dispatch is exercised.
+     *
+     * @param array<string, string> $postData
+     * @return array{exitCode: int, httpCode: int, stdout: string, stderr: string, json: ?array<string, mixed>, phpMail: ?array<string, mixed>, errorLog: string}
+     */
+    private function callContactProcessorWithRealDispatcher(
+        array $postData,
+        string $appEnv,
+        string $recipientEmail
+    ): array {
+        $this->clearRateLimitFile('ovf_rate_limits.json');
+        $phpMailCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_phpmail_');
+        $statusCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_status_');
+        $errorLogFile = tempnam(sys_get_temp_dir(), 'ovf_errlog_');
+
+        $mergedPost = $this->withValidCaptcha($postData);
+        $mergedServer = array_merge($this->defaultContactServerVars(), [
+            'APP_ENV' => $appEnv,
+            'RECIPIENT_EMAIL' => $recipientEmail,
+        ]);
+
+        $phpCode = sprintf(
+            'namespace OceanViewFlats\\Domain\\Fulfillment { '
+            . 'function mail(string $to, string $subject, string $message, array|string $additional_headers = [], string $additional_params = ""): bool { '
+            . 'file_put_contents(%s, json_encode(["to" => $to, "subject" => $subject, "body" => $message, "headers" => $additional_headers])); '
+            . 'return true; } } '
+            . 'namespace { '
+            . 'ini_set("error_log", %s); '
+            . '$_ENV["APP_ENV"] = %s; $_ENV["RECIPIENT_EMAIL"] = %s; '
+            . '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
+            . '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
+            . 'register_shutdown_function(function () { file_put_contents(%s, (string) (http_response_code() ?: 200)); }); '
+            . 'require %s; }',
+            var_export($phpMailCaptureFile, true),
+            var_export($errorLogFile, true),
+            var_export($appEnv, true),
+            var_export($recipientEmail, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
+            var_export($mergedServer, true),
+            var_export($mergedPost, true),
+            var_export($statusCaptureFile, true),
+            var_export(dirname(__DIR__, 3) . '/public/api/contact-processor.php', true)
+        );
+
+        $result = $this->runPhpSubprocess(['php', '-d', 'sendmail_path=/usr/bin/false', '-r', $phpCode], $statusCaptureFile);
+        $phpMail = $this->readAndRemoveJsonFile($phpMailCaptureFile);
+
+        $errorLog = '';
+        if ($errorLogFile !== false && file_exists($errorLogFile)) {
+            $errorLog = (string) file_get_contents($errorLogFile);
+            @unlink($errorLogFile);
+        }
+
+        return array_merge($result, [
+            'phpMail' => $phpMail,
+            'errorLog' => $errorLog,
+        ]);
+    }
+
+    private function clearRateLimitFile(string $filename): void
+    {
+        $path = sys_get_temp_dir() . '/' . $filename;
+        if (file_exists($path)) {
+            @unlink($path);
+        }
+    }
+
+    /**
+     * @param array<string, string> $postData
+     * @return array<string, string>
+     */
+    private function withValidCaptcha(array $postData): array
+    {
+        $generated = CaptchaChallengeService::generate(self::TEST_CAPTCHA_SECRET);
+        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
+
+        return array_merge([
+            'captcha_challenge' => $generated['challenge'],
+            'captcha_signature' => $generated['signature'],
+            'captcha_response' => (string) ($a + $b),
+        ], $postData);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function defaultContactServerVars(): array
+    {
+        return [
+            'REQUEST_METHOD' => 'POST',
+            'HTTP_HOST' => 'oceanviewflats.com',
+            'HTTP_REFERER' => 'https://oceanviewflats.com/contact/index.html',
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+            'REMOTE_ADDR' => '127.0.0.1',
+        ];
+    }
+
+    /**
+     * @param list<string> $command
+     * @return array{exitCode: int, httpCode: int, stdout: string, stderr: string, json: ?array<string, mixed>}
+     */
+    private function runPhpSubprocess(array $command, string|false $statusCaptureFile): array
+    {
         $process = proc_open(
-            ['php', '-r', $phpCode],
+            $command,
             [
                 0 => ['pipe', 'r'],
                 1 => ['pipe', 'w'],
@@ -184,7 +335,7 @@ final class ContactProcessorTest extends TestCase
         );
 
         if (!is_resource($process)) {
-            $this->fail('Failed to spawn php process for contact-processor endpoint test.');
+            $this->fail('Failed to spawn php process for endpoint test.');
         }
 
         fclose($pipes[0]);
@@ -203,23 +354,34 @@ final class ContactProcessorTest extends TestCase
             @unlink($statusCaptureFile);
         }
 
-        $mail = null;
-        if ($mailCaptureFile !== false && file_exists($mailCaptureFile)) {
-            $rawMail = trim((string) file_get_contents($mailCaptureFile));
-            if ($rawMail !== '') {
-                $mail = json_decode($rawMail, true);
-            }
-            @unlink($mailCaptureFile);
-        }
+        $decoded = json_decode((string) $stdout, true);
 
         return [
             'exitCode' => $exitCode,
             'httpCode' => $httpCode,
             'stdout' => (string) $stdout,
             'stderr' => (string) $stderr,
-            'json' => json_decode((string) $stdout, true),
-            'mail' => is_array($mail) ? $mail : null,
+            'json' => is_array($decoded) ? $decoded : null,
         ];
+    }
+
+    /**
+     * @return ?array<string, mixed>
+     */
+    private function readAndRemoveJsonFile(string|false $path): ?array
+    {
+        if ($path === false || !file_exists($path)) {
+            return null;
+        }
+
+        $raw = trim((string) file_get_contents($path));
+        @unlink($path);
+        if ($raw === '') {
+            return null;
+        }
+
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : null;
     }
 
     /**

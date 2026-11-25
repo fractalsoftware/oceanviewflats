@@ -42,14 +42,17 @@ final class PiiMasker
         }
 
         $atPos = strpos($trimmed, '@');
-        if ($atPos === false || $atPos === 0) {
+        if ($atPos === false || $atPos === 0 || $atPos === strlen($trimmed) - 1) {
             return '****';
         }
 
         $local = substr($trimmed, 0, $atPos);
         $domain = substr($trimmed, $atPos);
+        $firstChar = function_exists('mb_substr')
+            ? mb_substr($local, 0, 1, 'UTF-8')
+            : substr($local, 0, 1);
 
-        return substr($local, 0, 1) . '****' . $domain;
+        return $firstChar . '****' . $domain;
     }
 
     /**
