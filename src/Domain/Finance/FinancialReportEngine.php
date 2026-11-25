@@ -674,10 +674,19 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                     continue;
                 }
 
-                $bySource[$channelGroup->value]['revenue'] = round($bySource[$channelGroup->value]['revenue'] + $proratedNet, 2);
-                $bySource[$channelGroup->value]['active_revenue'] = round($bySource[$channelGroup->value]['active_revenue'] + $proratedNet, 2);
-                $bySource[$channelGroup->value]['nights'] += $inPeriodNights;
-                $bySource[$channelGroup->value]['count']++;
+                $sourceKey = $channelGroup->value;
+                $sourceBucket = $bySource[$sourceKey] ?? [
+                    'revenue' => 0.0,
+                    'active_revenue' => 0.0,
+                    'policy_retention' => 0.0,
+                    'nights' => 0,
+                    'count' => 0,
+                ];
+                $sourceBucket['revenue'] = round($sourceBucket['revenue'] + $proratedNet, 2);
+                $sourceBucket['active_revenue'] = round($sourceBucket['active_revenue'] + $proratedNet, 2);
+                $sourceBucket['nights'] += $inPeriodNights;
+                $sourceBucket['count']++;
+                $bySource[$sourceKey] = $sourceBucket;
 
                 foreach ($inPeriodDates as $nd) {
                     $nightKey = $reservation->propertyId . ':' . $nd;
@@ -746,8 +755,17 @@ final class FinancialReportEngine implements FinancialReportEngineInterface
                     continue;
                 }
 
-                $bySource[$channelGroup->value]['revenue'] = round($bySource[$channelGroup->value]['revenue'] + $proratedNet, 2);
-                $bySource[$channelGroup->value]['policy_retention'] = round($bySource[$channelGroup->value]['policy_retention'] + $proratedNet, 2);
+                $sourceKey = $channelGroup->value;
+                $sourceBucket = $bySource[$sourceKey] ?? [
+                    'revenue' => 0.0,
+                    'active_revenue' => 0.0,
+                    'policy_retention' => 0.0,
+                    'nights' => 0,
+                    'count' => 0,
+                ];
+                $sourceBucket['revenue'] = round($sourceBucket['revenue'] + $proratedNet, 2);
+                $sourceBucket['policy_retention'] = round($sourceBucket['policy_retention'] + $proratedNet, 2);
+                $bySource[$sourceKey] = $sourceBucket;
 
                 $policyRetention += $proratedNet;
                 $grossCharged += $proratedCharged;

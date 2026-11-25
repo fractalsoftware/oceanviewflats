@@ -16,7 +16,7 @@ if (!defined('PRIVACY_POLICY_VERSION')) {
 /**
  * Centrally manages the database connection using PDO.
  * 
- * @param array $dbConfig Database credentials mapping.
+ * @param array{host: string, dbname: string, user: string, pass: string} $dbConfig Database credentials mapping.
  * @return PDO Established database connection handle.
  */
 function get_db_connection(array $dbConfig): PDO {
@@ -53,7 +53,7 @@ function strip_newlines(string $str): string {
  * 
  * @param bool $success Operation status.
  * @param string $message Narrative text response.
- * @param array $extra Optional key-value pairs to merge into response.
+ * @param array<string, mixed> $extra Optional key-value pairs to merge into response.
  * @return never
  */
 function send_json_response(bool $success, string $message, array $extra = []): never {
@@ -85,7 +85,7 @@ function is_ajax_request(): bool {
  * Generates a secure HMAC-signed mathematical captcha challenge.
  * 
  * @param string $secret Encryption salt secret.
- * @return array Challenge formula and HMAC signature.
+ * @return array{challenge: string, signature: string} Challenge formula and HMAC signature.
  */
 function generate_captcha_challenge(string $secret): array {
     $x = random_int(2, 9);
@@ -108,7 +108,7 @@ function generate_captcha_challenge(string $secret): array {
  * @param string $errorSign Custom error signature failure text.
  * @param string $errorInvalid Custom invalid formula format text.
  * @param string $errorWrong Custom incorrect math sum text.
- * @return bool|string True if valid, or the matched error message string on failure.
+ * @return true|string True if valid, or the matched error message string on failure.
  */
 function verify_captcha_challenge(
     string $challenge, 
@@ -118,7 +118,7 @@ function verify_captcha_challenge(
     string $errorSign = 'Security check failed. Please refresh the page and try again.', 
     string $errorInvalid = 'Invalid verification challenge.', 
     string $errorWrong = 'Incorrect answer.'
-) {
+): bool|string {
     $expected_signature = hash_hmac('sha256', $challenge, $secret);
     if (!hash_equals($expected_signature, $signature)) {
         return $errorSign;
@@ -192,7 +192,7 @@ function ovf_is_non_production_env(): bool {
 /**
  * Enforces security headers and CORS (Cross-Origin Resource Sharing) restrictions.
  * 
- * @param array $allowedMethods Allowed HTTP methods for this endpoint.
+ * @param list<string> $allowedMethods Allowed HTTP methods for this endpoint.
  */
 function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST', 'OPTIONS']): void {
     // 1. Send Security Headers (emit Vary: Origin unconditionally to prevent shared-cache CORS poisoning)
@@ -247,7 +247,7 @@ function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST
  * Restricts access to forms to prevent direct browser address bar accesses (missing Referer)
  * or accesses from unauthorized foreign domains.
  * 
- * @param array|null $allowedHosts Optional explicit allowed referrer domain names.
+ * @param list<string>|null $allowedHosts Optional explicit allowed referrer domain names.
  */
 function enforce_referer_check(?array $allowedHosts = null): void {
     if ($allowedHosts === null) {

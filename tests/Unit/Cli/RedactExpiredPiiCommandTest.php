@@ -25,6 +25,8 @@ final class RedactExpiredPiiCommandTest extends TestCase
         $argv = array_merge(['scripts/redact-expired-pii.php'], $args);
         $stdoutStream = fopen('php://temp', 'w+');
         $stderrStream = fopen('php://temp', 'w+');
+        $this->assertNotFalse($stdoutStream);
+        $this->assertNotFalse($stderrStream);
 
         $exitCode = RedactExpiredPiiCommand::run(
             argv: $argv,

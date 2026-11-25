@@ -137,7 +137,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => 495, 'unit_apt' => '1707']),
+                        'body' => json_encode(['last_id' => 495, 'unit_apt' => '1707'], JSON_THROW_ON_ERROR),
                         'headers' => ['content-type' => 'application/json'],
                         'cookies' => ['PHPSESSID' => 'test-session-token-xyz'],
                         'error' => null,
@@ -262,7 +262,9 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $this->assertIsArray($persisted->requestPayload);
         $this->assertSame(['****7654', '****5432'], $persisted->requestPayload['step2']['ide'] ?? null);
         $this->assertSame(['****3456', '****3456'], $persisted->requestPayload['step2']['phone'] ?? null);
-        $rawClearancePayload = (string) $this->pdo->query("SELECT request_payload FROM condominium_clearances WHERE reservation_uid = 'ovf_res_sync_test'")->fetchColumn();
+        $stmtPayload = $this->pdo->query("SELECT request_payload FROM condominium_clearances WHERE reservation_uid = 'ovf_res_sync_test'");
+        $this->assertNotFalse($stmtPayload);
+        $rawClearancePayload = (string) $stmtPayload->fetchColumn();
         $this->assertStringNotContainsString('PA987654', $rawClearancePayload);
         $this->assertStringNotContainsString('1098765432', $rawClearancePayload);
         $this->assertStringContainsString('****7654', $rawClearancePayload);
@@ -273,6 +275,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
     {
         $requests = [];
         $mockTransport = new class($requests) implements HttpTransportInterface {
+            /** @param array<int, array<string, mixed>> $requests */
             public function __construct(public array &$requests) {}
 
             public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
@@ -281,7 +284,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => 777]),
+                        'body' => json_encode(['last_id' => 777], JSON_THROW_ON_ERROR),
                         'headers' => [],
                         'cookies' => [],
                         'error' => null,
@@ -408,7 +411,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
             {
                 return [
                     'statusCode' => 200,
-                    'body' => json_encode(['status' => 'error', 'message' => 'Invalid dates']),
+                    'body' => json_encode(['status' => 'error', 'message' => 'Invalid dates'], JSON_THROW_ON_ERROR),
                     'headers' => [],
                     'cookies' => [],
                     'error' => null,
@@ -438,7 +441,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => 999]),
+                        'body' => json_encode(['last_id' => 999], JSON_THROW_ON_ERROR),
                         'headers' => [],
                         'cookies' => [],
                         'error' => null,
@@ -470,7 +473,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => 888]),
+                        'body' => json_encode(['last_id' => 888], JSON_THROW_ON_ERROR),
                         'headers' => [],
                         'cookies' => [],
                         'error' => null,
@@ -597,7 +600,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => 505]),
+                        'body' => json_encode(['last_id' => 505], JSON_THROW_ON_ERROR),
                         'headers' => [],
                         'cookies' => ['PHPSESSID' => 's2'],
                         'error' => null,
@@ -637,12 +640,13 @@ final class HuespedManagerClearanceSyncTest extends TestCase
     {
         $requests = [];
         $mockTransport = new class($requests) implements HttpTransportInterface {
+            /** @param array<int, string> $requests */
             public function __construct(public array &$requests) {}
             public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
             {
                 $this->requests[] = $url;
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
-                    return ['statusCode' => 200, 'body' => json_encode(['last_id' => 101]), 'headers' => [], 'cookies' => [], 'error' => null];
+                    return ['statusCode' => 200, 'body' => json_encode(['last_id' => 101], JSON_THROW_ON_ERROR), 'headers' => [], 'cookies' => [], 'error' => null];
                 }
                 return ['statusCode' => 302, 'body' => '', 'headers' => ['location' => 'success.php'], 'cookies' => [], 'error' => null];
             }
@@ -739,7 +743,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                     $consecutivo = $this->step1Count === 1 ? 888 : 889;
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => $consecutivo, 'unit_apt' => '1707']),
+                        'body' => json_encode(['last_id' => $consecutivo, 'unit_apt' => '1707'], JSON_THROW_ON_ERROR),
                         'headers' => ['content-type' => 'application/json'],
                         'cookies' => ['PHPSESSID' => 'test-session-xyz'],
                         'error' => null,
@@ -982,7 +986,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
             {
                 $this->requests[] = ['url' => $url, 'data' => $data];
                 if (str_contains($url, 'reg_guest_owner_pre.php')) {
-                    return ['statusCode' => 200, 'body' => json_encode(['last_id' => 912]), 'headers' => [], 'cookies' => ['c' => '1'], 'error' => null];
+                    return ['statusCode' => 200, 'body' => json_encode(['last_id' => 912], JSON_THROW_ON_ERROR), 'headers' => [], 'cookies' => ['c' => '1'], 'error' => null];
                 }
                 return ['statusCode' => 302, 'body' => '', 'headers' => ['location' => 'success.php'], 'cookies' => [], 'error' => null];
             }
@@ -1026,7 +1030,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                     if (!isset($data['indate']) || !isset($data['outdate']) || !isset($data['car']) || !isset($data['cant_hp'])) {
                         return [
                             'statusCode' => 200,
-                            'body' => json_encode(['last_id' => 999]), // Step 1 still created ID in prod with defaults
+                            'body' => json_encode(['last_id' => 999], JSON_THROW_ON_ERROR), // Step 1 still created ID in prod with defaults
                             'headers' => [],
                             'cookies' => ['PHPSESSID' => 'session123'],
                             'error' => null,
@@ -1034,7 +1038,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
                     }
                     return [
                         'statusCode' => 200,
-                        'body' => json_encode(['last_id' => 1001]),
+                        'body' => json_encode(['last_id' => 1001], JSON_THROW_ON_ERROR),
                         'headers' => [],
                         'cookies' => ['PHPSESSID' => 'session123'],
                         'error' => null,
@@ -1113,7 +1117,7 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $mockTransport->method('post')->willReturnCallback(function (string $url, array|string $data = []) use (&$requests): array {
             $requests[] = ['url' => $url, 'data' => $data];
             if (str_contains($url, 'reg_guest_owner_pre.php')) {
-                return ['statusCode' => 200, 'body' => json_encode(['last_id' => 3665]), 'headers' => [], 'cookies' => ['PHPSESSID' => 's1'], 'error' => null];
+                return ['statusCode' => 200, 'body' => json_encode(['last_id' => 3665], JSON_THROW_ON_ERROR), 'headers' => [], 'cookies' => ['PHPSESSID' => 's1'], 'error' => null];
             }
             return [
                 'statusCode' => 200,
@@ -1156,10 +1160,12 @@ final class HuespedManagerClearanceSyncTest extends TestCase
         $clearance = $adapter->syncSubmission($res, $sub);
 
         $step1Data = $requests[0]['data'];
+        $this->assertIsArray($step1Data);
         $this->assertSame('XYZ123', $step1Data['car']);
         $this->assertSame('Flight - AV123 Late check-in - Vehicle - Toyota Prado Gris', $step1Data['observacion']);
 
         $step2Data = $requests[1]['data'];
+        $this->assertIsArray($step2Data);
         $this->assertSame(['CC', 'DE'], $step2Data['typeid']);
         $this->assertSame(['79123456', 'AB12'], $step2Data['ide']);
         $this->assertSame(['Jorge Luis', 'Ana'], $step2Data['name']);

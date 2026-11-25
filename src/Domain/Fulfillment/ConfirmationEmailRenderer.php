@@ -17,6 +17,9 @@ final class ConfirmationEmailRenderer implements ConfirmationEmailRendererInterf
     private readonly array $translations;
     private readonly PublicUrlBuilder $urlBuilder;
 
+    /**
+     * @param array<string, array<string, mixed>>|null $translations
+     */
     public function __construct(
         private readonly string $baseUrl = 'https://www.oceanviewflats.com',
         ?array $translations = null,

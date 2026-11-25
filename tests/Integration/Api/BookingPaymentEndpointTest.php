@@ -129,6 +129,9 @@ final class BookingPaymentEndpointTest extends TestCase
         ");
     }
 
+    /**
+     * @param array<string, mixed> $overrides
+     */
     private function createValidRequest(array $overrides = []): BookingPaymentRequest
     {
         $data = array_merge([
@@ -210,7 +213,9 @@ final class BookingPaymentEndpointTest extends TestCase
         $this->assertSame('pay_card_approved_101', $stmt->fetchColumn());
 
         // Verify audit log
-        $auditCount = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "reservation_confirmed"')->fetchColumn();
+        $auditStmt = $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "reservation_confirmed"');
+        $this->assertNotFalse($auditStmt);
+        $auditCount = (int) $auditStmt->fetchColumn();
         $this->assertSame(1, $auditCount);
 
         // Verify emails were sent (guest + host)
@@ -286,7 +291,9 @@ final class BookingPaymentEndpointTest extends TestCase
         $this->assertStringContainsString('https://mercadopago.com/pse/redirect/202', $guestEmail['htmlBody']);
 
         // Verify audit log
-        $auditCount = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "direct_hold_created"')->fetchColumn();
+        $auditStmt = $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "direct_hold_created"');
+        $this->assertNotFalse($auditStmt);
+        $auditCount = (int) $auditStmt->fetchColumn();
         $this->assertSame(1, $auditCount);
     }
 
@@ -967,6 +974,10 @@ PHP;
             $pipes
         );
 
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for book-request endpoint test.');
+        }
+
         fclose($pipes[0]);
         $stdout = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
@@ -1028,6 +1039,10 @@ PHP;
             ],
             $pipes
         );
+
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for payment endpoint test.');
+        }
 
         if ($jsonInput !== false) {
             fwrite($pipes[0], $jsonInput);

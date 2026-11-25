@@ -9,6 +9,7 @@ use OceanViewFlats\Domain\Payment\InMemoryPaymentGateway;
 use OceanViewFlats\Domain\Payment\WebhookSettlementProcessor;
 use OceanViewFlats\Domain\Payment\WebhookSettlementResult;
 use PDO;
+use PDOStatement;
 use PHPUnit\Framework\TestCase;
 
 final class MercadoPagoWebhookEndpointTest extends TestCase
@@ -128,7 +129,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertSame('ignored_cancelled_terminal', $res['json']['status'] ?? null);
 
         // Verify database state remains cancelled
-        $stmt = $this->pdo->query("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-resurrect-guard'");
+        $stmt = $this->queryStatement("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-resurrect-guard'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -174,7 +175,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertSame('cancelled', $res['json']['data']['reservation_status'] ?? ($res['json']['reservation_status'] ?? null));
 
         // Verify reservation updated to cancelled
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount, notes FROM reservations WHERE reservation_uid = 'ovf-external-refund'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, refunded_amount, notes FROM reservations WHERE reservation_uid = 'ovf-external-refund'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -183,7 +184,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertStringContainsString('External Refund Sync', (string) $row['notes']);
 
         // Verify reservation_refunds record created
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-external-refund'");
+        $stmt = $this->queryStatement("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-external-refund'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertSame('771122', (string) $refundRow['mercadopago_refund_id']);
@@ -191,7 +192,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertSame('mercadopago_webhook', $refundRow['source']);
 
         // Verify audit log created
-        $stmt = $this->pdo->query("SELECT action FROM admin_audit_logs WHERE entity_id = 'ovf-external-refund' ORDER BY id ASC");
+        $stmt = $this->queryStatement("SELECT action FROM admin_audit_logs WHERE entity_id = 'ovf-external-refund' ORDER BY id ASC");
         $actions = $stmt->fetchAll(PDO::FETCH_COLUMN);
         $this->assertTrue(in_array('refund_cancellation', $actions, true) || in_array('external_refund_cancellation', $actions, true));
     }
@@ -231,7 +232,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertTrue($res['json']['success'] ?? false);
 
         // Verify audit logs
-        $stmt = $this->pdo->query("SELECT action, payload_after FROM admin_audit_logs WHERE entity_id = 'ovf-ext-email-test' ORDER BY id ASC");
+        $stmt = $this->queryStatement("SELECT action, payload_after FROM admin_audit_logs WHERE entity_id = 'ovf-ext-email-test' ORDER BY id ASC");
         $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $actions = array_column($logs, 'action');
@@ -291,7 +292,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertSame('confirmed', $res['json']['data']['reservation_status'] ?? ($res['json']['reservation_status'] ?? null));
 
         // Verify reservation stayed confirmed
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-partial-sync'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-partial-sync'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('confirmed', $row['status']);
@@ -299,7 +300,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertEquals(500000.00, (float) $row['refunded_amount']);
 
         // Verify refund recorded
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-partial-sync'");
+        $stmt = $this->queryStatement("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-partial-sync'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertSame('332211', (string) $refundRow['mercadopago_refund_id']);
@@ -334,7 +335,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $res = $this->callWebhook('55443322', $paymentPayload);
 
         $this->assertSame(0, $res['exitCode'], $res['stderr']);
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-cancel-partial'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-cancel-partial'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -370,14 +371,14 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $res = $this->callWebhook('44332211', $paymentPayload);
 
         $this->assertSame(0, $res['exitCode'], $res['stderr']);
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-already-cancel'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-already-cancel'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
         $this->assertSame('refunded', $row['payment_status']);
         $this->assertEquals(1500000.00, (float) $row['refunded_amount']);
 
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-already-cancel'");
+        $stmt = $this->queryStatement("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-already-cancel'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertSame('556677', (string) $refundRow['mercadopago_refund_id']);
@@ -407,7 +408,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $res = $this->callWebhook('33445566', $paymentPayload);
 
         $this->assertSame(0, $res['exitCode'], $res['stderr']);
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-approve'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-approve'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('confirmed', $row['status']);
@@ -442,7 +443,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertSame('rejected', $res['json']['status'] ?? null);
 
         // Assert reservation was NOT modified
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-rejected'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-rejected'");
         $row = $stmt->fetch();
         $this->assertSame('pending_payment', $row['status']);
         $this->assertSame('pending', $row['payment_status']);
@@ -477,7 +478,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertSame('in_process', $res['json']['status'] ?? null);
 
         // Assert reservation was NOT modified
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-cont'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-pending-cont'");
         $row = $stmt->fetch();
         $this->assertSame('pending_payment', $row['status']);
         $this->assertSame('pending', $row['payment_status']);
@@ -529,7 +530,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertTrue($res['json']['success'] ?? false);
         $this->assertSame('confirmed', $res['json']['status'] ?? null);
 
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-valid'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-valid'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('confirmed', $row['status']);
@@ -591,7 +592,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertStringContainsString('[MercadoPago Webhook Security]', $resMissingReqId['stderr']);
 
         // Verify no database side-effects occurred
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-missing'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-missing'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('pending_payment', $row['status']);
@@ -697,7 +698,7 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
         $this->assertStringContainsString('[MercadoPago Webhook Security]', $resAlteredTs['stderr']);
 
         // Verify reservation in database was never touched
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-tampered'");
+        $stmt = $this->queryStatement("SELECT status, payment_status, mercadopago_payment_id FROM reservations WHERE reservation_uid = 'ovf-sig-tampered'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('pending_payment', $row['status']);
@@ -783,6 +784,10 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
             $pipes
         );
 
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for mercadopago-webhook endpoint test.');
+        }
+
         $jsonInput = json_encode($body);
         if ($jsonInput !== false) {
             fwrite($pipes[0], $jsonInput);
@@ -833,5 +838,12 @@ final class MercadoPagoWebhookEndpointTest extends TestCase
             'stderr' => '',
             'json' => $result->toArray(),
         ];
+    }
+
+    private function queryStatement(string $sql): PDOStatement
+    {
+        $stmt = $this->pdo->query($sql);
+        $this->assertNotFalse($stmt);
+        return $stmt;
     }
 }

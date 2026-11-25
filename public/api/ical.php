@@ -83,11 +83,13 @@ header('Pragma: no-cache');
 header('Expires: 0');
 
 // 7. Format Timestamp Helper
-function formatICalDate($dateStr) {
-    return date('Ymd', strtotime($dateStr));
+function formatICalDate(string $dateStr): string {
+    $timestamp = strtotime($dateStr);
+    return date('Ymd', $timestamp !== false ? $timestamp : 0);
 }
-function formatICalDateTime($dateTimeStr) {
-    return date('Ymd\THis\Z', strtotime($dateTimeStr) - date('Z')); // Convert to UTC
+function formatICalDateTime(string $dateTimeStr): string {
+    $timestamp = strtotime($dateTimeStr);
+    return gmdate('Ymd\THis\Z', $timestamp !== false ? $timestamp : time());
 }
 
 // 8. Generate iCalendar Stream
@@ -105,7 +107,9 @@ foreach ($activeReservations as $res) {
 
     $opaqueToken = substr(hash_hmac('sha256', 'ovf-ical-v1:' . $res->reservationUid, $icalUidSecret), 0, 32);
     $uid = 'ovf-evt-' . $opaqueToken . '@oceanviewflats.com';
-    $dtstamp = formatICalDateTime($res->createdAt->format('Y-m-d H:i:s'));
+    $dtstamp = $res->createdAt !== null
+        ? formatICalDateTime($res->createdAt->format('Y-m-d H:i:s'))
+        : formatICalDateTime('now');
     $dtstart = formatICalDate($res->checkIn);
     $dtend = formatICalDate($res->checkOut);
 

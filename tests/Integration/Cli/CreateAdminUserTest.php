@@ -36,6 +36,8 @@ final class CreateAdminUserTest extends TestCase
 
         $outStream = fopen('php://temp', 'w+');
         $errStream = fopen('php://temp', 'w+');
+        $this->assertNotFalse($outStream);
+        $this->assertNotFalse($errStream);
 
         $exitCode = AdminUserProvisioner::run($argv, $activePdo, $outStream, $errStream);
 
@@ -109,7 +111,9 @@ final class CreateAdminUserTest extends TestCase
         $this->assertStringContainsString('Invalid or missing email address', $resInvalid['stderr']);
 
         // Verify no user was inserted
-        $count = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_users')->fetchColumn();
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM admin_users');
+        $this->assertNotFalse($stmt);
+        $count = (int) $stmt->fetchColumn();
         $this->assertSame(0, $count);
     }
 
@@ -129,7 +133,9 @@ final class CreateAdminUserTest extends TestCase
         $this->assertStringNotContainsString($shortSecret, $res['stdout']);
         $this->assertStringNotContainsString($shortSecret, $res['stderr']);
 
-        $count = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_users')->fetchColumn();
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM admin_users');
+        $this->assertNotFalse($stmt);
+        $count = (int) $stmt->fetchColumn();
         $this->assertSame(0, $count);
     }
 

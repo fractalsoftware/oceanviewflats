@@ -283,7 +283,9 @@ final class MigrationRunnerTest extends TestCase
 
             $logsWithoutKey = MigrationRunner::run($pdo, 'memory_db');
             $this->assertNotContains('Encrypted 1 legacy guest_registries row(s).', $logsWithoutKey);
-            $rawStillPlain = (string) $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'res_legacy_plain'")->fetchColumn();
+            $stmtPlain = $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'res_legacy_plain'");
+            $this->assertNotFalse($stmtPlain);
+            $rawStillPlain = (string) $stmtPlain->fetchColumn();
             $this->assertFalse(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope($rawStillPlain));
 
             // Configure APP_ENCRYPTION_KEY and run MigrationRunner again: should encrypt res_legacy_plain and skip res_empty_redacted
@@ -293,7 +295,9 @@ final class MigrationRunnerTest extends TestCase
             $logs = MigrationRunner::run($pdo, 'memory_db');
             $this->assertContains('Encrypted 1 legacy guest_registries row(s).', $logs);
 
-            $rawEncrypted = (string) $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'res_legacy_plain'")->fetchColumn();
+            $stmtEncrypted = $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'res_legacy_plain'");
+            $this->assertNotFalse($stmtEncrypted);
+            $rawEncrypted = (string) $stmtEncrypted->fetchColumn();
             $this->assertTrue(\OceanViewFlats\Domain\Security\PayloadEncryptor::isEncryptedEnvelope($rawEncrypted));
             $this->assertStringNotContainsString('PA77665544', $rawEncrypted);
 
@@ -303,7 +307,9 @@ final class MigrationRunnerTest extends TestCase
             $this->assertSame('PA77665544', $decrypted[0]['doc_num']);
 
             // Empty '[]' row remains '[]'
-            $rawEmpty = (string) $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'res_empty_redacted'")->fetchColumn();
+            $stmtEmpty = $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'res_empty_redacted'");
+            $this->assertNotFalse($stmtEmpty);
+            $rawEmpty = (string) $stmtEmpty->fetchColumn();
             $this->assertSame('[]', $rawEmpty);
 
             // Subsequent run is idempotent and does not re-encrypt already-encrypted rows

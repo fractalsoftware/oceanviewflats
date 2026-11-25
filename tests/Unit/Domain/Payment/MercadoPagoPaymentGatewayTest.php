@@ -112,6 +112,7 @@ final class MercadoPagoPaymentGatewayTest extends TestCase
 
         $this->assertSame('POST', $recordedRequest['method']);
         $this->assertSame('https://api.mercadopago.com/v1/payments', $recordedRequest['url']);
+        $this->assertIsArray($recordedRequest['headers']);
         $this->assertContains('Authorization: Bearer TEST_TOKEN_XYZ', $recordedRequest['headers']);
         $this->assertContains('X-Idempotency-Key: idem-app-1', $recordedRequest['headers']);
 

@@ -306,6 +306,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
 
         // Database Verification
         $updatedRes = $this->fetchReservationRow($uid);
+        $this->assertIsArray($updatedRes);
         $this->assertSame(1, (int) ($updatedRes['registry_completed'] ?? 0));
         $this->assertNotEmpty($updatedRes['registry_completed_at']);
         $this->assertSame($doorCode, $updatedRes['door_code']);
@@ -538,7 +539,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
             'REMOTE_ADDR' => '127.0.0.1',
         ], $serverOverrides);
 
-        $jsonInput = $postData !== null ? json_encode($postData) : null;
+        $jsonInput = $postData !== null ? json_encode($postData, JSON_THROW_ON_ERROR) : null;
         if ($jsonInput !== null && !isset($serverVars['CONTENT_TYPE'])) {
             $serverVars['CONTENT_TYPE'] = 'application/json';
         }

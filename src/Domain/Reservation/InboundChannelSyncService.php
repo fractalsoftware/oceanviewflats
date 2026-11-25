@@ -145,7 +145,7 @@ final class InboundChannelSyncService implements InboundChannelSyncServiceInterf
 
             // Atomically write avail_{property}.json
             $availFile = $this->getAvailFilePath($propertyId);
-            $this->atomicWrite($availFile, json_encode($blockedNights, JSON_UNESCAPED_SLASHES));
+            $this->atomicWrite($availFile, json_encode($blockedNights, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
 
             // Record healthy status
             $newStatus = new ChannelSyncStatus(

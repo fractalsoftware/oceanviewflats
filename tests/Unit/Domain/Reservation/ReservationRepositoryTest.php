@@ -85,8 +85,10 @@ final class ReservationRepositoryTest extends TestCase
         $reservation = $this->createSampleReservation('ovf_inmem_1');
         $repo->save($reservation);
 
-        $this->assertFalse($repo->findByUid('ovf_inmem_1')->registryCompleted);
-        $this->assertNull($repo->findByUid('ovf_inmem_1')->registryCompletedAt);
+        $initial = $repo->findByUid('ovf_inmem_1');
+        $this->assertNotNull($initial);
+        $this->assertFalse($initial->registryCompleted);
+        $this->assertNull($initial->registryCompletedAt);
 
         $now = new DateTimeImmutable('2026-11-10 14:30:00');
         $updated = $repo->markRegistryCompleted('ovf_inmem_1', $now);
@@ -247,6 +249,7 @@ final class ReservationRepositoryTest extends TestCase
         ]);
 
         $stmt = $pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf_refund_pdo'");
+        $this->assertNotFalse($stmt);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $this->assertCount(1, $rows);
         $this->assertSame('120000', (string) (int) $rows[0]['amount']);

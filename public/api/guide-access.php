@@ -42,7 +42,7 @@ $lang = 'en';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rawInput = file_get_contents('php://input');
-    $postData = json_decode($rawInput, true);
+    $postData = $rawInput !== false ? json_decode($rawInput, true) : null;
     if (!is_array($postData)) {
         $postData = $_POST;
     }

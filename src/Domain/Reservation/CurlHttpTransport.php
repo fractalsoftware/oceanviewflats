@@ -24,6 +24,14 @@ final class CurlHttpTransport implements HttpTransportInterface
      */
     public function get(string $url, array $options = []): array
     {
+        if ($url === '') {
+            return [
+                'statusCode' => 0,
+                'body' => '',
+                'error' => 'Request URL must not be empty.',
+            ];
+        }
+
         $ch = curl_init();
         if ($ch === false) {
             return [
@@ -37,14 +45,16 @@ final class CurlHttpTransport implements HttpTransportInterface
             ? $options['timeout']
             : $this->defaultTimeoutSeconds;
 
-        $userAgent = isset($options['userAgent']) && is_string($options['userAgent'])
+        $userAgent = isset($options['userAgent']) && is_string($options['userAgent']) && $options['userAgent'] !== ''
             ? $options['userAgent']
             : $this->defaultUserAgent;
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+        if ($userAgent !== '') {
+            curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+        }
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
         \OceanViewFlats\Domain\Support\CurlSecurityOptions::apply($ch, $url, includeRedirects: true);

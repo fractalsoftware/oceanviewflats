@@ -26,6 +26,8 @@ final class SyncChannelsCommandTest extends TestCase
         $argv = array_merge(['scripts/sync-channels.php'], $args);
         $stdoutStream = fopen('php://temp', 'w+');
         $stderrStream = fopen('php://temp', 'w+');
+        $this->assertNotFalse($stdoutStream);
+        $this->assertNotFalse($stderrStream);
 
         $exitCode = SyncChannelsCommand::run($argv, $service, $stdoutStream, $stderrStream);
 

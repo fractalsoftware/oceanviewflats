@@ -12,6 +12,11 @@ use JsonSerializable;
 final class BookingPaymentResult implements JsonSerializable
 {
     /**
+     * @var array<string, mixed>
+     */
+    public readonly array $extra;
+
+    /**
      * @param bool $success
      * @param string $message
      * @param string|null $reservationUid
@@ -19,11 +24,6 @@ final class BookingPaymentResult implements JsonSerializable
      * @param array<string, mixed> $extra
      * @param int $httpStatusCode
      */
-    /**
-     * @var array<string, mixed>
-     */
-    public readonly array $extra;
-
     public function __construct(
         public readonly bool $success,
         public readonly string $message,
