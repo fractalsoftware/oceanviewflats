@@ -5,6 +5,21 @@ import test from "node:test";
 import vm from "node:vm";
 import { baseTemplate } from "../../src/templates/base";
 
+const noopMercadoPago = () => {};
+
+function createMercadoPagoBrickStub<T>(onBrickCreate: (cfg: T) => void) {
+	return function mockMercadoPago() {
+		return {
+			bricks: () => ({
+				create: async (_type: string, _container: string, cfg: T) => {
+					onBrickCreate(cfg);
+					return { unmount: async () => {} };
+				},
+			}),
+		};
+	};
+}
+
 test("baseTemplate escapes script tags inside pageConfig JSON", () => {
 	const maliciousConfig = {
 		lang: "en",
@@ -2698,7 +2713,7 @@ test("main.js #calendar-widget fetches blocked dates via pageConfig.apiBase and 
 		window: {
 			_paq: [] as unknown[],
 			scrollY: 0,
-			MercadoPago: () => {},
+			MercadoPago: noopMercadoPago,
 			location: {
 				search: "",
 				pathname: "/Oceanview1606/index.html",
@@ -3293,7 +3308,7 @@ test("Property Page #calendar-widget fetches authoritative Quote from quote.php 
 		window: {
 			_paq: [] as unknown[],
 			scrollY: 0,
-			MercadoPago: () => {},
+			MercadoPago: noopMercadoPago,
 			location: {
 				search: "",
 				pathname: "/Oceanview1707/index.html",
@@ -3722,20 +3737,11 @@ const runBookingPaymentRedirectHarness = async (options: {
 		window: {
 			_paq: [] as unknown[],
 			scrollY: 0,
-			MercadoPago: function () {
-				return {
-					bricks: () => ({
-						create: async (
-							_type: string,
-							_container: string,
-							cfg: typeof capturedBrickConfig,
-						) => {
-							capturedBrickConfig = cfg;
-							return { unmount: async () => {} };
-						},
-					}),
-				};
-			},
+			MercadoPago: createMercadoPagoBrickStub<typeof capturedBrickConfig>(
+				(cfg) => {
+					capturedBrickConfig = cfg;
+				},
+			),
 			location: {
 				search: "",
 				pathname: `/Oceanview${propertyId}/${langCode === "en" ? "index.html" : `${langCode}.html`}`,
