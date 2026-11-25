@@ -8,7 +8,9 @@
 use OceanViewFlats\Domain\Reservation\Dashboard\MovementType;
 
 $scheduleByDate = $viewData->scheduleByDate;
-$todayDt = new \DateTimeImmutable('today');
+$firstScheduleDate = $scheduleByDate !== [] ? (string) array_key_first($scheduleByDate) : '';
+$todayDt = ($firstScheduleDate !== '' ? \DateTimeImmutable::createFromFormat('!Y-m-d', $firstScheduleDate) : false)
+    ?: new \DateTimeImmutable('today', new \DateTimeZone('America/Bogota'));
 $today = $todayDt->format('Y-m-d');
 $tomorrow = $todayDt->modify('+1 day')->format('Y-m-d');
 ?>

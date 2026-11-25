@@ -1692,4 +1692,150 @@ final class FinancialReportControllerTest extends TestCase
         $this->assertFalse($this->pdo->inTransaction());
         $this->assertCount(0, $this->expenseRepo->listForPeriod('2026-01-01', '2027-01-01', 'all'));
     }
+
+    public function testCreateAndUpdateExpenseSurfacePersistenceErrorsInsideModalWith422AndPreserveInputs(): void
+    {
+        // 1. Verify modal scroll containment and z-40 stacking below global alerts
+        $newModalResp = $this->app->handle(
+            new Request('GET', '/financial-report/expenses/new', server: ['HTTP_HX_REQUEST' => 'true']),
+            $this->adminSession
+        );
+        $this->assertSame(200, $newModalResp->getStatusCode());
+        $this->assertStringContainsString('z-40', $newModalResp->getBody());
+        $this->assertStringContainsString('overflow-y-auto', $newModalResp->getBody());
+
+        // 2. When operational_expenses table is missing, POST /financial-report/expenses does NOT run DDL at runtime;
+        //    instead it catches the PDOException and surfaces an actionable migration hint inside #modal-error (HTTP 422)
+        $this->pdo->exec('DROP TABLE operational_expenses');
+
+        $indexResp = $this->app->handle(new Request('GET', '/financial-report'), $this->adminSession);
+        $this->assertSame(200, $indexResp->getStatusCode());
+
+        $createReq = new Request(
+            method: 'POST',
+            uri: '/financial-report/expenses',
+            post: [
+                'csrf_token' => 'valid-csrf-token',
+                'property_id' => '1606',
+                'category' => 'hoa_admin',
+                'title' => 'Monthly HOA Administration Oct 2026',
+                'amount' => '680000',
+                'expense_date' => '2026-10-18',
+                'vendor_name' => 'Edificio Salguero Sunset',
+                'reference_code' => 'FAC-2026-1094',
+                'reservation_uid' => '',
+                'notes' => 'Preserve this note on DB failure',
+            ],
+            server: ['HTTP_HX_REQUEST' => 'true']
+        );
+
+        $missingTableResp = $this->app->handle($createReq, $this->adminSession);
+        $this->assertSame(422, $missingTableResp->getStatusCode());
+        $this->assertSame('#modal-container', $missingTableResp->getHeader('HX-Retarget'));
+        $this->assertSame('innerHTML', $missingTableResp->getHeader('HX-Reswap'));
+        $missingBody = $missingTableResp->getBody();
+        $this->assertStringContainsString('id="modal-error"', $missingBody);
+        $this->assertStringContainsString('php scripts/migrate.php', $missingBody);
+        $this->assertStringContainsString('value="Monthly HOA Administration Oct 2026"', $missingBody);
+        $this->assertStringContainsString('Preserve this note on DB failure', $missingBody);
+
+        // 3. When persistence throws a generic database error on create or update, FinancialReportController
+        //    catches Throwable, rolls back any open transaction, and returns HTTP 422 targeting #modal-container
+        $existingExpense = new \OceanViewFlats\Domain\Finance\OperationalExpense(
+            propertyId: '1606',
+            category: 'hoa_admin',
+            title: 'Original HOA Fee',
+            amount: 650000.0,
+            expenseDate: '2026-10-01',
+            expenseUid: 'exp_existing_422',
+            id: 42
+        );
+
+        $failingRepo = new class ($existingExpense) implements \OceanViewFlats\Domain\Finance\OperationalExpenseRepositoryInterface {
+            public function __construct(
+                private readonly \OceanViewFlats\Domain\Finance\OperationalExpense $existing
+            ) {
+            }
+
+            public function findById(int $id): ?\OceanViewFlats\Domain\Finance\OperationalExpense
+            {
+                return $id === 42 ? $this->existing : null;
+            }
+
+            public function findByUid(string $expenseUid): ?\OceanViewFlats\Domain\Finance\OperationalExpense
+            {
+                return $expenseUid === $this->existing->expenseUid ? $this->existing : null;
+            }
+
+            public function listForPeriod(
+                string $startDate,
+                string $endDate,
+                string $propertyId = 'all',
+                string $category = 'all',
+                string $search = ''
+            ): array {
+                return [];
+            }
+
+            public function save(\OceanViewFlats\Domain\Finance\OperationalExpense $expense): \OceanViewFlats\Domain\Finance\OperationalExpense
+            {
+                throw new \PDOException('SQLSTATE[HY000]: Disk I/O error');
+            }
+
+            public function delete(int $id): bool
+            {
+                return false;
+            }
+        };
+
+        $failingApp = AdminApp::createDefault($this->pdo, [
+            'operational_expense_repository' => $failingRepo,
+            'financial_report_now' => new DateTimeImmutable('2026-10-17 14:30:00', new \DateTimeZone('America/Bogota')),
+        ]);
+
+        $errorResp = $failingApp->handle($createReq, $this->adminSession);
+        $this->assertSame(422, $errorResp->getStatusCode());
+        $this->assertSame('#modal-container', $errorResp->getHeader('HX-Retarget'));
+        $this->assertSame('innerHTML', $errorResp->getHeader('HX-Reswap'));
+
+        $body = $errorResp->getBody();
+        $this->assertStringContainsString('id="modal-error"', $body);
+        $this->assertStringContainsString('Unable to save operational expense due to a database error.', $body);
+        $this->assertStringContainsString('value="Monthly HOA Administration Oct 2026"', $body);
+        $this->assertStringContainsString('value="680000"', $body);
+        $this->assertStringContainsString('value="Edificio Salguero Sunset"', $body);
+        $this->assertStringContainsString('value="FAC-2026-1094"', $body);
+        $this->assertStringContainsString('Preserve this note on DB failure', $body);
+
+        // Update failure must also roll back cleanly and return HTTP 422 with preserved inputs
+        $updateReq = new Request(
+            method: 'POST',
+            uri: '/financial-report/expenses/42',
+            post: [
+                'csrf_token' => 'valid-csrf-token',
+                'property_id' => '1606',
+                'category' => 'hoa_admin',
+                'title' => 'Updated HOA Fee Draft',
+                'amount' => '710000',
+                'expense_date' => '2026-10-19',
+                'vendor_name' => 'Edificio Salguero Sunset',
+                'reference_code' => 'FAC-2026-1095',
+                'reservation_uid' => '',
+                'notes' => 'Preserve update note on failure',
+            ],
+            server: ['HTTP_HX_REQUEST' => 'true']
+        );
+
+        $updateErrorResp = $failingApp->handle($updateReq, $this->adminSession);
+        $this->assertSame(422, $updateErrorResp->getStatusCode());
+        $this->assertSame('#modal-container', $updateErrorResp->getHeader('HX-Retarget'));
+        $this->assertSame('innerHTML', $updateErrorResp->getHeader('HX-Reswap'));
+        $this->assertFalse($this->pdo->inTransaction());
+        $updateBody = $updateErrorResp->getBody();
+        $this->assertStringContainsString('id="modal-error"', $updateBody);
+        $this->assertStringContainsString('Unable to save operational expense due to a database error.', $updateBody);
+        $this->assertStringContainsString('value="Updated HOA Fee Draft"', $updateBody);
+        $this->assertStringContainsString('value="710000"', $updateBody);
+        $this->assertStringContainsString('Preserve update note on failure', $updateBody);
+    }
 }
