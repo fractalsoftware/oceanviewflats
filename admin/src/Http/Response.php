@@ -111,6 +111,7 @@ final class Response
     public function send(): void
     {
         if (!headers_sent()) {
+            header_remove('X-Powered-By');
             http_response_code($this->statusCode);
 
             $headers = array_merge([

@@ -213,4 +213,32 @@ final class HtaccessTest extends TestCase
             $this->assertStringContainsString('php_value max_input_vars 200', $content);
         }
     }
+
+    public function testXPoweredBySuppressionIsEnforcedAcrossAllHtaccessFiles(): void
+    {
+        $rootDir = dirname(__DIR__, 4);
+        $htaccessFiles = [
+            'admin/public/.htaccess' => $this->htaccessContent,
+            'public/api/.htaccess' => (string) file_get_contents($rootDir . '/public/api/.htaccess'),
+            'public/.htaccess' => (string) file_get_contents($rootDir . '/public/.htaccess'),
+        ];
+
+        foreach ($htaccessFiles as $relativePath => $content) {
+            $matched = preg_match('/<IfModule\s+mod_headers\.c>(.*?)<\/IfModule>/is', $content, $matches);
+            $this->assertSame(1, $matched, "{$relativePath} must contain a <IfModule mod_headers.c> block.");
+            $headersBlock = $matches[1];
+
+            $this->assertMatchesRegularExpression(
+                '/^\s*Header\s+always\s+unset\s+X-Powered-By\b/im',
+                $headersBlock,
+                "{$relativePath} must strip X-Powered-By with 'Header always unset X-Powered-By' inside mod_headers."
+            );
+
+            $this->assertMatchesRegularExpression(
+                '/^\s*Header\s+unset\s+X-Powered-By\b/im',
+                $headersBlock,
+                "{$relativePath} must strip X-Powered-By with 'Header unset X-Powered-By' inside mod_headers."
+            );
+        }
+    }
 }

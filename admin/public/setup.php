@@ -45,6 +45,9 @@ $isJson = (isset($_GET['format']) && $_GET['format'] === 'json')
     || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
 
 http_response_code($result['status']);
+if (!headers_sent()) {
+    header_remove('X-Powered-By');
+}
 
 if ($isJson) {
     header('Content-Type: application/json; charset=utf-8');

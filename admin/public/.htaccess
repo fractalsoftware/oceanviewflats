@@ -21,6 +21,8 @@ Options -Indexes
 
 # 3. HTTP Security Headers
 <IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
     Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
     Header set X-Frame-Options "DENY"
     Header set X-Content-Type-Options "nosniff"
