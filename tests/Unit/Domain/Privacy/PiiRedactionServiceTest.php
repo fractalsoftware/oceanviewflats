@@ -257,7 +257,9 @@ final class PiiRedactionServiceTest extends TestCase
         $this->assertSame('190.24.10.55', $redactedRes->privacyConsentIp);
 
         // 4. Verify guest_registries table
-        $regRow = $this->pdo->query("SELECT * FROM guest_registries WHERE reservation_uid = 'res-concluded-101'")->fetch(PDO::FETCH_ASSOC);
+        $regStmt = $this->pdo->query("SELECT * FROM guest_registries WHERE reservation_uid = 'res-concluded-101'");
+        $this->assertNotFalse($regStmt);
+        $regRow = $regStmt->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($regRow);
         $this->assertSame('[]', $regRow['guests_payload']);
         $this->assertNull($regRow['car_plates']);
@@ -274,7 +276,9 @@ final class PiiRedactionServiceTest extends TestCase
         $this->assertSame(1, (int) $regRow['minor_guardian_consent']);
 
         // 5. Verify condominium_clearances table
-        $clrRow = $this->pdo->query("SELECT * FROM condominium_clearances WHERE reservation_uid = 'res-concluded-101'")->fetch(PDO::FETCH_ASSOC);
+        $clrStmt = $this->pdo->query("SELECT * FROM condominium_clearances WHERE reservation_uid = 'res-concluded-101'");
+        $this->assertNotFalse($clrStmt);
+        $clrRow = $clrStmt->fetch(PDO::FETCH_ASSOC);
         $this->assertIsArray($clrRow);
         $this->assertNull($clrRow['request_payload']);
         $this->assertNull($clrRow['error_message']);

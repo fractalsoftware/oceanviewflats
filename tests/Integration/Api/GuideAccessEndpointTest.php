@@ -231,6 +231,10 @@ PHP;
         }
     }
 
+    /**
+     * @param array<string, mixed> $params
+     * @return array{exitCode: int, stdout: string, stderr: string, json: mixed}
+     */
     private function callEndpoint(array $params = [], string $prependCode = '', string $method = 'GET'): array
     {
         $rateLimitFile = sys_get_temp_dir() . '/ovf_guide_access_rate_limits.json';
@@ -254,6 +258,10 @@ PHP;
             ],
             $pipes
         );
+
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for guide-access endpoint test.');
+        }
 
         $stdout = stream_get_contents($pipes[1]);
         fclose($pipes[1]);

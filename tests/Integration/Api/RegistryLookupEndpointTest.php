@@ -190,6 +190,10 @@ PHP;
         $this->assertArrayNotHasKey('credentials', $resEs['json']);
     }
 
+    /**
+     * @param array<string, mixed> $params
+     * @return array{exitCode: int, stdout: string, stderr: string, json: mixed}
+     */
     private function callEndpoint(array $params = [], string $prependCode = '', string $method = 'GET'): array
     {
         $rateLimitFile = sys_get_temp_dir() . '/ovf_registry_lookup_rate_limits.json';

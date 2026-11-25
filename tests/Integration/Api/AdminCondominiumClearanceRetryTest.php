@@ -338,6 +338,7 @@ final class AdminCondominiumClearanceRetryTest extends TestCase
         );
 
         $this->assertSame(200, $res['statusCode']);
+        $this->assertIsArray($res['json']);
         $this->assertTrue($res['json']['success']);
         $this->assertSame('synced', $res['json']['status']);
         $this->assertSame('99999', $res['json']['clearance_number']);

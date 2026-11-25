@@ -162,6 +162,10 @@ final class ContactProcessorTest extends TestCase
             $pipes
         );
 
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for contact-processor endpoint test.');
+        }
+
         fclose($pipes[0]);
         $stdout = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
@@ -246,6 +250,10 @@ final class ContactProcessorTest extends TestCase
             ],
             $pipes
         );
+
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for book-request endpoint test.');
+        }
 
         fclose($pipes[0]);
         $stdout = stream_get_contents($pipes[1]);

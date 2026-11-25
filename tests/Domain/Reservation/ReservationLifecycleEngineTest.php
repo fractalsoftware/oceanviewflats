@@ -356,6 +356,7 @@ final class ReservationLifecycleEngineTest extends TestCase
         $records = $this->auditAdapter->getRecords();
         $this->assertCount(1, $records);
         $this->assertSame('manual_reservation_created', $records[0]['action']);
+        $this->assertNotNull($records[0]['actor']);
         $this->assertSame(42, $records[0]['actor']->adminUserId);
     }
 
@@ -701,6 +702,7 @@ final class ReservationLifecycleEngineTest extends TestCase
         $this->assertCount(2, $records);
         $this->assertSame('reservation_cancelled', $records[0]['action']);
         $this->assertSame('refund_issued', $records[1]['action']);
+        $this->assertIsArray($records[1]['payloadAfter']);
         $this->assertSame(2000000.0, $records[1]['payloadAfter']['refund_amount']);
     }
 

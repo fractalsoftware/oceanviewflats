@@ -16,6 +16,9 @@ final class GuideAccessService implements GuideAccessServiceInterface
 {
     private readonly PublicUrlBuilder $urlBuilder;
 
+    /**
+     * @param array<string, array<string, string>> $translations
+     */
     public function __construct(
         private readonly ReservationRepositoryInterface $repository,
         private readonly PropertyCredentialsProviderInterface $credentialsProvider,

@@ -178,6 +178,7 @@ final class ReservationSearchTest extends TestCase
 
         $arr = $dossier->toArray();
         $this->assertSame('ovf_dossier_1', $arr['reservation']['reservation_uid']);
+        $this->assertIsArray($arr['guest_registry']);
         $this->assertSame(2, $arr['guest_registry']['guest_count']);
         $this->assertSame('Admin Boss', $arr['audit_logs'][0]['admin_user_name']);
     }
@@ -571,7 +572,9 @@ final class ReservationSearchTest extends TestCase
         ]);
 
         // Verify raw SQL stores ciphertext envelope without plaintext doc_num
-        $rawInDb = (string) $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'ovf_encrypted_reg'")->fetchColumn();
+        $stmtRaw = $pdo->query("SELECT guests_payload FROM guest_registries WHERE reservation_uid = 'ovf_encrypted_reg'");
+        $this->assertNotFalse($stmtRaw);
+        $rawInDb = (string) $stmtRaw->fetchColumn();
         $this->assertStringContainsString('"_encrypted":true', $rawInDb);
         $this->assertStringNotContainsString('US99887766', $rawInDb);
 

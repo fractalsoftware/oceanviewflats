@@ -161,6 +161,9 @@ final class BookingPaymentProcessorTest extends TestCase
         );
     }
 
+    /**
+     * @param array<string, mixed> $overrides
+     */
     private function createValidRequest(array $overrides = []): BookingPaymentRequest
     {
         $data = array_merge([
@@ -535,7 +538,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertSame('mp_pay_approved_999', $stmt->fetchColumn());
 
         // Verify audit log was recorded
-        $auditCount = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "reservation_confirmed"')->fetchColumn();
+        $auditStmt = $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "reservation_confirmed"');
+        $this->assertNotFalse($auditStmt);
+        $auditCount = (int) $auditStmt->fetchColumn();
         $this->assertSame(1, $auditCount);
 
         // Verify fulfillment emails were sent (guest + host)
@@ -593,7 +598,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertSame('190.24.12.34', $persisted->privacyConsentIp);
 
         // Verify audit log
-        $auditCount = (int) $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "direct_hold_created"')->fetchColumn();
+        $auditStmt = $this->pdo->query('SELECT COUNT(*) FROM admin_audit_logs WHERE action = "direct_hold_created"');
+        $this->assertNotFalse($auditStmt);
+        $auditCount = (int) $auditStmt->fetchColumn();
         $this->assertSame(1, $auditCount);
 
         // Verify pending emails were sent to both guest and host
@@ -633,7 +640,9 @@ final class BookingPaymentProcessorTest extends TestCase
         $this->assertSame('mp_pay_rejected_111', $result->extra['payment_id']);
 
         // Verify no reservation was created in database
-        $count = (int) $this->pdo->query('SELECT COUNT(*) FROM reservations')->fetchColumn();
+        $countStmt = $this->pdo->query('SELECT COUNT(*) FROM reservations');
+        $this->assertNotFalse($countStmt);
+        $count = (int) $countStmt->fetchColumn();
         $this->assertSame(0, $count);
     }
 

@@ -51,7 +51,7 @@ final class CsvRateSource implements RateSourceInterface
         fgetcsv($file, 0, ',', '"', '\\');
 
         while (($row = fgetcsv($file, 0, ',', '"', '\\')) !== false) {
-            if (count($row) >= 5) {
+            if (count($row) >= 5 && $row[0] !== null && $row[1] !== null && $row[2] !== null) {
                 $propId = trim($row[0]);
                 $startDate = trim($row[1]);
                 $endDate = trim($row[2]);

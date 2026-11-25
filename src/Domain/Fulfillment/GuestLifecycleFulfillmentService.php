@@ -310,7 +310,8 @@ final class GuestLifecycleFulfillmentService implements GuestLifecycleFulfillmen
             try {
                 $recipientEmail = trim($submission->primaryGuestEmail);
                 $lang = $submission->lang !== '' ? $submission->lang : ($reservation->lang !== '' ? $reservation->lang : 'en');
-                $primaryOccupantName = $submission->getPrimaryOccupant()->name;
+                $primaryOccupant = $submission->getPrimaryOccupant();
+                $primaryOccupantName = $primaryOccupant !== null ? $primaryOccupant->name : '';
                 $recipientName = $primaryOccupantName !== '' ? $primaryOccupantName : $reservation->guestName;
 
                 $parkingSpot = null;

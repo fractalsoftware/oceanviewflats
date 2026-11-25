@@ -19,6 +19,16 @@ final class CurlHttpTransport implements HttpTransportInterface
 
     public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array
     {
+        if ($url === '') {
+            return [
+                'statusCode' => 0,
+                'body' => '',
+                'headers' => [],
+                'cookies' => [],
+                'error' => 'Request URL must not be empty.',
+            ];
+        }
+
         $ch = curl_init();
         if ($ch === false) {
             return [
@@ -44,7 +54,9 @@ final class CurlHttpTransport implements HttpTransportInterface
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+        if ($userAgent !== '') {
+            curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+        }
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $followRedirects);
         \OceanViewFlats\Domain\Support\CurlSecurityOptions::apply($ch, $url, includeRedirects: true);
 
@@ -77,8 +89,11 @@ final class CurlHttpTransport implements HttpTransportInterface
                 $cookiePairs[] = "{$k}={$v}";
             }
             curl_setopt($ch, CURLOPT_COOKIE, implode('; ', $cookiePairs));
-        } elseif (is_string($cookiesOption) && trim($cookiesOption) !== '') {
-            curl_setopt($ch, CURLOPT_COOKIE, trim($cookiesOption));
+        } elseif (is_string($cookiesOption)) {
+            $trimmedCookies = trim($cookiesOption);
+            if ($trimmedCookies !== '') {
+                curl_setopt($ch, CURLOPT_COOKIE, $trimmedCookies);
+            }
         }
 
         // Capture response headers & cookies

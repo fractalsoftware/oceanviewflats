@@ -15,11 +15,13 @@ use OceanViewFlats\Domain\Payment\RefundLineItem;
 use OceanViewFlats\Domain\Payment\WebhookSettlementProcessor;
 use OceanViewFlats\Domain\Payment\WebhookSettlementResult;
 use OceanViewFlats\Domain\Reservation\Reservation;
+use OceanViewFlats\Tests\Support\PdoQueryAssertionsTrait;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
 final class WebhookSettlementProcessorTest extends TestCase
 {
+    use PdoQueryAssertionsTrait;
     private PDO $pdo;
     private InMemoryPaymentGateway $gateway;
     private InMemoryEmailSender $emailSender;
@@ -142,7 +144,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame('ovf-resurrect-guard', $result->reservationUid);
 
         // Verify DB reservation remained cancelled
-        $stmt = $this->pdo->query("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-resurrect-guard'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-resurrect-guard'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -192,7 +194,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame('ovf-ext-full-refund', $result->reservationUid);
 
         // Verify DB reservation updated to cancelled
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount, notes FROM reservations WHERE reservation_uid = 'ovf-ext-full-refund'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status, refunded_amount, notes FROM reservations WHERE reservation_uid = 'ovf-ext-full-refund'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -201,14 +203,14 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertStringContainsString('External Refund Sync', (string) $row['notes']);
 
         // Verify reservation_refunds row created
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-ext-full-refund'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-ext-full-refund'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertSame('ref-881122', $refundRow['mercadopago_refund_id']);
         $this->assertEquals(1200000.00, (float) $refundRow['amount']);
 
         // Verify admin_audit_logs created
-        $stmt = $this->pdo->query("SELECT action, payload_after FROM admin_audit_logs WHERE entity_id = 'ovf-ext-full-refund' ORDER BY id ASC");
+        $stmt = $this->assertQuery($this->pdo, "SELECT action, payload_after FROM admin_audit_logs WHERE entity_id = 'ovf-ext-full-refund' ORDER BY id ASC");
         $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $actions = array_column($logs, 'action');
 
@@ -249,7 +251,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertTrue($result->success);
         $this->assertSame(WebhookSettlementResult::STATUS_REFUND_CANCELLED, $result->status);
 
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-no-item-full'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-no-item-full'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertNull($refundRow['mercadopago_refund_id']);
@@ -291,7 +293,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame(WebhookSettlementResult::STATUS_REFUND_CANCELLED, $result->status);
 
         // Verify DB reservation remained cancelled with refunded payment status
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-already-cancelled'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-already-cancelled'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -299,7 +301,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertEquals(1500000.00, (float) $row['refunded_amount']);
 
         // Verify refund row was inserted
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-already-cancelled'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-already-cancelled'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertSame('ref-556677', $refundRow['mercadopago_refund_id']);
@@ -346,7 +348,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame(200, $result->httpStatusCode);
 
         // Verify reservation remained confirmed
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-partial-sync'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-partial-sync'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('confirmed', $row['status']);
@@ -354,14 +356,14 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertEquals(500000.00, (float) $row['refunded_amount']);
 
         // Verify refund row recorded
-        $stmt = $this->pdo->query("SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-partial-sync'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT * FROM reservation_refunds WHERE reservation_uid = 'ovf-partial-sync'");
         $refundRow = $stmt->fetch();
         $this->assertIsArray($refundRow);
         $this->assertSame('ref-332211', $refundRow['mercadopago_refund_id']);
         $this->assertEquals(500000.00, (float) $refundRow['amount']);
 
         // Verify audit log recorded
-        $stmt = $this->pdo->query("SELECT action FROM admin_audit_logs WHERE entity_id = 'ovf-partial-sync'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT action FROM admin_audit_logs WHERE entity_id = 'ovf-partial-sync'");
         $actions = $stmt->fetchAll(PDO::FETCH_COLUMN);
         $this->assertContains('external_partial_refund', $actions);
 
@@ -394,7 +396,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertTrue($result->success);
         $this->assertSame(WebhookSettlementResult::STATUS_PARTIAL_REFUND_SYNCED, $result->status);
 
-        $stmt = $this->pdo->query("SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-cancel-partial'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status, refunded_amount FROM reservations WHERE reservation_uid = 'ovf-cancel-partial'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('cancelled', $row['status']);
@@ -435,7 +437,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame(0, $this->fulfillmentSpy->calls);
 
         // No new audit logs were created
-        $stmt = $this->pdo->query("SELECT COUNT(*) FROM admin_audit_logs WHERE entity_id = 'ovf-already-conf'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT COUNT(*) FROM admin_audit_logs WHERE entity_id = 'ovf-already-conf'");
         $this->assertSame(0, (int) $stmt->fetchColumn());
     }
 
@@ -470,7 +472,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame('ovf-pending-approve', $result->reservationUid);
 
         // Verify DB reservation updated to confirmed
-        $stmt = $this->pdo->query("SELECT status, payment_status, mercadopago_payment_id, payment_method_id FROM reservations WHERE reservation_uid = 'ovf-pending-approve'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status, mercadopago_payment_id, payment_method_id FROM reservations WHERE reservation_uid = 'ovf-pending-approve'");
         $row = $stmt->fetch();
         $this->assertIsArray($row);
         $this->assertSame('confirmed', $row['status']);
@@ -479,7 +481,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame('pse', $row['payment_method_id']);
 
         // Verify audit log
-        $stmt = $this->pdo->query("SELECT action FROM admin_audit_logs WHERE entity_id = 'ovf-pending-approve'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT action FROM admin_audit_logs WHERE entity_id = 'ovf-pending-approve'");
         $actions = $stmt->fetchAll(PDO::FETCH_COLUMN);
         $this->assertContains('payment_approved_webhook', $actions);
 
@@ -512,7 +514,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame('ovf-pending-rejected', $result->reservationUid);
 
         // Verify DB reservation was NOT modified
-        $stmt = $this->pdo->query("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-pending-rejected'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-pending-rejected'");
         $row = $stmt->fetch();
         $this->assertSame('pending_payment', $row['status']);
         $this->assertSame('pending', $row['payment_status']);
@@ -546,7 +548,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame('ovf-pending-cont', $result->reservationUid);
 
         // Verify DB reservation was NOT modified
-        $stmt = $this->pdo->query("SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-pending-cont'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status, payment_status FROM reservations WHERE reservation_uid = 'ovf-pending-cont'");
         $row = $stmt->fetch();
         $this->assertSame('pending_payment', $row['status']);
         $this->assertSame('pending', $row['payment_status']);
@@ -656,7 +658,7 @@ final class WebhookSettlementProcessorTest extends TestCase
         $this->assertSame(200, $result->httpStatusCode);
 
         // Reservation was untouched
-        $stmt = $this->pdo->query("SELECT status FROM reservations WHERE reservation_uid = 'ovf-in-proc'");
+        $stmt = $this->assertQuery($this->pdo, "SELECT status FROM reservations WHERE reservation_uid = 'ovf-in-proc'");
         $this->assertSame('pending_payment', $stmt->fetchColumn());
     }
 

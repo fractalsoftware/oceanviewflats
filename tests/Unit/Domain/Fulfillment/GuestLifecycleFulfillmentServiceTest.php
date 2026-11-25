@@ -608,6 +608,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $this->assertTrue($result->success);
         $this->assertNotNull($result->reservation);
         $this->assertTrue($result->reservation->registryCompleted);
+        $this->assertIsString($result->doorCode);
         $this->assertMatchesRegularExpression('/^0[0-9]{6}#$/', $result->doorCode);
         $this->assertSame($result->doorCode, $result->reservation->doorCode);
 
@@ -1012,6 +1013,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $result = $this->service->submitRegistry($submission);
 
         $this->assertTrue($result->success);
+        $this->assertNotNull($result->reservation);
         $this->assertSame('jane.smith@example.com', $result->reservation->guestEmail);
 
         $stmtCheck = $this->pdo->prepare("SELECT guest_email FROM reservations WHERE reservation_uid = 'res-abnb-external99'");
@@ -1038,6 +1040,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $sub1 = $this->createSubmission('ovf_none_placeholder');
         $res1 = $this->service->submitRegistry($sub1);
         $this->assertTrue($res1->success);
+        $this->assertNotNull($res1->reservation);
         $this->assertSame('jane.smith@example.com', $res1->reservation->guestEmail);
 
         // 2. Empty email
@@ -1057,6 +1060,7 @@ final class GuestLifecycleFulfillmentServiceTest extends TestCase
         $sub2 = $this->createSubmission('ovf_empty_email');
         $res2 = $this->service->submitRegistry($sub2);
         $this->assertTrue($res2->success);
+        $this->assertNotNull($res2->reservation);
         $this->assertSame('jane.smith@example.com', $res2->reservation->guestEmail);
     }
 

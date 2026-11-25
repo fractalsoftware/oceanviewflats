@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Tests\Integration\Api;
 
+use OceanViewFlats\Tests\Support\PdoQueryAssertionsTrait;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
 final class GuestRegistryEndpointTest extends TestCase
 {
+    use PdoQueryAssertionsTrait;
     private string $dbPath;
     private PDO $pdo;
 
@@ -267,7 +269,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame('Guest registration completed successfully.', $resWithHp['json']['message']);
 
         // Database must remain unaffected
-        $regCount = (int) $this->pdo->query('SELECT COUNT(*) FROM guest_registries')->fetchColumn();
+        $regCount = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCount);
 
         $resWithUrl = $this->callRegistryEndpoint($this->createValidRegistryData([
@@ -280,7 +282,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertTrue($resWithUrl['json']['success']);
         $this->assertSame('Guest registration completed successfully.', $resWithUrl['json']['message']);
 
-        $regCountAfter = (int) $this->pdo->query('SELECT COUNT(*) FROM guest_registries')->fetchColumn();
+        $regCountAfter = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCountAfter);
     }
 
@@ -313,7 +315,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertNotEmpty($resSign['json']['error']);
 
         // Ensure database was not altered
-        $regCount = (int) $this->pdo->query('SELECT COUNT(*) FROM guest_registries')->fetchColumn();
+        $regCount = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCount);
     }
 
@@ -550,7 +552,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertFalse($res['json']['success']);
         $this->assertStringContainsString('matches the provided booking details', (string) $res['json']['error']);
 
-        $regCount = (int) $this->pdo->query('SELECT COUNT(*) FROM guest_registries')->fetchColumn();
+        $regCount = (int) $this->assertQueryColumn($this->pdo, 'SELECT COUNT(*) FROM guest_registries');
         $this->assertSame(0, $regCount);
     }
 
@@ -670,7 +672,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame(200, $resAbnb['statusCode']);
         $this->assertTrue($resAbnb['json']['success'] ?? false);
 
-        $abnbEmail = $this->pdo->query("SELECT guest_email FROM reservations WHERE reservation_uid = 'res-abnb-endpoint-test'")->fetchColumn();
+        $abnbEmail = $this->assertQueryColumn($this->pdo, "SELECT guest_email FROM reservations WHERE reservation_uid = 'res-abnb-endpoint-test'");
         $this->assertSame('verified.traveler@example.com', $abnbEmail);
 
         // 2. Direct web reservation with valid customer email: preserved, not overwritten
@@ -686,7 +688,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame(200, $resWeb['statusCode']);
         $this->assertTrue($resWeb['json']['success'] ?? false);
 
-        $webEmail = $this->pdo->query("SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_conf_100'")->fetchColumn();
+        $webEmail = $this->assertQueryColumn($this->pdo, "SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_conf_100'");
         $this->assertSame('maria@example.com', $webEmail);
 
         // 3. Direct web reservation with placeholder email: enriched
@@ -711,7 +713,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $this->assertSame(200, $resPlaceholder['statusCode']);
         $this->assertTrue($resPlaceholder['json']['success'] ?? false);
 
-        $placeholderEmail = $this->pdo->query("SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_web_placeholder_test'")->fetchColumn();
+        $placeholderEmail = $this->assertQueryColumn($this->pdo, "SELECT guest_email FROM reservations WHERE reservation_uid = 'ovf_web_placeholder_test'");
         $this->assertSame('actual.guest@example.com', $placeholderEmail);
     }
 
@@ -1026,6 +1028,7 @@ PHP;
         }
         $res7On6 = $this->callRegistryEndpoint($sevenData);
         $this->assertSame(400, $res7On6['statusCode']);
+        $this->assertIsArray($res7On6['json']);
         $this->assertFalse($res7On6['json']['success']);
         $this->assertContains('A reservation must register between 1 and 6 guests.', $res7On6['json']['errors']);
 
@@ -1049,6 +1052,7 @@ PHP;
         }
         $res9On8 = $this->callRegistryEndpoint($nineData);
         $this->assertSame(400, $res9On8['statusCode']);
+        $this->assertIsArray($res9On8['json']);
         $this->assertFalse($res9On8['json']['success']);
         $this->assertContains('A reservation must register between 1 and 8 guests.', $res9On8['json']['errors']);
 
@@ -1072,6 +1076,7 @@ PHP;
         }
         $res12On12 = $this->callRegistryEndpoint($twelveData);
         $this->assertSame(200, $res12On12['statusCode']);
+        $this->assertIsArray($res12On12['json']);
         $this->assertTrue($res12On12['json']['success']);
 
         $stmtReg12 = $this->pdo->prepare('SELECT guest_count, guests_payload FROM guest_registries WHERE reservation_uid = :uid');
@@ -1085,6 +1090,7 @@ PHP;
         // 4. Reject re-submission once registry_completed = 1
         $resubmit = $this->callRegistryEndpoint($twelveData);
         $this->assertSame(400, $resubmit['statusCode']);
+        $this->assertIsArray($resubmit['json']);
         $this->assertFalse($resubmit['json']['success']);
         $this->assertContains('Guest registry has already been completed for this reservation.', $resubmit['json']['errors']);
     }
@@ -1254,6 +1260,10 @@ PHP;
             ],
             $pipes
         );
+
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for registry-processor endpoint test.');
+        }
 
         if ($jsonInput !== false) {
             fwrite($pipes[0], $jsonInput);

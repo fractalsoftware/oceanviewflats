@@ -212,6 +212,10 @@ PHP;
             $pipes
         );
 
+        if (!is_resource($process)) {
+            $this->fail('Failed to spawn php process for availability endpoint test.');
+        }
+
         $stdout = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
