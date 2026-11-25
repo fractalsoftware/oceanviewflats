@@ -20,14 +20,20 @@ Options -Indexes
 </FilesMatch>
 
 # 3. HTTP Security Headers
+#    Unset onsuccess headers (e.g. from Response::send()) and use `always set` so
+#    headers are emitted once across all status codes (2xx, 3xx, 4xx, 5xx).
 <IfModule mod_headers.c>
     Header always unset X-Powered-By
     Header unset X-Powered-By
+    Header unset X-Frame-Options
+    Header unset X-Content-Type-Options
+    Header unset Referrer-Policy
+    Header unset Permissions-Policy
     Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
-    Header set X-Frame-Options "DENY"
-    Header set X-Content-Type-Options "nosniff"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
 </IfModule>
 
 # 4. Static Asset MIME Types (PWA Web App Manifest & Vector Icons)

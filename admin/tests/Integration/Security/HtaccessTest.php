@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Admin\Tests\Integration\Security;
 
+use OceanViewFlats\Tests\Support\HtaccessSecurityHeaderAssertions;
 use PHPUnit\Framework\TestCase;
 
 final class HtaccessTest extends TestCase
@@ -240,5 +241,30 @@ final class HtaccessTest extends TestCase
                 "{$relativePath} must strip X-Powered-By with 'Header unset X-Powered-By' inside mod_headers."
             );
         }
+    }
+
+    public function testSecurityHeadersUseAlwaysSetAndUnsetOnsuccessToPreventDuplicates(): void
+    {
+        $rootDir = dirname(__DIR__, 4);
+
+        HtaccessSecurityHeaderAssertions::assertModHeadersDirectives(
+            'public/.htaccess',
+            (string) file_get_contents($rootDir . '/public/.htaccess'),
+            HtaccessSecurityHeaderAssertions::expectedPublicRootHeaders()
+        );
+
+        HtaccessSecurityHeaderAssertions::assertModHeadersDirectives(
+            'public/api/.htaccess',
+            (string) file_get_contents($rootDir . '/public/api/.htaccess'),
+            HtaccessSecurityHeaderAssertions::expectedPublicApiHeaders(),
+            HtaccessSecurityHeaderAssertions::PHP_EMITTED_SECURITY_HEADERS
+        );
+
+        HtaccessSecurityHeaderAssertions::assertModHeadersDirectives(
+            'admin/public/.htaccess',
+            $this->htaccessContent,
+            HtaccessSecurityHeaderAssertions::expectedAdminHeaders(),
+            HtaccessSecurityHeaderAssertions::PHP_EMITTED_SECURITY_HEADERS
+        );
     }
 }

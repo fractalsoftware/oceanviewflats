@@ -39,14 +39,20 @@ Options -Indexes
 </FilesMatch>
 
 # 5. Enforce HTTP security headers via Apache (if mod_headers is active)
+#    Unset onsuccess headers (e.g. from PHP header() calls in utils.php) and use
+#    `always set` to override parent public/.htaccess directives cleanly without duplicates.
 <IfModule mod_headers.c>
     Header always unset X-Powered-By
     Header unset X-Powered-By
+    Header unset X-Frame-Options
+    Header unset X-Content-Type-Options
+    Header unset Referrer-Policy
+    Header unset Permissions-Policy
     Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains" "expr=%{HTTPS} == 'on'"
-    Header set X-Frame-Options "DENY"
-    Header set X-Content-Type-Options "nosniff"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self)"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self)"
 </IfModule>
 
 # 5. Mitigate PHP Request Startup & Stale State Vulnerabilities (CVE-2026-109618 & CVE-2026-109619)
