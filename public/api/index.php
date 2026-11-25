@@ -9,8 +9,11 @@
 declare(strict_types=1);
 
 http_response_code(403);
-header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-cache, no-store, must-revalidate');
+if (!headers_sent()) {
+    header_remove('X-Powered-By');
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+}
 
 echo json_encode([
     'success' => false,

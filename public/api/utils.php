@@ -197,6 +197,7 @@ function ovf_is_non_production_env(): bool {
 function enforce_security_headers_and_cors(array $allowedMethods = ['GET', 'POST', 'OPTIONS']): void {
     // 1. Send Security Headers (emit Vary: Origin unconditionally to prevent shared-cache CORS poisoning)
     if (!headers_sent()) {
+        header_remove('X-Powered-By');
         header("Vary: Origin");
         header("X-Frame-Options: DENY");
         header("X-Content-Type-Options: nosniff");

@@ -69,6 +69,9 @@ RUN mkdir -p /var/www/ovf/public_html \
     && ln -sfn /var/www/ovf/public_html/cache /var/www/ovf/public/cache \
     && chown -R www-data:www-data /var/www/ovf/public_html/cache
 
+# Harden PHP runtime configuration (suppress X-Powered-By version disclosure)
+COPY docker/php-security.ini /usr/local/etc/php/conf.d/99-security.ini
+
 # Configure Apache VirtualHosts (Unprivileged Ports 8080 -> Public Portal, 8081 -> Admin Console)
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf \
