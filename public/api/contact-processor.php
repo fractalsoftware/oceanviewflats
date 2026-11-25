@@ -10,7 +10,10 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once __DIR__ . '/utils.php';
 
+use OceanViewFlats\Domain\Fulfillment\MaskedLogEmailSender;
+use OceanViewFlats\Domain\Fulfillment\PhpMailSender;
 use OceanViewFlats\Domain\Security\PiiMasker;
+use OceanViewFlats\Domain\Support\AppEnvironment;
 
 // Load Unified Translations
 $all_translations = require __DIR__ . '/translations.php';
@@ -192,12 +195,15 @@ $headers = [
     'X-Mailer' => 'PHP/' . phpversion()
 ];
 
-// Send email
+// Send email via PhpMailSender (mock strictly gated on explicit non-production APP_ENV)
 try {
     if (isset($GLOBALS['__ovf_contact_mail_callback']) && is_callable($GLOBALS['__ovf_contact_mail_callback'])) {
         $success = (bool) ($GLOBALS['__ovf_contact_mail_callback'])(RECIPIENT_EMAIL, $subject, $email_body, $headers);
     } else {
-        $success = mail(RECIPIENT_EMAIL, $subject, $email_body, $headers);
+        $mailSender = AppEnvironment::isNonProduction(allowPhpUnit: false)
+            ? new MaskedLogEmailSender()
+            : new PhpMailSender();
+        $success = $mailSender->send(RECIPIENT_EMAIL, $subject, $email_body, $headers);
     }
 } catch (Throwable $e) {
     error_log('[Contact Processor Error] ' . $e->getMessage());

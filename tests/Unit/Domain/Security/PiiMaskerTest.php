@@ -29,6 +29,27 @@ final class PiiMaskerTest extends TestCase
         $this->assertSame('N/A', PiiMasker::maskPhone('N/A'));
     }
 
+    public function testMaskEmailPreservesFirstCharacterAndDomain(): void
+    {
+        $this->assertSame('j****@example.com', PiiMasker::maskEmail('jane.doe@example.com'));
+        $this->assertSame('u****@oceanviewflats.com', PiiMasker::maskEmail('  user@oceanviewflats.com  '));
+        $this->assertSame('a****@example.com', PiiMasker::maskEmail('a@example.com'));
+        $this->assertSame('á****@example.com', PiiMasker::maskEmail('álvaro@example.com'));
+        $this->assertSame('太****@example.jp', PiiMasker::maskEmail('太郎@example.jp'));
+    }
+
+    public function testMaskEmailHandlesNullEmptyAndMalformedInputs(): void
+    {
+        $this->assertNull(PiiMasker::maskEmail(null));
+        $this->assertSame('', PiiMasker::maskEmail(''));
+        $this->assertSame('', PiiMasker::maskEmail('   '));
+        $this->assertSame('****', PiiMasker::maskEmail('not-an-email'));
+        $this->assertSame('****', PiiMasker::maskEmail('@example.com'));
+        $this->assertSame('****', PiiMasker::maskEmail('@'));
+        $this->assertSame('****', PiiMasker::maskEmail('test@'));
+        $this->assertSame('****', PiiMasker::maskEmail('test@   '));
+    }
+
     public function testMaskSubmissionArrayMasksOccupantIdsAndPhones(): void
     {
         $submission = [
