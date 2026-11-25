@@ -10,19 +10,24 @@ use OceanViewFlats\Domain\Payment\BookingPaymentRequest;
 use OceanViewFlats\Domain\Payment\InMemoryPaymentGateway;
 use OceanViewFlats\Domain\Payment\PaymentGatewayResult;
 use OceanViewFlats\Domain\Reservation\ReservationStatus;
+use OceanViewFlats\Domain\Security\CaptchaChallengeService;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
 final class BookingPaymentEndpointTest extends TestCase
 {
+    private const TEST_CAPTCHA_SECRET = 'test-booking-payment-captcha-secret';
+
     private PDO $pdo;
     private InMemoryPaymentGateway $gateway;
     private InMemoryEmailSender $emailSender;
     private BookingPaymentProcessor $processor;
+    private string $nonceStorePath;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->nonceStorePath = sys_get_temp_dir() . '/ovf_test_booking_nonces_' . bin2hex(random_bytes(6)) . '/store.json';
 
         // 1. In-memory SQLite database
         $this->pdo = new PDO('sqlite::memory:');
@@ -924,6 +929,13 @@ PHP;
                 @unlink($rateLimitFile);
             }
         }
+        if (file_exists($this->nonceStorePath)) {
+            @unlink($this->nonceStorePath);
+        }
+        $nonceDir = dirname($this->nonceStorePath);
+        if (is_dir($nonceDir)) {
+            @rmdir($nonceDir);
+        }
     }
 
     /**
@@ -938,14 +950,13 @@ PHP;
             @unlink($rateLimitFile);
         }
 
-        $secret = 'securesaltsecret';
-        $challenge = '3 + 6';
-        $signature = hash_hmac('sha256', $challenge, $secret);
+        $generated = CaptchaChallengeService::generate(self::TEST_CAPTCHA_SECRET);
+        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
 
         $mergedPost = array_merge([
-            'captcha_challenge' => $challenge,
-            'captcha_signature' => $signature,
-            'captcha_response' => '9',
+            'captcha_challenge' => $generated['challenge'],
+            'captcha_signature' => $generated['signature'],
+            'captcha_response' => (string) ($a + $b),
         ], $postData);
 
         $mergedServer = [
@@ -957,7 +968,10 @@ PHP;
         ];
 
         $phpCode = sprintf(
-            '%s; $_SERVER = array_merge($_SERVER, %s); $_POST = %s; require %s;',
+            '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; %s; $_SERVER = array_merge($_SERVER, %s); $_POST = %s; require %s;',
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
             $prependCode,
             var_export($mergedServer, true),
             var_export($mergedPost, true),
@@ -1024,7 +1038,10 @@ PHP;
         $jsonInput = json_encode($bodyData);
 
         $phpCode = sprintf(
-            '%s; foreach (%s as $k => $v) { $_SERVER[$k] = $v; }; require %s;',
+            '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; %s; foreach (%s as $k => $v) { $_SERVER[$k] = $v; }; require %s;',
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
             $prependCode,
             var_export($mergedServer, true),
             var_export(dirname(__DIR__, 3) . '/public/api/payment.php', true)

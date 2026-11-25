@@ -16,10 +16,10 @@ use OceanViewFlats\Domain\Security\PiiMasker;
 $all_translations = require __DIR__ . '/translations.php';
 $lang = get_validated_lang();
 $t = $all_translations[$lang]['contact'];
+$bookingT = $all_translations[$lang]['booking'] ?? $all_translations['en']['booking'];
 
 // Configuration from Environment Variables ($_ENV)
 define('RECIPIENT_EMAIL', $_ENV['RECIPIENT_EMAIL'] ?? $_SERVER['RECIPIENT_EMAIL'] ?? getenv('RECIPIENT_EMAIL') ?: 'recipe@mail.com');
-define('CAPTCHA_SECRET', $_ENV['CAPTCHA_SECRET'] ?? $_SERVER['CAPTCHA_SECRET'] ?? getenv('CAPTCHA_SECRET') ?: 'securesaltsecret');
 
 const RATE_LIMIT_FILE = 'ovf_rate_limits.json';
 const MAX_SUBMISSIONS = 3;
@@ -30,8 +30,10 @@ enforce_security_headers_and_cors(['GET', 'POST', 'OPTIONS']);
 
 // 2. Check if the request is for generating a new captcha challenge
 if (isset($_GET['action']) && $_GET['action'] === 'captcha') {
-    $captcha = generate_captcha_challenge(CAPTCHA_SECRET);
+    $captchaSecret = require_captcha_secret();
+    $captcha = generate_captcha_challenge($captchaSecret);
     header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
     echo json_encode($captcha);
     exit;
 }
@@ -44,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Enforce referer check for actual submissions (prevent direct script browsing)
 enforce_referer_check();
+
+// Fail closed if CAPTCHA_SECRET is not configured outside explicit local/test environments
+$captchaSecret = require_captcha_secret();
 
 $is_ajax = is_ajax_request();
 
@@ -78,8 +83,20 @@ $captcha_signature = $_POST['captcha_signature'] ?? '';
 $captcha_response = $_POST['captcha_response'] ?? '';
 
 // Verify Captcha
-$captcha_check = verify_captcha_challenge($captcha_challenge, $captcha_signature, $captcha_response, CAPTCHA_SECRET);
+$captchaErrors = ovf_captcha_error_messages($bookingT);
+$captcha_check = verify_captcha_challenge(
+    $captcha_challenge,
+    $captcha_signature,
+    $captcha_response,
+    $captchaSecret,
+    $captchaErrors['sign'],
+    $captchaErrors['invalid'],
+    $captchaErrors['wrong'],
+    $captchaErrors['expired'],
+    $captchaErrors['replayed']
+);
 if ($captcha_check !== true) {
+    http_response_code(400);
     send_json_response(false, $captcha_check);
 }
 

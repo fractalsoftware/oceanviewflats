@@ -4,10 +4,21 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Tests\Integration\Api;
 
+use OceanViewFlats\Domain\Security\CaptchaChallengeService;
 use PHPUnit\Framework\TestCase;
 
 final class ContactProcessorTest extends TestCase
 {
+    private const TEST_CAPTCHA_SECRET = 'test-contact-captcha-secret-2026';
+
+    private string $nonceStorePath;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->nonceStorePath = sys_get_temp_dir() . '/ovf_test_contact_nonces_' . bin2hex(random_bytes(6)) . '/store.json';
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -16,6 +27,13 @@ final class ContactProcessorTest extends TestCase
             if (file_exists($path)) {
                 @unlink($path);
             }
+        }
+        if (file_exists($this->nonceStorePath)) {
+            @unlink($this->nonceStorePath);
+        }
+        $nonceDir = dirname($this->nonceStorePath);
+        if (is_dir($nonceDir)) {
+            @rmdir($nonceDir);
         }
     }
 
@@ -120,14 +138,13 @@ final class ContactProcessorTest extends TestCase
         $mailCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_mail_');
         $statusCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_status_');
 
-        $secret = 'securesaltsecret';
-        $challenge = '4 + 5';
-        $signature = hash_hmac('sha256', $challenge, $secret);
+        $generated = CaptchaChallengeService::generate(self::TEST_CAPTCHA_SECRET);
+        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
 
         $mergedPost = array_merge([
-            'captcha_challenge' => $challenge,
-            'captcha_signature' => $signature,
-            'captcha_response' => '9',
+            'captcha_challenge' => $generated['challenge'],
+            'captcha_signature' => $generated['signature'],
+            'captcha_response' => (string) ($a + $b),
         ], $postData);
 
         $mergedServer = array_merge([
@@ -139,12 +156,16 @@ final class ContactProcessorTest extends TestCase
         ], $serverVars);
 
         $phpCode = sprintf(
-            '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
+            '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
+            . '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
             . '$GLOBALS["__ovf_contact_mail_callback"] = function ($to, $subject, $body, $headers) { '
             . 'file_put_contents(%s, json_encode(["to" => $to, "subject" => $subject, "body" => $body, "headers" => $headers])); '
             . 'return true; }; '
             . 'register_shutdown_function(function () { file_put_contents(%s, (string) (http_response_code() ?: 200)); }); '
             . 'require %s;',
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
             var_export($mergedServer, true),
             var_export($mergedPost, true),
             var_export($mailCaptureFile, true),
@@ -213,14 +234,13 @@ final class ContactProcessorTest extends TestCase
         }
 
         $statusCaptureFile = tempnam(sys_get_temp_dir(), 'ovf_book_status_');
-        $secret = 'securesaltsecret';
-        $challenge = '3 + 6';
-        $signature = hash_hmac('sha256', $challenge, $secret);
+        $generated = CaptchaChallengeService::generate(self::TEST_CAPTCHA_SECRET);
+        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
 
         $mergedPost = array_merge([
-            'captcha_challenge' => $challenge,
-            'captcha_signature' => $signature,
-            'captcha_response' => '9',
+            'captcha_challenge' => $generated['challenge'],
+            'captcha_signature' => $generated['signature'],
+            'captcha_response' => (string) ($a + $b),
         ], $postData);
 
         $mergedServer = [
@@ -232,9 +252,13 @@ final class ContactProcessorTest extends TestCase
         ];
 
         $phpCode = sprintf(
-            '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
+            '$_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; '
+            . '$_SERVER = array_merge($_SERVER, %s); $_POST = %s; '
             . 'register_shutdown_function(function () { file_put_contents(%s, (string) (http_response_code() ?: 200)); }); '
             . 'require %s;',
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
             var_export($mergedServer, true),
             var_export($mergedPost, true),
             var_export($statusCaptureFile, true),

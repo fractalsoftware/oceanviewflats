@@ -82,55 +82,240 @@ function is_ajax_request(): bool {
 }
 
 /**
- * Generates a secure HMAC-signed mathematical captcha challenge.
- * 
- * @param string $secret Encryption salt secret.
- * @return array{challenge: string, signature: string} Challenge formula and HMAC signature.
+ * Ensures the Composer autoloader is loaded when CaptchaChallengeService is referenced directly.
  */
-function generate_captcha_challenge(string $secret): array {
-    $x = random_int(2, 9);
-    $y = random_int(2, 9);
-    $challenge = "$x + $y";
-    $signature = hash_hmac('sha256', $challenge, $secret);
+function ovf_ensure_captcha_service_loaded(): void {
+    if (!class_exists(\OceanViewFlats\Domain\Security\CaptchaChallengeService::class)) {
+        $autoloader = dirname(__DIR__, 2) . '/vendor/autoload.php';
+        if (file_exists($autoloader)) {
+            require_once $autoloader;
+        }
+    }
+}
+
+/**
+ * Resolves the optional test override for the CAPTCHA nonce store.
+ */
+function ovf_resolve_captcha_nonce_store(
+    ?\OceanViewFlats\Domain\Security\CaptchaNonceStoreInterface $nonceStore = null
+): ?\OceanViewFlats\Domain\Security\CaptchaNonceStoreInterface {
+    if ($nonceStore !== null) {
+        return $nonceStore;
+    }
+
+    if (
+        isset($GLOBALS['TEST_CAPTCHA_NONCE_STORE'])
+        && $GLOBALS['TEST_CAPTCHA_NONCE_STORE'] instanceof \OceanViewFlats\Domain\Security\CaptchaNonceStoreInterface
+    ) {
+        return $GLOBALS['TEST_CAPTCHA_NONCE_STORE'];
+    }
+
+    return null;
+}
+
+/**
+ * Resolves localized CAPTCHA error messages from the shared booking translation slice.
+ *
+ * @param array<string, mixed> $bookingTranslations
+ * @return array{sign: string, invalid: string, wrong: string, expired: string, replayed: string, unavailable: string}
+ */
+function ovf_captcha_error_messages(array $bookingTranslations): array {
     return [
-        'challenge' => $challenge,
-        'signature' => $signature
+        'sign' => is_string($bookingTranslations['err_captcha_sign'] ?? null)
+            ? $bookingTranslations['err_captcha_sign']
+            : 'Security check failed. Please refresh the page and try again.',
+        'invalid' => is_string($bookingTranslations['err_captcha_invalid'] ?? null)
+            ? $bookingTranslations['err_captcha_invalid']
+            : 'Invalid verification challenge.',
+        'wrong' => is_string($bookingTranslations['err_captcha_wrong'] ?? null)
+            ? $bookingTranslations['err_captcha_wrong']
+            : 'Incorrect answer to the security verification question.',
+        'expired' => is_string($bookingTranslations['err_captcha_expired'] ?? null)
+            ? $bookingTranslations['err_captcha_expired']
+            : 'Security verification expired. Please refresh and solve the new challenge.',
+        'replayed' => is_string($bookingTranslations['err_captcha_replayed'] ?? null)
+            ? $bookingTranslations['err_captcha_replayed']
+            : 'This security verification has already been used. Please solve the new challenge.',
+        'unavailable' => is_string($bookingTranslations['err_captcha_unavailable'] ?? null)
+            ? $bookingTranslations['err_captcha_unavailable']
+            : 'Security verification is temporarily unavailable.',
     ];
 }
 
 /**
- * Verifies the mathematical captcha solution.
+ * Resolves CAPTCHA_SECRET from environment and fails closed with HTTP 500 JSON when missing in production.
+ *
+ * @param string|null $errorMessage Optional localized error message returned on HTTP 500 failure.
+ * @return string Validated non-empty CAPTCHA signing secret.
+ */
+function require_captcha_secret(?string $errorMessage = null): string {
+    ovf_ensure_captcha_service_loaded();
+
+    $envSecret = getenv('CAPTCHA_SECRET');
+    $hasConfiguredSecret = (isset($_ENV['CAPTCHA_SECRET']) && is_string($_ENV['CAPTCHA_SECRET']) && trim($_ENV['CAPTCHA_SECRET']) !== '')
+        || (isset($_SERVER['CAPTCHA_SECRET']) && is_string($_SERVER['CAPTCHA_SECRET']) && trim($_SERVER['CAPTCHA_SECRET']) !== '')
+        || (is_string($envSecret) && trim($envSecret) !== '');
+
+    if (!$hasConfiguredSecret && class_exists(\OceanViewFlats\Domain\Support\EnvLoader::class)) {
+        \OceanViewFlats\Domain\Support\EnvLoader::load();
+    }
+
+    try {
+        return \OceanViewFlats\Domain\Security\CaptchaChallengeService::resolveSecret();
+    } catch (\RuntimeException $e) {
+        error_log('[CAPTCHA Configuration Error] ' . $e->getMessage());
+        $resolvedMessage = $errorMessage;
+        if ($resolvedMessage === null || trim($resolvedMessage) === '') {
+            $translationsPath = __DIR__ . '/translations.php';
+            if (is_file($translationsPath)) {
+                $allTranslations = require $translationsPath;
+                $lang = get_validated_lang();
+                $bookingT = is_array($allTranslations[$lang]['booking'] ?? null)
+                    ? $allTranslations[$lang]['booking']
+                    : (is_array($allTranslations['en']['booking'] ?? null) ? $allTranslations['en']['booking'] : []);
+                $resolvedMessage = ovf_captcha_error_messages($bookingT)['unavailable'];
+            } else {
+                $resolvedMessage = 'Security verification is temporarily unavailable.';
+            }
+        }
+        http_response_code(500);
+        send_json_response(false, $resolvedMessage);
+    }
+}
+
+/**
+ * Generates an expiring, single-use HMAC-SHA256 mathematical captcha challenge.
+ * 
+ * @param string $secret Cryptographic signing secret.
+ * @param int|null $now Optional Unix timestamp override for deterministic tests.
+ * @param int $ttlSeconds Expiration TTL in seconds (default 600 = 10 minutes).
+ * @return array{challenge: string, signature: string, expires_at: int} Challenge formula, signed v2 token, and expiry timestamp.
+ */
+function generate_captcha_challenge(
+    string $secret,
+    ?int $now = null,
+    int $ttlSeconds = \OceanViewFlats\Domain\Security\CaptchaChallengeService::DEFAULT_TTL_SECONDS
+): array {
+    ovf_ensure_captcha_service_loaded();
+
+    return \OceanViewFlats\Domain\Security\CaptchaChallengeService::generate($secret, $now, $ttlSeconds);
+}
+
+/**
+ * Verifies the mathematical captcha solution, TTL expiration, and single-use nonce consumption.
  * 
  * @param string $challenge Challenged arithmetic equation.
- * @param string $signature HMCA authentication signature.
+ * @param string $signature Signed v2 CAPTCHA token.
  * @param string $response Provided user response value.
  * @param string $secret HMAC encryption salt.
  * @param string $errorSign Custom error signature failure text.
  * @param string $errorInvalid Custom invalid formula format text.
  * @param string $errorWrong Custom incorrect math sum text.
- * @return true|string True if valid, or the matched error message string on failure.
+ * @param string|null $errorExpired Optional custom expired challenge text.
+ * @param string|null $errorReplayed Optional custom replayed challenge text.
+ * @param \OceanViewFlats\Domain\Security\CaptchaNonceStoreInterface|null $nonceStore Optional nonce store override.
+ * @param int|null $now Optional Unix timestamp override.
+ * @return true|string True if valid and atomically consumed, or the matched error message string on failure.
  */
 function verify_captcha_challenge(
-    string $challenge, 
-    string $signature, 
-    string $response, 
-    string $secret, 
-    string $errorSign = 'Security check failed. Please refresh the page and try again.', 
-    string $errorInvalid = 'Invalid verification challenge.', 
-    string $errorWrong = 'Incorrect answer.'
+    string $challenge,
+    string $signature,
+    string $response,
+    string $secret,
+    string $errorSign = 'Security check failed. Please refresh the page and try again.',
+    string $errorInvalid = 'Invalid verification challenge.',
+    string $errorWrong = 'Incorrect answer.',
+    ?string $errorExpired = null,
+    ?string $errorReplayed = null,
+    ?\OceanViewFlats\Domain\Security\CaptchaNonceStoreInterface $nonceStore = null,
+    ?int $now = null
 ): bool|string {
-    $expected_signature = hash_hmac('sha256', $challenge, $secret);
-    if (!hash_equals($expected_signature, $signature)) {
+    ovf_ensure_captcha_service_loaded();
+
+    try {
+        return \OceanViewFlats\Domain\Security\CaptchaChallengeService::verify(
+            challenge: $challenge,
+            signature: $signature,
+            response: $response,
+            secret: $secret,
+            nonceStore: ovf_resolve_captcha_nonce_store($nonceStore),
+            now: $now,
+            errorSign: $errorSign,
+            errorInvalid: $errorInvalid,
+            errorWrong: $errorWrong,
+            errorExpired: $errorExpired,
+            errorReplayed: $errorReplayed
+        );
+    } catch (\RuntimeException $e) {
+        error_log('[CAPTCHA Nonce Store Error] ' . $e->getMessage());
         return $errorSign;
     }
-    if (!preg_match('/^(\d+)\s*\+\s*(\d+)$/', $challenge, $matches)) {
-        return $errorInvalid;
+}
+
+/**
+ * Issues a single-use, expiring, stay-bound payment continuation token after book-request.php
+ * verifies the guest's math CAPTCHA.
+ */
+function issue_payment_captcha_token(
+    string $reservationUid,
+    string $propertyId,
+    string $checkIn,
+    string $checkOut,
+    string $secret,
+    ?int $now = null,
+    int $ttlSeconds = \OceanViewFlats\Domain\Security\CaptchaChallengeService::DEFAULT_TTL_SECONDS
+): string {
+    ovf_ensure_captcha_service_loaded();
+
+    return \OceanViewFlats\Domain\Security\CaptchaChallengeService::issuePaymentToken(
+        $reservationUid,
+        $propertyId,
+        $checkIn,
+        $checkOut,
+        $secret,
+        $now,
+        $ttlSeconds
+    );
+}
+
+/**
+ * Verifies and atomically consumes a single-use, stay-bound payment continuation token.
+ *
+ * @return true|string True when valid and consumed, or error string otherwise.
+ */
+function verify_payment_captcha_token(
+    string $token,
+    string $reservationUid,
+    string $propertyId,
+    string $checkIn,
+    string $checkOut,
+    string $secret,
+    string $errorSign = 'Security check failed. Please refresh the page and try again.',
+    ?string $errorExpired = null,
+    ?string $errorReplayed = null,
+    ?\OceanViewFlats\Domain\Security\CaptchaNonceStoreInterface $nonceStore = null,
+    ?int $now = null
+): bool|string {
+    ovf_ensure_captcha_service_loaded();
+
+    try {
+        return \OceanViewFlats\Domain\Security\CaptchaChallengeService::verifyPaymentToken(
+            token: $token,
+            reservationUid: $reservationUid,
+            propertyId: $propertyId,
+            checkIn: $checkIn,
+            checkOut: $checkOut,
+            secret: $secret,
+            nonceStore: ovf_resolve_captcha_nonce_store($nonceStore),
+            now: $now,
+            errorSign: $errorSign,
+            errorExpired: $errorExpired,
+            errorReplayed: $errorReplayed
+        );
+    } catch (\RuntimeException $e) {
+        error_log('[CAPTCHA Nonce Store Error] ' . $e->getMessage());
+        return $errorSign;
     }
-    $expected_sum = (int)$matches[1] + (int)$matches[2];
-    if ((int)$response !== $expected_sum) {
-        return $errorWrong;
-    }
-    return true;
 }
 
 /**

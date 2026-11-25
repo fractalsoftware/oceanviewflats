@@ -822,6 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Captcha Logic for Direct Booking Form
 	let bookingCaptchaSignature = "";
+	let bookingPaymentToken = "";
 	const bookingCaptchaLabel = document.getElementById("booking-captcha-label");
 	const bookingCaptchaChallenge = document.getElementById(
 		"booking-captcha-challenge",
@@ -832,6 +833,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	async function loadBookingCaptcha() {
 		if (!bookingCaptchaLabel) return;
+		bookingPaymentToken = "";
 		try {
 			const currentLang =
 				pageConfig.lang || document.documentElement.lang || "en";
@@ -1370,8 +1372,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				? document.getElementById("booking-captcha-response").value.trim()
 				: "",
 			captcha_signature: bookingCaptchaSignature || "",
+			payment_token: bookingPaymentToken || "",
 			...formData,
 		};
+		bookingPaymentToken = "";
 
 		const msgBox = document.getElementById("booking-form-message");
 		const formEl = document.getElementById("direct-booking-form");
@@ -1503,6 +1507,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
 				}
 			} else {
+				loadBookingCaptcha();
 				throw new Error(result.error || msgDeclined);
 			}
 		} catch (err) {
@@ -1603,6 +1608,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						directFormElement.getAttribute("data-mp-public-key");
 					const totalAmount = parseFloat(result.total_price);
 					const reservationUid = result.reservation_uid;
+					bookingPaymentToken =
+						typeof result.payment_token === "string"
+							? result.payment_token
+							: "";
 
 					// Initialize the MercadoPago Payment Brick natively
 					await initPaymentBrick(
