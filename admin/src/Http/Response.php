@@ -118,6 +118,7 @@ final class Response
                 'X-Frame-Options' => 'DENY',
                 'X-Content-Type-Options' => 'nosniff',
                 'Referrer-Policy' => 'strict-origin-when-cross-origin',
+                'Content-Security-Policy' => "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'",
             ], $this->headers);
 
             foreach ($headers as $name => $value) {

@@ -85,42 +85,9 @@ if (!function_exists('formatDiffValue')) {
 }
 ?>
 
-<script>
-window.closeAuditDrawer = window.closeAuditDrawer || function() {
-    var container = document.getElementById('drawer-container');
-    if (container) {
-        container.innerHTML = '';
-    } else {
-        window.location.href = '/audit-logs';
-        return;
-    }
-    if (window.location.pathname.startsWith('/audit-logs/')) {
-        window.history.pushState(null, '', '/audit-logs');
-    }
-};
-
-window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
-    var elem = document.getElementById(targetId);
-    if (!elem) return;
-    var text = elem.innerText || elem.textContent;
-    navigator.clipboard.writeText(text).then(function() {
-        var btn = document.getElementById(btnId);
-        if (btn) {
-            var orig = btn.innerText;
-            btn.innerText = 'Copied!';
-            btn.classList.add('text-emerald-600');
-            setTimeout(function() {
-                btn.innerText = orig;
-                btn.classList.remove('text-emerald-600');
-            }, 2000);
-        }
-    });
-};
-</script>
-
 <!-- Backdrop overlay -->
 <div class="fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-xs transition-opacity"
-     onclick="closeAuditDrawer();"></div>
+     data-action="close-audit-drawer"></div>
 
 <!-- Slide-Over Drawer Container -->
 <div class="fixed inset-y-0 right-0 z-50 flex max-w-full pl-10">
@@ -138,7 +105,7 @@ window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
                 </div>
             </div>
             <button type="button"
-                    onclick="closeAuditDrawer();"
+                    data-action="close-audit-drawer"
                     class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 rounded-lg transition cursor-pointer"
                     title="Close drawer (Esc)">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -320,7 +287,7 @@ window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
                                         <span class="text-2xs font-semibold text-gray-500 uppercase tracking-wider">Payload Before</span>
                                         <button type="button"
                                                 id="btn-copy-before"
-                                                onclick="copyAuditJson('btn-copy-before', 'raw-json-before');"
+                                                data-action="copy-audit-json" data-copy-target="raw-json-before"
                                                 class="text-3xs font-semibold text-gray-500 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 bg-white shadow-2xs cursor-pointer">
                                             Copy JSON
                                         </button>
@@ -335,7 +302,7 @@ window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
                                         <span class="text-2xs font-semibold text-gray-500 uppercase tracking-wider">Payload After</span>
                                         <button type="button"
                                                 id="btn-copy-after"
-                                                onclick="copyAuditJson('btn-copy-after', 'raw-json-after');"
+                                                data-action="copy-audit-json" data-copy-target="raw-json-after"
                                                 class="text-3xs font-semibold text-gray-500 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 bg-white shadow-2xs cursor-pointer">
                                             Copy JSON
                                         </button>
@@ -353,7 +320,7 @@ window.copyAuditJson = window.copyAuditJson || function(btnId, targetId) {
         <!-- Drawer Footer -->
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end">
             <button type="button"
-                    onclick="closeAuditDrawer();"
+                    data-action="close-audit-drawer"
                     class="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded-lg shadow-2xs transition cursor-pointer">
                 Close Inspector
             </button>

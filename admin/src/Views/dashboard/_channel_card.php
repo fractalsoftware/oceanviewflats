@@ -69,7 +69,7 @@
                         </button>
                     <?php endif; ?>
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="Dismiss notice">&times;</button>
+                <button type="button" data-action="dismiss-parent" class="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="Dismiss notice">&times;</button>
             </div>
         <?php endif; ?>
     </div>

@@ -1,0 +1,80 @@
+@import "tailwindcss" source("../");
+@source "../../public/assets/admin.js";
+
+@theme {
+	--text-2xs: 0.6875rem;
+	--text-2xs--line-height: 1rem;
+	--text-3xs: 0.625rem;
+	--text-3xs--line-height: 0.875rem;
+}
+
+.htmx-indicator {
+	display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+	display: inline-flex;
+}
+
+.htmx-request:is(button, [type="submit"], a[hx-post], a[hx-delete], a[hx-put]),
+form.htmx-request button[type="submit"],
+form.htmx-request input[type="submit"] {
+	/* biome-ignore lint/complexity/noImportantStyles: required to override button interaction states during in-flight HTMX mutations */
+	pointer-events: none !important;
+	/* biome-ignore lint/complexity/noImportantStyles: required to provide consistent mutation locking feedback */
+	opacity: 0.75 !important;
+	/* biome-ignore lint/complexity/noImportantStyles: required to override cursor-pointer utilities while locked */
+	cursor: wait !important;
+}
+
+@keyframes progress-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+#global-progress-bar,
+#global-alert-container {
+	z-index: 70;
+}
+
+#global-progress-bar.loading,
+body.htmx-request #global-progress-bar {
+	background-image: linear-gradient(
+		90deg,
+		var(--color-indigo-600, #4f46e5) 0%,
+		var(--color-indigo-400, #818cf8) 50%,
+		var(--color-indigo-600, #4f46e5) 100%
+	);
+	background-size: 200% 100%;
+	animation: progress-shimmer 1.5s infinite linear;
+}
+
+#global-progress-bar.bg-rose-500 {
+	/* biome-ignore lint/complexity/noImportantStyles: required to clear shimmer gradient during error flash */
+	background-image: none !important;
+	/* biome-ignore lint/complexity/noImportantStyles: required to stop shimmer animation during error flash */
+	animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#global-progress-bar {
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		transition: none !important;
+		/* biome-ignore lint/complexity/noImportantStyles: required for WCAG prefers-reduced-motion override */
+		animation: none !important;
+	}
+}
+
+@media (max-width: 767px) {
+	input,
+	select,
+	textarea {
+		/* biome-ignore lint/complexity/noImportantStyles: prevents iOS Safari auto-zoom on form controls */
+		font-size: 16px !important;
+	}
+}

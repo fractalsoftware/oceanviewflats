@@ -26,7 +26,12 @@ $eventDetail = [
 ];
 ?>
 
-<div id="quote-preview-result" data-available="<?= $isFullyAvailable ? 'true' : 'false' ?>" data-calculated-quote="<?= $isFullyAvailable ? (int) $calculatedTotalCop : '' ?>" class="w-full">
+<div id="quote-preview-result"
+     data-available="<?= $isFullyAvailable ? 'true' : 'false' ?>"
+     data-calculated-quote="<?= $isFullyAvailable ? (int) $calculatedTotalCop : '' ?>"
+     data-quote-event="<?= htmlspecialchars(json_encode($eventDetail, JSON_THROW_ON_ERROR), ENT_QUOTES, 'UTF-8') ?>"
+     data-auto-fill-price="<?= ($isFullyAvailable && !$editModeActive) ? (int) $defaultPrice : '' ?>"
+     class="w-full">
     <?php if (!$isAvailable || $quote === null): ?>
         <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1.5 shadow-2xs">
             <div class="font-bold flex items-center text-rose-900">
@@ -70,8 +75,8 @@ $eventDetail = [
                     <?php if ($editModeActive): ?>
                         <button type="button"
                                 id="btn-apply-calculated-quote"
+                                data-action="apply-calculated-quote"
                                 data-quote-amount="<?= (int) $calculatedTotalCop ?>"
-                                onclick="var priceEl = document.getElementById('edit-total-price'); if (priceEl) { priceEl.value = '<?= (int) $calculatedTotalCop ?>'; priceEl.dispatchEvent(new Event('input', { bubbles: true })); }"
                                 class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-2xs transition cursor-pointer">
                             Apply Calculated Quote
                         </button>
@@ -105,24 +110,4 @@ $eventDetail = [
             <?php endif; ?>
         </div>
     <?php endif; ?>
-
-    <script>
-        (function() {
-            var form = document.getElementById('create-reservation-form') || document.getElementById('edit-reservation-form');
-            var target = form || document;
-            var detail = <?= json_encode($eventDetail, JSON_THROW_ON_ERROR) ?>;
-            target.dispatchEvent(new CustomEvent('availabilityChecked', {
-                bubbles: true,
-                detail: detail
-            }));
-
-            <?php if ($isFullyAvailable && !$editModeActive): ?>
-            var priceInput = document.getElementById('manual-total-price');
-            if (priceInput && (!priceInput.value || priceInput.dataset.autoFilled === 'true')) {
-                priceInput.value = '<?= (int) $defaultPrice ?>';
-                priceInput.dataset.autoFilled = 'true';
-            }
-            <?php endif; ?>
-        })();
-    </script>
 </div>

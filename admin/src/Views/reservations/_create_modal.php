@@ -35,7 +35,7 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
-         onclick="document.getElementById('modal-container').innerHTML = '';"
+         data-action="close-modal"
          aria-hidden="true"></div>
 
     <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
@@ -63,7 +63,7 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                     </div>
                 </div>
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-100 transition cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -113,7 +113,6 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                         <select name="source"
                                 id="create-source"
                                 required
-                                onchange="var airbnbContainer = document.getElementById('airbnb-fields-container'); if(this.value === 'airbnb') { airbnbContainer.classList.remove('hidden'); } else { airbnbContainer.classList.add('hidden'); }"
                                 hx-post="/reservations/quote-preview"
                                 hx-trigger="change"
                                 hx-target="#quote-preview-container"
@@ -232,7 +231,6 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                                    id="manual-total-price"
                                    value="<?= htmlspecialchars((string) ($totalPrice ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                                    placeholder="0"
-                                   oninput="this.dataset.autoFilled = 'false';"
                                    class="w-full pl-7 pr-16 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400 text-[11px]">
                                 COP
@@ -341,7 +339,7 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                 <div class="pt-3 border-t border-gray-200">
                     <div class="flex items-center justify-end space-x-3">
                         <button type="button"
-                                onclick="document.getElementById('modal-container').innerHTML = '';"
+                                data-action="close-modal"
                                 class="px-4 py-2 border border-gray-300 rounded-lg shadow-2xs text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
                             Cancel
                         </button>
@@ -364,350 +362,6 @@ $submitLabel = $isAirbnb ? 'Onboard & Generate Dispatch' : 'Create Reservation';
                 </div>
 
             </form>
-
-            <script>
-            (function() {
-                var form = document.getElementById('create-reservation-form');
-                var checkInInput = document.getElementById('create-check-in');
-                var checkOutInput = document.getElementById('create-check-out');
-                var propertySelect = document.getElementById('create-property-id');
-                var sourceSelect = document.getElementById('create-source');
-                var airbnbCodeInput = document.getElementById('create-airbnb-code');
-                var priceInput = document.getElementById('manual-total-price');
-                var guestNameInput = document.getElementById('create-guest-name');
-                var guestEmailInput = document.getElementById('create-guest-email');
-                var guestPhoneInput = document.getElementById('create-guest-phone');
-                var submitBtn = document.getElementById('create-submit-btn');
-                var submitBtnText = document.getElementById('create-submit-text');
-                var helperEl = document.getElementById('create-submit-helper');
-
-                // Availability state management
-                var isAvailable = false;
-                var isCheckingAvailability = false;
-
-                function syncAvailabilityFromDom() {
-                    var resultEl = document.getElementById('quote-preview-result');
-                    if (resultEl) {
-                        isAvailable = (resultEl.getAttribute('data-available') === 'true');
-                    } else {
-                        isAvailable = false;
-                    }
-                }
-
-                // 1. Date Range Auto-Synchronization
-                function syncMinEndDate() {
-                    if (!checkInInput || !checkOutInput) return;
-                    if (!checkInInput.value) {
-                        checkOutInput.removeAttribute('min');
-                        return;
-                    }
-                    var parts = checkInInput.value.split('-');
-                    if (parts.length !== 3) return;
-                    var start = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                    if (isNaN(start.getTime())) return;
-
-                    var minEnd = new Date(start);
-                    minEnd.setDate(minEnd.getDate() + 1);
-                    var y = minEnd.getFullYear();
-                    var m = String(minEnd.getMonth() + 1).padStart(2, '0');
-                    var d = String(minEnd.getDate()).padStart(2, '0');
-                    var minEndStr = y + '-' + m + '-' + d;
-                    checkOutInput.min = minEndStr;
-
-                    if (checkOutInput.value && checkOutInput.value <= checkInInput.value) {
-                        checkOutInput.value = minEndStr;
-                    }
-                }
-
-                // 2. Submit button default text management for booking source
-                function getSubmitDefaultText() {
-                    if (sourceSelect && sourceSelect.value === 'airbnb') {
-                        return 'Onboard & Generate Dispatch';
-                    }
-                    return 'Create Reservation';
-                }
-
-                // 3. Client-Side Reactive Validation Matrix
-                function getUnmetRequirement() {
-                    if (isCheckingAvailability) {
-                        return 'Checking availability...';
-                    }
-
-                    // Property: must be selected (1606 or 1707)
-                    var propVal = propertySelect ? propertySelect.value : '';
-                    if (propVal !== '1606' && propVal !== '1707') {
-                        return 'Select a valid property';
-                    }
-
-                    // Dates: check_in and check_out present and check_out > check_in
-                    var checkInVal = checkInInput ? checkInInput.value : '';
-                    var checkOutVal = checkOutInput ? checkOutInput.value : '';
-                    if (!checkInVal || !checkOutVal) {
-                        return 'Select available dates to enable creation';
-                    }
-                    if (checkOutVal <= checkInVal) {
-                        return 'Check-out date must be after check-in date';
-                    }
-
-                    // Availability: availability state must be true
-                    if (!isAvailable) {
-                        return 'Resolve date conflict above to proceed';
-                    }
-
-                    // Price: total_price present, numeric, and >= 0
-                    var priceVal = priceInput ? priceInput.value.trim() : '';
-                    if (priceVal === '' || isNaN(Number(priceVal)) || Number(priceVal) < 0) {
-                        if (priceVal !== '' && !isNaN(Number(priceVal)) && Number(priceVal) < 0) {
-                            return 'Total price cannot be negative';
-                        }
-                        return 'Total price must be zero or greater';
-                    }
-
-                    // Max guests: 1 to 12
-                    var maxGuestsInput = document.getElementById('create-max-guests');
-                    if (maxGuestsInput) {
-                        var maxGuestsVal = maxGuestsInput.value.trim();
-                        var maxGuestsNum = Number(maxGuestsVal);
-                        if (maxGuestsVal === '' || isNaN(maxGuestsNum) || !Number.isInteger(maxGuestsNum) || maxGuestsNum < 1 || maxGuestsNum > 12) {
-                            return 'Max guests must be between 1 and 12';
-                        }
-                    }
-
-                    // Guest name: required for all reservations
-                    var nameVal = guestNameInput ? guestNameInput.value.trim() : '';
-                    if (!nameVal) {
-                        return 'Guest name is required';
-                    }
-
-                    // Source-specific rules
-                    var currentSource = sourceSelect ? sourceSelect.value : 'manual_override';
-                    if (currentSource === 'airbnb') {
-                        var airbnbCode = airbnbCodeInput ? airbnbCodeInput.value.trim() : '';
-                        if (!airbnbCode) {
-                            return 'Airbnb confirmation code required';
-                        }
-                        var sendEmailCheckbox = document.getElementById('create-send-email');
-                        var emailVal = guestEmailInput ? guestEmailInput.value.trim() : '';
-                        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (sendEmailCheckbox && sendEmailCheckbox.checked) {
-                            if (!emailVal || !emailRegex.test(emailVal)) {
-                                return 'Valid guest email required when sending confirmation';
-                            }
-                        }
-                    } else {
-                        var emailVal = guestEmailInput ? guestEmailInput.value.trim() : '';
-                        var phoneVal = guestPhoneInput ? guestPhoneInput.value.trim() : '';
-                        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                        if (!emailVal || !emailRegex.test(emailVal)) {
-                            return 'Guest name and email required';
-                        }
-                        if (phoneVal.length < 7 || phoneVal.length > 25) {
-                            return 'Guest phone number must be 7-25 characters';
-                        }
-                    }
-
-                    return null;
-                }
-
-                function validateForm() {
-                    var unmetRequirement = getUnmetRequirement();
-                    var btn = document.getElementById('create-submit-btn');
-                    var helper = document.getElementById('create-submit-helper');
-
-                    if (unmetRequirement) {
-                        if (btn) {
-                            btn.disabled = true;
-                            btn.setAttribute('aria-disabled', 'true');
-                            btn.classList.add('opacity-50', 'cursor-not-allowed');
-                            btn.classList.remove('cursor-pointer');
-                        }
-                        if (helper) {
-                            helper.textContent = unmetRequirement;
-                            helper.classList.remove('hidden');
-                        }
-                        return false;
-                    } else {
-                        if (btn) {
-                            btn.disabled = false;
-                            btn.setAttribute('aria-disabled', 'false');
-                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                            btn.classList.add('cursor-pointer');
-                        }
-                        if (helper) {
-                            helper.textContent = '';
-                            helper.classList.add('hidden');
-                        }
-                        return true;
-                    }
-                }
-
-                // 4. Source selection change listener
-                if (sourceSelect) {
-                    sourceSelect.addEventListener('change', function() {
-                        var text = getSubmitDefaultText();
-                        if (submitBtn) {
-                            submitBtn.dataset.defaultText = text;
-                            if (sourceSelect.value === 'airbnb') {
-                                submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                                submitBtn.classList.add('bg-[#FF385C]', 'hover:bg-[#E00B41]');
-                            } else {
-                                submitBtn.classList.remove('bg-[#FF385C]', 'hover:bg-[#E00B41]');
-                                submitBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-                            }
-                        }
-                        if (submitBtnText && submitBtnText.textContent !== 'Checking availability...') {
-                            submitBtnText.textContent = text;
-                        }
-                        validateForm();
-                    });
-                }
-
-                // 5. Date inputs change listeners
-                if (checkInInput) {
-                    checkInInput.addEventListener('change', function() {
-                        syncMinEndDate();
-                        validateForm();
-                    });
-                    checkInInput.addEventListener('input', function() {
-                        syncMinEndDate();
-                        validateForm();
-                    });
-                    if (checkInInput.value) {
-                        syncMinEndDate();
-                    }
-                }
-
-                if (checkOutInput) {
-                    checkOutInput.addEventListener('change', function() {
-                        validateForm();
-                    });
-                    checkOutInput.addEventListener('input', function() {
-                        validateForm();
-                    });
-                }
-
-                // 6. HTMX Lifecycle Listeners for in-flight quote requests
-                function isQuotePreviewRequest(evt) {
-                    var target = evt.detail && evt.detail.target;
-                    var quoteContainer = document.getElementById('quote-preview-container');
-                    if (target && (target.id === 'quote-preview-container' || target === quoteContainer)) {
-                        return true;
-                    }
-                    var path = evt.detail && (
-                        (evt.detail.requestConfig && evt.detail.requestConfig.path) ||
-                        (evt.detail.pathInfo && evt.detail.pathInfo.requestPath) ||
-                        evt.detail.url
-                    );
-                    return typeof path === 'string' && path.indexOf('/reservations/quote-preview') !== -1;
-                }
-
-                function setCheckingState() {
-                    isCheckingAvailability = true;
-                    var btn = document.getElementById('create-submit-btn');
-                    var btnText = document.getElementById('create-submit-text');
-                    var helper = document.getElementById('create-submit-helper');
-                    if (!btn) return;
-
-                    btn.disabled = true;
-                    btn.setAttribute('aria-disabled', 'true');
-                    btn.classList.add('opacity-50', 'cursor-not-allowed');
-                    btn.classList.remove('cursor-pointer');
-                    if (btnText) {
-                        btnText.textContent = 'Checking availability...';
-                    }
-                    if (helper) {
-                        helper.textContent = 'Checking availability...';
-                        helper.classList.remove('hidden');
-                    }
-                }
-
-                function removeCheckingState() {
-                    isCheckingAvailability = false;
-                    var btn = document.getElementById('create-submit-btn');
-                    var btnText = document.getElementById('create-submit-text');
-                    if (!btn) return;
-
-                    if (btnText) {
-                        var defaultText = btn.dataset.defaultText || getSubmitDefaultText();
-                        btnText.textContent = defaultText;
-                    }
-                    validateForm();
-                }
-
-                if (form) {
-                    form.addEventListener('htmx:beforeRequest', function(evt) {
-                        if (isQuotePreviewRequest(evt)) {
-                            setCheckingState();
-                        }
-                    });
-
-                    form.addEventListener('htmx:afterRequest', function(evt) {
-                        if (isQuotePreviewRequest(evt)) {
-                            removeCheckingState();
-                        }
-                    });
-
-                    form.addEventListener('htmx:sendError', function(evt) {
-                        if (isQuotePreviewRequest(evt)) {
-                            removeCheckingState();
-                        }
-                    });
-
-                    form.addEventListener('htmx:responseError', function(evt) {
-                        if (isQuotePreviewRequest(evt)) {
-                            removeCheckingState();
-                        }
-                    });
-
-                    // 7. Form-wide event listeners for reactive matrix
-                    form.addEventListener('input', function() {
-                        validateForm();
-                    });
-
-                    form.addEventListener('change', function() {
-                        validateForm();
-                    });
-
-                    form.addEventListener('availabilityChecked', function(evt) {
-                        if (evt.detail && typeof evt.detail.available === 'boolean') {
-                            isAvailable = evt.detail.available;
-                        } else {
-                            syncAvailabilityFromDom();
-                        }
-                        validateForm();
-                    });
-
-                    form.addEventListener('htmx:afterSwap', function(evt) {
-                        syncAvailabilityFromDom();
-                        validateForm();
-                    });
-
-                    // 8. Prevent submission / Enter keypress if validation fails
-                    form.addEventListener('keydown', function(evt) {
-                        if (evt.key === 'Enter') {
-                            if (evt.target && evt.target.tagName === 'TEXTAREA') {
-                                return;
-                            }
-                            if (!validateForm()) {
-                                evt.preventDefault();
-                            }
-                        }
-                    });
-
-                    form.addEventListener('submit', function(evt) {
-                        if (!validateForm()) {
-                            evt.preventDefault();
-                            evt.stopPropagation();
-                        }
-                    });
-                }
-
-                // 9. Initial validator run
-                syncAvailabilityFromDom();
-                validateForm();
-            })();
-            </script>
 
         </div>
     </div>

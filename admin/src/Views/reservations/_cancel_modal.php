@@ -31,7 +31,7 @@ $sendCancellationEmail = !empty($oldInput)
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
-         onclick="document.getElementById('modal-container').innerHTML = '';"
+         data-action="close-modal"
          aria-hidden="true"></div>
 
     <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
@@ -55,7 +55,7 @@ $sendCancellationEmail = !empty($oldInput)
                     </div>
                 </div>
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-rose-100/50 transition cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -173,7 +173,7 @@ $sendCancellationEmail = !empty($oldInput)
                                    value="full"
                                    <?= $selectedRefundType === 'full' ? 'checked' : '' ?>
                                    <?= $refundableBalance <= 0 ? 'disabled' : '' ?>
-                                   onchange="document.getElementById('partial-amount-container').classList.add('hidden'); document.getElementById('partial-refund-amount').disabled = true; document.getElementById('partial-refund-amount').required = false;"
+                                   data-action="cancel-refund-type"
                                    class="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 border-gray-300">
                             <div class="ml-3">
                                 <span class="block font-semibold text-gray-900">
@@ -192,7 +192,7 @@ $sendCancellationEmail = !empty($oldInput)
                                    value="partial"
                                    <?= $selectedRefundType === 'partial' ? 'checked' : '' ?>
                                    <?= $refundableBalance <= 0 ? 'disabled' : '' ?>
-                                   onchange="document.getElementById('partial-amount-container').classList.remove('hidden'); document.getElementById('partial-refund-amount').disabled = false; document.getElementById('partial-refund-amount').required = true;"
+                                   data-action="cancel-refund-type"
                                    class="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 border-gray-300">
                             <div class="ml-3 flex-1">
                                 <span class="block font-semibold text-gray-900">
@@ -229,7 +229,7 @@ $sendCancellationEmail = !empty($oldInput)
                                    name="refund_type"
                                    value="none"
                                    <?= $selectedRefundType === 'none' ? 'checked' : '' ?>
-                                   onchange="document.getElementById('partial-amount-container').classList.add('hidden'); document.getElementById('partial-refund-amount').disabled = true; document.getElementById('partial-refund-amount').required = false;"
+                                   data-action="cancel-refund-type"
                                    class="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 border-gray-300">
                             <div class="ml-3">
                                 <span class="block font-semibold text-gray-900">
@@ -265,7 +265,7 @@ $sendCancellationEmail = !empty($oldInput)
                 <!-- Modal Actions -->
                 <div class="pt-2 flex justify-end space-x-2 border-t border-gray-200">
                     <button type="button"
-                            onclick="document.getElementById('modal-container').innerHTML = '';"
+                            data-action="close-modal"
                             class="px-3.5 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
                         Keep Reservation
                     </button>

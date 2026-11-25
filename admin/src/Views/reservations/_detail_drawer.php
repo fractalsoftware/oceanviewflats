@@ -57,67 +57,10 @@ $canDismissClearanceAlert = $condominiumClearance !== null
     && $isFutureOrActiveClearance;
 ?>
 
-<script>
-window.closeReservationDrawer = window.closeReservationDrawer || function() {
-    var container = document.getElementById('drawer-container');
-    if (container) {
-        container.innerHTML = '';
-    } else {
-        window.location.href = '/reservations';
-        return;
-    }
-    if (window.location.pathname.startsWith('/reservations/')) {
-        window.history.pushState(null, '', '/reservations');
-    }
-};
-
-window.switchDispatchLang = window.switchDispatchLang || function(uid, lang) {
-    var ta = document.getElementById('dispatch-snippet-' + uid);
-    var btnEs = document.getElementById('btn-lang-es-' + uid);
-    var btnEn = document.getElementById('btn-lang-en-' + uid);
-    var copyText = document.getElementById('copy-text-' + uid);
-    if (!ta) return;
-    if (lang === 'es') {
-        ta.value = ta.getAttribute('data-text-es') || '';
-        ta.setAttribute('data-current-lang', 'es');
-        if (btnEs) {
-            btnEs.className = 'px-2.5 py-1 rounded-md transition cursor-pointer bg-white text-gray-900 shadow-2xs font-bold';
-        }
-        if (btnEn) {
-            btnEn.className = 'px-2.5 py-1 rounded-md transition cursor-pointer text-gray-500 hover:text-gray-900';
-        }
-        if (copyText) copyText.innerText = 'Copy ES Message';
-    } else {
-        ta.value = ta.getAttribute('data-text-en') || '';
-        ta.setAttribute('data-current-lang', 'en');
-        if (btnEn) {
-            btnEn.className = 'px-2.5 py-1 rounded-md transition cursor-pointer bg-white text-gray-900 shadow-2xs font-bold';
-        }
-        if (btnEs) {
-            btnEs.className = 'px-2.5 py-1 rounded-md transition cursor-pointer text-gray-500 hover:text-gray-900';
-        }
-        if (copyText) copyText.innerText = 'Copy EN Message';
-    }
-};
-
-window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
-    var ta = document.getElementById('dispatch-snippet-' + uid);
-    var copyText = document.getElementById('copy-text-' + uid);
-    if (!ta) return;
-    navigator.clipboard.writeText(ta.value).then(function() {
-        if (copyText) {
-            var orig = copyText.innerText;
-            copyText.innerText = 'Copied to Clipboard!';
-            setTimeout(function() { copyText.innerText = orig; }, 2000);
-        }
-    });
-};
-</script>
-
 <div class="fixed inset-0 z-40 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-xs transition-opacity duration-300 cursor-pointer"
-         onclick="closeReservationDrawer();"
+         data-action="close-reservation-drawer"
          aria-hidden="true"></div>
 
     <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
@@ -157,7 +100,7 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                     </p>
                 </div>
                 <button type="button"
-                        onclick="closeReservationDrawer();"
+                        data-action="close-reservation-drawer"
                         class="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer">
                     <span class="sr-only">Close panel</span>
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -398,12 +341,15 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                 $guideLink = $urlBuilder->buildGuideUrl($reservationLang, $uid);
                                 ?>
                                 <button type="button"
-                                        onclick="navigator.clipboard.writeText('<?= htmlspecialchars($guideLink, ENT_QUOTES, 'UTF-8') ?>').then(() => { this.innerText = 'Guide Link Copied!'; setTimeout(() => this.innerText = 'Copy Guest Guide Link', 2000); });"
+                                        data-action="copy-text"
+                                        data-copy-text="<?= htmlspecialchars($guideLink, ENT_QUOTES, 'UTF-8') ?>"
+                                        data-copy-feedback="Guide Link Copied!"
+                                        data-copy-default="Copy Guest Guide Link"
                                         class="inline-flex items-center text-[11px] font-semibold text-slate-700 hover:text-indigo-600 transition cursor-pointer text-left">
                                     <svg class="w-3 h-3 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
-                                    Copy Guest Guide Link
+                                    <span data-copy-label>Copy Guest Guide Link</span>
                                 </button>
                                 <?php if (!$registryCompleted && $isEditable): ?>
                                     <button type="button"
@@ -620,13 +566,17 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                 <div class="flex items-center bg-gray-100 p-0.5 rounded-lg border border-gray-200 text-2xs font-semibold">
                                     <button type="button"
                                             id="btn-lang-es-<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>"
-                                            onclick="switchDispatchLang('<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>', 'es')"
+                                            data-action="switch-dispatch-lang"
+                                            data-reservation-uid="<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>"
+                                            data-lang="es"
                                             class="px-2.5 py-1 rounded-md transition cursor-pointer bg-white text-gray-900 shadow-2xs font-bold">
                                         ES
                                     </button>
                                     <button type="button"
                                             id="btn-lang-en-<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>"
-                                            onclick="switchDispatchLang('<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>', 'en')"
+                                            data-action="switch-dispatch-lang"
+                                            data-reservation-uid="<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>"
+                                            data-lang="en"
                                             class="px-2.5 py-1 rounded-md transition cursor-pointer text-gray-500 hover:text-gray-900">
                                         EN
                                     </button>
@@ -654,7 +604,8 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                                     </span>
                                     <button type="button"
                                             id="btn-copy-dispatch-<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>"
-                                            onclick="copyDispatchSnippet('<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>')"
+                                            data-action="copy-dispatch-snippet"
+                                            data-reservation-uid="<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>"
                                             class="inline-flex items-center px-3.5 py-1.5 rounded-lg bg-[#FF385C] hover:bg-[#E00B41] text-white font-bold shadow-2xs transition cursor-pointer">
                                         <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                                         <span id="copy-text-<?= htmlspecialchars($uid, ENT_QUOTES, 'UTF-8') ?>">Copy ES Message</span>
@@ -756,7 +707,7 @@ window.copyDispatchSnippet = window.copyDispatchSnippet || function(uid) {
                     <?php endif; ?>
                 </div>
                 <button type="button"
-                        onclick="closeReservationDrawer();"
+                        data-action="close-reservation-drawer"
                         class="px-4 py-2 border border-gray-300 rounded-lg shadow-2xs text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
                     Close
                 </button>

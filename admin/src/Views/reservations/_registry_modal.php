@@ -66,7 +66,7 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
-         onclick="document.getElementById('modal-container').innerHTML = '';"
+         data-action="close-modal"
          aria-hidden="true"></div>
 
     <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
@@ -96,7 +96,7 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                     </div>
                 </div>
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="text-gray-400 hover:text-gray-600 rounded-lg p-1.5 hover:bg-gray-100 transition cursor-pointer">
                     <span class="sr-only">Close</span>
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +222,10 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                                        value="<?= htmlspecialchars($guideUrl, ENT_QUOTES, 'UTF-8') ?>"
                                        class="flex-1 block w-full px-3 py-2 text-xs font-mono bg-gray-50 border border-gray-300 rounded-l-lg select-all focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                 <button type="button"
-                                        onclick="navigator.clipboard.writeText(document.getElementById('guide-link-input-completed').value).then(() => { this.innerText = 'Copied!'; setTimeout(() => this.innerText = 'Copy Guide Link', 2000); });"
+                                        data-action="copy-target-value"
+                                        data-copy-target="guide-link-input-completed"
+                                        data-copy-feedback="Copied!"
+                                        data-copy-default="Copy Guide Link"
                                         class="inline-flex items-center px-4 py-2 border border-l-0 border-indigo-600 text-xs font-medium rounded-r-lg text-white bg-indigo-600 hover:bg-indigo-700 transition cursor-pointer">
                                     Copy Guide Link
                                 </button>
@@ -284,7 +287,10 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                                        class="flex-1 block w-full px-3 py-2 text-xs font-mono bg-gray-50 border border-gray-300 rounded-l-lg select-all focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                 <button type="button"
                                         id="copy-registry-btn"
-                                        onclick="navigator.clipboard.writeText(document.getElementById('registry-link-input').value).then(() => { this.innerText = 'Copied!'; setTimeout(() => this.innerText = 'Copy Link', 2000); });"
+                                        data-action="copy-target-value"
+                                        data-copy-target="registry-link-input"
+                                        data-copy-feedback="Copied!"
+                                        data-copy-default="Copy Link"
                                         class="inline-flex items-center px-4 py-2 border border-l-0 border-indigo-600 text-xs font-medium rounded-r-lg text-white bg-indigo-600 hover:bg-indigo-700 transition cursor-pointer">
                                     Copy Link
                                 </button>
@@ -305,7 +311,10 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                                        value="<?= htmlspecialchars($guideUrl, ENT_QUOTES, 'UTF-8') ?>"
                                        class="flex-1 block w-full px-3 py-2 text-xs font-mono bg-gray-50 border border-gray-300 rounded-l-lg select-all focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                 <button type="button"
-                                        onclick="navigator.clipboard.writeText(document.getElementById('guide-link-input-pending').value).then(() => { this.innerText = 'Copied!'; setTimeout(() => this.innerText = 'Copy Guide Link', 2000); });"
+                                        data-action="copy-target-value"
+                                        data-copy-target="guide-link-input-pending"
+                                        data-copy-feedback="Copied!"
+                                        data-copy-default="Copy Guide Link"
                                         class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 text-xs font-medium rounded-r-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition cursor-pointer">
                                     Copy Guide Link
                                 </button>
@@ -337,7 +346,7 @@ $guideUrl = $urlBuilder->buildGuideUrl($lang, $uid);
                     <?php endif; ?>
                 </div>
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="px-4 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
                     Dismiss
                 </button>

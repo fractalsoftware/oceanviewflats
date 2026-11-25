@@ -18,6 +18,8 @@
 			"!public/api/openapi.json",
 			"!public/site.webmanifest",
 			"!admin/public/site.webmanifest",
+			"!admin/public/assets/admin.css",
+			"!admin/public/assets/htmx.min.js",
 			"!composer.json",
 			"!composer.lock",
 			"!**/*.md",

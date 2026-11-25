@@ -332,9 +332,11 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringContainsString('$1,500,000', $body);
         $this->assertStringNotContainsString('Building Fee', $body);
         $this->assertStringContainsString('data-available="true"', $body);
-        $this->assertStringContainsString('availabilityChecked', $body);
-        $this->assertStringContainsString('"available":true', $body);
-        $this->assertStringContainsString('"defaultPrice":1650000', $body);
+        $this->assertStringNotContainsString('<script>', $body);
+        $this->assertStringContainsString('data-quote-event=', $body);
+        $this->assertStringContainsString('&quot;available&quot;:true', $body);
+        $this->assertStringContainsString('&quot;defaultPrice&quot;:1650000', $body);
+        $this->assertStringContainsString('data-auto-fill-price="1650000"', $body);
     }
 
     public function testQuotePreviewForOwnerStayZeroesTotal(): void
@@ -367,9 +369,11 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringContainsString('$0 COP', $body);
         $this->assertStringContainsString('Owner Stay automatically zeroes total pricing', $body);
         $this->assertStringContainsString('data-available="true"', $body);
-        $this->assertStringContainsString('availabilityChecked', $body);
-        $this->assertStringContainsString('"available":true', $body);
-        $this->assertStringContainsString('"defaultPrice":0', $body);
+        $this->assertStringNotContainsString('<script>', $body);
+        $this->assertStringContainsString('data-quote-event=', $body);
+        $this->assertStringContainsString('&quot;available&quot;:true', $body);
+        $this->assertStringContainsString('&quot;defaultPrice&quot;:0', $body);
+        $this->assertStringContainsString('data-auto-fill-price="0"', $body);
     }
 
     public function testQuotePreviewReturnsConflictWarningWhenUnavailable(): void
@@ -390,8 +394,9 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringContainsString('Selected Dates Are Unavailable', $body);
         $this->assertStringContainsString('href="/reservations/res-1"', $body);
         $this->assertStringContainsString('data-available="false"', $body);
-        $this->assertStringContainsString('availabilityChecked', $body);
-        $this->assertStringContainsString('"available":false', $body);
+        $this->assertStringNotContainsString('<script>', $body);
+        $this->assertStringContainsString('data-quote-event=', $body);
+        $this->assertStringContainsString('&quot;available&quot;:false', $body);
         $this->assertStringContainsString('Direct reservation conflict: res-1', $body);
     }
 
@@ -407,8 +412,9 @@ final class ReservationControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
         $this->assertStringContainsString('data-available="false"', $body);
-        $this->assertStringContainsString('availabilityChecked', $body);
-        $this->assertStringContainsString('"available":false', $body);
+        $this->assertStringNotContainsString('<script>', $body);
+        $this->assertStringContainsString('data-quote-event=', $body);
+        $this->assertStringContainsString('&quot;available&quot;:false', $body);
         $this->assertStringContainsString('check-out must be after check-in', $body);
     }
 
@@ -419,21 +425,23 @@ final class ReservationControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
+        $adminJs = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/admin.js');
 
-        // Date inputs and submit button presence
+        // Date inputs and submit button presence, with zero inline <script> tags
+        $this->assertStringNotContainsString('<script>', $body);
         $this->assertStringContainsString('id="create-check-in"', $body);
         $this->assertStringContainsString('id="create-check-out"', $body);
         $this->assertStringContainsString('id="create-submit-btn"', $body);
         $this->assertStringContainsString('data-default-text="Create Reservation"', $body);
 
-        // Date synchronization logic
-        $this->assertStringContainsString('syncMinEndDate', $body);
-        $this->assertStringContainsString('checkOutInput.min = minEndStr', $body);
+        // Date synchronization logic in /assets/admin.js
+        $this->assertStringContainsString('syncMinEndDate', $adminJs);
+        $this->assertStringContainsString('checkOutInput.min = minEndStr', $adminJs);
 
-        // HTMX lifecycle listeners for quote preview
-        $this->assertStringContainsString('htmx:beforeRequest', $body);
-        $this->assertStringContainsString('htmx:afterRequest', $body);
-        $this->assertStringContainsString('Checking availability...', $body);
+        // HTMX lifecycle listeners for quote preview in /assets/admin.js
+        $this->assertStringContainsString('htmx:beforeRequest', $adminJs);
+        $this->assertStringContainsString('htmx:afterRequest', $adminJs);
+        $this->assertStringContainsString('Checking availability...', $adminJs);
     }
 
     public function testCreateModalWithPrefilledCheckInSetsMinCheckOut(): void
@@ -488,67 +496,71 @@ final class ReservationControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $body = $response->getBody();
+        $adminJs = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/admin.js');
 
-        // Matrix runner functions
-        $this->assertStringContainsString('function getUnmetRequirement()', $body);
-        $this->assertStringContainsString('function validateForm()', $body);
+        // Modal markup contains zero inline scripts or event handler attributes
+        $this->assertStringNotContainsString('<script>', $body);
+        $this->assertStringContainsString('Airbnb (External Reservation)', $body);
+        $this->assertStringContainsString('id="airbnb-fields-container"', $body);
+        $this->assertStringContainsString('id="create-reservation-form"', $body);
+
+        // Matrix runner functions in /assets/admin.js
+        $this->assertStringContainsString('function getUnmetRequirement()', $adminJs);
+        $this->assertStringContainsString('function validateForm()', $adminJs);
 
         // Property validation (1606 or 1707)
-        $this->assertStringContainsString("propVal !== '1606' && propVal !== '1707'", $body);
-        $this->assertStringContainsString('Select a valid property', $body);
+        $this->assertStringContainsString('propVal !== "1606" && propVal !== "1707"', $adminJs);
+        $this->assertStringContainsString('Select a valid property', $adminJs);
 
         // Date range validation
-        $this->assertStringContainsString('!checkInVal || !checkOutVal', $body);
-        $this->assertStringContainsString('Select available dates to enable creation', $body);
-        $this->assertStringContainsString('checkOutVal <= checkInVal', $body);
-        $this->assertStringContainsString('Check-out date must be after check-in date', $body);
+        $this->assertStringContainsString('!checkInVal || !checkOutVal', $adminJs);
+        $this->assertStringContainsString('Select available dates to enable creation', $adminJs);
+        $this->assertStringContainsString('checkOutVal <= checkInVal', $adminJs);
+        $this->assertStringContainsString('Check-out date must be after check-in date', $adminJs);
 
         // Availability check & conflict guidance
-        $this->assertStringContainsString('!isAvailable', $body);
-        $this->assertStringContainsString('Resolve date conflict above to proceed', $body);
+        $this->assertStringContainsString('!isAvailable', $adminJs);
+        $this->assertStringContainsString('Resolve date conflict above to proceed', $adminJs);
 
         // Total price validation
-        $this->assertStringContainsString('priceVal === \'\' || isNaN(Number(priceVal)) || Number(priceVal) < 0', $body);
-        $this->assertStringContainsString('Total price cannot be negative', $body);
+        $this->assertStringContainsString('Total price cannot be negative', $adminJs);
 
         // Source-dependent validation rules
-        // Universal guest name requirement
-        $this->assertStringContainsString('Guest name is required', $body);
-        $this->assertStringContainsString('Airbnb (External Reservation)', $body);
-        $this->assertStringContainsString('var airbnbContainer =', $body);
+        $this->assertStringContainsString('Guest name is required', $adminJs);
+        $this->assertStringContainsString('airbnb-fields-container', $adminJs);
 
         // Airbnb: external confirmation code required and conditional email validation
-        $this->assertStringContainsString("currentSource === 'airbnb'", $body);
-        $this->assertStringContainsString('!airbnbCode', $body);
-        $this->assertStringContainsString('Airbnb confirmation code required', $body);
-        $this->assertStringContainsString('Valid guest email required when sending confirmation', $body);
+        $this->assertStringContainsString('currentSource === "airbnb"', $adminJs);
+        $this->assertStringContainsString('!airbnbCode', $adminJs);
+        $this->assertStringContainsString('Airbnb confirmation code required', $adminJs);
+        $this->assertStringContainsString('Valid guest email required when sending confirmation', $adminJs);
 
         // Direct stays: guest name, email regex, phone length (7-25 chars)
-        $this->assertStringContainsString('Guest name and email required', $body);
-        $this->assertStringContainsString('phoneVal.length < 7 || phoneVal.length > 25', $body);
-        $this->assertStringContainsString('Guest phone number must be 7-25 characters', $body);
+        $this->assertStringContainsString('Guest name and email required', $adminJs);
+        $this->assertStringContainsString('phoneVal.length < 7 || phoneVal.length > 25', $adminJs);
+        $this->assertStringContainsString('Guest phone number must be 7-25 characters', $adminJs);
 
         // Unlocking when valid / locking when invalid
-        $this->assertStringContainsString("btn.setAttribute('aria-disabled', 'false')", $body);
-        $this->assertStringContainsString("btn.classList.remove('opacity-50', 'cursor-not-allowed')", $body);
-        $this->assertStringContainsString("btn.setAttribute('aria-disabled', 'true')", $body);
-        $this->assertStringContainsString("btn.classList.add('opacity-50', 'cursor-not-allowed')", $body);
+        $this->assertStringContainsString('btn.setAttribute("aria-disabled", "false")', $adminJs);
+        $this->assertStringContainsString('btn.classList.remove("opacity-50", "cursor-not-allowed")', $adminJs);
+        $this->assertStringContainsString('btn.setAttribute("aria-disabled", "true")', $adminJs);
+        $this->assertStringContainsString('btn.classList.add("opacity-50", "cursor-not-allowed")', $adminJs);
 
         // Event listeners: availabilityChecked, htmx:afterSwap, form input & change
-        $this->assertStringContainsString("addEventListener('availabilityChecked'", $body);
-        $this->assertStringContainsString("addEventListener('htmx:afterSwap'", $body);
-        $this->assertStringContainsString("addEventListener('input'", $body);
-        $this->assertStringContainsString("addEventListener('change'", $body);
+        $this->assertStringContainsString('addEventListener("availabilityChecked"', $adminJs);
+        $this->assertStringContainsString('addEventListener("htmx:afterSwap"', $adminJs);
+        $this->assertStringContainsString('addEventListener("input"', $adminJs);
+        $this->assertStringContainsString('addEventListener("change"', $adminJs);
 
         // Enter keypress and submit event prevention
-        $this->assertStringContainsString("addEventListener('keydown'", $body);
-        $this->assertStringContainsString("evt.key === 'Enter'", $body);
-        $this->assertStringContainsString("addEventListener('submit'", $body);
-        $this->assertStringContainsString('evt.preventDefault()', $body);
+        $this->assertStringContainsString('addEventListener("keydown"', $adminJs);
+        $this->assertStringContainsString('evt.key === "Enter"', $adminJs);
+        $this->assertStringContainsString('addEventListener("submit"', $adminJs);
+        $this->assertStringContainsString('evt.preventDefault()', $adminJs);
 
         // Immediate initial run
-        $this->assertStringContainsString('syncAvailabilityFromDom()', $body);
-        $this->assertStringContainsString('validateForm()', $body);
+        $this->assertStringContainsString('syncAvailabilityFromDom()', $adminJs);
+        $this->assertStringContainsString('validateForm()', $adminJs);
     }
 
     public function testCreateManualReservationValidatesInputAndReturns422(): void
@@ -1182,9 +1194,12 @@ final class ReservationControllerTest extends TestCase
         $this->assertStringNotContainsString('step="1000"', $inputTag);
         $this->assertStringContainsString('step="any"', $inputTag);
 
-        // 4. Radio onchange handlers must toggle the disabled property on #partial-refund-amount in sync with visibility
-        $this->assertStringContainsString("getElementById('partial-refund-amount').disabled = true", $body);
-        $this->assertStringContainsString("getElementById('partial-refund-amount').disabled = false", $body);
+        // 4. Radio inputs delegate refund-type toggling via data-action="cancel-refund-type" handled by /assets/admin.js (zero inline onchange)
+        $this->assertStringNotContainsString('onchange=', $body);
+        $this->assertSame(3, substr_count($body, 'data-action="cancel-refund-type"'));
+        $adminJs = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/admin.js');
+        $this->assertStringContainsString('action === "cancel-refund-type"', $adminJs);
+        $this->assertStringContainsString('partialInput.disabled = !isPartial', $adminJs);
 
         // 5. Verify zero-balance reservation (e.g. Airbnb / $0 COP) also keeps refund_amount disabled and free of invalid min > max constraints
         $this->pdo->exec("UPDATE reservations SET total_price = 0.00 WHERE reservation_uid = 'res-1'");

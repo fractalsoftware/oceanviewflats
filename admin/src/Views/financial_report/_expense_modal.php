@@ -41,7 +41,7 @@ $modalHeading = $isEdit
 
 <div id="expense-modal"
      class="fixed inset-0 z-40 overflow-y-auto bg-gray-900/50 backdrop-blur-xs flex items-center justify-center p-4"
-     onclick="if(event.target === this) document.getElementById('modal-container').innerHTML = '';"
+     data-action="close-modal-backdrop"
      role="dialog"
      aria-modal="true"
      aria-labelledby="modal-title">
@@ -56,7 +56,7 @@ $modalHeading = $isEdit
                 </p>
             </div>
             <button type="button"
-                    onclick="document.getElementById('modal-container').innerHTML = '';"
+                    data-action="close-modal"
                     class="text-gray-400 hover:text-gray-600 p-1 rounded-md cursor-pointer"
                     aria-label="Close modal">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,7 +203,7 @@ $modalHeading = $isEdit
 
             <div class="pt-3 border-t border-gray-200 flex items-center justify-end space-x-2">
                 <button type="button"
-                        onclick="document.getElementById('modal-container').innerHTML = '';"
+                        data-action="close-modal"
                         class="px-4 py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
                     Cancel
                 </button>

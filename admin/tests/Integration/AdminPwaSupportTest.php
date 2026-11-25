@@ -315,9 +315,11 @@ final class AdminPwaSupportTest extends TestCase
         $this->assertInstanceOf(DOMElement::class, $titleNode);
         $this->assertSame('OVF Admin', $titleNode->getAttribute('content'));
 
-        // 4. Unobtrusive Service Worker registration script
-        $this->assertMatchesRegularExpression('/[\'"]serviceWorker[\'"]\s+in\s+navigator/', $html);
-        $this->assertStringContainsString('navigator.serviceWorker.register', $html);
-        $this->assertStringContainsString("'/sw.js'", $html);
+        // 4. Unobtrusive Service Worker registration loaded via local static /assets/admin.js
+        $this->assertStringContainsString('<script src="/assets/admin.js"></script>', $html);
+        $adminJs = (string) file_get_contents($this->adminPublicDir . '/assets/admin.js');
+        $this->assertMatchesRegularExpression('/[\'"]serviceWorker[\'"]\s+in\s+navigator/', $adminJs);
+        $this->assertMatchesRegularExpression('/navigator\.serviceWorker\s*\.register\(/', $adminJs);
+        $this->assertMatchesRegularExpression('/[\'"]\/sw\.js[\'"]/', $adminJs);
     }
 }

@@ -105,5 +105,9 @@ PHP;
         $this->assertSame(['DENY'], $response['headerValues']['x-frame-options'] ?? null);
         $this->assertSame(['nosniff'], $response['headerValues']['x-content-type-options'] ?? null);
         $this->assertSame(['strict-origin-when-cross-origin'], $response['headerValues']['referrer-policy'] ?? null);
+        $this->assertSame(
+            ["default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'"],
+            $response['headerValues']['content-security-policy'] ?? null
+        );
     }
 }

@@ -264,7 +264,7 @@ final class HtaccessTest extends TestCase
             'admin/public/.htaccess',
             $this->htaccessContent,
             HtaccessSecurityHeaderAssertions::expectedAdminHeaders(),
-            HtaccessSecurityHeaderAssertions::PHP_EMITTED_SECURITY_HEADERS
+            HtaccessSecurityHeaderAssertions::ADMIN_PHP_EMITTED_SECURITY_HEADERS
         );
     }
 }

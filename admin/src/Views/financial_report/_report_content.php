@@ -117,7 +117,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                hx-target="#financial-report-content"
                hx-swap="outerHTML"
                hx-push-url="true"
-               onclick="var s=document.getElementById('source-select'); if(s) s.value='all';"
+               data-action="set-value" data-target-id="source-select" data-target-value="all"
                class="text-indigo-700 underline font-semibold shrink-0 cursor-pointer">
                 Show All Sources
             </a>
@@ -992,7 +992,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                    hx-target="#financial-report-content"
                    hx-swap="outerHTML"
                    hx-push-url="true"
-                   onclick="var t=document.getElementById('financial-report-tab-input'); if(t) t.value='expenses';"
+                   data-action="set-value" data-target-id="financial-report-tab-input" data-target-value="expenses"
                    class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer <?= $activeTab === 'expenses' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100' ?>">
                     Operational Expenses Ledger (<?= count($slice->allocatedExpenses) ?>)
                 </a>
@@ -1001,7 +1001,7 @@ if (!function_exists('formatCopCompactCurrency')) {
                    hx-target="#financial-report-content"
                    hx-swap="outerHTML"
                    hx-push-url="true"
-                   onclick="var t=document.getElementById('financial-report-tab-input'); if(t) t.value='reservations';"
+                   data-action="set-value" data-target-id="financial-report-tab-input" data-target-value="reservations"
                    class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer <?= $activeTab === 'reservations' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100' ?>">
                     Attributed Reservations (<?= count($slice->attributedReservations) ?>)
                 </a>
