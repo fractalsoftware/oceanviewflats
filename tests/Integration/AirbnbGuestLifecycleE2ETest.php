@@ -7,6 +7,7 @@ namespace OceanViewFlats\Tests\Integration;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use OceanViewFlats\Admin\Views\ViewRenderer;
+use OceanViewFlats\Domain\Security\CaptchaChallengeService;
 
 /**
  * End-to-end integration test suite verifying the complete lifecycle of Airbnb reservations:
@@ -22,7 +23,10 @@ use OceanViewFlats\Admin\Views\ViewRenderer;
  */
 final class AirbnbGuestLifecycleE2ETest extends TestCase
 {
+    private const TEST_CAPTCHA_SECRET = 'test-e2e-captcha-secret-2026';
+
     private string $dbPath;
+    private string $nonceStorePath;
     private PDO $pdo;
 
     protected function setUp(): void
@@ -32,6 +36,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
         $_ENV['APP_ENCRYPTION_KEY'] = 'test-e2e-encryption-key-32bytes!';
 
         $this->dbPath = sys_get_temp_dir() . '/test_airbnb_lifecycle_' . bin2hex(random_bytes(6)) . '.sqlite';
+        $this->nonceStorePath = sys_get_temp_dir() . '/ovf_test_e2e_nonces_' . bin2hex(random_bytes(6)) . '/store.json';
         $this->pdo = new PDO('sqlite:' . $this->dbPath);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
@@ -47,6 +52,13 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
         parent::tearDown();
 
         $this->cleanRateLimitFiles();
+
+        if (isset($this->nonceStorePath) && file_exists($this->nonceStorePath)) {
+            @unlink($this->nonceStorePath);
+        }
+        if (isset($this->nonceStorePath) && is_dir(dirname($this->nonceStorePath))) {
+            @rmdir(dirname($this->nonceStorePath));
+        }
 
         if (isset($this->dbPath) && file_exists($this->dbPath)) {
             @unlink($this->dbPath);
@@ -293,7 +305,7 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
             $registryPayload,
             [
                 'HTTP_REFERER' => 'https://oceanviewflats.com/registry/',
-                'CAPTCHA_SECRET' => 'securesaltsecret',
+                'CAPTCHA_SECRET' => self::TEST_CAPTCHA_SECRET,
             ]
         );
 
@@ -496,16 +508,14 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
     /**
      * @return array{captcha_challenge: string, captcha_signature: string, captcha_response: string}
      */
-    private function createValidCaptcha(string $secret = 'securesaltsecret'): array
+    private function createValidCaptcha(string $secret = self::TEST_CAPTCHA_SECRET): array
     {
-        $a = 3;
-        $b = 4;
-        $challenge = "{$a} + {$b}";
-        $signature = hash_hmac('sha256', $challenge, $secret);
+        $generated = CaptchaChallengeService::generate($secret);
+        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
 
         return [
-            'captcha_challenge' => $challenge,
-            'captcha_signature' => $signature,
+            'captcha_challenge' => $generated['challenge'],
+            'captcha_signature' => $generated['signature'],
             'captcha_response' => (string) ($a + $b),
         ];
     }
@@ -515,7 +525,10 @@ final class AirbnbGuestLifecycleE2ETest extends TestCase
         $autoloadPath = var_export(dirname(__DIR__, 2) . '/vendor/autoload.php', true);
 
         return sprintf(
-            '$_ENV["APP_ENV"] = "testing"; $_ENV["APP_ENCRYPTION_KEY"] = "test-e2e-encryption-key-32bytes!"; $_ENV["ICAL_UID_SECRET"] = "test-e2e-ical-uid-secret"; $_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; $_ENV["PROPERTY_1606_DOOR_CODE"] = "0111606#"; $_ENV["PROPERTY_1606_WIFI_PASSWORD"] = "TestWifi1606!"; $_ENV["PROPERTY_1707_DOOR_CODE"] = "0111707#"; $_ENV["PROPERTY_1707_WIFI_PASSWORD"] = "TestWifi1707!"; require_once %s; $pdo = new PDO("sqlite:%s"); $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); $GLOBALS["TEST_PDO"] = $pdo; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_e2e_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            '$_ENV["APP_ENV"] = "testing"; $_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; $_ENV["APP_ENCRYPTION_KEY"] = "test-e2e-encryption-key-32bytes!"; $_ENV["ICAL_UID_SECRET"] = "test-e2e-ical-uid-secret"; $_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; $_ENV["PROPERTY_1606_DOOR_CODE"] = "0111606#"; $_ENV["PROPERTY_1606_WIFI_PASSWORD"] = "TestWifi1606!"; $_ENV["PROPERTY_1707_DOOR_CODE"] = "0111707#"; $_ENV["PROPERTY_1707_WIFI_PASSWORD"] = "TestWifi1707!"; require_once %s; $pdo = new PDO("sqlite:%s"); $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); $GLOBALS["TEST_PDO"] = $pdo; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_e2e_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
             $autoloadPath,
             addslashes($this->dbPath)
         );

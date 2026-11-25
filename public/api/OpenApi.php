@@ -54,11 +54,11 @@ class OpenApi
 
 #[OA\Schema(
     schema: 'CaptchaChallenge',
-    description: 'Mathematical CAPTCHA challenge model for anti-abuse verification',
+    description: 'Expiring, single-use mathematical CAPTCHA challenge model for anti-abuse verification',
     properties: [
-        new OA\Property(property: 'math_challenge', type: 'string', example: '7 + 4 = ?', description: 'Human-readable arithmetic question'),
-        new OA\Property(property: 'captcha_signature', type: 'string', example: 'a1b2c3d4e5f67890abcdef...', description: 'HMAC cryptographic signature of the answer'),
-        new OA\Property(property: 'success', type: 'boolean', example: true)
+        new OA\Property(property: 'challenge', type: 'string', example: '7 + 4', description: 'Human-readable arithmetic question'),
+        new OA\Property(property: 'signature', type: 'string', example: 'v2.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.9f86d0...', description: 'Expiring single-use HMAC-SHA256 signed challenge token (v2.<exp>.<nonce>.<hmac>)'),
+        new OA\Property(property: 'expires_at', type: 'integer', example: 1764000600, description: 'Unix timestamp (seconds) when the challenge expires (10-minute TTL)')
     ]
 )]
 class CaptchaChallengeSchema {}
@@ -357,8 +357,8 @@ class BookingEndpoints
                         new OA\Property(property: 'total_price_cop', type: 'number', format: 'float', example: 1520000),
                         new OA\Property(property: 'lang', type: 'string', enum: ['en', 'es', 'fr', 'it', 'de', 'ja'], default: 'en'),
                         new OA\Property(property: 'privacy_consent', type: 'string', enum: ['1', 'true', 'on'], example: '1', description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
-                        new OA\Property(property: 'captcha_challenge', type: 'string', example: '5 + 3 = ?'),
-                        new OA\Property(property: 'captcha_signature', type: 'string', example: 'f8c9d0...'),
+                        new OA\Property(property: 'captcha_challenge', type: 'string', example: '5 + 3'),
+                        new OA\Property(property: 'captcha_signature', type: 'string', example: 'v2.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.9f86d0...'),
                         new OA\Property(property: 'captcha_response', type: 'string', example: '8'),
                         new OA\Property(property: 'website_url', type: 'string', description: 'Anti-spam honeypot (leave empty)', example: '')
                     ]
@@ -369,7 +369,15 @@ class BookingEndpoints
             new OA\Response(
                 response: 200,
                 description: 'Booking inquiry submitted successfully',
-                content: new OA\JsonContent(ref: '#/components/schemas/StandardResponse')
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Inquiry Secured Successfully!'),
+                        new OA\Property(property: 'reservation_uid', type: 'string', example: 'ovf_20260910_a1b2c3'),
+                        new OA\Property(property: 'total_price', type: 'number', format: 'float', example: 1520000),
+                        new OA\Property(property: 'payment_token', type: 'string', example: 'p1.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.9f86d0...', description: 'Single-use, 10-minute expiring, stay-bound payment continuation token for the immediate payment.php checkout step')
+                    ]
+                )
             ),
             new OA\Response(
                 response: 400,
@@ -437,8 +445,8 @@ class ContactEndpoints
                         new OA\Property(property: 'message', type: 'string', example: 'Hello, I have a question about parking availability.'),
                         new OA\Property(property: 'lang', type: 'string', enum: ['en', 'es', 'fr', 'it', 'de', 'ja'], default: 'en'),
                         new OA\Property(property: 'privacy_consent', type: 'string', enum: ['1', 'true', 'on'], example: '1', description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
-                        new OA\Property(property: 'captcha_challenge', type: 'string', example: '9 + 2 = ?'),
-                        new OA\Property(property: 'captcha_signature', type: 'string', example: '9a8b7c...'),
+                        new OA\Property(property: 'captcha_challenge', type: 'string', example: '9 + 2'),
+                        new OA\Property(property: 'captcha_signature', type: 'string', example: 'v2.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.9a8b7c...'),
                         new OA\Property(property: 'captcha_response', type: 'string', example: '11'),
                         new OA\Property(property: 'website_url', type: 'string', description: 'Anti-spam honeypot (leave empty)', example: '')
                     ]
@@ -475,10 +483,11 @@ class PaymentEndpoints
         tags: ['Payments'],
         requestBody: new OA\RequestBody(
             required: true,
-            description: 'Payment transaction payload with Mercado Pago Token and Booking details',
+            description: 'Payment transaction payload with Mercado Pago Token, Booking details, and either a single-use stay-bound payment_token (issued by book-request.php) or a fresh single-use math CAPTCHA tuple (captcha_challenge, captcha_signature, captcha_response)',
             content: new OA\JsonContent(
-                required: ['property_id', 'check_in', 'check_out', 'guest_name', 'guest_email', 'guest_phone', 'payment_method_id', 'transaction_amount', 'payer', 'privacy_consent', 'captcha_challenge', 'captcha_signature', 'captcha_response'],
+                required: ['property_id', 'check_in', 'check_out', 'guest_name', 'guest_email', 'guest_phone', 'payment_method_id', 'transaction_amount', 'payer', 'privacy_consent'],
                 properties: [
+                    new OA\Property(property: 'reservation_uid', type: 'string', nullable: true, example: 'ovf_20261001_a1b2c3', description: 'Pending reservation UID issued by book-request.php (required when authenticating with payment_token)'),
                     new OA\Property(property: 'property_id', type: 'string', enum: ['1606', '1707'], example: '1606'),
                     new OA\Property(property: 'check_in', type: 'string', format: 'date', example: '2026-10-01'),
                     new OA\Property(property: 'check_out', type: 'string', format: 'date', example: '2026-10-06'),
@@ -493,9 +502,10 @@ class PaymentEndpoints
                     new OA\Property(property: 'transaction_amount', type: 'number', format: 'float', example: 1750000),
                     new OA\Property(property: 'payer', ref: '#/components/schemas/PaymentPayer'),
                     new OA\Property(property: 'privacy_consent', type: 'boolean', example: true, description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
-                    new OA\Property(property: 'captcha_challenge', type: 'string', example: '4 + 6 = ?'),
-                    new OA\Property(property: 'captcha_signature', type: 'string', example: '3f2e1d...'),
+                    new OA\Property(property: 'captcha_challenge', type: 'string', example: '4 + 6'),
+                    new OA\Property(property: 'captcha_signature', type: 'string', example: 'v2.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.3f2e1d...'),
                     new OA\Property(property: 'captcha_response', type: 'string', example: '10'),
+                    new OA\Property(property: 'payment_token', type: 'string', nullable: true, example: 'p1.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.9f86d0...', description: 'Optional single-use stay-bound payment continuation token issued by book-request.php after verifying a math CAPTCHA'),
                     new OA\Property(property: 'website_url', type: 'string', example: '')
                 ]
             )
@@ -652,8 +662,8 @@ class RegistryEndpoints
                         new OA\Property(property: 'privacy_consent', type: 'string', enum: ['1', 'true', 'on'], example: '1', description: 'Explicit Ley 1581 of 2012 Personal Data Authorization'),
                         new OA\Property(property: 'minor_guardian_consent', type: 'string', enum: ['1', 'true', 'on'], nullable: true, example: '1', description: 'Mandatory Minor Guardian Attestation when any guest is under 18 or holds a minor ID'),
                         new OA\Property(property: 'lang', type: 'string', enum: ['en', 'es', 'fr', 'it', 'de', 'ja'], default: 'es'),
-                        new OA\Property(property: 'captcha_challenge', type: 'string', example: '3 + 8 = ?'),
-                        new OA\Property(property: 'captcha_signature', type: 'string', example: '4e5f6a...'),
+                        new OA\Property(property: 'captcha_challenge', type: 'string', example: '3 + 8'),
+                        new OA\Property(property: 'captcha_signature', type: 'string', example: 'v2.1764000600.a1b2c3d4e5f67890a1b2c3d4e5f67890.4e5f6a...'),
                         new OA\Property(property: 'captcha_response', type: 'string', example: '11'),
                         new OA\Property(property: 'website_url', type: 'string', example: '')
                     ]

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanViewFlats\Tests\Integration\Api;
 
+use OceanViewFlats\Domain\Security\CaptchaChallengeService;
 use OceanViewFlats\Tests\Support\PdoQueryAssertionsTrait;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -11,7 +12,11 @@ use PHPUnit\Framework\TestCase;
 final class GuestRegistryEndpointTest extends TestCase
 {
     use PdoQueryAssertionsTrait;
+
+    private const TEST_CAPTCHA_SECRET = 'test-registry-captcha-secret-2026';
+
     private string $dbPath;
+    private string $nonceStorePath;
     private PDO $pdo;
 
     protected function setUp(): void
@@ -21,6 +26,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $_ENV['APP_ENCRYPTION_KEY'] = 'test-registry-encryption-key-32b';
 
         $this->dbPath = sys_get_temp_dir() . '/test_registry_' . bin2hex(random_bytes(6)) . '.sqlite';
+        $this->nonceStorePath = sys_get_temp_dir() . '/ovf_test_registry_nonces_' . bin2hex(random_bytes(6)) . '/store.json';
         $this->pdo = new PDO('sqlite:' . $this->dbPath);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
@@ -46,6 +52,13 @@ final class GuestRegistryEndpointTest extends TestCase
 
         if (isset($this->dbPath) && file_exists($this->dbPath)) {
             @unlink($this->dbPath);
+        }
+
+        if (isset($this->nonceStorePath) && file_exists($this->nonceStorePath)) {
+            @unlink($this->nonceStorePath);
+        }
+        if (isset($this->nonceStorePath) && is_dir(dirname($this->nonceStorePath))) {
+            @rmdir(dirname($this->nonceStorePath));
         }
     }
 
@@ -167,16 +180,14 @@ final class GuestRegistryEndpointTest extends TestCase
     /**
      * @return array{captcha_challenge: string, captcha_signature: string, captcha_response: string}
      */
-    private function createValidCaptcha(string $secret = 'securesaltsecret'): array
+    private function createValidCaptcha(string $secret = self::TEST_CAPTCHA_SECRET): array
     {
-        $a = 4;
-        $b = 5;
-        $challenge = "{$a} + {$b}";
-        $signature = hash_hmac('sha256', $challenge, $secret);
+        $generated = CaptchaChallengeService::generate($secret);
+        [$a, $b] = array_map('intval', explode('+', $generated['challenge']));
 
         return [
-            'captcha_challenge' => $challenge,
-            'captcha_signature' => $signature,
+            'captcha_challenge' => $generated['challenge'],
+            'captcha_signature' => $generated['signature'],
             'captcha_response' => (string) ($a + $b),
         ];
     }
@@ -290,13 +301,12 @@ final class GuestRegistryEndpointTest extends TestCase
     {
         // 1. Wrong response calculation
         $wrongResponseData = $this->createValidRegistryData([
-            'captcha_challenge' => '4 + 5',
-            'captcha_signature' => hash_hmac('sha256', '4 + 5', 'securesaltsecret'),
             'captcha_response' => '99',
         ]);
         $resWrong = $this->callRegistryEndpoint($wrongResponseData);
 
         $this->assertSame(0, $resWrong['exitCode'], $resWrong['stderr']);
+        $this->assertSame(400, $resWrong['statusCode']);
         $this->assertIsArray($resWrong['json']);
         $this->assertFalse($resWrong['json']['success']);
         $this->assertNotEmpty($resWrong['json']['error']);
@@ -310,6 +320,7 @@ final class GuestRegistryEndpointTest extends TestCase
         $resSign = $this->callRegistryEndpoint($badSignData);
 
         $this->assertSame(0, $resSign['exitCode'], $resSign['stderr']);
+        $this->assertSame(400, $resSign['statusCode']);
         $this->assertIsArray($resSign['json']);
         $this->assertFalse($resSign['json']['success']);
         $this->assertNotEmpty($resSign['json']['error']);
@@ -1087,8 +1098,8 @@ PHP;
         $decoded12 = \OceanViewFlats\Domain\Security\PayloadEncryptor::decrypt((string) $regRow12['guests_payload']);
         $this->assertCount(12, $decoded12);
 
-        // 4. Reject re-submission once registry_completed = 1
-        $resubmit = $this->callRegistryEndpoint($twelveData);
+        // 4. Reject re-submission once registry_completed = 1 (using a fresh single-use CAPTCHA)
+        $resubmit = $this->callRegistryEndpoint(array_merge($twelveData, $this->createValidCaptcha()));
         $this->assertSame(400, $resubmit['statusCode']);
         $this->assertIsArray($resubmit['json']);
         $this->assertFalse($resubmit['json']['success']);
@@ -1233,7 +1244,10 @@ PHP;
 
         $autoloadPath = var_export(dirname(__DIR__, 3) . '/vendor/autoload.php', true);
         $defaultClearanceTransport = sprintf(
-            '$_ENV["APP_ENV"] = "testing"; $_ENV["APP_ENCRYPTION_KEY"] = "test-registry-encryption-key-32b"; $_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; $_ENV["PROPERTY_1606_DOOR_CODE"] = "0111606#"; $_ENV["PROPERTY_1606_WIFI_PASSWORD"] = "TestWifi1606!"; $_ENV["PROPERTY_1707_DOOR_CODE"] = "0111707#"; $_ENV["PROPERTY_1707_WIFI_PASSWORD"] = "TestWifi1707!"; require_once %s; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_default_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            '$_ENV["APP_ENV"] = "testing"; $_ENV["RECIPIENT_EMAIL"] = "rentals@oceanviewflats.com"; $_ENV["CAPTCHA_SECRET"] = %s; $_SERVER["CAPTCHA_SECRET"] = %s; $_ENV["CAPTCHA_NONCE_STORE_PATH"] = %s; $_ENV["APP_ENCRYPTION_KEY"] = "test-registry-encryption-key-32b"; $_ENV["HUESPED_MANAGER_1606_CHECK"] = "test-check-1606"; $_ENV["HUESPED_MANAGER_1707_CHECK"] = "test-check-1707"; $_ENV["PROPERTY_1606_DOOR_CODE"] = "0111606#"; $_ENV["PROPERTY_1606_WIFI_PASSWORD"] = "TestWifi1606!"; $_ENV["PROPERTY_1707_DOOR_CODE"] = "0111707#"; $_ENV["PROPERTY_1707_WIFI_PASSWORD"] = "TestWifi1707!"; require_once %s; $GLOBALS["TEST_CLEARANCE_TRANSPORT"] = new class implements \OceanViewFlats\Domain\Fulfillment\HttpTransportInterface { public function post(string $url, array|string $data = [], array $headers = [], array $options = []): array { if (strpos($url, "reg_guest_owner_pre.php") !== false) { return ["statusCode" => 200, "body" => json_encode(["status" => true, "last_id" => 100]), "headers" => [], "cookies" => ["PHPSESSID" => "test_default_sess"], "error" => null]; } return ["statusCode" => 200, "body" => "Registro exitoso", "headers" => [], "cookies" => [], "error" => null]; } };',
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export(self::TEST_CAPTCHA_SECRET, true),
+            var_export($this->nonceStorePath, true),
             $autoloadPath
         );
 

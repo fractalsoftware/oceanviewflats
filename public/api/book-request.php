@@ -33,14 +33,16 @@ $config = require __DIR__ . '/config.php';
 
 // Configuration parameters
 define('RECIPIENT_EMAIL', $_ENV['RECIPIENT_EMAIL'] ?? $_SERVER['RECIPIENT_EMAIL'] ?? getenv('RECIPIENT_EMAIL') ?: 'rentals@oceanviewflats.com');
-define('CAPTCHA_SECRET', $_ENV['CAPTCHA_SECRET'] ?? $_SERVER['CAPTCHA_SECRET'] ?? getenv('CAPTCHA_SECRET') ?: 'securesaltsecret');
 
 // Enforce security headers & CORS policy dynamically
 enforce_security_headers_and_cors(['GET', 'POST', 'OPTIONS']);
 
 // 1. Math Captcha Action (GET)
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'captcha') {
-    $captcha = generate_captcha_challenge(CAPTCHA_SECRET);
+    $captchaSecret = require_captcha_secret();
+    $captcha = generate_captcha_challenge($captchaSecret);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
     echo json_encode($captcha);
     exit;
 }
@@ -53,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Enforce referer check for actual submissions (prevent direct script browsing)
 enforce_referer_check();
+
+// Fail closed if CAPTCHA_SECRET is not configured outside explicit local/test environments
+$captchaSecret = require_captcha_secret();
 
 // 2. Honeypot check (anti-spam)
 $honeypot = $_POST['website_url'] ?? '';
@@ -70,17 +75,21 @@ $t = $all_translations[$lang]['booking'] ?? $all_translations['en']['booking'];
 $captcha_challenge = $_POST['captcha_challenge'] ?? '';
 $captcha_signature = $_POST['captcha_signature'] ?? '';
 $captcha_response = $_POST['captcha_response'] ?? '';
+$captchaErrors = ovf_captcha_error_messages($t);
 
 $captcha_check = verify_captcha_challenge(
-    $captcha_challenge, 
-    $captcha_signature, 
-    $captcha_response, 
-    CAPTCHA_SECRET,
-    $t['err_captcha_sign'],
-    $t['err_captcha_invalid'],
-    $t['err_captcha_wrong']
+    $captcha_challenge,
+    $captcha_signature,
+    $captcha_response,
+    $captchaSecret,
+    $captchaErrors['sign'],
+    $captchaErrors['invalid'],
+    $captchaErrors['wrong'],
+    $captchaErrors['expired'],
+    $captchaErrors['replayed']
 );
 if ($captcha_check !== true) {
+    http_response_code(400);
     send_json_response(false, $captcha_check);
 }
 
@@ -318,7 +327,16 @@ $localizedMessage = "
   </div>
 ";
 
+$paymentToken = issue_payment_captcha_token(
+    $uid,
+    $propertyId,
+    $checkInStr,
+    $checkOutStr,
+    $captchaSecret
+);
+
 send_json_response(true, $localizedMessage, [
     'reservation_uid' => $uid,
-    'total_price' => $serverTotalCop
+    'total_price' => $serverTotalCop,
+    'payment_token' => $paymentToken,
 ]);

@@ -27,6 +27,9 @@ enforce_referer_check();
 
 $config = require __DIR__ . '/config.php';
 
+// Fail closed if CAPTCHA_SECRET is not configured outside explicit local/test environments
+$captchaSecret = require_captcha_secret();
+
 // Read JSON input from request body
 $rawInput = file_get_contents('php://input');
 if (($rawInput === false || $rawInput === '') && PHP_SAPI === 'cli' && defined('STDIN')) {
@@ -50,17 +53,39 @@ if (!empty($data['website_url'])) {
 // Enforce rate limiting
 enforce_rate_limit('ovf_payments_rate_limits.json', 5, 600, $t['err_rate_limit']);
 
-// Mathematical CAPTCHA Verification
-$captchaSecret = (string) ($_ENV['CAPTCHA_SECRET'] ?? $_SERVER['CAPTCHA_SECRET'] ?? getenv('CAPTCHA_SECRET') ?: 'securesaltsecret');
-$captchaCheck = verify_captcha_challenge(
-    clean_input((string) ($data['captcha_challenge'] ?? '')),
-    clean_input((string) ($data['captcha_signature'] ?? '')),
-    clean_input((string) ($data['captcha_response'] ?? '')),
-    $captchaSecret,
-    $t['err_captcha_sign'] ?? 'Security check failed. Please refresh the page and try again.',
-    $t['err_captcha_invalid'] ?? 'Invalid verification challenge.',
-    $t['err_captcha_wrong'] ?? 'Incorrect answer to the security verification question.'
-);
+// Mathematical CAPTCHA or single-use stay-bound payment continuation token verification
+$captchaErrors = ovf_captcha_error_messages($t);
+$paymentToken = clean_input((string) ($data['payment_token'] ?? ''));
+$reservationUidInput = clean_input((string) ($data['reservation_uid'] ?? ''));
+$propertyIdInput = clean_input((string) ($data['property_id'] ?? ''));
+$checkInInput = clean_input((string) ($data['check_in'] ?? ''));
+$checkOutInput = clean_input((string) ($data['check_out'] ?? ''));
+
+if ($paymentToken !== '') {
+    $captchaCheck = verify_payment_captcha_token(
+        $paymentToken,
+        $reservationUidInput,
+        $propertyIdInput,
+        $checkInInput,
+        $checkOutInput,
+        $captchaSecret,
+        $captchaErrors['sign'],
+        $captchaErrors['expired'],
+        $captchaErrors['replayed']
+    );
+} else {
+    $captchaCheck = verify_captcha_challenge(
+        clean_input((string) ($data['captcha_challenge'] ?? '')),
+        clean_input((string) ($data['captcha_signature'] ?? '')),
+        clean_input((string) ($data['captcha_response'] ?? '')),
+        $captchaSecret,
+        $captchaErrors['sign'],
+        $captchaErrors['invalid'],
+        $captchaErrors['wrong'],
+        $captchaErrors['expired'],
+        $captchaErrors['replayed']
+    );
+}
 if ($captchaCheck !== true) {
     http_response_code(400);
     send_json_response(false, $captchaCheck);

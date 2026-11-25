@@ -29,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Enforce referer check for actual submissions (prevent direct script browsing)
 enforce_referer_check();
 
+// Fail closed if CAPTCHA_SECRET is not configured outside explicit local/test environments
+$captchaSecret = require_captcha_secret();
+
 // Read input from request body with CLI STDIN support and $_POST fallback
 $rawInput = file_get_contents('php://input');
 if (($rawInput === false || $rawInput === '') && PHP_SAPI === 'cli' && defined('STDIN')) {
@@ -84,17 +87,20 @@ const RATE_LIMIT_WINDOW = 600; // 10 minutes
 enforce_rate_limit(RATE_LIMIT_FILE, MAX_SUBMISSIONS, RATE_LIMIT_WINDOW, $t['err_rate_limit'] ?? 'Too many requests. Please wait a few minutes and try again.');
 
 // Mathematical CAPTCHA Verification
-$captchaSecret = (string) ($_ENV['CAPTCHA_SECRET'] ?? $_SERVER['CAPTCHA_SECRET'] ?? getenv('CAPTCHA_SECRET') ?: 'securesaltsecret');
+$captchaErrors = ovf_captcha_error_messages($allTranslations[$lang]['booking'] ?? $allTranslations['en']['booking'] ?? []);
 $captchaCheck = verify_captcha_challenge(
     clean_input((string) ($data['captcha_challenge'] ?? '')),
     clean_input((string) ($data['captcha_signature'] ?? '')),
     clean_input((string) ($data['captcha_response'] ?? '')),
     $captchaSecret,
-    $allTranslations[$lang]['booking']['err_captcha_sign'] ?? 'Security check failed. Please refresh the page and try again.',
-    $allTranslations[$lang]['booking']['err_captcha_invalid'] ?? 'Invalid verification challenge.',
-    $allTranslations[$lang]['booking']['err_captcha_wrong'] ?? 'Incorrect answer to the security verification question.'
+    $captchaErrors['sign'],
+    $captchaErrors['invalid'],
+    $captchaErrors['wrong'],
+    $captchaErrors['expired'],
+    $captchaErrors['replayed']
 );
 if ($captchaCheck !== true) {
+    http_response_code(400);
     send_json_response(false, $captchaCheck);
 }
 
