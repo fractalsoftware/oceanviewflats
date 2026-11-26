@@ -82,14 +82,36 @@ const findNodeByType = (
 	return node;
 };
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+	"&#x27;": "'",
+	"&#39;": "'",
+	"&quot;": '"',
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+};
+
 const decodeHtmlEntities = (value: string): string =>
-	value
-		.replace(/&#x27;/g, "'")
-		.replace(/&#39;/g, "'")
-		.replace(/&quot;/g, '"')
-		.replace(/&amp;/g, "&")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">");
+	value.replace(
+		/&(?:#x27|#39|quot|amp|lt|gt);/g,
+		(entity) => HTML_ENTITY_MAP[entity] ?? entity,
+	);
+
+const extractTextContent = (htmlFragment: string): string => {
+	let result = "";
+	let insideTag = false;
+	for (let i = 0; i < htmlFragment.length; i++) {
+		const ch = htmlFragment[i];
+		if (ch === "<") {
+			insideTag = true;
+		} else if (ch === ">") {
+			insideTag = false;
+		} else if (!insideTag) {
+			result += ch;
+		}
+	}
+	return result;
+};
 
 const escapeHtmlAttr = (value: string): string =>
 	value
@@ -118,7 +140,7 @@ const extractVisibleBreadcrumbLabels = (
 		...navMatch[1].matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi),
 	];
 	return anchorMatches.map((m) =>
-		decodeHtmlEntities(m[1].replace(/<[^>]+>/g, "")).trim(),
+		decodeHtmlEntities(extractTextContent(m[1])).trim(),
 	);
 };
 

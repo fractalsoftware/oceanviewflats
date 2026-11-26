@@ -44,13 +44,20 @@ function escapeHtmlAttr(value: string): string {
 		.replace(/>/g, "&gt;");
 }
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+	"&#x27;": "'",
+	"&#39;": "'",
+	"&quot;": '"',
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+};
+
 function unescapeHtmlEntities(value: string): string {
-	return value
-		.replace(/&#x27;/g, "'")
-		.replace(/&quot;/g, '"')
-		.replace(/&amp;/g, "&")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">");
+	return value.replace(
+		/&(?:#x27|#39|quot|amp|lt|gt);/g,
+		(entity) => HTML_ENTITY_MAP[entity] ?? entity,
+	);
 }
 
 function getWebpDimensions(

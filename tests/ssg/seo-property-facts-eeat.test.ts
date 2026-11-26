@@ -16,14 +16,20 @@ import type { Lang } from "../../src/types";
 const DIST_DIR = path.join(process.cwd(), "dist");
 const LOCALES: readonly Lang[] = ["en", "es", "fr", "it", "de", "ja"];
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+	"&#x27;": "'",
+	"&#39;": "'",
+	"&quot;": '"',
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+};
+
 const decodeHtmlEntities = (markup: string): string =>
-	markup
-		.replaceAll("&#x27;", "'")
-		.replaceAll("&#39;", "'")
-		.replaceAll("&quot;", '"')
-		.replaceAll("&amp;", "&")
-		.replaceAll("&lt;", "<")
-		.replaceAll("&gt;", ">");
+	markup.replace(
+		/&(?:#x27|#39|quot|amp|lt|gt);/g,
+		(entity) => HTML_ENTITY_MAP[entity] ?? entity,
+	);
 
 const getPropertyHtml = (propertyId: "1707" | "1606", lang: Lang): string => {
 	const dir = propertyId === "1707" ? "Oceanview1707" : "Oceanview1606";
