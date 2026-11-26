@@ -1,7 +1,3 @@
-# RewriteEngine On
-# RewriteCond %{HTTP_HOST} !^www\. [NC]
-# RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]
-
 ErrorDocument 404 /404.html
 
 # =============================================================================
@@ -51,9 +47,20 @@ Options -Indexes
 # 1. Cap HTTP request body size at Apache layer (64 KB max)
 LimitRequestBody 65536
 
-# 2. Reject multipart/form-data requests before PHP startup
+# 2. Reject multipart/form-data requests before PHP startup and enforce canonical URL redirects
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Reject multipart/form-data requests before PHP startup (must run before any redirect)
     RewriteCond %{CONTENT_TYPE} ^multipart/form-data [NC]
     RewriteRule ^ - [F,L]
+
+    # Permanently strip explicit index.html requests to canonical trailing-slash directory URLs
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\s/+([^?\s]*/)?index\.html[\s?] [NC]
+    RewriteRule ^ https://www.oceanviewflats.com/%1 [R=301,L]
+
+    # Permanently canonicalize HTTP and apex host requests to https://www.oceanviewflats.com
+    RewriteCond %{HTTPS} !=on [OR]
+    RewriteCond %{HTTP_HOST} !^www\.oceanviewflats\.com$ [NC]
+    RewriteRule ^(.*)$ https://www.oceanviewflats.com/$1 [R=301,L]
 </IfModule>

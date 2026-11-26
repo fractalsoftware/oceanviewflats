@@ -4,7 +4,7 @@
 	"description": "Static page generator for rental properties landing pages",
 	"main": "index.js",
 	"scripts": {
-		"test": "node --import tsx --test tests/ssg/page-config.test.ts",
+		"test": "node --import tsx --test tests/ssg/*.test.ts",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
 		"docs:api": "php scripts/generate-docs.php",

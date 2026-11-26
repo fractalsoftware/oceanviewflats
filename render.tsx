@@ -4,6 +4,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
 	BASE_URL,
+	getCanonicalUrl,
 	getClientDictionaryForPage,
 	getClientExtraConfigForPage,
 	getHrefLangTags,
@@ -11,9 +12,13 @@ import {
 	type PageConfig,
 	pages,
 } from "./src/config/pages";
-import { IMAGES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
+import type { Lang } from "./src/types";
+import {
+	buildPricingSummary,
+	type SeasonalRateTierRow,
+} from "./src/utils/schema";
 
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
@@ -31,7 +36,8 @@ if (fs.existsSync(publicDir)) {
 }
 
 // Parse public/data/prices.csv to generate build-time prices.json caches for client usage
-const parsePricesCsv = () => {
+// and return parsed tiers for build-time JSON-LD structured data injection.
+const parsePricesCsv = (): SeasonalRateTierRow[] => {
 	const csvPath = path.join(process.cwd(), "public", "data", "prices.csv");
 	const cacheDir = path.join(process.cwd(), "public", "cache");
 	const distCacheDir = path.join(distDir, "cache");
@@ -43,6 +49,8 @@ const parsePricesCsv = () => {
 		fs.mkdirSync(distCacheDir, { recursive: true });
 	}
 
+	const prices: SeasonalRateTierRow[] = [];
+
 	if (fs.existsSync(csvPath)) {
 		const csvContent = fs.readFileSync(csvPath, "utf-8");
 		const lines = csvContent
@@ -51,14 +59,6 @@ const parsePricesCsv = () => {
 			.filter((l) => l.length > 0);
 
 		if (lines.length > 1) {
-			const prices: {
-				property_id: string;
-				start_date: string;
-				end_date: string;
-				nightly_rate_cop: number;
-				minimum_stay: number;
-			}[] = [];
-
 			for (let i = 1; i < lines.length; i++) {
 				const cols = lines[i].split(",");
 				if (cols.length >= 5) {
@@ -80,24 +80,36 @@ const parsePricesCsv = () => {
 	} else {
 		console.log("Warning: public/data/prices.csv not found to parse.");
 	}
+
+	return prices;
 };
 
-parsePricesCsv();
+const parsedSeasonalRateTiers = parsePricesCsv();
+const pricingSummary = buildPricingSummary(parsedSeasonalRateTiers);
 
 const generateSitemap = (
 	pages: PageConfig[],
 	baseUrl: string,
-	languages: string[],
+	languages: readonly Lang[],
 ) => {
 	const urls: string[] = [];
 	const now = new Date().toISOString().split("T")[0];
 
 	pages.forEach((page) => {
+		const defaultUrl = getCanonicalUrl(baseUrl, page.path, "en");
+		const alternateLinks = [
+			...languages.map(
+				(altLang) =>
+					`    <xhtml:link rel="alternate" hreflang="${altLang}" href="${getCanonicalUrl(baseUrl, page.path, altLang)}" />`,
+			),
+			`    <xhtml:link rel="alternate" hreflang="x-default" href="${defaultUrl}" />`,
+		].join("\n");
+
 		languages.forEach((lang) => {
-			const basePath = page.path ? `${baseUrl}/${page.path}` : baseUrl;
-			const url = lang === "en" ? basePath : `${basePath}/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, page.path, lang);
 			urls.push(`  <url>
     <loc>${url}</loc>
+${alternateLinks}
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${page.path === "" ? "1.0" : "0.8"}</priority>
@@ -106,13 +118,15 @@ const generateSitemap = (
 	});
 
 	return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.join("\n")}
 </urlset>`;
 };
 
 pages.forEach((page) => {
-	const hrefLangTags = getHrefLangTags(BASE_URL, page.path, LANGUAGES);
+	const hrefLangTags = page.noIndex
+		? ""
+		: getHrefLangTags(BASE_URL, page.path, LANGUAGES);
 
 	LANGUAGES.forEach((lang) => {
 		const t = dict[lang];
@@ -123,13 +137,23 @@ pages.forEach((page) => {
 		const assetPrefix =
 			page.id === "404" ? "/" : depth === 0 ? "./" : "../".repeat(depth);
 
-		const markup = renderToStaticMarkup(
+		const rawMarkup = renderToStaticMarkup(
 			<PageComponent lang={lang} assetPrefix={assetPrefix} />,
 		);
+		// Strip React 19's auto-injected <link rel="preload" .../> tags from body markup;
+		// hero image preload hints are emitted inside <head> via baseTemplate.
+		const markup = rawMarkup.replace(
+			/<link\b[^>]*\brel=["']preload["'][^>]*\/?>/gi,
+			"",
+		);
 
-		const basePath = page.path ? `${BASE_URL}/${page.path}` : BASE_URL;
-		const url = lang === "en" ? basePath : `${basePath}/${lang}.html`;
-		const structuredData = page.getStructuredData(t, lang, BASE_URL);
+		const url = getCanonicalUrl(BASE_URL, page.path, lang);
+		const structuredData = page.getStructuredData(
+			t,
+			lang,
+			BASE_URL,
+			pricingSummary,
+		);
 
 		const apiBase = page.id === "404" ? "/api/" : `${assetPrefix}api/`;
 		const i18nSlice = page.clientI18n
@@ -154,10 +178,19 @@ pages.forEach((page) => {
 				: t.seoDescription,
 			url,
 			baseUrl: BASE_URL,
-			ogImage: `${BASE_URL}/${page.ogImage}`,
+			ogImage: {
+				url: `${BASE_URL}/${page.ogImage.path}`,
+				width: page.ogImage.width,
+				height: page.ogImage.height,
+				alt: page.ogImage.getAlt(t),
+			},
+			heroPreloadHref: page.heroImage
+				? `${assetPrefix}${page.heroImage}`
+				: undefined,
 			hrefLangTags,
 			structuredData,
 			assetPrefix,
+			noIndex: Boolean(page.noIndex),
 			customScripts: page.scripts,
 			pageConfig,
 		});
@@ -176,15 +209,7 @@ pages.forEach((page) => {
 
 // Generate and save sitemap
 const sitemap = generateSitemap(
-	pages.filter(
-		(p) =>
-			p.id !== "404" &&
-			p.id !== "registry" &&
-			p.id !== "guide" &&
-			p.id !== "booking-success" &&
-			p.id !== "booking-failure" &&
-			p.id !== "booking-pending",
-	),
+	pages.filter((p) => !p.noIndex),
 	BASE_URL,
 	LANGUAGES,
 );

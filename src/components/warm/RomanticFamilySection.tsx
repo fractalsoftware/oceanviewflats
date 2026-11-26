@@ -1,6 +1,6 @@
 import { Heart, Users } from "lucide-react";
 import React from "react";
-import { IMAGES } from "../../constants/config";
+import { IMAGE_DIMENSIONS, IMAGES } from "../../constants/config";
 import { dict } from "../../i18n/dict";
 import type { Lang } from "../../types";
 
@@ -33,9 +33,9 @@ export const RomanticFamilySection = ({
 								<Users className="w-6 h-6 text-amber-400" />
 							</div>
 							<div>
-								<h4 className="font-bold text-lg text-stone-50">
+								<h3 className="font-bold text-lg text-stone-50">
 									{t.amFamily}
-								</h4>
+								</h3>
 								<p className="text-stone-400 text-sm">{t.amFamilyDesc}</p>
 							</div>
 						</li>
@@ -44,9 +44,9 @@ export const RomanticFamilySection = ({
 								<Heart className="w-6 h-6 text-rose-400" />
 							</div>
 							<div>
-								<h4 className="font-bold text-lg text-stone-50">
+								<h3 className="font-bold text-lg text-stone-50">
 									{t.amRomantic}
-								</h4>
+								</h3>
 								<p className="text-stone-400 text-sm">{t.amRomanticDesc}</p>
 							</div>
 						</li>
@@ -55,7 +55,11 @@ export const RomanticFamilySection = ({
 				<div className="relative">
 					<img
 						src={`${assetPrefix}${IMAGES["1606"].romantic}`}
-						alt="Living area"
+						alt={t.romanticImgAlt}
+						width={IMAGE_DIMENSIONS["1606"].romantic.width}
+						height={IMAGE_DIMENSIONS["1606"].romantic.height}
+						loading="lazy"
+						decoding="async"
 						className="rounded-2xl shadow-2xl object-cover h-[400px] w-full border border-stone-700"
 					/>
 					<div className="absolute -bottom-6 -left-6 bg-white text-stone-800 p-4 rounded-2xl shadow-2xl flex items-center space-x-4 border border-stone-100">

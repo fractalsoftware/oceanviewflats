@@ -1,4 +1,9 @@
-import { AIRBNB_URLS, IMAGES } from "./config";
+import {
+	AIRBNB_URLS,
+	DATA_CONTROLLER,
+	IMAGE_DIMENSIONS,
+	IMAGES,
+} from "./config";
 
 export interface PropertyTheme {
 	accentColor: string;
@@ -18,11 +23,28 @@ export interface PropertyTheme {
 		pool: string;
 	};
 
+	// Exact on-disk image dimensions for CLS prevention
+	imageDimensions: {
+		hero: { readonly width: number; readonly height: number };
+		bedroom: { readonly width: number; readonly height: number };
+		pool: { readonly width: number; readonly height: number };
+	};
+
 	// Airbnb target URL
 	airbnbUrl: string;
 
-	// Centralized key for bed capacity localization
+	// Centralized keys for property-specific copy & localized image alts
 	bedTextKey: "statsBeds" | "stats1606Beds";
+	heroTitleKey: "heroTitle" | "hero1606Title";
+	heroSubKey: "heroSub" | "hero1606Sub";
+	heroImgAltKey: "hero1707ImgAlt" | "hero1606ImgAlt";
+	aboutBedroomAltKey: "about1707LivingAlt" | "about1606LivingAlt";
+	aboutPoolAltKey: "about1707PoolAlt" | "about1606PoolAlt";
+
+	// Property-specific description & identity keys
+	aboutText1Key: "aboutText1" | "about1606Text1";
+	aboutText2Key: "aboutText2" | "about1606Text2";
+	rntNumber: string;
 
 	// AboutAmenities centralized styles
 	aboutThemeAccent: string;
@@ -30,6 +52,39 @@ export interface PropertyTheme {
 	aboutHostBorder: string;
 	aboutHostBg: string;
 	aboutHostName: string;
+	aboutHostMetaRow: string;
+	aboutHostControllerBadge: string;
+	aboutHostRntBadge: string;
+	aboutHostComplianceRow: string;
+	aboutHostComplianceBadge: string;
+	aboutHostComplianceLink: string;
+	aboutHostActionsRow: string;
+	aboutHostWhatsAppBtn: string;
+	aboutHostEmailBtn: string;
+	aboutHostIconSm: string;
+
+	// Reviews centralized E-E-A-T styles
+	reviewMetaRow: string;
+	reviewVerifiedBadge: string;
+	reviewDate: string;
+	reviewAttributionWrapper: string;
+	reviewAttributionLink: string;
+	reviewIconSm: string;
+
+	// PropertyFaq centralized styles & copy keys
+	propertyFaqTitleKey: "faq1707Title" | "faq1606Title";
+	propertyFaqSubtitleKey: "faq1707Subtitle" | "faq1606Subtitle";
+	propertyFaqSection: string;
+	propertyFaqContainer: string;
+	propertyFaqHeader: string;
+	propertyFaqTitle: string;
+	propertyFaqSubtitle: string;
+	propertyFaqList: string;
+	propertyFaqDetails: string;
+	propertyFaqSummary: string;
+	propertyFaqChevron: string;
+	propertyFaqAnswerWrapper: string;
+	propertyFaqAnswer: string;
 
 	// BookingSection centralized styles
 	bookingSectionBg: string;
@@ -147,6 +202,41 @@ export const CHROME_THEME = {
 	footerBadgeBrand: "text-white font-bold tracking-wide",
 } as const;
 
+export type BreadcrumbSurface = "coolBar" | "warmBar" | "inline";
+
+export const BREADCRUMB_THEME = {
+	coolBar: {
+		nav: "bg-slate-50 border-b border-slate-200/80",
+		container: "max-w-6xl mx-auto px-6 py-3",
+		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
+		item: "inline-flex items-center gap-1.5",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+		separator: "w-4 h-4 text-slate-400 shrink-0",
+		current:
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+	},
+	warmBar: {
+		nav: "bg-stone-50 border-b border-stone-200/80",
+		container: "max-w-6xl mx-auto px-6 py-3",
+		list: "flex flex-wrap items-center gap-1.5 text-sm text-stone-600 list-none m-0 p-0",
+		item: "inline-flex items-center gap-1.5",
+		link: "text-stone-700 hover:text-stone-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600",
+		separator: "w-4 h-4 text-stone-400 shrink-0",
+		current:
+			"font-semibold text-stone-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600",
+	},
+	inline: {
+		nav: "mb-6",
+		container: "w-full",
+		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
+		item: "inline-flex items-center gap-1.5",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+		separator: "w-4 h-4 text-slate-400 shrink-0",
+		current:
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+	},
+} as const;
+
 const SHARED_HOME_CARD_THEME = {
 	card: "group flex flex-col bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	cardMedia: "h-80 relative overflow-hidden bg-slate-900",
@@ -222,6 +312,52 @@ export const HOME_THEME = {
 	multiPropertyText: "text-sm md:text-base text-slate-700 leading-relaxed",
 	multiPropertyCta:
 		"shrink-0 inline-flex items-center justify-center space-x-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	// #302 Homepage Property Comparison Table
+	compareSection: "py-20 px-6 bg-white border-t border-slate-200 scroll-mt-20",
+	compareContainer: "max-w-6xl mx-auto",
+	compareHeader: "text-center max-w-3xl mx-auto mb-12",
+	compareTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4",
+	compareSubtitle:
+		"text-base md:text-lg text-slate-700 font-light leading-relaxed",
+	compareTableWrapper:
+		"overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	compareTable:
+		"w-full min-w-[640px] border-separate border-spacing-0 text-left text-sm md:text-base",
+	compareCaption:
+		"px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-600 bg-slate-50 border-b border-slate-200",
+	compareThead: "sticky top-0 z-20 bg-slate-900 text-white",
+	compareColHeaderFirst:
+		"sticky left-0 z-30 bg-slate-900 py-4 px-5 md:px-6 text-xs md:text-sm font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 w-1/4",
+	compareColHeader:
+		"py-4 px-5 md:px-6 text-sm md:text-base font-bold text-white border-b border-slate-800 w-[37.5%]",
+	compareTbody: "bg-white",
+	compareRow:
+		"group odd:bg-white even:bg-slate-50 hover:bg-slate-100 transition-colors",
+	compareRowHeader:
+		"sticky left-0 z-10 py-4 px-5 md:px-6 font-semibold text-slate-900 align-top border-b border-slate-200 group-odd:bg-white group-even:bg-slate-50 group-hover:bg-slate-100 transition-colors",
+	compareCell:
+		"py-4 px-5 md:px-6 text-slate-700 align-top border-b border-slate-200 leading-relaxed",
+	// #302 Homepage Playa Salguero Location & Proximity
+	locationSection: "py-20 px-6 bg-white scroll-mt-20",
+	locationContainer: "max-w-6xl mx-auto",
+	locationHeader: "text-center max-w-3xl mx-auto mb-14",
+	locationAddressBadge:
+		"inline-flex items-center justify-center gap-2 bg-slate-100 border border-slate-200 px-4 py-1.5 rounded-full text-slate-700 text-xs md:text-sm font-semibold mb-5",
+	locationTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4",
+	locationSubtitle:
+		"text-base md:text-lg text-slate-700 font-light leading-relaxed",
+	locationGrid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+	locationCard:
+		"flex flex-col bg-slate-50 rounded-3xl p-7 border border-slate-200 shadow-sm hover:bg-white hover:shadow-md transition-all duration-300",
+	locationCardTop: "flex items-center justify-between gap-3 mb-5",
+	locationIconBox:
+		"w-11 h-11 shrink-0 bg-white border border-slate-200 text-[#B91C1C] rounded-2xl flex items-center justify-center shadow-xs",
+	locationProximityBadge:
+		"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white",
+	locationCardTitle: "text-lg md:text-xl font-bold text-slate-900 mb-2",
+	locationCardDesc: "text-sm text-slate-700 leading-relaxed",
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
@@ -439,12 +575,27 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			bedroom: IMAGES["1707"].bedroom,
 			pool: IMAGES["1707"].pool,
 		},
+		imageDimensions: {
+			hero: IMAGE_DIMENSIONS["1707"].hero,
+			bedroom: IMAGE_DIMENSIONS["1707"].bedroom,
+			pool: IMAGE_DIMENSIONS["1707"].pool,
+		},
 
 		// Airbnb target URL
 		airbnbUrl: AIRBNB_URLS["1707"],
 
-		// Stats bed capacity key
+		// Centralized keys for property-specific copy & localized image alts
 		bedTextKey: "statsBeds",
+		heroTitleKey: "heroTitle",
+		heroSubKey: "heroSub",
+		heroImgAltKey: "hero1707ImgAlt",
+		aboutBedroomAltKey: "about1707LivingAlt",
+		aboutPoolAltKey: "about1707PoolAlt",
+
+		// Property-specific description & identity keys
+		aboutText1Key: "aboutText1",
+		aboutText2Key: "aboutText2",
+		rntNumber: DATA_CONTROLLER.rnt1707,
 
 		// AboutAmenities
 		aboutThemeAccent: "text-[#FF5A5F] bg-red-50",
@@ -452,6 +603,52 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		aboutHostBorder: "border-slate-700",
 		aboutHostBg: "bg-slate-900 font-sans",
 		aboutHostName: "text-white",
+		aboutHostMetaRow: "mt-5 flex flex-wrap items-center gap-2.5",
+		aboutHostControllerBadge:
+			"inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700",
+		aboutHostRntBadge:
+			"inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-800 text-emerald-300 border border-emerald-500/30",
+		aboutHostComplianceRow: "mt-4 flex flex-wrap items-center gap-2",
+		aboutHostComplianceBadge:
+			"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-800/80 text-slate-200 border border-slate-700",
+		aboutHostComplianceLink:
+			"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-slate-200 hover:text-white underline underline-offset-2 transition-colors",
+		aboutHostActionsRow: "mt-6 flex flex-wrap items-center gap-3",
+		aboutHostWhatsAppBtn:
+			"inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/40",
+		aboutHostEmailBtn:
+			"inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30",
+		aboutHostIconSm: "w-4 h-4 shrink-0",
+
+		// Reviews E-E-A-T
+		reviewMetaRow: "mt-2 flex flex-wrap items-center justify-center gap-2",
+		reviewVerifiedBadge:
+			"inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full",
+		reviewDate: "text-xs font-medium text-slate-500",
+		reviewAttributionWrapper: "mt-8 flex justify-center",
+		reviewAttributionLink:
+			"inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-rose-700 bg-white px-5 py-2.5 rounded-full border border-slate-200 shadow-xs hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/30",
+		reviewIconSm: "w-3.5 h-3.5 shrink-0",
+
+		// PropertyFaq
+		propertyFaqTitleKey: "faq1707Title",
+		propertyFaqSubtitleKey: "faq1707Subtitle",
+		propertyFaqSection: "py-24 px-6 bg-slate-50 border-t border-slate-200/80",
+		propertyFaqContainer: "max-w-4xl mx-auto",
+		propertyFaqHeader: "text-center max-w-2xl mx-auto mb-12",
+		propertyFaqTitle:
+			"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-3",
+		propertyFaqSubtitle: "text-base md:text-lg text-slate-600 leading-relaxed",
+		propertyFaqList: "space-y-4",
+		propertyFaqDetails:
+			"group bg-white rounded-2xl border border-slate-200 shadow-xs open:shadow-md transition-shadow",
+		propertyFaqSummary:
+			"flex items-center justify-between gap-4 p-6 md:p-7 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-bold text-base md:text-lg text-slate-900 select-none rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		propertyFaqChevron:
+			"w-5 h-5 text-slate-500 shrink-0 motion-safe:transition-transform motion-safe:duration-300 group-open:rotate-180",
+		propertyFaqAnswerWrapper:
+			"px-6 pb-6 md:px-7 md:pb-7 pt-4 border-t border-slate-100",
+		propertyFaqAnswer: "text-slate-700 leading-relaxed",
 
 		// BookingSection
 		bookingSectionBg: "bg-slate-100 border-t border-slate-200",
@@ -502,12 +699,27 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			bedroom: IMAGES["1606"].bedroom,
 			pool: IMAGES["1606"].pool,
 		},
+		imageDimensions: {
+			hero: IMAGE_DIMENSIONS["1606"].hero,
+			bedroom: IMAGE_DIMENSIONS["1606"].bedroom,
+			pool: IMAGE_DIMENSIONS["1606"].pool,
+		},
 
 		// Airbnb target URL
 		airbnbUrl: AIRBNB_URLS["1606"],
 
-		// Stats bed capacity key
+		// Centralized keys for property-specific copy & localized image alts
 		bedTextKey: "stats1606Beds",
+		heroTitleKey: "hero1606Title",
+		heroSubKey: "hero1606Sub",
+		heroImgAltKey: "hero1606ImgAlt",
+		aboutBedroomAltKey: "about1606LivingAlt",
+		aboutPoolAltKey: "about1606PoolAlt",
+
+		// Property-specific description & identity keys
+		aboutText1Key: "about1606Text1",
+		aboutText2Key: "about1606Text2",
+		rntNumber: DATA_CONTROLLER.rnt1606,
 
 		// AboutAmenities
 		aboutThemeAccent: "text-rose-600 bg-rose-50",
@@ -515,6 +727,52 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		aboutHostBorder: "border-stone-700",
 		aboutHostBg: "bg-stone-900 font-sans",
 		aboutHostName: "text-stone-50",
+		aboutHostMetaRow: "mt-5 flex flex-wrap items-center gap-2.5",
+		aboutHostControllerBadge:
+			"inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-stone-800 text-stone-200 border border-stone-700",
+		aboutHostRntBadge:
+			"inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-stone-800 text-emerald-300 border border-emerald-500/30",
+		aboutHostComplianceRow: "mt-4 flex flex-wrap items-center gap-2",
+		aboutHostComplianceBadge:
+			"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-stone-800/80 text-stone-200 border border-stone-700",
+		aboutHostComplianceLink:
+			"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-stone-200 hover:text-white underline underline-offset-2 transition-colors",
+		aboutHostActionsRow: "mt-6 flex flex-wrap items-center gap-3",
+		aboutHostWhatsAppBtn:
+			"inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/40",
+		aboutHostEmailBtn:
+			"inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-stone-800 hover:bg-stone-700 text-stone-100 border border-stone-700 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30",
+		aboutHostIconSm: "w-4 h-4 shrink-0",
+
+		// Reviews E-E-A-T
+		reviewMetaRow: "mt-1 flex flex-wrap items-center gap-2",
+		reviewVerifiedBadge:
+			"inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full",
+		reviewDate: "text-xs font-medium text-stone-500",
+		reviewAttributionWrapper: "mt-10 flex justify-center",
+		reviewAttributionLink:
+			"inline-flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-rose-700 bg-white px-5 py-2.5 rounded-full border border-stone-200 shadow-xs hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/30",
+		reviewIconSm: "w-3.5 h-3.5 shrink-0",
+
+		// PropertyFaq
+		propertyFaqTitleKey: "faq1606Title",
+		propertyFaqSubtitleKey: "faq1606Subtitle",
+		propertyFaqSection: "py-24 px-6 bg-stone-50 border-t border-stone-200/80",
+		propertyFaqContainer: "max-w-4xl mx-auto",
+		propertyFaqHeader: "text-center max-w-2xl mx-auto mb-12",
+		propertyFaqTitle:
+			"text-3xl md:text-4xl font-extrabold tracking-tight text-stone-900 mb-3",
+		propertyFaqSubtitle: "text-base md:text-lg text-stone-600 leading-relaxed",
+		propertyFaqList: "space-y-4",
+		propertyFaqDetails:
+			"group bg-white rounded-2xl border border-stone-200 shadow-xs open:shadow-md transition-shadow",
+		propertyFaqSummary:
+			"flex items-center justify-between gap-4 p-6 md:p-7 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-bold text-base md:text-lg text-stone-900 select-none rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/40",
+		propertyFaqChevron:
+			"w-5 h-5 text-stone-500 shrink-0 motion-safe:transition-transform motion-safe:duration-300 group-open:rotate-180",
+		propertyFaqAnswerWrapper:
+			"px-6 pb-6 md:px-7 md:pb-7 pt-4 border-t border-stone-100",
+		propertyFaqAnswer: "text-stone-700 leading-relaxed",
 
 		// BookingSection
 		bookingSectionBg: "bg-stone-100 border-t border-stone-200",

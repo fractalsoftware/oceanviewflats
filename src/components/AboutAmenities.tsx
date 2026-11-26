@@ -1,15 +1,25 @@
 import {
 	Car,
 	Coffee,
+	FileCheck,
 	Globe,
 	Lock,
+	Mail,
 	MapPin,
+	MessageCircle,
+	Scale,
+	ShieldCheck,
 	Waves,
 	Wifi,
 	Wind,
 } from "lucide-react";
 import React from "react";
-import { IMAGES } from "../constants/config";
+import {
+	DATA_CONTROLLER,
+	getPrivacyPolicyPath,
+	IMAGE_DIMENSIONS,
+	IMAGES,
+} from "../constants/config";
 import { THEMES } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
@@ -25,6 +35,7 @@ export const AboutAmenities = ({
 }) => {
 	const t = dict[lang];
 	const theme = THEMES[propertyId];
+	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
 
 	return (
 		<section className="py-24 px-6 max-w-6xl mx-auto">
@@ -34,21 +45,27 @@ export const AboutAmenities = ({
 						{t.aboutTitle}
 					</h2>
 					<div className={`prose prose-lg ${theme.textColor} mb-8`}>
-						<p className="mb-4 leading-relaxed">{t.aboutText1}</p>
-						<p className="leading-relaxed">{t.aboutText2}</p>
+						<p className="mb-4 leading-relaxed">{t[theme.aboutText1Key]}</p>
+						<p className="leading-relaxed">{t[theme.aboutText2Key]}</p>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
 						<img
 							src={`${assetPrefix}${theme.images.bedroom}`}
-							alt={t.aboutBedroomAlt}
+							alt={t[theme.aboutBedroomAltKey]}
+							width={theme.imageDimensions.bedroom.width}
+							height={theme.imageDimensions.bedroom.height}
 							className="rounded-xl shadow-md h-48 w-full object-cover"
 							loading="lazy"
+							decoding="async"
 						/>
 						<img
 							src={`${assetPrefix}${theme.images.pool}`}
-							alt={t.aboutPoolAlt}
+							alt={t[theme.aboutPoolAltKey]}
+							width={theme.imageDimensions.pool.width}
+							height={theme.imageDimensions.pool.height}
 							className="rounded-xl shadow-md h-48 w-full object-cover"
 							loading="lazy"
+							decoding="async"
 						/>
 					</div>
 				</div>
@@ -90,24 +107,90 @@ export const AboutAmenities = ({
 					className={`w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden flex-shrink-0 border-4 ${theme.aboutHostBorder}`}
 				>
 					<img
-						src={`${assetPrefix}${IMAGES["general"].host}`}
-						alt={t.hostName}
+						src={`${assetPrefix}${IMAGES.general.host}`}
+						alt={t.hostImgAlt}
+						width={IMAGE_DIMENSIONS.host.width}
+						height={IMAGE_DIMENSIONS.host.height}
 						className="w-full h-full object-cover"
 						loading="lazy"
+						decoding="async"
 					/>
 				</div>
 				<div>
-					<h2
+					<p
 						className={`text-sm font-bold uppercase tracking-widest ${theme.aboutHostAccent} mb-2`}
 					>
 						{t.hostTitle}
-					</h2>
-					<h3 className={`text-3xl font-bold mb-4 ${theme.aboutHostName}`}>
+					</p>
+					<h2 className={`text-3xl font-bold mb-4 ${theme.aboutHostName}`}>
 						{t.hostName}
-					</h3>
+					</h2>
 					<p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
 						{t.hostBio}
 					</p>
+					<div className={theme.aboutHostMetaRow}>
+						<span className={theme.aboutHostControllerBadge}>
+							<FileCheck className={theme.aboutHostIconSm} aria-hidden="true" />
+							<span>
+								{t.hostDataControllerLabel}: {DATA_CONTROLLER.name}
+							</span>
+						</span>
+						<span className={theme.aboutHostRntBadge}>
+							<ShieldCheck
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>
+								{t.rntTitle}: {theme.rntNumber}
+							</span>
+						</span>
+					</div>
+					<div className={theme.aboutHostComplianceRow}>
+						<span className={theme.aboutHostComplianceBadge}>
+							<Scale className={theme.aboutHostIconSm} aria-hidden="true" />
+							<span>{t.complianceLaw1581Badge}</span>
+						</span>
+						<span className={theme.aboutHostComplianceBadge}>
+							<ShieldCheck
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>{t.complianceLaw2068Badge}</span>
+						</span>
+						<span className={theme.aboutHostComplianceBadge}>
+							<ShieldCheck
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>{t.complianceLaw679Badge}</span>
+						</span>
+						<a href={privacyHref} className={theme.aboutHostComplianceLink}>
+							{t.footerPrivacyLink}
+						</a>
+					</div>
+					<div className={theme.aboutHostActionsRow}>
+						<a
+							href={DATA_CONTROLLER.whatsappHref}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={theme.aboutHostWhatsAppBtn}
+						>
+							<MessageCircle
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>
+								{t.homeCtaWhatsApp} ({DATA_CONTROLLER.phone})
+							</span>
+						</a>
+						<a
+							href={`mailto:${DATA_CONTROLLER.email}`}
+							className={theme.aboutHostEmailBtn}
+						>
+							<Mail className={theme.aboutHostIconSm} aria-hidden="true" />
+							<span>{DATA_CONTROLLER.email}</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</section>

@@ -1,6 +1,6 @@
 import { Waves, Wifi } from "lucide-react";
 import React from "react";
-import { IMAGES } from "../constants/config";
+import { IMAGE_DIMENSIONS, IMAGES } from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
 
@@ -33,7 +33,7 @@ export const NomadSection = ({
 								<Wifi className="w-6 h-6 text-blue-400" />
 							</div>
 							<div>
-								<h4 className="font-bold text-lg">{t.amWifi}</h4>
+								<h3 className="font-bold text-lg">{t.amWifi}</h3>
 								<p className="text-slate-400 text-sm">{t.nomadWifiDesc}</p>
 							</div>
 						</li>
@@ -42,7 +42,7 @@ export const NomadSection = ({
 								<Waves className="w-6 h-6 text-teal-400" />
 							</div>
 							<div>
-								<h4 className="font-bold text-lg">{t.amOcean}</h4>
+								<h3 className="font-bold text-lg">{t.amOcean}</h3>
 								<p className="text-slate-400 text-sm">{t.nomadOceanDesc}</p>
 							</div>
 						</li>
@@ -52,6 +52,10 @@ export const NomadSection = ({
 					<img
 						src={`${assetPrefix}${IMAGES["1707"].nomad}`}
 						alt={t.nomadImgAlt}
+						width={IMAGE_DIMENSIONS["1707"].nomad.width}
+						height={IMAGE_DIMENSIONS["1707"].nomad.height}
+						loading="lazy"
+						decoding="async"
 						className="rounded-2xl shadow-2xl object-cover h-[400px] w-full border border-slate-700"
 					/>
 					<div className="absolute -bottom-6 -left-6 bg-white text-slate-800 p-4 rounded-2xl shadow-2xl flex items-center space-x-4 border border-slate-100">

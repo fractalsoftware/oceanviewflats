@@ -1,13 +1,11 @@
 export const dict = {
 	en: {
-		seoHomeTitle:
-			"Vacation Rentals Santa Marta | Book Direct & Save | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Stays | OceanViewFlats",
 		seoHomeDescription:
-			"Book direct beachfront vacation rentals in Playa Salguero, Santa Marta. Save up to 20% on booking fees. Enjoy 900 Mbps Wi-Fi, pool, and stunning sunsets.",
-		seoTitle:
-			"Oceanview Flat 1707 | Playa Salguero, Santa Marta Vacation Rental",
+			"Direct Reservations at beachfront Properties in Playa Salguero, Santa Marta. Save up to 20% with 0% OTA fees, 900 Mbps Wi-Fi, pool, and Caribbean sunsets.",
+		seoTitle: "Playa Salguero, Santa Marta | OceanViewFlats 1707",
 		seoDescription:
-			"Book your beachfront stay at Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfect for digital nomads, featuring high-speed Wi-Fi, pool, and stunning Caribbean sea sunsets. Book your direct stay now.",
+			"Reserve Property 1707 in Playa Salguero, Santa Marta. 17th-floor oceanfront stay for remote work and families with 900 Mbps Wi-Fi, pool, and direct rates.",
 		navBook: "Book with us",
 		navBookDirect: "Book Direct",
 		heroTitle: "Oceanview Flat 1707",
@@ -23,9 +21,9 @@ export const dict = {
 		nomadBadgeSub: "Perfect for video calls",
 		aboutTitle: "About the Space",
 		aboutText1:
-			"Enjoy our modern 17th-floor apartment with a spectacular ocean view and incredible sunsets! Located in an exclusive and quiet area, just 1 block from the beach.",
+			"Enjoy our modern 17th-floor beachfront apartment in Edificio Salguero Sunset with panoramic Caribbean Sea sunsets, 900 Mbps fiber Wi-Fi, and a dedicated workspace—just 1 block from Playa Salguero beach.",
 		aboutText2:
-			"Features 2 bedrooms, 2 bathrooms, a comfortable sofa bed, private terrace, fully equipped kitchen, high-speed Wi-Fi, in-unit laundry, and free parking.",
+			"Sleeps up to 6 Guests across 2 bedrooms and 4 beds (Master Bedroom with 1 Queen bed, Guest Bedroom with 2 Twin beds, and Living Room with 1 Pull-out Sofa Bed), plus 2 bathrooms, private ocean-view terrace, fully equipped kitchen, in-unit laundry, smart-lock self check-in, and Assigned Parking Space Bay 95.",
 		amenitiesTitle: "Premium Amenities",
 		amWifi: "High-Speed Wi-Fi",
 		amKitchen: "Fully Equipped Kitchen",
@@ -37,7 +35,7 @@ export const dict = {
 		amOcean: "Stunning Ocean View",
 		calendarTitle: "Select Dates & Book",
 		calendarSubtitle:
-			"Choose your travel dates below. You will be securely redirected to Airbnb to check live availability and finalize your booking.",
+			"Select your Check-in Date and Check-out Date below to calculate a live authoritative Quote in Colombian Pesos (COP) with 0% OTA commission. Complete your Direct Reservation online via Card, PSE, or Cash Voucher (Mercado Pago), or use Airbnb as an optional external channel.",
 		checkIn: "Check-in",
 		checkOut: "Check-out",
 		addDate: "Add date",
@@ -52,7 +50,8 @@ export const dict = {
 		nomadOceanDesc: "Find inspiration looking out at the Caribbean sea.",
 		nomadImgAlt: "Digital Nomad Workspace",
 		romanticImgAlt: "Romantic Sunset Terrace",
-		heroImgAlt: "Balcony Ocean View",
+		heroImgAlt:
+			"Panoramic Caribbean Sea sunset view from the OceanViewFlats beachfront balcony in Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Bedroom",
@@ -74,9 +73,9 @@ export const dict = {
 		amRomanticDesc:
 			"Sip wine on your private terrace while watching the sun dip into the Caribbean Sea.",
 		about1606Text1:
-			"Experience our stunning 16th-floor retreat. Enjoy breathtaking ocean views, warm breezes, and a peaceful atmosphere just steps from the beach.",
+			"Experience our serene 16th-floor beachfront retreat in Edificio Salguero Sunset, designed for couples and families with sweeping Caribbean Sea sunsets, 900 Mbps fiber Wi-Fi, and a peaceful atmosphere just steps from Playa Salguero beach.",
 		about1606Text2:
-			"Features 2 bedrooms, 2 bathrooms, a private terrace, a fully equipped kitchen, high-speed Wi-Fi, and a cozy atmosphere perfect for relaxation.",
+			"Sleeps up to 6 Guests across 2 bedrooms and 3 beds (Master Bedroom with 1 Queen bed, Guest Bedroom with 1 Double bed, and Living Room with 1 Pull-out Sofa Bed), plus 2 bathrooms, private sunset terrace, fully equipped kitchen, in-unit laundry, smart-lock self check-in, and Assigned Parking Space Bay 87.",
 		reviewsTitle: "Guest Experiences",
 		review1Text:
 			'"The place is ideal for relaxation and family time, exactly as shown in the photos. The host\'s service is excellent. Highly recommended."',
@@ -87,9 +86,9 @@ export const dict = {
 		review1707Text:
 			'"A very nice apartment with an excellent view, beautiful sunsets, highly complete building facilities, and very good service from everyone. Recommended."',
 		review1707Author: "Karol Ximena",
-		seo1606Title: "Oceanview Flat 1606 | Romantic & Family Beachfront Rental",
+		seo1606Title: "Playa Salguero, Santa Marta | OceanViewFlats 1606",
 		seo1606Description:
-			"Book your serene beachfront stay at Oceanview Flat 1606 in Playa Salguero. Perfect for couples and families, featuring stunning Caribbean sea sunsets and modern luxury. Book your direct stay now.",
+			"Reserve Property 1606 in Playa Salguero, Santa Marta. 16th-floor beachfront stay for couples and families with Caribbean sunsets, pool, and 900 Mbps Wi-Fi.",
 		homeWelcome: "Welcome to OceanViewFlats",
 		homeSubtitle: "Discover your perfect beachfront stay in Santa Marta.",
 		homeHeroValueProp:
@@ -188,9 +187,9 @@ export const dict = {
 		contactDateError: "Check-out date must be after check-in date.",
 		contactOptional: "Optional",
 		contactRequired: "Required",
-		seoContactTitle: "Contact Us | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contact OceanViewFlats | Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Get in touch with us for inquiries, bookings, or questions about Oceanview Flats 1707 and 1606 in Playa Salguero, Santa Marta.",
+			"Send an Inquiry to OceanViewFlats in Playa Salguero, Santa Marta for Direct Reservations or questions about Properties 1707 and 1606.",
 		contactAddressLabel: "Address",
 		contactEmailLabel: "Email",
 		contactPhoneLabel: "Phone Support",
@@ -235,7 +234,7 @@ export const dict = {
 			"Romantic master bedroom with a plush bed and warm lighting.",
 		gallery1606_8: "Airy master suite detailed with premium linens.",
 		gallery1606_9:
-			"Warm secondary bedroom with double beds – ideal for families.",
+			"Warm secondary bedroom with 1 comfortable double bed – ideal for families.",
 		gallery1606_10: "Quiet guest suite sanctuary offering a peaceful rest.",
 		gallery1606_11: "Pristine master bathroom featuring elegant vanities.",
 		gallery1606_12: "Newly refurbished, sparkling clean shower space.",
@@ -500,10 +499,9 @@ export const dict = {
 			"I declare under penalty of perjury that I hold parental authority (patria potestad) or express written legal guardianship for every minor under 18 registered in this stay, in compliance with Colombian Law 1581 of 2012 (Art. 7) and Law 679 of 2001 / Law 1336 of 2009 (ESCNNA prevention).",
 		registryErrMinorConsent:
 			"Parental authority or legal guardian attestation is required when registering minors under 18.",
-		privacySeoTitle:
-			"Personal Data Processing Policy (Ley 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Data Processing Policy | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Official Personal Data Processing Policy (Política de Tratamiento de Datos Personales - PTDP) of OceanViewFlats under Colombian Statutory Law 1581 of 2012 and Decree 1377 of 2013.",
+			"Official Data Processing Policy (PTDP) of OceanViewFlats in Playa Salguero, Santa Marta under Colombian Law 1581 of 2012 and Decree 1377 of 2013.",
 		privacyBadge: "Colombian Statutory Law 1581 of 2012 • Habeas Data",
 		privacyTitle: "Personal Data Processing Policy",
 		privacySubtitle:
@@ -588,16 +586,186 @@ export const dict = {
 			"Smart-lock door codes are generated using cryptographically random digits and never encode personal identification numbers.",
 		privacyRetentionDesc:
 			"In accordance with the Principle of Temporality (Decree 1377 Art. 11), personal identification and guest registry records of concluded stays are automatically redacted 90 days after check-out (or immediately upon an approved ARCO suppression claim), while preserving anonymized financial and occupancy aggregates required for tax compliance.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"OceanViewFlats beachfront sunset view in Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 17th-floor beachfront room overlooking the Caribbean Sea in Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 16th-floor beachfront room overlooking the Caribbean Sea in Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Edificio Salguero Sunset beachfront entrance for OceanViewFlats in Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats at Edificio Salguero Sunset in Playa Salguero, Santa Marta — Data Processing Policy",
+		ogEntranceImageAlt:
+			"Edificio Salguero Sunset main beachfront entrance in Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Compare Our Beachfront Properties",
+		homeCompareSubtitle:
+			"Compare Property 1707 and Property 1606 side by side across floor level, RNT registration, Settlement Currency (COP) Nightly Rates, sleeping layout, and building policies.",
+		homeCompareCaption:
+			"Side-by-side specification comparison of Oceanview Flat 1707 (17th Floor) and Oceanview Flat 1606 (16th Floor) at Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Specification",
+		homeCompareRowFloor: "Floor Level",
+		homeCompare1707Floor: "17th Floor",
+		homeCompare1606Floor: "16th Floor",
+		homeCompareRowRnt: "National Tourism Registry (RNT)",
+		homeCompareRowIdealFor: "Ideal Guest Profile",
+		homeCompare1707IdealFor: "Remote workers, groups & families",
+		homeCompare1606IdealFor: "Couples & families",
+		homeCompareRowRate: "Starting Nightly Rate (COP)",
+		homeCompare1707Rate: "From 450,000 COP / night",
+		homeCompare1606Rate: "From 350,000 COP / night (peak 550,000 COP)",
+		homeCompareRowMinStay: "Minimum Stay",
+		homeCompare1707MinStay: "2 nights",
+		homeCompare1606MinStay: "2 nights (4 nights peak: Dec 15 – Jan 15)",
+		homeCompareRowBeds: "Bedrooms & Beds",
+		homeCompare1707Beds:
+			"2 Bedrooms • 4 Beds (1 Queen, 2 Twins, 1 Pull-out Sofa Bed)",
+		homeCompare1606Beds:
+			"2 Bedrooms • 3 Beds (1 Queen, 1 Double, 1 Pull-out Sofa Bed)",
+		homeCompareRowOccupancy: "Maximum Occupancy",
+		homeCompareRowWifi: "Fiber Wi-Fi",
+		homeCompareWifiValue: "Up to 900 Mbps Fiber",
+		homeCompareRowParking: "Assigned Parking Space",
+		homeCompare1707Parking: "Included — Bay 95",
+		homeCompare1606Parking: "Included — Bay 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue: "15:00 / 11:00 (Smart-lock self check-in)",
+		homeCompareRowBuildingRegistrationFee: "Building Registration Fee",
+		homeCompareBuildingRegistrationFeeValue:
+			"20,000 COP per person (payable at reception)",
+		homeCompareRowPoolMaintenance: "Pool Maintenance Schedule",
+		homeComparePoolMaintenanceValue: "Closed Tuesdays for maintenance",
+		homeLocationTitle: "Location & Getting Around Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Both beachfront Properties are located in Edificio Salguero Sunset (Calle 26 # 2-80) in quiet, residential Playa Salguero—one block from the Caribbean shoreline with direct road access to Santa Marta's airport, coastal promenade, historic center, and Tayrona National Park.",
+		homeLocBeachName: "Playa Salguero Beach",
+		homeLocBeachProximity: "1 block • ~2 min walk (~150 m)",
+		homeLocBeachDesc:
+			"Step outside Edificio Salguero Sunset for calm, less-crowded beachfront walks, swimming, and unobstructed Caribbean sunsets.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min by car (~3 km)",
+		homeLocRodaderoDesc:
+			"Quick coastal ride to El Rodadero's beachfront promenade, supermarkets, pharmacies, restaurants, and boat departures to Playa Blanca.",
+		homeLocAirportName: "Simón Bolívar International Airport (SMR)",
+		homeLocAirportProximity: "~15–20 min by car (~10 km)",
+		homeLocAirportDesc:
+			"Direct south-corridor airport transfers by taxi or ride-hailing without crossing downtown Santa Marta traffic.",
+		homeLocHistoricName:
+			"Santa Marta Historic Center (Centro Histórico & Marina)",
+		homeLocHistoricProximity: "~20–25 min by car (~8 km)",
+		homeLocHistoricDesc:
+			"Easy ride north to Parque de los Novios, Santa Marta International Marina, colonial plazas, cafés, and Caribbean dining.",
+		homeLocTayronaName: "Tayrona National Park (El Zaino Entrance)",
+		homeLocTayronaProximity: "~50–60 min by car (~40 km)",
+		homeLocTayronaDesc:
+			"Straightforward coastal highway route to the El Zaino main entrance for day hikes to Cabo San Juan and protected rainforest bays.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Data Controller & Official Host",
+		complianceLaw1581Badge: "Law 1581 of 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Law 2068 of 2020 (Tourism / TRA-SIRE)",
+		complianceLaw679Badge: "Law 679 of 2001 (ESCNNA Prevention)",
+		reviewVerifiedGuest: "Verified Guest",
+		reviewViewOnAirbnb: "Verify reviews on Airbnb",
+		faq1707Title: "Oceanview Flat 1707 — Frequently Asked Questions",
+		faq1707Subtitle:
+			"Everything you need to know about remote work, sleeping arrangements, Direct Reservations, check-in, and building rules on the 17th floor.",
+		faq1707Q1:
+			"Is Oceanview Flat 1707 equipped for remote work and digital nomads?",
+		faq1707A1:
+			"Yes. Located on the 17th floor of Edificio Salguero Sunset (RNT #268781), Property 1707 features reliable 900 Mbps fiber-optic Wi-Fi, an ergonomic laptop-friendly workspace, and a quiet private ocean-view balcony ideal for video calls and extended remote stays.",
+		faq1707Q2:
+			"What are the sleeping arrangements, bed count, and parking for Property 1707?",
+		faq1707A2:
+			"Property 1707 has 2 Bedrooms and 4 Beds sleeping up to 6 Guests: a Master Bedroom with 1 Queen bed, a Guest Bedroom with 2 Twin/Single beds, and a Living Room with 1 Pull-out Sofa Bed, plus 2 full bathrooms and complimentary Assigned Parking Space Bay 95 inside the building.",
+		faq1707Q3:
+			"What are the Nightly Rate, minimum stay, and cancellation policy for a Direct Reservation?",
+		faq1707A3:
+			"The baseline Nightly Rate is 450,000 COP per night with a 2-night minimum stay, plus a flat 100,000 COP Cleaning Fee. Direct Reservations settle in Colombian Pesos (COP) with 0% OTA commission via Card, PSE, or Cash Voucher (Mercado Pago). Cancellation policy: 100% refund 14 or more days before Check-in Date, 50% refund 7–13 days prior, and non-refundable within 7 days.",
+		faq1707Q4: "What are the Check-in and Check-out times at Property 1707?",
+		faq1707A4:
+			"Check-in begins at 15:00 (3:00 PM) and Check-out is by 11:00 (11:00 AM). Smart-lock self check-in allows seamless arrival once your pre-arrival Guest Registry is verified.",
+		faq1707Q5:
+			"How do the Guest Registry and 0XXXXXX# Access Credential unlock work?",
+		faq1707A5:
+			"Before arrival, the Primary Guest submits the mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors). Submission immediately unlocks your digital Guest Guide, Assigned Parking Space Bay 95 clearance, and your temporary cryptographically random 0XXXXXX# smart-lock Access Credential.",
+		faq1707Q6:
+			"Is there a Building Registration Fee or pool closure days at Edificio Salguero Sunset?",
+		faq1707A6:
+			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
+		faq1606Title: "Oceanview Flat 1606 — Frequently Asked Questions",
+		faq1606Subtitle:
+			"Everything you need to know about our 16th-floor romantic and family beachfront retreat, Direct Reservations, check-in, and building rules.",
+		faq1606Q1:
+			"What makes Oceanview Flat 1606 ideal for couples, families, and remote stays?",
+		faq1606A1:
+			"Located on the 16th floor of Edificio Salguero Sunset (RNT #270413) one block from Playa Salguero beach, Property 1606 pairs a warm romantic and family-friendly coastal design with a private Caribbean sunset terrace and 900 Mbps fiber-optic Wi-Fi.",
+		faq1606Q2:
+			"What are the sleeping arrangements, bed count, and parking for Property 1606?",
+		faq1606A2:
+			"Property 1606 has 2 Bedrooms and 3 Beds sleeping up to 6 Guests: a Master Bedroom with 1 Queen bed, a Guest Bedroom with 1 Double bed, and a Living Room with 1 Pull-out Sofa Bed, plus 2 full bathrooms and complimentary Assigned Parking Space Bay 87 inside the building.",
+		faq1606Q3:
+			"What are the Nightly Rate, minimum stay, and cancellation policy for a Direct Reservation?",
+		faq1606A3:
+			"The baseline Nightly Rate is 350,000 COP per night with a 2-night minimum stay (peak season Dec 15–Jan 15 is 550,000 COP per night with a 4-night minimum stay), plus a flat 80,000 COP Cleaning Fee. Direct Reservations settle in Colombian Pesos (COP) with 0% OTA commission via Card, PSE, or Cash Voucher (Mercado Pago). Cancellation policy: 100% refund 14 or more days before Check-in Date, 50% refund 7–13 days prior, and non-refundable within 7 days.",
+		faq1606Q4: "What are the Check-in and Check-out times at Property 1606?",
+		faq1606A4:
+			"Check-in begins at 15:00 (3:00 PM) and Check-out is by 11:00 (11:00 AM). Smart-lock self check-in allows seamless arrival once your pre-arrival Guest Registry is verified.",
+		faq1606Q5:
+			"How do the Guest Registry and 0XXXXXX# Access Credential unlock work?",
+		faq1606A5:
+			"Before arrival, the Primary Guest submits the mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors). Submission immediately unlocks your digital Guest Guide, Assigned Parking Space Bay 87 clearance, and your temporary cryptographically random 0XXXXXX# smart-lock Access Credential.",
+		faq1606Q6:
+			"Is there a Building Registration Fee or pool closure days at Edificio Salguero Sunset?",
+		faq1606A6:
+			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Main navigation",
+		breadcrumbLabel: "Breadcrumb",
+		breadcrumbHome: "Home",
+		hero1707ImgAlt:
+			"Property 1707 17th-floor beachfront suite and Caribbean Sea balcony view at Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Property 1606 16th-floor beachfront suite and warm sunset ocean view at Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Bright 17th-floor open living room and dining space in Property 1707 at Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Beachfront swimming pool and sun deck at Edificio Salguero Sunset for Property 1707 guests in Playa Salguero",
+		about1606LivingAlt:
+			"Sunlit 16th-floor coastal living area and family lounge in Property 1606 at Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Oceanfront swimming pool and palm-lined terrace at Edificio Salguero Sunset for Property 1606 guests in Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, host and Data Controller of OceanViewFlats in Santa Marta",
+		mainEntranceImgAlt:
+			"Beachfront main entrance and lobby of Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		breadcrumbPrivacy: "Data Processing Policy",
+		schemaWebSiteDescription:
+			"Direct beachfront short-term rental Properties in Playa Salguero, Santa Marta, Colombia with authoritative COP Quotes and 0% OTA commission.",
+		schemaLodgingDescription:
+			"Direct beachfront vacation rental Properties (1707 & 1606) at Edificio Salguero Sunset in Playa Salguero, Santa Marta, Colombia with 900 Mbps fiber Wi-Fi, Assigned Parking Spaces, and Settlement Currency (COP) checkout.",
+		schemaContactPageName: "Contact OceanViewFlats",
+		schemaPaymentAccepted:
+			"Credit Card, Debit Card, PSE Bank Transfer, Cash Voucher (Efecty via Mercado Pago)",
+		schemaMasterBedroom: "Master Bedroom",
+		schemaGuestBedroom: "Guest Bedroom",
+		schemaLivingRoom: "Living Room",
+		schemaAmenityParking1707: "Assigned Parking Space — Bay 95",
+		schemaAmenityParking1606: "Assigned Parking Space — Bay 87",
+		schemaAmenityLaundry: "In-Unit Laundry (Washer & Dryer)",
+		schemaAmenityWorkspace: "Dedicated Laptop-Friendly Workspace",
 	},
 	es: {
-		seoHomeTitle:
-			"Alquileres Vacacionales Santa Marta | Reserva Directa | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
 		seoHomeDescription:
-			"Alquila apartamentos frente a la playa en Playa Salguero, Santa Marta sin comisiones de intermediarios. Ahorra hasta un 20%. Wi-Fi de 900 Mbps, piscina y atardeceres.",
-		seoTitle:
-			"Apartamento Vista al Mar 1707 | Alquiler Vacacional en Playa Salguero",
+			"Reserva directa frente al mar en Playa Salguero, Santa Marta sin comisiones OTA. Ahorra hasta 20% con Wi-Fi 900 Mbps, piscina y atardeceres del Caribe.",
+		seoTitle: "Vista al Mar 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Reserva tu estadía frente a la playa en Oceanview Flat 1707 en Playa Salguero, Santa Marta. Ideal para nómadas digitales, con Wi-Fi de alta velocidad, piscina e increíbles atardeceres del Caribe. Reserva tu estancia directa ahora.",
+			"Reserva directa en OceanViewFlats 1707, Playa Salguero, Santa Marta. Piso 17 frente al mar ideal para trabajo remoto y familias: Wi-Fi 900 Mbps y piscina.",
 		navBook: "Reservar con nosotros",
 		navBookDirect: "Reservar Directo",
 		heroTitle: "Apartamento Vista al Mar 1707",
@@ -613,9 +781,9 @@ export const dict = {
 		nomadBadgeSub: "Ideal para videollamadas",
 		aboutTitle: "Sobre el Espacio",
 		aboutText1:
-			"¡Disfruta de nuestro moderno apartamento en el piso 17 con una vista espectacular al mar e increíbles atardeceres! En una zona exclusiva, a solo 1 cuadra de la playa.",
+			"Disfruta de nuestro moderno apartamento frente al mar en el piso 17 del Edificio Salguero Sunset, con vistas panorámicas al mar Caribe, fibra óptica de 900 Mbps y espacio de trabajo ergonómico a solo 1 cuadra de Playa Salguero.",
 		aboutText2:
-			"Cuenta con 2 habitaciones, 2 baños, sofá cama, terraza privada, cocina totalmente equipada, Wi-Fi, lavandería en el apartamento y parqueadero gratis.",
+			"Capacidad para hasta 6 Huéspedes en 2 habitaciones y 4 camas (Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 2 camas sencillas y Sala con 1 sofá cama extraíble), además de 2 baños, terraza privada con vista al mar, cocina totalmente equipada, lavandería interna, llegada autónoma con cerradura inteligente y Espacio de Parqueadero Asignado Bahía 95.",
 		amenitiesTitle: "Comodidades Principales",
 		amWifi: "Wi-Fi Alta Velocidad",
 		amKitchen: "Cocina Equipada",
@@ -627,7 +795,7 @@ export const dict = {
 		amOcean: "Vista Espectacular al Mar",
 		calendarTitle: "Selecciona Fechas y Reserva",
 		calendarSubtitle:
-			"Elige tus fechas de viaje. Serás redirigido de forma segura a Airbnb para verificar disponibilidad y completar tu reserva.",
+			"Selecciona tu Fecha de Llegada y Fecha de Salida abajo para calcular una Cotización oficial en vivo en Pesos Colombianos (COP) con 0% de comisión OTA. Completa tu Reserva Directa en línea con Tarjeta, PSE o Cupón en Efectivo (Mercado Pago), o usa Airbnb como canal externo opcional.",
 		checkIn: "Llegada",
 		checkOut: "Salida",
 		addDate: "Agregar fecha",
@@ -642,7 +810,8 @@ export const dict = {
 		nomadOceanDesc: "Encuentra inspiración mirando al mar Caribe.",
 		nomadImgAlt: "Espacio de trabajo para Nómadas Digitales",
 		romanticImgAlt: "Terraza Privada al Atardecer",
-		heroImgAlt: "Vista al mar desde el balcón",
+		heroImgAlt:
+			"Vista panorámica al atardecer del mar Caribe desde el balcón frente a la playa de OceanViewFlats en Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Habitación",
@@ -664,9 +833,9 @@ export const dict = {
 		amRomanticDesc:
 			"Disfruta de una copa de vino en tu terraza privada mientras contemplas el sol sumergirse en el Mar Caribe.",
 		about1606Text1:
-			"Vive la experiencia de nuestro impresionante refugio en el piso 16. Disfruta de vistas espectaculares al mar, brisas cálidas y un ambiente tranquilo a pocos pasos de la playa.",
+			"Vive la experiencia de nuestro sereno refugio frente al mar en el piso 16 del Edificio Salguero Sunset, diseñado para parejas y familias con atardeceres sobre el mar Caribe, fibra óptica de 900 Mbps y un ambiente tranquilo a pocos pasos de Playa Salguero.",
 		about1606Text2:
-			"Cuenta con 2 habitaciones, 2 baños, terraza privada, cocina totalmente equipada, Wi-Fi de alta velocidad y un ambiente acogedor perfecto para el relax.",
+			"Capacidad para hasta 6 Huéspedes en 2 habitaciones y 3 camas (Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 1 cama doble y Sala con 1 sofá cama extraíble), además de 2 baños, terraza privada al atardecer, cocina totalmente equipada, lavandería interna, llegada autónoma con cerradura inteligente y Espacio de Parqueadero Asignado Bahía 87.",
 		reviewsTitle: "Experiencias de los Huéspedes",
 		review1Text:
 			'"El lugar es ideal para el descanso y compartir en familia, tal cual como se ve en las fotos. La atención del anfitrión es excelente. Súper recomendado."',
@@ -677,10 +846,9 @@ export const dict = {
 		review1707Text:
 			'"Un apartamento muy lindo con una excelente vista, atardeceres hermosos, el edificio muy completo y la atención de todos muy buena. Recomendado."',
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Apartamento Vista al Mar 1606 | Alquiler de Playa Romántico y Familiar",
+		seo1606Title: "Vista al Mar 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Reserva tu estancia serena frente al mar en Oceanview Flat 1606 en Playa Salguero. Perfecto para parejas y familias, con impresionantes atardeceres caribeños y lujo moderno. Reserva tu estancia directa ahora.",
+			"Reserva directa en OceanViewFlats 1606, Playa Salguero, Santa Marta. Piso 16 frente al mar para parejas y familias con Wi-Fi 900 Mbps, piscina y atardeceres.",
 		homeWelcome: "Bienvenido a OceanViewFlats",
 		homeSubtitle: "Descubre tu estancia perfecta frente al mar en Santa Marta.",
 		homeHeroValueProp:
@@ -781,9 +949,9 @@ export const dict = {
 		contactDateError: "La fecha de salida debe ser posterior a la de entrada.",
 		contactOptional: "Opcional",
 		contactRequired: "Requerido",
-		seoContactTitle: "Contáctenos | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contacto | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Póngase en contacto con nosotros para consultas, reservas o preguntas sobre los apartamentos Oceanview 1707 y 1606 en Playa Salguero, Santa Marta.",
+			"Contáctenos en Playa Salguero, Santa Marta para consultas o reservas directas en nuestras propiedades OceanViewFlats 1707 y 1606 frente al mar.",
 		contactAddressLabel: "Dirección",
 		contactEmailLabel: "Correo Electrónico",
 		contactPhoneLabel: "Soporte Telefónico",
@@ -841,7 +1009,7 @@ export const dict = {
 		gallery1606_8:
 			"Habitación principal amplia y ventilada con sábanas premium.",
 		gallery1606_9:
-			"Cálido dormitorio secundario con camas dobles, ideal para familias.",
+			"Cálido dormitorio secundario con 1 cómoda cama doble, ideal para familias.",
 		gallery1606_10:
 			"Santuario tranquilo en la habitación de huéspedes para un descanso pacífico.",
 		gallery1606_11: "Baño principal impecable con elegantes tocadores.",
@@ -1109,9 +1277,9 @@ export const dict = {
 		registryErrMinorConsent:
 			"Se requiere la declaración de patria potestad o representación legal cuando se registran menores de 18 años.",
 		privacySeoTitle:
-			"Política de Tratamiento de Datos Personales (Ley 1581) | OceanViewFlats Santa Marta",
+			"Política de Datos (Ley 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Política oficial de Tratamiento de Datos Personales (PTDP) de OceanViewFlats en cumplimiento de la Ley Estatutaria 1581 de 2012 y el Decreto 1377 de 2013 en Colombia.",
+			"Política oficial de Tratamiento de Datos Personales (PTDP) de OceanViewFlats en Santa Marta bajo la Ley 1581 de 2012 y el Decreto 1377 de 2013.",
 		privacyBadge: "Ley Estatutaria 1581 de 2012 • Habeas Data Colombia",
 		privacyTitle: "Política de Tratamiento de Datos Personales",
 		privacySubtitle:
@@ -1195,16 +1363,189 @@ export const dict = {
 			"Los códigos PIN de cerraduras inteligentes se generan de forma criptográficamente aleatoria y nunca contienen dígitos del documento de identidad del huésped.",
 		privacyRetentionDesc:
 			"En cumplimiento del Principio de Temporalidad (Decreto 1377 Art. 11), los datos de identificación personal de las reservas concluidas son objeto de supresión y anonimización automática a los 90 días posteriores a la fecha de check-out (o de inmediato ante un reclamo de supresión procedente), conservando únicamente los registros contables y financieros agregados exigidos por la ley.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Vista al atardecer frente al mar de OceanViewFlats en Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 en el piso 17 con vista al mar Caribe en Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 en el piso 16 con vista al mar Caribe en Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Entrada frente al mar del Edificio Salguero Sunset para OceanViewFlats en Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats en el Edificio Salguero Sunset, Playa Salguero, Santa Marta — Política de Tratamiento de Datos",
+		ogEntranceImageAlt:
+			"Entrada principal frente a la playa del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Compara Nuestros Apartamentos Frente al Mar",
+		homeCompareSubtitle:
+			"Compara el Apartamento 1707 y el Apartamento 1606 lado a lado en piso, registro RNT, tarifas por noche en pesos colombianos (COP), distribución de camas y normas del edificio.",
+		homeCompareCaption:
+			"Comparación de especificaciones entre el Apartamento Vista al Mar 1707 (Piso 17) y el Apartamento Vista al Mar 1606 (Piso 16) en Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Especificación",
+		homeCompareRowFloor: "Piso",
+		homeCompare1707Floor: "Piso 17",
+		homeCompare1606Floor: "Piso 16",
+		homeCompareRowRnt: "Registro Nacional de Turismo (RNT)",
+		homeCompareRowIdealFor: "Perfil Ideal de Huésped",
+		homeCompare1707IdealFor: "Trabajadores remotos, grupos y familias",
+		homeCompare1606IdealFor: "Parejas y familias",
+		homeCompareRowRate: "Tarifa Base por Noche (COP)",
+		homeCompare1707Rate: "Desde 450.000 COP / noche",
+		homeCompare1606Rate:
+			"Desde 350.000 COP / noche (temporada alta 550.000 COP)",
+		homeCompareRowMinStay: "Estadía Mínima",
+		homeCompare1707MinStay: "2 noches",
+		homeCompare1606MinStay: "2 noches (4 noches en pico: 15 dic – 15 ene)",
+		homeCompareRowBeds: "Habitaciones y Camas",
+		homeCompare1707Beds:
+			"2 Habitaciones • 4 Camas (1 Queen, 2 Sencillas, 1 Sofá Cama)",
+		homeCompare1606Beds:
+			"2 Habitaciones • 3 Camas (1 Queen, 1 Doble, 1 Sofá Cama)",
+		homeCompareRowOccupancy: "Capacidad Máxima",
+		homeCompareRowWifi: "Wi-Fi Fibra Óptica",
+		homeCompareWifiValue: "Hasta 900 Mbps Fibra Óptica",
+		homeCompareRowParking: "Parqueadero Asignado",
+		homeCompare1707Parking: "Incluido — Bahía 95",
+		homeCompare1606Parking: "Incluido — Bahía 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Ingreso autónomo con cerradura inteligente)",
+		homeCompareRowBuildingRegistrationFee: "Tarifa de Registro del Edificio",
+		homeCompareBuildingRegistrationFeeValue:
+			"20.000 COP por persona (se paga en recepción)",
+		homeCompareRowPoolMaintenance: "Mantenimiento de Piscina",
+		homeComparePoolMaintenanceValue: "Cerrada los martes por mantenimiento",
+		homeLocationTitle: "Ubicación y Cómo Moverse en Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Ambos apartamentos frente al mar están ubicados en el Edificio Salguero Sunset (Calle 26 # 2-80), en la zona residencial y tranquila de Playa Salguero, a una cuadra de la playa y con fácil acceso por carretera al aeropuerto, El Rodadero, el Centro Histórico y el Parque Tayrona.",
+		homeLocBeachName: "Playa Salguero",
+		homeLocBeachProximity: "1 cuadra • ~2 min a pie (~150 m)",
+		homeLocBeachDesc:
+			"Acceso peatonal directo desde el Edificio Salguero Sunset a una playa tranquila, amplia y con atardeceres despejados sobre el mar Caribe.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min en carro (~3 km)",
+		homeLocRodaderoDesc:
+			"Trayecto corto por la costa hacia el malecón de El Rodadero, supermercados, farmacias, restaurantes y salidas en lancha hacia Playa Blanca.",
+		homeLocAirportName: "Aeropuerto Internacional Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 min en carro (~10 km)",
+		homeLocAirportDesc:
+			"Traslado ágil por el corredor sur en taxi o aplicación de transporte sin necesidad de cruzar el tráfico del centro de Santa Marta.",
+		homeLocHistoricName: "Centro Histórico de Santa Marta y Marina",
+		homeLocHistoricProximity: "~20–25 min en carro (~8 km)",
+		homeLocHistoricDesc:
+			"Recorrido sencillo hacia el norte hasta el Parque de los Novios, la Marina Internacional de Santa Marta, plazas coloniales, cafés y restaurantes.",
+		homeLocTayronaName: "Parque Nacional Natural Tayrona (Entrada El Zaino)",
+		homeLocTayronaProximity: "~50–60 min en carro (~40 km)",
+		homeLocTayronaDesc:
+			"Ruta directa por la Troncal del Caribe hasta la entrada principal de El Zaino para caminatas de día completo hacia Cabo San Juan y sus bahías protegidas.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Responsable del Tratamiento y Anfitrión Oficial",
+		complianceLaw1581Badge: "Ley 1581 de 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Ley 2068 de 2020 (Turismo / TRA-SIRE)",
+		complianceLaw679Badge: "Ley 679 de 2001 (Prevención ESCNNA)",
+		reviewVerifiedGuest: "Huésped Verificado",
+		reviewViewOnAirbnb: "Verificar reseñas en el anuncio de Airbnb",
+		faq1707Title: "Apartamento Vista al Mar 1707 — Preguntas Frecuentes",
+		faq1707Subtitle:
+			"Todo lo que necesitas saber sobre trabajo remoto, distribución de camas, Reservas Directas, check-in y normas del edificio en el piso 17.",
+		faq1707Q1:
+			"¿Está equipado el Apartamento 1707 para trabajo remoto y nómadas digitales?",
+		faq1707A1:
+			"Sí. Ubicado en el piso 17 del Edificio Salguero Sunset (RNT #268781), la Propiedad 1707 cuenta con Wi-Fi de fibra óptica de 900 Mbps, espacio de trabajo ergonómico apto para portátil y un balcón privado frente al mar ideal para videollamadas y estancias remotas.",
+		faq1707Q2:
+			"¿Cuál es la distribución de camas y el parqueadero asignado en la Propiedad 1707?",
+		faq1707A2:
+			"La Propiedad 1707 tiene 2 Habitaciones y 4 Camas con capacidad hasta para 6 Huéspedes: Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 2 camas sencillas y Sala con 1 sofá cama extraíble, además de 2 baños completos y Espacio de Parqueadero Asignado Bahía 95 sin costo adicional.",
+		faq1707Q3:
+			"¿Cuál es la tarifa por noche, estancia mínima y política de cancelación para Reserva Directa?",
+		faq1707A3:
+			"La tarifa base por noche es de 450.000 COP con estancia mínima de 2 noches, más una Tarifa de Limpieza fija de 100.000 COP. Las Reservas Directas se liquidan en Pesos Colombianos (COP) con 0% de comisión OTA mediante Tarjeta, PSE o Cupón en Efectivo (Mercado Pago). Política de cancelación: 100% de reembolso con 14 o más días antes de la llegada, 50% entre 7 y 13 días antes, y no reembolsable con menos de 7 días.",
+		faq1707Q4:
+			"¿Cuáles son los horarios de Check-in y Check-out en la Propiedad 1707?",
+		faq1707A4:
+			"El Check-in inicia a las 15:00 (3:00 PM) y el Check-out es hasta las 11:00 (11:00 AM). La llegada autónoma mediante cerradura inteligente permite el acceso sin contratiempos una vez verificado tu Registro de Huéspedes previo.",
+		faq1707Q5:
+			"¿Cómo funcionan el Registro de Huéspedes y la Credencial de Acceso 0XXXXXX#?",
+		faq1707A5:
+			"Antes de llegar, el Huésped Principal completa en línea el Registro de Huéspedes obligatorio (incluyendo la Autorización de Datos Personales Ley 1581 y la Declaración de Representante de Menores Ley 679 cuando viajan menores). Al enviarlo se desbloquean de inmediato la Guía del Huésped digital, la autorización del Parqueadero Bahía 95 y tu Credencial de Acceso temporal 0XXXXXX# generada aleatoriamente.",
+		faq1707Q6:
+			"¿Existen tarifas del edificio o días de cierre de piscina en el Edificio Salguero Sunset?",
+		faq1707A6:
+			"Sí. La recepción del Edificio Salguero Sunset cobra una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera al llegar para manillas de seguridad y áreas comunes. Las piscinas del edificio cierran todos los martes por mantenimiento programado.",
+		faq1606Title: "Apartamento Vista al Mar 1606 — Preguntas Frecuentes",
+		faq1606Subtitle:
+			"Todo lo que necesitas saber sobre nuestro refugio frente al mar en el piso 16 para parejas y familias, Reservas Directas, check-in y normas del edificio.",
+		faq1606Q1:
+			"¿Qué hace al Apartamento 1606 ideal para parejas, familias y estancias tranquilas?",
+		faq1606A1:
+			"Ubicado en el piso 16 del Edificio Salguero Sunset (RNT #270413) a una cuadra de Playa Salguero, la Propiedad 1606 combina un ambiente cálido, romántico y familiar frente al mar con terraza privada al atardecer y Wi-Fi de fibra óptica de 900 Mbps.",
+		faq1606Q2:
+			"¿Cuál es la distribución de camas y el parqueadero asignado en la Propiedad 1606?",
+		faq1606A2:
+			"La Propiedad 1606 tiene 2 Habitaciones y 3 Camas con capacidad hasta para 6 Huéspedes: Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 1 cama doble y Sala con 1 sofá cama extraíble, además de 2 baños completos y Espacio de Parqueadero Asignado Bahía 87 sin costo adicional.",
+		faq1606Q3:
+			"¿Cuál es la tarifa por noche, estancia mínima y política de cancelación para Reserva Directa?",
+		faq1606A3:
+			"La tarifa base por noche es de 350.000 COP con estancia mínima de 2 noches (temporada alta del 15 dic al 15 ene: 550.000 COP por noche con estancia mínima de 4 noches), más una Tarifa de Limpieza fija de 80.000 COP. Las Reservas Directas se liquidan en COP con 0% de comisión OTA vía Tarjeta, PSE o Cupón en Efectivo (Mercado Pago). Cancelación: 100% de reembolso con ≥14 días, 50% entre 7–13 días y no reembolsable con menos de 7 días.",
+		faq1606Q4:
+			"¿Cuáles son los horarios de Check-in y Check-out en la Propiedad 1606?",
+		faq1606A4:
+			"El Check-in inicia a las 15:00 (3:00 PM) y el Check-out es hasta las 11:00 (11:00 AM). La llegada autónoma mediante cerradura inteligente permite el acceso sin contratiempos una vez verificado tu Registro de Huéspedes previo.",
+		faq1606Q5:
+			"¿Cómo funcionan el Registro de Huéspedes y la Credencial de Acceso 0XXXXXX#?",
+		faq1606A5:
+			"Antes de llegar, el Huésped Principal completa en línea el Registro de Huéspedes obligatorio (incluyendo la Autorización de Datos Personales Ley 1581 y la Declaración de Representante de Menores Ley 679 cuando viajan menores). Al enviarlo se desbloquean de inmediato la Guía del Huésped digital, la autorización del Parqueadero Bahía 87 y tu Credencial de Acceso temporal 0XXXXXX# generada aleatoriamente.",
+		faq1606Q6:
+			"¿Existen tarifas del edificio o días de cierre de piscina en el Edificio Salguero Sunset?",
+		faq1606A6:
+			"Sí. La recepción del Edificio Salguero Sunset cobra una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera al llegar para manillas de seguridad y áreas comunes. Las piscinas del edificio cierran todos los martes por mantenimiento programado.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Navegación principal",
+		breadcrumbLabel: "Ruta de navegación",
+		breadcrumbHome: "Inicio",
+		hero1707ImgAlt:
+			"Apartamento 1707 en el piso 17 frente a la playa con vista al mar Caribe en Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Apartamento 1606 en el piso 16 frente a la playa con cálida vista al atardecer en Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Luminosa sala y comedor de concepto abierto en el piso 17 del Apartamento 1707 en Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Piscina frente al mar y zona de descanso en Edificio Salguero Sunset para huéspedes del Apartamento 1707 en Playa Salguero",
+		about1606LivingAlt:
+			"Acogedora sala costera y zona familiar en el piso 16 del Apartamento 1606 en Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Piscina frente a la playa y terraza con palmeras en Edificio Salguero Sunset para huéspedes del Apartamento 1606 en Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, anfitrión y responsable de OceanViewFlats en Santa Marta",
+		mainEntranceImgAlt:
+			"Entrada principal frente a la playa y recepción del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		breadcrumbPrivacy: "Política de Tratamiento de Datos",
+		schemaWebSiteDescription:
+			"Propiedades de alquiler vacacional directo frente al mar en Playa Salguero, Santa Marta, Colombia, con cotizaciones oficiales en COP y 0% de comisión OTA.",
+		schemaLodgingDescription:
+			"Propiedades frente al mar (1707 y 1606) en el Edificio Salguero Sunset, Playa Salguero, Santa Marta, Colombia, con fibra óptica de 900 Mbps, parqueadero asignado y Reserva Directa en COP.",
+		schemaContactPageName: "Contactar a OceanViewFlats",
+		schemaPaymentAccepted:
+			"Tarjeta de Crédito, Tarjeta Débito, Transferencia PSE, Cupón en Efectivo (Efecty vía Mercado Pago)",
+		schemaMasterBedroom: "Habitación Principal",
+		schemaGuestBedroom: "Habitación de Huéspedes",
+		schemaLivingRoom: "Sala de Estar",
+		schemaAmenityParking1707: "Parqueadero Privado Asignado — Bahía 95",
+		schemaAmenityParking1606: "Parqueadero Privado Asignado — Bahía 87",
+		schemaAmenityLaundry: "Lavandería en la Propiedad (Lavadora y Secadora)",
+		schemaAmenityWorkspace: "Espacio de Trabajo Dedicado para Portátil",
 	},
 	fr: {
-		seoHomeTitle:
-			"Location Vacances Santa Marta | Réservation Directe | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
 		seoHomeDescription:
-			"Réservez vos locations de vacances en bord de mer à Playa Salguero, Santa Marta. Économisez jusqu'à 20% sur les frais de plateforme. Wi-Fi 900 Mbps, piscine.",
-		seoTitle:
-			"Appartement Vue Mer 1707 | Location de Vacances à Playa Salguero",
+			"Réservation directe en bord de mer à Playa Salguero, Santa Marta sans frais OTA. Économisez jusqu'à 20 % avec Wi-Fi 900 Mbps, piscine et vue Caraïbes.",
+		seoTitle: "Séjour Vue Mer 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Réservez votre séjour en bord de mer au Oceanview Flat 1707 à Playa Salguero, Santa Marta. Idéal pour les nomades digitaux, avec Wi-Fi haut débit, piscine et superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
+			"Réservez en direct OceanViewFlats 1707 à Playa Salguero, Santa Marta. 17e étage face à la mer pour télétravail et familles : Wi-Fi 900 Mbps et piscine.",
 		navBook: "Réserver avec nous",
 		navBookDirect: "Réserver en Direct",
 		heroTitle: "Appartement Vue Mer 1707",
@@ -1220,9 +1561,9 @@ export const dict = {
 		nomadBadgeSub: "Parfait pour les appels vidéo",
 		aboutTitle: "À propos du logement",
 		aboutText1:
-			"Profitez de notre appartement moderne au 17ème étage avec une vue spectaculaire sur l'océan et des couchers de soleil incroyables ! Dans un quartier exclusif, à seulement 1 pâté de maisons de la plage.",
+			"Profitez de notre appartement moderne en bord de mer au 17e étage de l'Edificio Salguero Sunset, avec couchers de soleil panoramiques sur la mer des Caraïbes, fibre optique 900 Mbps et espace de travail ergonomique, à 1 pâté de maisons de Playa Salguero.",
 		aboutText2:
-			"Comprend 2 chambres, 2 salles de bain, canapé-lit, terrasse privée, cuisine entièrement équipée, Wi-Fi, buanderie et parking gratuit.",
+			"Accueille jusqu'à 6 Voyageurs dans 2 chambres et 4 lits (Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 2 lits simples et Salon avec 1 canapé-lit convertible), plus 2 salles de bain, terrasse privée vue mer, cuisine équipée, buanderie intégrée, arrivée autonome par serrure connectée et Place de stationnement attribuée Baie 95.",
 		amenitiesTitle: "Équipements Principaux",
 		amWifi: "Wi-Fi Haut Débit",
 		amKitchen: "Cuisine Équipée",
@@ -1234,7 +1575,7 @@ export const dict = {
 		amOcean: "Vue Spectaculaire sur l'Océan",
 		calendarTitle: "Sélectionnez vos dates",
 		calendarSubtitle:
-			"Choisissez vos dates de voyage. Vous serez redirigé en toute sécurité vers Airbnb pour vérifier la disponibilité et finaliser votre réservation.",
+			"Sélectionnez votre date d'arrivée et de départ ci-dessous pour obtenir un Devis officiel en direct en Pesos Colombiens (COP) avec 0 % de commission OTA. Finalisez votre Réservation Directe en ligne par Carte, PSE ou Bon en espèces (Mercado Pago), ou utilisez Airbnb en option.",
 		checkIn: "Arrivée",
 		checkOut: "Départ",
 		addDate: "Ajouter une date",
@@ -1249,7 +1590,8 @@ export const dict = {
 		nomadOceanDesc: "Trouvez l'inspiration face à la mer des Caraïbes.",
 		nomadImgAlt: "Espace de travail pour Nomades Digitaux",
 		romanticImgAlt: "Terrasse Privée au Coucher du Soleil",
-		heroImgAlt: "Vue sur l'océan depuis le balcon",
+		heroImgAlt:
+			"Vue panoramique au coucher du soleil sur la mer des Caraïbes depuis le balcon face à la mer d'OceanViewFlats à Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombie",
 		aboutBedroomAlt: "Chambre",
@@ -1271,9 +1613,9 @@ export const dict = {
 		amRomanticDesc:
 			"Sirotez du vin sur votre terrasse privée en regardant le soleil plonger dans la mer des Caraïbes.",
 		about1606Text1:
-			"Découvrez notre superbe refuge au 16ème étage. Profitez de vues imprenables sur l'océan, de brises chaudes et d'une atmosphère paisible à quelques pas de la plage.",
+			"Découvrez notre refuge serein en bord de mer au 16e étage de l'Edificio Salguero Sunset, pensé pour les couples et les familles avec des couchers de soleil sur la mer des Caraïbes, la fibre optique 900 Mbps et une atmosphère paisible à deux pas de Playa Salguero.",
 		about1606Text2:
-			"Comprend 2 chambres, 2 salles de bain, une terrasse privée, une cuisine entièrement équipée, un Wi-Fi haut débit et une atmosphère chaleureuse parfaite pour la détente.",
+			"Accueille jusqu'à 6 Voyageurs dans 2 chambres et 3 lits (Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 1 lit double et Salon avec 1 canapé-lit convertible), plus 2 salles de bain, terrasse privée au coucher du soleil, cuisine équipée, buanderie intégrée, arrivée autonome par serrure connectée et Place de stationnement attribuée Baie 87.",
 		reviewsTitle: "Expériences des Voyageurs",
 		review1Text:
 			"\"L'endroit est idéal pour la détente et les moments en famille, exactement comme sur les photos. Le service de l'hôte est excellent. Hautement recommandé.\"",
@@ -1284,10 +1626,9 @@ export const dict = {
 		review1707Text:
 			'"Un très bel appartement avec une excellente vue, de magnifiques couchers de soleil, un bâtiment très complet et une très bonne attention de la part de tous. Recommandé."',
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Appartement Vue Mer 1606 | Location Bord de Mer Romantique & Familiale",
+		seo1606Title: "Séjour Vue Mer 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Réservez votre séjour serein en bord de mer au Oceanview Flat 1606 à Playa Salguero. Parfait pour les couples et les familles, avec de superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
+			"Réservez en direct OceanViewFlats 1606 à Playa Salguero, Santa Marta. 16e étage face à la mer pour couples et familles : Wi-Fi 900 Mbps et piscine.",
 		homeWelcome: "Bienvenue chez OceanViewFlats",
 		homeSubtitle:
 			"Découvrez votre séjour parfait en bord de mer à Santa Marta.",
@@ -1390,9 +1731,9 @@ export const dict = {
 		contactDateError: "La date de départ doit être après la date d'arrivée.",
 		contactOptional: "Optionnel",
 		contactRequired: "Requis",
-		seoContactTitle: "Contactez-nous | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contact | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Contactez-nous pour toute demande, réservation ou question sur les appartements Oceanview 1707 et 1606 à Playa Salguero, Santa Marta.",
+			"Contactez OceanViewFlats à Playa Salguero, Santa Marta pour toute demande ou réservation directe de nos propriétés vue mer 1707 et 1606.",
 		contactAddressLabel: "Adresse",
 		contactEmailLabel: "Email",
 		contactPhoneLabel: "Assistance Téléphonique",
@@ -1449,7 +1790,7 @@ export const dict = {
 		gallery1606_8:
 			"Chambre principale aérée avec des draps de qualité supérieure.",
 		gallery1606_9:
-			"Chambre secondaire chaleureuse avec lits doubles, idéale pour les familles.",
+			"Chambre secondaire chaleureuse avec 1 lit double confortable, idéale pour les familles.",
 		gallery1606_10:
 			"Havre de paix dans la suite d'invités pour un repos serein.",
 		gallery1606_11:
@@ -1720,10 +2061,9 @@ export const dict = {
 			"Je déclare sur l'honneur détenir l'autorité parentale (patria potestad) ou une autorisation écrite de représentation légale pour chaque mineur de moins de 18 ans enregistré pour ce séjour, conformément à la Loi colombienne 1581 de 2012 (Art. 7) et à la Loi 679 de 2001 / Loi 1336 de 2009 (prévention ESCNNA).",
 		registryErrMinorConsent:
 			"L'attestation d'autorité parentale ou de tutelle légale est requise lors de l'enregistrement de mineurs de moins de 18 ans.",
-		privacySeoTitle:
-			"Politique de Traitement des Données Personnelles (Loi 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Confidentialité (Loi 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Politique officielle de Traitement des Données Personnelles (PTDP) d'OceanViewFlats conformément à la Loi colombienne 1581 de 2012 et au Décret 1377 de 2013.",
+			"Politique officielle de Traitement des Données Personnelles (PTDP) d'OceanViewFlats à Santa Marta selon la Loi 1581 de 2012 et le Décret 1377 de 2013.",
 		privacyBadge: "Loi Statutaire Colombienne 1581 de 2012 • Habeas Data",
 		privacyTitle: "Politique de Traitement des Données Personnelles",
 		privacySubtitle:
@@ -1810,15 +2150,191 @@ export const dict = {
 			"Les codes PIN de serrure connectée sont générés de manière aléatoire et ne contiennent jamais de chiffres issus des pièces d'identité.",
 		privacyRetentionDesc:
 			"Conformément au Principe de Temporalité (Décret 1377 Art. 11), les données d'identification personnelle des séjours terminés sont automatiquement anonymisées et purgées 90 jours après la date de départ (ou immédiatement sur demande ARCO de suppression), tout en conservant les données comptables et financières agrégées requises par la loi.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Coucher de soleil en bord de mer depuis OceanViewFlats à Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 au 17e étage avec vue sur la mer des Caraïbes à Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 au 16e étage avec vue sur la mer des Caraïbes à Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Entrée en bord de mer de l'Edificio Salguero Sunset pour OceanViewFlats à Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta — Politique de traitement des données",
+		ogEntranceImageAlt:
+			"Entrée principale en bord de mer de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Comparez Nos Appartements en Bord de Mer",
+		homeCompareSubtitle:
+			"Comparez l'Appartement 1707 et l'Appartement 1606 côte à côte : étage, immatriculation RNT, tarifs par nuit en pesos colombiens (COP), couchages et règlement de l'immeuble.",
+		homeCompareCaption:
+			"Comparaison détaillée des caractéristiques de l'Appartement Vue Mer 1707 (17e étage) et de l'Appartement Vue Mer 1606 (16e étage) à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Caractéristique",
+		homeCompareRowFloor: "Étage",
+		homeCompare1707Floor: "17e Étage",
+		homeCompare1606Floor: "16e Étage",
+		homeCompareRowRnt: "Registre National du Tourisme (RNT)",
+		homeCompareRowIdealFor: "Profil de Voyageurs Idéal",
+		homeCompare1707IdealFor: "Télétravailleurs, groupes et familles",
+		homeCompare1606IdealFor: "Couples et familles",
+		homeCompareRowRate: "Tarif de Base par Nuit (COP)",
+		homeCompare1707Rate: "À partir de 450 000 COP / nuit",
+		homeCompare1606Rate:
+			"À partir de 350 000 COP / nuit (haute saison 550 000 COP)",
+		homeCompareRowMinStay: "Séjour Minimum",
+		homeCompare1707MinStay: "2 nuits",
+		homeCompare1606MinStay:
+			"2 nuits (4 nuits haute saison : 15 déc. – 15 janv.)",
+		homeCompareRowBeds: "Chambres et Lits",
+		homeCompare1707Beds:
+			"2 Chambres • 4 Lits (1 Queen, 2 Lits Simples, 1 Canapé-lit)",
+		homeCompare1606Beds:
+			"2 Chambres • 3 Lits (1 Queen, 1 Lit Double, 1 Canapé-lit)",
+		homeCompareRowOccupancy: "Capacité Maximale",
+		homeCompareRowWifi: "Wi-Fi Fibre Optique",
+		homeCompareWifiValue: "Fibre jusqu'à 900 Mbps",
+		homeCompareRowParking: "Place de Parking Attribuée",
+		homeCompare1707Parking: "Inclus — Place 95",
+		homeCompare1606Parking: "Inclus — Place 87",
+		homeCompareRowCheckInOut: "Arrivée / Départ",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Arrivée autonome par serrure connectée)",
+		homeCompareRowBuildingRegistrationFee:
+			"Frais d'Enregistrement de l'Immeuble",
+		homeCompareBuildingRegistrationFeeValue:
+			"20 000 COP par personne (à régler à la réception)",
+		homeCompareRowPoolMaintenance: "Entretien de la Piscine",
+		homeComparePoolMaintenanceValue: "Fermée le mardi pour entretien",
+		homeLocationTitle: "Emplacement et Déplacements à Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Nos deux appartements en bord de mer se trouvent dans l'Edificio Salguero Sunset (Calle 26 # 2-80), dans le secteur résidentiel calme de Playa Salguero, à un pâté de maisons de la plage avec un accès routier direct à l'aéroport, El Rodadero, le Centre Historique et le Parc Tayrona.",
+		homeLocBeachName: "Plage de Playa Salguero",
+		homeLocBeachProximity: "1 pâté de maisons • ~2 min à pied (~150 m)",
+		homeLocBeachDesc:
+			"Accès direct à pied depuis l'Edificio Salguero Sunset à une plage paisible, peu fréquentée, idéale pour la baignade et les couchers de soleil sur la mer des Caraïbes.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min en voiture (~3 km)",
+		homeLocRodaderoDesc:
+			"Court trajet côtier vers la promenade d'El Rodadero, les supermarchés, pharmacies, restaurants et départs en bateau vers Playa Blanca.",
+		homeLocAirportName: "Aéroport International Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 min en voiture (~10 km)",
+		homeLocAirportDesc:
+			"Transfert direct par le corridor sud en taxi ou VTC sans avoir à traverser la circulation du centre-ville de Santa Marta.",
+		homeLocHistoricName: "Centre Historique de Santa Marta et Marina",
+		homeLocHistoricProximity: "~20–25 min en voiture (~8 km)",
+		homeLocHistoricDesc:
+			"Trajet simple vers le nord jusqu'au Parque de los Novios, la Marina Internationale de Santa Marta, les places coloniales, cafés et restaurants.",
+		homeLocTayronaName: "Parc National Naturel Tayrona (Entrée El Zaino)",
+		homeLocTayronaProximity: "~50–60 min en voiture (~40 km)",
+		homeLocTayronaDesc:
+			"Route côtière directe vers l'entrée principale d'El Zaino pour des randonnées à la journée vers Cabo San Juan et les baies préservées.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Responsable du Traitement & Hôte Officiel",
+		complianceLaw1581Badge: "Loi 1581 de 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Loi 2068 de 2020 (Tourisme / TRA-SIRE)",
+		complianceLaw679Badge: "Loi 679 de 2001 (Prévention ESCNNA)",
+		reviewVerifiedGuest: "Voyageur Vérifié",
+		reviewViewOnAirbnb: "Vérifier les avis sur l'annonce Airbnb",
+		faq1707Title: "Appartement Vue Mer 1707 — Questions Fréquentes",
+		faq1707Subtitle:
+			"Tout ce qu'il faut savoir sur le télétravail, les couchages, la Réservation Directe, l'arrivée et les règles de l'immeuble au 17e étage.",
+		faq1707Q1:
+			"L'Appartement 1707 est-il adapté au télétravail et aux nomades digitaux ?",
+		faq1707A1:
+			"Oui. Située au 17e étage de l'Edificio Salguero Sunset (RNT #268781), la Propriété 1707 offre la fibre optique 900 Mbps, un espace de travail ergonomique pour ordinateur portable et un balcon privé vue mer idéal pour les visioconférences.",
+		faq1707Q2:
+			"Quelle est la configuration des lits et du parking pour la Propriété 1707 ?",
+		faq1707A2:
+			"La Propriété 1707 compte 2 Chambres et 4 Lits pouvant accueillir jusqu'à 6 Voyageurs : Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 2 lits simples et Salon avec 1 canapé-lit convertible, ainsi que 2 salles de bain complètes et la Place de stationnement attribuée Baie 95 incluse.",
+		faq1707Q3:
+			"Quels sont le tarif par nuit, le séjour minimum et la politique d'annulation en Réservation Directe ?",
+		faq1707A3:
+			"Le tarif de base est de 450 000 COP par nuit (séjour minimum de 2 nuits) plus des frais de ménage fixes de 100 000 COP. Les Réservations Directes se règlent en COP avec 0 % de commission OTA par Carte, PSE ou Bon en espèces (Mercado Pago). Annulation : remboursement à 100 % à 14 jours ou plus, 50 % entre 7 et 13 jours, non remboursable à moins de 7 jours.",
+		faq1707Q4:
+			"Quels sont les horaires d'arrivée (Check-in) et de départ (Check-out) à la Propriété 1707 ?",
+		faq1707A4:
+			"L'arrivée s'effectue à partir de 15h00 (15:00) et le départ avant 11h00 (11:00). L'arrivée autonome par serrure connectée est disponible dès validation de votre Registre des Voyageurs préalable.",
+		faq1707Q5:
+			"Comment fonctionnent le Registre des Voyageurs et le code d'accès 0XXXXXX# ?",
+		faq1707A5:
+			"Avant votre arrivée, le Voyageur Principal remplit le Registre des Voyageurs en ligne obligatoire (incluant l'Autorisation de Données Personnelles Loi 1581 et l'Attestation de Représentant de Mineur Loi 679 en présence de mineurs). La validation débloque immédiatement le Guide du Voyageur numérique, l'accès à la Baie 95 et votre code PIN temporaire aléatoire 0XXXXXX#.",
+		faq1707Q6:
+			"Y a-t-il des frais d'immeuble ou des jours de fermeture de la piscine à l'Edificio Salguero Sunset ?",
+		faq1707A6:
+			"Oui. La réception de l'Edificio Salguero Sunset perçoit des frais uniques d'enregistrement de l'immeuble de 20 000 COP par personne payables à l'arrivée pour les bracelets de sécurité et les espaces communs. Les piscines ferment tous les mardis pour entretien programmé.",
+		faq1606Title: "Appartement Vue Mer 1606 — Questions Fréquentes",
+		faq1606Subtitle:
+			"Tout ce qu'il faut savoir sur notre refuge romantique et familial au 16e étage, la Réservation Directe, l'arrivée et les règles de l'immeuble.",
+		faq1606Q1:
+			"Qu'est-ce qui rend l'Appartement 1606 idéal pour les couples et les familles ?",
+		faq1606A1:
+			"Située au 16e étage de l'Edificio Salguero Sunset (RNT #270413) à un pâté de maisons de Playa Salguero, la Propriété 1606 allie une atmosphère côtière chaleureuse, romantique et familiale, une terrasse privée face au coucher du soleil et la fibre optique 900 Mbps.",
+		faq1606Q2:
+			"Quelle est la configuration des lits et du parking pour la Propriété 1606 ?",
+		faq1606A2:
+			"La Propriété 1606 compte 2 Chambres et 3 Lits pouvant accueillir jusqu'à 6 Voyageurs : Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 1 lit double et Salon avec 1 canapé-lit convertible, ainsi que 2 salles de bain complètes et la Place de stationnement attribuée Baie 87 incluse.",
+		faq1606Q3:
+			"Quels sont le tarif par nuit, le séjour minimum et la politique d'annulation en Réservation Directe ?",
+		faq1606A3:
+			"Le tarif de base est de 350 000 COP par nuit (séjour minimum de 2 nuits ; haute saison du 15 déc. au 15 janv. : 550 000 COP par nuit, minimum 4 nuits) plus des frais de ménage fixes de 80 000 COP. Règlement direct en COP avec 0 % de commission OTA via Carte, PSE ou Bon en espèces (Mercado Pago). Annulation : 100 % à ≥14 jours, 50 % entre 7 et 13 jours, non remboursable à moins de 7 jours.",
+		faq1606Q4:
+			"Quels sont les horaires d'arrivée (Check-in) et de départ (Check-out) à la Propriété 1606 ?",
+		faq1606A4:
+			"L'arrivée s'effectue à partir de 15h00 (15:00) et le départ avant 11h00 (11:00). L'arrivée autonome par serrure connectée est disponible dès validation de votre Registre des Voyageurs préalable.",
+		faq1606Q5:
+			"Comment fonctionnent le Registre des Voyageurs et le code d'accès 0XXXXXX# ?",
+		faq1606A5:
+			"Avant votre arrivée, le Voyageur Principal remplit le Registre des Voyageurs en ligne obligatoire (incluant l'Autorisation de Données Personnelles Loi 1581 et l'Attestation de Représentant de Mineur Loi 679 en présence de mineurs). La validation débloque immédiatement le Guide du Voyageur numérique, l'accès à la Baie 87 et votre code PIN temporaire aléatoire 0XXXXXX#.",
+		faq1606Q6:
+			"Y a-t-il des frais d'immeuble ou des jours de fermeture de la piscine à l'Edificio Salguero Sunset ?",
+		faq1606A6:
+			"Oui. La réception de l'Edificio Salguero Sunset perçoit des frais uniques d'enregistrement de l'immeuble de 20 000 COP par personne payables à l'arrivée pour les bracelets de sécurité et les espaces communs. Les piscines ferment tous les mardis pour entretien programmé.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Navigation principale",
+		breadcrumbLabel: "Fil d'Ariane",
+		breadcrumbHome: "Accueil",
+		hero1707ImgAlt:
+			"Appartement 1707 au 17e étage face à la mer avec vue sur la mer des Caraïbes à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Appartement 1606 au 16e étage en bord de mer avec vue sur le coucher du soleil à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Salon lumineux et salle à manger ouverte au 17e étage de l'Appartement 1707 à l'Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Piscine face à la mer et terrasse ensoleillée de l'Edificio Salguero Sunset pour les voyageurs de l'Appartement 1707 à Playa Salguero",
+		about1606LivingAlt:
+			"Salon côtier ensoleillé et espace familial au 16e étage de l'Appartement 1606 à l'Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Piscine en bord de mer et terrasse bordée de palmiers à l'Edificio Salguero Sunset pour les voyageurs de l'Appartement 1606 à Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, hôte et responsable d'OceanViewFlats à Santa Marta",
+		mainEntranceImgAlt:
+			"Entrée principale en bord de mer et hall de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		breadcrumbPrivacy: "Politique de Traitement des Données",
+		schemaWebSiteDescription:
+			"Locations de vacances directes en bord de mer à Playa Salguero, Santa Marta, Colombie, avec devis officiels en COP et 0 % de commission OTA.",
+		schemaLodgingDescription:
+			"Propriétés en bord de mer (1707 et 1606) à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta, Colombie, avec fibre optique 900 Mbps, stationnement attribué et Réservation Directe en COP.",
+		schemaContactPageName: "Contacter OceanViewFlats",
+		schemaPaymentAccepted:
+			"Carte de Crédit, Carte de Débit, Virement PSE, Bon en Espèces (Efecty via Mercado Pago)",
+		schemaMasterBedroom: "Chambre Principale",
+		schemaGuestBedroom: "Chambre d'Invités",
+		schemaLivingRoom: "Salon",
+		schemaAmenityParking1707: "Place de Stationnement Attribuée — Baie 95",
+		schemaAmenityParking1606: "Place de Stationnement Attribuée — Baie 87",
+		schemaAmenityLaundry: "Buanderie Privée (Lave-linge et Sèche-linge)",
+		schemaAmenityWorkspace: "Espace de Travail Dédié pour Ordinateur Portable",
 	},
 	it: {
-		seoHomeTitle:
-			"Case Vacanze Santa Marta | Prenotazione Diretta | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
 		seoHomeDescription:
-			"Prenota case vacanze fronte mare a Playa Salguero, Santa Marta direttamente dal proprietario. Risparmia fino al 20% sulle commissioni. Wi-Fi da 900 Mbps, piscina.",
-		seoTitle: "Appartamento Vista Mare 1707 | Casa Vacanze a Playa Salguero",
+			"Prenotazione diretta fronte mare a Playa Salguero, Santa Marta senza commissioni OTA. Risparmia fino al 20% con Wi-Fi 900 Mbps, piscina e tramonti.",
+		seoTitle: "Fronte Mare 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Prenota il tuo soggiorno di fronte al mare all'Oceanview Flat 1707 a Playa Salguero, Santa Marta. Perfetto per i nomadi digitali, con Wi-Fi ad alta velocità, piscina e splendidi tramonti sui Caraibi. Prenota ora il tuo soggiorno diretto.",
+			"Prenota diretto OceanViewFlats 1707 a Playa Salguero, Santa Marta. 17° piano fronte mare ideale per smart working e famiglie: Wi-Fi 900 Mbps e piscina.",
 		navBook: "Prenota con noi",
 		navBookDirect: "Prenota Diretto",
 		heroTitle: "Appartamento Vista Mare 1707",
@@ -1834,9 +2350,9 @@ export const dict = {
 		nomadBadgeSub: "Perfetto per le videochiamate",
 		aboutTitle: "Informazioni sullo Spazio",
 		aboutText1:
-			"Goditi il nostro moderno appartamento al 17° piano con una vista spettacolare sull'oceano e incredibili tramonti! Situato in una zona esclusiva e tranquilla, a solo 1 isolato dalla spiaggia.",
+			"Goditi il nostro moderno appartamento fronte mare al 17° piano dell'Edificio Salguero Sunset, con tramonti panoramici sul Mar dei Caraibi, fibra ottica 900 Mbps e postazione lavoro ergonomica, a solo 1 isolato da Playa Salguero.",
 		aboutText2:
-			"Dispone di 2 camere da letto, 2 bagni, un comodo divano letto, terrazza privata, cucina completamente attrezzata, Wi-Fi ad alta velocità, lavanderia interna e parcheggio gratuito.",
+			"Ospita fino a 6 Ospiti in 2 camere da letto e 4 letti (Camera Principale con 1 letto Queen, Camera degli Ospiti con 2 letti singoli e Soggiorno con 1 divano letto estraibile), oltre a 2 bagni, terrazza privata vista mare, cucina attrezzata, lavanderia interna, self check-in con serratura smart e Posto auto assegnato Stallo 95.",
 		amenitiesTitle: "Servizi Principali",
 		amWifi: "Wi-Fi ad Alta Velocità",
 		amKitchen: "Cucina Attrezzata",
@@ -1848,7 +2364,7 @@ export const dict = {
 		amOcean: "Vista Mare Spettacolare",
 		calendarTitle: "Seleziona le Date e Prenota",
 		calendarSubtitle:
-			"Scegli le date del tuo viaggio qui sotto. Verrai reindirizzato in modo sicuro su Airbnb per verificare la disponibilità e finalizzare la prenotazione.",
+			"Seleziona la data di check-in e check-out qui sotto per calcolare un Preventivo ufficiale dal vivo in Pesos Colombiani (COP) con lo 0% di commissioni OTA. Completa la Prenotazione Diretta online tramite Carta, PSE o Voucher in contanti (Mercado Pago), oppure usa Airbnb come canale esterno opzionale.",
 		checkIn: "Check-in",
 		checkOut: "Check-out",
 		addDate: "Aggiungi data",
@@ -1863,7 +2379,8 @@ export const dict = {
 		nomadOceanDesc: "Trova l'ispirazione guardando il mar dei Caraibi.",
 		nomadImgAlt: "Spazio di lavoro per Nomadi Digitali",
 		romanticImgAlt: "Terrazza Privata al Tramonto",
-		heroImgAlt: "Vista oceano dal balcone",
+		heroImgAlt:
+			"Vista panoramica al tramonto sul Mar dei Caraibi dal balcone fronte mare di OceanViewFlats a Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Camera da letto",
@@ -1885,9 +2402,9 @@ export const dict = {
 		amRomanticDesc:
 			"Sorseggia un vino sulla tua terrazza privata mentre guardi il sole tuffarsi nel Mar dei Caraibi.",
 		about1606Text1:
-			"Vivi il nostro splendido rifugio al 16° piano. Goditi viste mozzafiato sull'oceano, brezze calde e un'atmosfera tranquilla a pochi passi dalla spiaggia.",
+			"Vivi il nostro sereno rifugio fronte mare al 16° piano dell'Edificio Salguero Sunset, progettato per coppie e famiglie con tramonti sul Mar dei Caraibi, fibra ottica 900 Mbps e un'atmosfera tranquilla a pochi passi da Playa Salguero.",
 		about1606Text2:
-			"Dispone di 2 camere da letto, 2 bagni, una terrazza privata, una cucina completamente attrezzata, Wi-Fi ad alta velocità e un'atmosfera accogliente perfetta per il relax.",
+			"Ospita fino a 6 Ospiti in 2 camere da letto e 3 letti (Camera Principale con 1 letto Queen, Camera degli Ospiti con 1 letto matrimoniale e Soggiorno con 1 divano letto estraibile), oltre a 2 bagni, terrazza privata al tramonto, cucina attrezzata, lavanderia interna, self check-in con serratura smart e Posto auto assegnato Stallo 87.",
 		reviewsTitle: "Esperienze degli Ospiti",
 		review1Text:
 			'"Il posto è ideale per il relax e il tempo in famiglia, esattamente come mostrato nelle foto. Il servicio dell\'host è eccellente. Altamente raccomandato."',
@@ -1898,10 +2415,9 @@ export const dict = {
 		review1707Text:
 			"\"Un appartamento molto carino con un'ottima vista, tramonti bellissimi, l'edificio molto completo e l'attenzione di tutti molto buona. Raccomandato.\"",
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Appartamento Vista Mare 1606 | Affitto Fronte Mare Romantico e Familiare",
+		seo1606Title: "Fronte Mare 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Prenota il tuo sereno soggiorno fronte mare all'Oceanview Flat 1606 a Playa Salguero. Perfetto per coppie e famiglie, con splendidi tramonti sul Mar dei Caraibi e lusso moderno. Prenota ora il tuo soggiorno diretto.",
+			"Prenota diretto OceanViewFlats 1606 a Playa Salguero, Santa Marta. 16° piano fronte mare per coppie e famiglie con Wi-Fi 900 Mbps, piscina e tramonti.",
 		homeWelcome: "Benvenuti a OceanViewFlats",
 		homeSubtitle: "Scopri il tuo soggiorno perfetto fronte mare a Santa Marta.",
 		homeHeroValueProp:
@@ -2003,9 +2519,9 @@ export const dict = {
 			"La data di check-out deve essere successiva alla data di check-in.",
 		contactOptional: "Opzionale",
 		contactRequired: "Richiesto",
-		seoContactTitle: "Contattaci | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contatti | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Mettiti in contatto con noi per richieste, prenotazioni o domande sugli appartamenti Oceanview 1707 e 1606 a Playa Salguero, Santa Marta.",
+			"Contatta OceanViewFlats a Playa Salguero, Santa Marta per richieste o prenotazioni dirette nelle nostre proprietà fronte mare 1707 e 1606.",
 		contactAddressLabel: "Indirizzo",
 		contactEmailLabel: "Email",
 		contactPhoneLabel: "Supporto Telefonico",
@@ -2057,7 +2573,7 @@ export const dict = {
 			"Camera matrimoniale romantica con un comodo letto e luci calde.",
 		gallery1606_8: "Camera da letto matrimoniale ariosa con lenzuola premium.",
 		gallery1606_9:
-			"Calda camera da letto secondaria con letti doppi, ideale per famiglie.",
+			"Calda camera da letto secondaria con 1 comodo letto matrimoniale, ideale per famiglie.",
 		gallery1606_10:
 			"Tranquillo rifugio nella camera degli ospiti per un riposo rilassante.",
 		gallery1606_11: "Bagno principale immacolato con eleganti lavabi.",
@@ -2327,10 +2843,9 @@ export const dict = {
 			"Dichiaro sotto la mia responsabilità di esercitare la responsabilità genitoriale (patria potestad) o di disporre di autorizzazione scritta di rappresentanza legale per ogni minore di 18 anni registrato in questo soggiorno, in conformità con la Legge colombiana 1581 del 2012 (Art. 7) e la Legge 679 del 2001 / Legge 1336 del 2009 (prevenzione ESCNNA).",
 		registryErrMinorConsent:
 			"L'attestazione di responsabilità genitoriale o tutela legale è obbligatoria quando si registrano minori di 18 anni.",
-		privacySeoTitle:
-			"Informativa sul Trattamento dei Dati Personali (Legge 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Privacy (Legge 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Politica ufficiale sul Trattamento dei Dati Personali (PTDP) di OceanViewFlats ai sensi della Legge Statutaria colombiana 1581 del 2012 e del Decreto 1377 del 2013.",
+			"Politica ufficiale sul Trattamento dei Dati Personali (PTDP) di OceanViewFlats a Santa Marta ai sensi della Legge 1581 del 2012 e Decreto 1377 del 2013.",
 		privacyBadge: "Legge Statutaria Colombiana 1581 del 2012 • Habeas Data",
 		privacyTitle: "Politica sul Trattamento dei Dati Personali",
 		privacySubtitle:
@@ -2415,15 +2930,188 @@ export const dict = {
 			"I codici PIN della serratura smart sono generati in modo crittograficamente casuale e non contengono mai cifre del documento d'identità.",
 		privacyRetentionDesc:
 			"In conformità al Principio di Temporalità (Decreto 1377 Art. 11), i dati identificativi personali dei soggiorni conclusi vengono automaticamente oscurati e cancellati 90 giorni dopo la data di check-out (o immediatamente su richiesta ARCO di cancellazione), conservando solo i dati contabili e finanziari aggregati richiesti dalla legge.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Tramonto fronte mare da OceanViewFlats a Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 al 17° piano con vista sul Mar dei Caraibi a Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 al 16° piano con vista sul Mar dei Caraibi a Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Ingresso fronte mare dell'Edificio Salguero Sunset per OceanViewFlats a Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats presso Edificio Salguero Sunset, Playa Salguero, Santa Marta — Informativa sul trattamento dei dati",
+		ogEntranceImageAlt:
+			"Ingresso principale fronte mare dell'Edificio Salguero Sunset a Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Confronta i Nostri Appartamenti Fronte Mare",
+		homeCompareSubtitle:
+			"Confronta l'Appartamento 1707 e l'Appartamento 1606 fianco a fianco per piano, registrazione RNT, tariffe per notte in pesos colombiani (COP), posti letto e regole dell'edificio.",
+		homeCompareCaption:
+			"Confronto dettagliato tra Appartamento Vista Mare 1707 (17° piano) e Appartamento Vista Mare 1606 (16° piano) presso Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Caratteristica",
+		homeCompareRowFloor: "Piano",
+		homeCompare1707Floor: "17° Piano",
+		homeCompare1606Floor: "16° Piano",
+		homeCompareRowRnt: "Registro Nazionale del Turismo (RNT)",
+		homeCompareRowIdealFor: "Profilo di Ospite Ideale",
+		homeCompare1707IdealFor: "Lavoratori da remoto, gruppi e famiglie",
+		homeCompare1606IdealFor: "Coppie e famiglie",
+		homeCompareRowRate: "Tariffa Base per Notte (COP)",
+		homeCompare1707Rate: "Da 450.000 COP / notte",
+		homeCompare1606Rate: "Da 350.000 COP / notte (alta stagione 550.000 COP)",
+		homeCompareRowMinStay: "Soggiorno Minimo",
+		homeCompare1707MinStay: "2 notti",
+		homeCompare1606MinStay: "2 notti (4 notti alta stagione: 15 dic – 15 gen)",
+		homeCompareRowBeds: "Camere e Letti",
+		homeCompare1707Beds:
+			"2 Camere • 4 Letti (1 Queen, 2 Singoli, 1 Divano Letto)",
+		homeCompare1606Beds:
+			"2 Camere • 3 Letti (1 Queen, 1 Matrimoniale, 1 Divano Letto)",
+		homeCompareRowOccupancy: "Capienza Massima",
+		homeCompareRowWifi: "Wi-Fi Fibra Ottica",
+		homeCompareWifiValue: "Fibra fino a 900 Mbps",
+		homeCompareRowParking: "Posto Auto Assegnato",
+		homeCompare1707Parking: "Incluso — Posto 95",
+		homeCompare1606Parking: "Incluso — Posto 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Check-in autonomo con serratura smart)",
+		homeCompareRowBuildingRegistrationFee:
+			"Quota di Registrazione dell'Edificio",
+		homeCompareBuildingRegistrationFeeValue:
+			"20.000 COP a persona (pagabile in reception)",
+		homeCompareRowPoolMaintenance: "Manutenzione della Piscina",
+		homeComparePoolMaintenanceValue: "Chiusa il martedì per manutenzione",
+		homeLocationTitle: "Posizione e Spostamenti a Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Entrambi gli appartamenti fronte mare si trovano nell'Edificio Salguero Sunset (Calle 26 # 2-80), nella tranquilla zona residenziale di Playa Salguero, a un isolato dalla spiaggia e con collegamenti diretti verso aeroporto, El Rodadero, Centro Storico e Parco Tayrona.",
+		homeLocBeachName: "Spiaggia di Playa Salguero",
+		homeLocBeachProximity: "1 isolato • ~2 min a piedi (~150 m)",
+		homeLocBeachDesc:
+			"Accesso pedonale immediato dall'Edificio Salguero Sunset a una spiaggia tranquilla e poco affollata con tramonti spettacolari sul Mar dei Caraibi.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min in auto (~3 km)",
+		homeLocRodaderoDesc:
+			"Breve tragitto costiero fino al lungomare di El Rodadero, supermercati, farmacie, ristoranti e imbarchi per Playa Blanca.",
+		homeLocAirportName: "Aeroporto Internazionale Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 min in auto (~10 km)",
+		homeLocAirportDesc:
+			"Trasferimento diretto sul corridoio sud in taxi o app di trasporto senza attraversare il traffico del centro di Santa Marta.",
+		homeLocHistoricName: "Centro Storico di Santa Marta e Marina",
+		homeLocHistoricProximity: "~20–25 min in auto (~8 km)",
+		homeLocHistoricDesc:
+			"Comodo spostamento verso nord fino al Parque de los Novios, alla Marina Internazionale di Santa Marta, alle piazze coloniali e ai ristoranti.",
+		homeLocTayronaName: "Parco Nazionale Naturale Tayrona (Ingresso El Zaino)",
+		homeLocTayronaProximity: "~50–60 min in auto (~40 km)",
+		homeLocTayronaDesc:
+			"Collegamento diretto lungo la strada costiera fino all'ingresso principale di El Zaino per escursioni giornaliere a Cabo San Juan e nelle baie protette.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Titolare del Trattamento e Host Ufficiale",
+		complianceLaw1581Badge: "Legge 1581 del 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Legge 2068 del 2020 (Turismo / TRA-SIRE)",
+		complianceLaw679Badge: "Legge 679 del 2001 (Prevenzione ESCNNA)",
+		reviewVerifiedGuest: "Ospite Verificato",
+		reviewViewOnAirbnb: "Verifica le recensioni sull'annuncio Airbnb",
+		faq1707Title: "Appartamento Vista Mare 1707 — Domande Frequenti",
+		faq1707Subtitle:
+			"Tutto ciò che devi sapere su lavoro da remoto, distribuzione dei letti, Prenotazioni Dirette, check-in e regole condominiali al 17° piano.",
+		faq1707Q1:
+			"L'Appartamento 1707 è attrezzato per il lavoro da remoto e i nomadi digitali?",
+		faq1707A1:
+			"Sì. Situata al 17° piano dell'Edificio Salguero Sunset (RNT #268781), la Proprietà 1707 offre fibra ottica 900 Mbps affidabile, una postazione lavoro ergonomica per laptop e un tranquillo balcone privato vista mare ideale per videochiamate.",
+		faq1707Q2:
+			"Qual è la configurazione dei letti e del parcheggio per la Proprietà 1707?",
+		faq1707A2:
+			"La Proprietà 1707 dispone di 2 Camere da letto e 4 Letti per un massimo di 6 Ospiti: Camera Principale con 1 letto Queen, Camera degli Ospiti con 2 letti singoli e Soggiorno con 1 divano letto estraibile, oltre a 2 bagni completi e Posto auto assegnato Stallo 95 gratuito.",
+		faq1707Q3:
+			"Quali sono la tariffa notturna, il soggiorno minimo e la politica di cancellazione per una Prenotazione Diretta?",
+		faq1707A3:
+			"La tariffa base è di 450.000 COP a notte (soggiorno minimo 2 notti) più una Tariffa di Pulizia fissa di 100.000 COP. Le Prenotazioni Dirette vengono regolate in COP con lo 0% di commissioni OTA tramite Carta, PSE o Voucher in contanti (Mercado Pago). Cancellazione: rimborso del 100% con ≥14 giorni, 50% tra 7 e 13 giorni, non rimborsabile entro 7 giorni.",
+		faq1707Q4:
+			"Quali sono gli orari di Check-in e Check-out nella Proprietà 1707?",
+		faq1707A4:
+			"Il Check-in inizia alle 15:00 e il Check-out è entro le 11:00. Il self check-in con serratura smart consente un ingresso comodo una volta verificato il Registro degli Ospiti pre-arrivo.",
+		faq1707Q5:
+			"Come funzionano il Registro degli Ospiti e la Credenziale di Accesso 0XXXXXX#?",
+		faq1707A5:
+			"Prima dell'arrivo, l'Ospite Principale compila il Registro degli Ospiti online obbligatorio (inclusa l'Autorizzazione al Trattamento dei Dati Legge 1581 e l'Attestazione per Minori Legge 679 in caso di minori). L'invio sblocca subito la Guida dell'Ospite digitale, l'autorizzazione dello Stallo 95 e il codice PIN temporaneo casuale 0XXXXXX#.",
+		faq1707Q6:
+			"Ci sono costi condominiali o giorni di chiusura della piscina nell'Edificio Salguero Sunset?",
+		faq1707A6:
+			"Sì. La reception dell'Edificio Salguero Sunset applica una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona pagabile all'arrivo per i braccialetti di sicurezza e le aree comuni. Le piscine chiudono ogni martedì per manutenzione programmata.",
+		faq1606Title: "Appartamento Vista Mare 1606 — Domande Frequenti",
+		faq1606Subtitle:
+			"Tutto ciò che devi sapere sul nostro rifugio romantico e familiare al 16° piano, Prenotazioni Dirette, check-in e regole dell'edificio.",
+		faq1606Q1: "Cosa rende l'Appartamento 1606 ideale per coppie e famiglie?",
+		faq1606A1:
+			"Situata al 16° piano dell'Edificio Salguero Sunset (RNT #270413) a un isolato da Playa Salguero, la Proprietà 1606 unisce un ambiente costiero romantico e accogliente per famiglie, terrazza privata al tramonto e fibra ottica 900 Mbps.",
+		faq1606Q2:
+			"Qual è la configurazione dei letti e del parcheggio per la Proprietà 1606?",
+		faq1606A2:
+			"La Proprietà 1606 dispone di 2 Camere da letto e 3 Letti per un massimo di 6 Ospiti: Camera Principale con 1 letto Queen, Camera degli Ospiti con 1 letto matrimoniale e Soggiorno con 1 divano letto estraibile, oltre a 2 bagni completi e Posto auto assegnato Stallo 87 gratuito.",
+		faq1606Q3:
+			"Quali sono la tariffa notturna, il soggiorno minimo e la politica di cancellazione per una Prenotazione Diretta?",
+		faq1606A3:
+			"La tariffa base è di 350.000 COP a notte (soggiorno minimo 2 notti; alta stagione 15 dic–15 gen: 550.000 COP a notte con minimo 4 notti) più una Tariffa di Pulizia fissa di 80.000 COP. Pagamento diretto in COP con lo 0% di commissioni OTA tramite Carta, PSE o Voucher in contanti (Mercado Pago). Cancellazione: 100% con ≥14 giorni, 50% tra 7–13 giorni, non rimborsabile entro 7 giorni.",
+		faq1606Q4:
+			"Quali sono gli orari di Check-in e Check-out nella Proprietà 1606?",
+		faq1606A4:
+			"Il Check-in inizia alle 15:00 e il Check-out è entro le 11:00. Il self check-in con serratura smart consente un ingresso comodo una volta verificato il Registro degli Ospiti pre-arrivo.",
+		faq1606Q5:
+			"Come funzionano il Registro degli Ospiti e la Credenziale di Accesso 0XXXXXX#?",
+		faq1606A5:
+			"Prima dell'arrivo, l'Ospite Principale compila il Registro degli Ospiti online obbligatorio (inclusa l'Autorizzazione al Trattamento dei Dati Legge 1581 e l'Attestazione per Minori Legge 679 in caso di minori). L'invio sblocca subito la Guida dell'Ospite digitale, l'autorizzazione dello Stallo 87 e il codice PIN temporaneo casuale 0XXXXXX#.",
+		faq1606Q6:
+			"Ci sono costi condominiali o giorni di chiusura della piscina nell'Edificio Salguero Sunset?",
+		faq1606A6:
+			"Sì. La reception dell'Edificio Salguero Sunset applica una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona pagabile all'arrivo per i braccialetti di sicurezza e le aree comuni. Le piscine chiudono ogni martedì per manutenzione programmata.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Navigazione principale",
+		breadcrumbLabel: "Percorso di navigazione",
+		breadcrumbHome: "Home",
+		hero1707ImgAlt:
+			"Appartamento 1707 al 17° piano fronte mare con vista sul Mar dei Caraibi presso Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Appartamento 1606 al 16° piano fronte mare con calda vista sul tramonto presso Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Luminoso soggiorno e zona pranzo al 17° piano dell'Appartamento 1707 presso Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Piscina fronte mare e solarium presso Edificio Salguero Sunset per gli ospiti dell'Appartamento 1707 a Playa Salguero",
+		about1606LivingAlt:
+			"Soleggiato soggiorno costiero e area relax per famiglie al 16° piano dell'Appartamento 1606 presso Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Piscina sul mare e terrazza con palme presso Edificio Salguero Sunset per gli ospiti dell'Appartamento 1606 a Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, host e titolare di OceanViewFlats a Santa Marta",
+		mainEntranceImgAlt:
+			"Ingresso principale fronte mare e reception di Edificio Salguero Sunset a Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		breadcrumbPrivacy: "Informativa sul Trattamento dei Dati",
+		schemaWebSiteDescription:
+			"Proprietà fronte mare in affitto breve diretto a Playa Salguero, Santa Marta, Colombia, con preventivi ufficiali in COP e 0% di commissioni OTA.",
+		schemaLodgingDescription:
+			"Proprietà fronte mare (1707 e 1606) nell'Edificio Salguero Sunset a Playa Salguero, Santa Marta, Colombia, con fibra ottica 900 Mbps, parcheggio assegnato e Prenotazione Diretta in COP.",
+		schemaContactPageName: "Contatta OceanViewFlats",
+		schemaPaymentAccepted:
+			"Carta di Credito, Carta di Debito, Bonifico PSE, Voucher in Contanti (Efecty tramite Mercado Pago)",
+		schemaMasterBedroom: "Camera Padronale",
+		schemaGuestBedroom: "Camera degli Ospiti",
+		schemaLivingRoom: "Soggiorno",
+		schemaAmenityParking1707: "Parcheggio Privato Assegnato — Stallo 95",
+		schemaAmenityParking1606: "Parcheggio Privato Assegnato — Stallo 87",
+		schemaAmenityLaundry: "Lavanderia Interna (Lavatrice e Asciugatrice)",
+		schemaAmenityWorkspace: "Postazione di Lavoro Dedicata per Laptop",
 	},
 	de: {
-		seoHomeTitle:
-			"Ferienwohnungen Santa Marta | Direkt Buchen & Sparen | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
 		seoHomeDescription:
-			"Buchen Sie Strand-Ferienwohnungen in Playa Salguero, Santa Marta direkt beim Eigentümer. Sparen Sie bis zu 20 % Gebühren. 900 Mbps WLAN, Pool, Meerblick.",
-		seoTitle: "Apartment mit Meerblick 1707 | Ferienwohnung in Playa Salguero",
+			"Direktbuchung am Strand in Playa Salguero, Santa Marta ohne OTA-Gebühren. Bis zu 20 % sparen mit 900-Mbps-WLAN, Pool und karibischem Meerblick.",
+		seoTitle: "Meerblick-Apartment 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Buchen Sie Ihren Strandurlaub im Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfekt für digitale Nomaden, mit Highspeed-WLAN, Pool und atemberaubenden Sonnenuntergängen in der Karibik. Buchen Sie jetzt Ihren Aufenthalt direkt.",
+			"Buchen Sie OceanViewFlats 1707 direkt in Playa Salguero, Santa Marta. 17. Etage am Strand für Remote-Arbeit und Familien mit 900-Mbps-WLAN und Pool.",
 		navBook: "Bei uns buchen",
 		navBookDirect: "Direkt Buchen",
 		heroTitle: "Apartment mit Meerblick 1707",
@@ -2439,9 +3127,9 @@ export const dict = {
 		nomadBadgeSub: "Perfekt für Videoanrufe",
 		aboutTitle: "Über die Unterkunft",
 		aboutText1:
-			"Genieße unser modernes Apartment im 17. Stock mit einem spektakulären Blick auf den Ozean und unglaublichen Sonnenuntergängen! Das Hotel liegt in einer exklusiven und ruhigen Gegend, nur 1 Block vom Strand entfernt.",
+			"Genieße unser modernes Strandapartment im 17. Stock des Edificio Salguero Sunset mit Panoramablick auf Sonnenuntergänge über der Karibik, 900-Mbit/s-Glasfaser-WLAN und ergonomischem Arbeitsplatz – nur 1 Block vom Playa Salguero entfernt.",
 		aboutText2:
-			"Verfügt über 2 Schlafzimmer, 2 Badezimmer, ein bequemes Schlafsofa, eine private Terrasse, eine voll ausgestattete Küche, High-Speed-WLAN, Waschmaschine und kostenlose Parkplätze.",
+			"Bietet Platz für bis zu 6 Gäste in 2 Schlafzimmern und 4 Betten (Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 2 Einzelbetten und Wohnzimmer mit 1 ausziehbaren Schlafsofa), sowie 2 Bäder, private Meerblick-Terrasse, voll ausgestattete Küche, Waschmaschine, Smart-Lock-Self-Check-in und Zugewiesener Parkplatz Stellplatz 95.",
 		amenitiesTitle: "Premium-Ausstattung",
 		amWifi: "High-Speed-WLAN",
 		amKitchen: "Voll ausgestattete Küche",
@@ -2453,7 +3141,7 @@ export const dict = {
 		amOcean: "Atemberaubender Meerblick",
 		calendarTitle: "Daten wählen & buchen",
 		calendarSubtitle:
-			"Wähle deine Reisedaten unten aus. Du wirst sicher zu Airbnb weitergeleitet, um die aktuelle Verfügbarkeit zu überprüfen und deine Buchung abzuschließen.",
+			"Wählen Sie unten Ihr Check-in- und Check-out-Datum, um ein verbindliches Live-Angebot in Kolumbianischen Pesos (COP) mit 0 % OTA-Provision zu berechnen. Schließen Sie Ihre Direktreservierung online per Karte, PSE oder Bar-Gutschein (Mercado Pago) ab oder nutzen Sie Airbnb optional als externen Kanal.",
 		checkIn: "Check-in",
 		checkOut: "Check-out",
 		addDate: "Datum hinzufügen",
@@ -2468,7 +3156,8 @@ export const dict = {
 		nomadOceanDesc: "Finde Inspiration beim Blick auf die Karibik.",
 		nomadImgAlt: "Arbeitsplatz für Digitale Nomaden",
 		romanticImgAlt: "Private Terrasse bei Sonnenuntergang",
-		heroImgAlt: "Meerblick vom Balkon",
+		heroImgAlt:
+			"Panoramablick bei Sonnenuntergang auf das Karibische Meer vom Strandbalkon der OceanViewFlats in Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Kolumbien",
 		aboutBedroomAlt: "Schlafzimmer",
@@ -2490,9 +3179,9 @@ export const dict = {
 		amRomanticDesc:
 			"Nippen Sie an einem Glas Wein auf Ihrer privaten Terrasse, während Sie beobachten, wie die Sonne im Karibischen Meer versinkt.",
 		about1606Text1:
-			"Erleben Sie unseren atemberaubenden Rückzugsort im 16. Stock. Genießen Sie den atemberaubenden Blick auf den Ozean, warme Brisen und eine friedliche Atmosphäre, nur wenige Schritte vom Strand entfernt.",
+			"Erleben Sie unseren ruhigen Strandrückzugsort im 16. Stock des Edificio Salguero Sunset – ideal für Paare und Familien mit weiten Karibik-Sonnenuntergängen, 900-Mbit/s-Glasfaser-WLAN und friedlicher Atmosphäre nur wenige Schritte vom Playa Salguero entfernt.",
 		about1606Text2:
-			"Verfügt über 2 Schlafzimmer, 2 Badezimmer, eine private Terrasse, eine voll ausgestattete Küche, Highspeed-WLAN und eine gemütliche Atmosphäre, die perfekt zum Entspannen einlädt.",
+			"Bietet Platz für bis zu 6 Gäste in 2 Schlafzimmern und 3 Betten (Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 1 Doppelbett und Wohnzimmer mit 1 ausziehbaren Schlafsofa), sowie 2 Bäder, private Sonnenuntergangsterrasse, voll ausgestattete Küche, Waschmaschine, Smart-Lock-Self-Check-in und Zugewiesener Parkplatz Stellplatz 87.",
 		reviewsTitle: "Gästeerlebnisse",
 		review1Text:
 			'"Der Ort ist ideal für Entspannung und Familienzeit, genau wie auf den Fotos gezeigt. Der Service des Gastgebers ist ausgezeichnet. Sehr zu empfehlen."',
@@ -2503,10 +3192,9 @@ export const dict = {
 		review1707Text:
 			'"Eine sehr schöne Wohnung mit einer hervorragenden Aussicht, wunderschönen Sonnenuntergängen, einem sehr gut ausgestatteten Gebäude und einem sehr guten Service von allen. Empfehlenswert."',
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Apartment mit Meerblick 1606 | Romantische & Familien-Strandunterkunft",
+		seo1606Title: "Meerblick-Apartment 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Buchen Sie Ihren ruhigen Aufenthalt am Strand im Oceanview Flat 1606 in Playa Salguero. Perfekt für Paare und Familien, mit atemberaubenden Sonnenuntergängen über dem Karibischen Meer. Buchen Sie jetzt Ihren Aufenthalt direkt.",
+			"Buchen Sie OceanViewFlats 1606 direkt in Playa Salguero, Santa Marta. 16. Etage am Strand für Paare und Familien mit 900-Mbps-WLAN, Pool und Meerblick.",
 		homeWelcome: "Willkommen bei OceanViewFlats",
 		homeSubtitle:
 			"Entdecken Sie Ihren perfekten Aufenthalt direkt am Strand in Santa Marta.",
@@ -2610,9 +3298,9 @@ export const dict = {
 			"Das Check-out-Datum muss nach dem Check-in-Datum liegen.",
 		contactOptional: "Optional",
 		contactRequired: "Erforderlich",
-		seoContactTitle: "Kontaktieren Sie uns | OceanViewFlats Santa Marta",
+		seoContactTitle: "Kontakt | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Kontaktieren Sie uns für Anfragen, Buchungen oder Fragen zu den Ferienwohnungen Oceanview 1707 und 1606 in Playa Salguero, Santa Marta.",
+			"Kontaktieren Sie OceanViewFlats in Playa Salguero, Santa Marta für Anfragen oder Direktbuchungen unserer Strandunterkünfte 1707 und 1606.",
 		contactAddressLabel: "Adresse",
 		contactEmailLabel: "E-Mail",
 		contactPhoneLabel: "Telefonischer Support",
@@ -2668,7 +3356,7 @@ export const dict = {
 		gallery1606_8:
 			"Luftige Master-Suite, ausgestattet mit erstklassiger Bettwäsche.",
 		gallery1606_9:
-			"Gemütliches zweites Schlafzimmer mit Doppelbetten – ideal für Familien.",
+			"Gemütliches zweites Schlafzimmer mit 1 komfortablen Doppelbett – ideal für Familien.",
 		gallery1606_10:
 			"Ruhiges Gästezimmer als Rückzugsort für einen erholsamen Schlaf.",
 		gallery1606_11: "Makelloses Hauptbadezimmer mit eleganten Waschbecken.",
@@ -2937,10 +3625,9 @@ export const dict = {
 			"Ich erkläre an Eides statt, dass ich für alle in diesem Aufenthalt registrierten Minderjährigen unter 18 Jahren die elterliche Sorge (patria potestad) oder eine schriftliche gesetzliche Vertretungsvollmacht besitze, gemäß dem kolumbianischen Gesetz 1581 von 2012 (Art. 7) und Gesetz 679 von 2001 / Gesetz 1336 von 2009 (ESCNNA-Prävention).",
 		registryErrMinorConsent:
 			"Bei der Registrierung von Minderjährigen unter 18 Jahren ist die Bestätigung der elterlichen Sorge oder gesetzlichen Vertretung erforderlich.",
-		privacySeoTitle:
-			"Richtlinie zur Verarbeitung personenbezogener Daten (Gesetz 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Datenschutz (Gesetz 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Offizielle Richtlinie zur Verarbeitung personenbezogener Daten (PTDP) von OceanViewFlats gemäß dem kolumbianischen Gesetz 1581 von 2012 und Dekret 1377 von 2013.",
+			"Offizielle Datenschutzrichtlinie (PTDP) von OceanViewFlats in Santa Marta gemäß dem kolumbianischen Gesetz 1581 von 2012 und Dekret 1377 von 2013.",
 		privacyBadge: "Kolumbianisches Gesetz 1581 von 2012 • Habeas Data",
 		privacyTitle: "Richtlinie zur Verarbeitung personenbezogener Daten",
 		privacySubtitle:
@@ -3026,16 +3713,189 @@ export const dict = {
 			"Smart-Lock-Türcodes werden kryptografisch zufällig generiert und enthalten niemals Ziffern Ihrer Ausweisnummer.",
 		privacyRetentionDesc:
 			"Gemäß dem Grundsatz der zeitlichen Begrenzung (Dekret 1377 Art. 11) werden personenbezogene Identifikationsdaten abgeschlossener Aufenthalte 90 Tage nach dem Check-out automatisch anonymisiert und gelöscht (oder sofort nach einem berechtigten ARCO-Löschungsantrag), wobei die gesetzlich vorgeschriebenen Finanz- und Buchhaltungsdaten erhalten bleiben.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Sonnenuntergang am Strand bei OceanViewFlats in Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 in der 17. Etage mit Blick auf das Karibische Meer in Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 in der 16. Etage mit Blick auf das Karibische Meer in Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Strandeingang des Edificio Salguero Sunset für OceanViewFlats in Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats im Edificio Salguero Sunset, Playa Salguero, Santa Marta — Datenschutzrichtlinie",
+		ogEntranceImageAlt:
+			"Haupteingang am Strand des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Unsere Strand-Apartments im Vergleich",
+		homeCompareSubtitle:
+			"Vergleichen Sie Apartment 1707 und Apartment 1606 direkt nebeneinander nach Etage, RNT-Registrierung, Nachtpreisen in kolumbianischen Pesos (COP), Bettenaufteilung und Hausregeln.",
+		homeCompareCaption:
+			"Direkter Ausstattungsvergleich zwischen Apartment mit Meerblick 1707 (17. Etage) und Apartment mit Meerblick 1606 (16. Etage) im Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Merkmal",
+		homeCompareRowFloor: "Etage",
+		homeCompare1707Floor: "17. Etage",
+		homeCompare1606Floor: "16. Etage",
+		homeCompareRowRnt: "Nationales Tourismusregister (RNT)",
+		homeCompareRowIdealFor: "Ideales Gästeprofil",
+		homeCompare1707IdealFor: "Remote-Arbeitende, Gruppen & Familien",
+		homeCompare1606IdealFor: "Paare & Familien",
+		homeCompareRowRate: "Basis-Nachtpreis (COP)",
+		homeCompare1707Rate: "Ab 450.000 COP / Nacht",
+		homeCompare1606Rate: "Ab 350.000 COP / Nacht (Hochsaison 550.000 COP)",
+		homeCompareRowMinStay: "Mindestaufenthalt",
+		homeCompare1707MinStay: "2 Nächte",
+		homeCompare1606MinStay:
+			"2 Nächte (4 Nächte Hochsaison: 15. Dez. – 15. Jan.)",
+		homeCompareRowBeds: "Schlafzimmer & Betten",
+		homeCompare1707Beds:
+			"2 Schlafzimmer • 4 Betten (1 Queen, 2 Einzelbetten, 1 Schlafsofa)",
+		homeCompare1606Beds:
+			"2 Schlafzimmer • 3 Betten (1 Queen, 1 Doppelbett, 1 Schlafsofa)",
+		homeCompareRowOccupancy: "Maximale Belegung",
+		homeCompareRowWifi: "Glasfaser-WLAN",
+		homeCompareWifiValue: "Bis zu 900 Mbps Glasfaser",
+		homeCompareRowParking: "Zugewiesener Parkplatz",
+		homeCompare1707Parking: "Inklusive — Stellplatz 95",
+		homeCompare1606Parking: "Inklusive — Stellplatz 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Selbst-Check-in mit Smart-Lock)",
+		homeCompareRowBuildingRegistrationFee: "Gebäude-Registrierungsgebühr",
+		homeCompareBuildingRegistrationFeeValue:
+			"20.000 COP pro Person (zahlbar an der Rezeption)",
+		homeCompareRowPoolMaintenance: "Pool-Wartungszeiten",
+		homeComparePoolMaintenanceValue: "Dienstags wegen Wartung geschlossen",
+		homeLocationTitle: "Lage & Mobilität in Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Beide Strand-Apartments befinden sich im Edificio Salguero Sunset (Calle 26 # 2-80) im ruhigen Wohnviertel Playa Salguero — nur einen Block vom Strand entfernt und mit direkter Straßenanbindung an Flughafen, El Rodadero, Altstadt und Tayrona-Nationalpark.",
+		homeLocBeachName: "Strand Playa Salguero",
+		homeLocBeachProximity: "1 Block • ~2 Min. zu Fuß (~150 m)",
+		homeLocBeachDesc:
+			"Direkter Fußweg vom Edificio Salguero Sunset zu einem ruhigen, weitläufigen Karibikstrand mit freiem Blick auf den Sonnenuntergang.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 Min. mit dem Auto (~3 km)",
+		homeLocRodaderoDesc:
+			"Kurze Fahrt entlang der Küste zur Promenade von El Rodadero mit Supermärkten, Apotheken, Restaurants und Bootsabfahrten nach Playa Blanca.",
+		homeLocAirportName: "Internationaler Flughafen Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 Min. mit dem Auto (~10 km)",
+		homeLocAirportDesc:
+			"Direkter Transfer über den Südkorridor per Taxi oder Fahrdienst-App, ohne den Stadtverkehr im Zentrum von Santa Marta zu durchqueren.",
+		homeLocHistoricName: "Historisches Zentrum von Santa Marta & Marina",
+		homeLocHistoricProximity: "~20–25 Min. mit dem Auto (~8 km)",
+		homeLocHistoricDesc:
+			"Bequeme Fahrt Richtung Norden zum Parque de los Novios, zur Marina Internacional de Santa Marta, zu kolonialen Plätzen, Cafés und Restaurants.",
+		homeLocTayronaName: "Tayrona-Nationalpark (Eingang El Zaino)",
+		homeLocTayronaProximity: "~50–60 Min. mit dem Auto (~40 km)",
+		homeLocTayronaDesc:
+			"Direkte Küstenstraße bis zum Haupteingang El Zaino für Tageswanderungen nach Cabo San Juan und zu den geschützten Karibikbuchten.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Verantwortlicher & Offizieller Gastgeber",
+		complianceLaw1581Badge: "Gesetz 1581 von 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Gesetz 2068 von 2020 (Tourismus / TRA-SIRE)",
+		complianceLaw679Badge: "Gesetz 679 von 2001 (ESCNNA-Schutz)",
+		reviewVerifiedGuest: "Verifizierter Gast",
+		reviewViewOnAirbnb: "Bewertungen auf dem Airbnb-Inserat prüfen",
+		faq1707Title: "Apartment mit Meerblick 1707 — Häufige Fragen",
+		faq1707Subtitle:
+			"Alles Wissenswerte zu Remote-Arbeit, Bettenaufteilung, Direktreservierungen, Check-in und Hausregeln im 17. Stock.",
+		faq1707Q1:
+			"Ist das Apartment 1707 für Remote-Arbeit und digitale Nomaden geeignet?",
+		faq1707A1:
+			"Ja. Im 17. Stock des Edificio Salguero Sunset (RNT #268781) bietet die Unterkunft 1707 stabiles 900-Mbit/s-Glasfaser-WLAN, einen ergonomischen Laptop-Arbeitsplatz und einen ruhigen Meerblick-Balkon für Videokonferenzen.",
+		faq1707Q2:
+			"Wie sind die Bettenaufteilung und der Parkplatz der Unterkunft 1707?",
+		faq1707A2:
+			"Die Unterkunft 1707 verfügt über 2 Schlafzimmer und 4 Betten für bis zu 6 Gäste: Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 2 Einzelbetten und Wohnzimmer mit 1 ausziehbaren Schlafsofa, plus 2 Vollbäder und den kostenlosen Zugewiesenen Parkplatz Stellplatz 95.",
+		faq1707Q3:
+			"Wie lauten Nachttarif, Mindestaufenthalt und Stornierungsbedingungen für Direktreservierungen?",
+		faq1707A3:
+			"Der Basistarif beträgt 450.000 COP pro Nacht (Mindestaufenthalt 2 Nächte) zuzüglich einer pauschalen Reinigungsgebühr von 100.000 COP. Direktreservierungen werden in COP mit 0 % OTA-Provision per Karte, PSE oder Bar-Gutschein (Mercado Pago) abgerechnet. Stornierung: 100 % Erstattung ab 14 Tagen vor Check-in, 50 % bei 7–13 Tagen, nicht erstattungsfähig unter 7 Tagen.",
+		faq1707Q4:
+			"Wie sind die Check-in- und Check-out-Zeiten in der Unterkunft 1707?",
+		faq1707A4:
+			"Der Check-in beginnt ab 15:00 Uhr und der Check-out erfolgt bis 11:00 Uhr. Smart-Lock-Self-Check-in ermöglicht eine reibungslose Ankunft nach Verifizierung des Gästeregisters.",
+		faq1707Q5:
+			"Wie funktionieren das Gästeregister und der Zugangscode 0XXXXXX#?",
+		faq1707A5:
+			"Vor Anreise füllt der Hauptgast das gesetzlich vorgeschriebene Online-Gästeregister aus (inkl. Datenschutz-Einwilligung nach Gesetz 1581 und Minderjährigen-Bestätigung nach Gesetz 679 bei Kindern). Danach werden der digitale Gästeführer, die Parkfreigabe für Stellplatz 95 und Ihr zufälliger temporärer Smart-Lock-Code 0XXXXXX# sofort freigeschaltet.",
+		faq1707Q6:
+			"Gibt es Gebäudegebühren oder Pool-Schließtage im Edificio Salguero Sunset?",
+		faq1707A6:
+			"Ja. Die Rezeption des Edificio Salguero Sunset erhebt bei Ankunft eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für Sicherheitsarmbänder und Gemeinschaftsbereiche. Die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
+		faq1606Title: "Apartment mit Meerblick 1606 — Häufige Fragen",
+		faq1606Subtitle:
+			"Alles Wissenswerte zu unserem romantischen Familien-Strandapartment im 16. Stock, Direktreservierungen, Check-in und Hausregeln.",
+		faq1606Q1: "Was macht das Apartment 1606 ideal für Paare und Familien?",
+		faq1606A1:
+			"Im 16. Stock des Edificio Salguero Sunset (RNT #270413), nur einen Block vom Playa Salguero entfernt, verbindet die Unterkunft 1606 eine warme, romantische und familienfreundliche Atmosphäre mit privater Sonnenuntergangsterrasse und 900-Mbit/s-Glasfaser-WLAN.",
+		faq1606Q2:
+			"Wie sind die Bettenaufteilung und der Parkplatz der Unterkunft 1606?",
+		faq1606A2:
+			"Die Unterkunft 1606 verfügt über 2 Schlafzimmer und 3 Betten für bis zu 6 Gäste: Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 1 Doppelbett und Wohnzimmer mit 1 ausziehbaren Schlafsofa, plus 2 Vollbäder und den kostenlosen Zugewiesenen Parkplatz Stellplatz 87.",
+		faq1606Q3:
+			"Wie lauten Nachttarif, Mindestaufenthalt und Stornierungsbedingungen für Direktreservierungen?",
+		faq1606A3:
+			"Der Basistarif beträgt 350.000 COP pro Nacht (Mindestaufenthalt 2 Nächte; Hochsaison 15. Dez.–15. Jan.: 550.000 COP pro Nacht, Mindestaufenthalt 4 Nächte) zuzüglich einer pauschalen Reinigungsgebühr von 80.000 COP. Direktreservierungen in COP mit 0 % OTA-Provision per Karte, PSE oder Bar-Gutschein (Mercado Pago). Stornierung: 100 % bei ≥14 Tagen, 50 % bei 7–13 Tagen, nicht erstattungsfähig unter 7 Tagen.",
+		faq1606Q4:
+			"Wie sind die Check-in- und Check-out-Zeiten in der Unterkunft 1606?",
+		faq1606A4:
+			"Der Check-in beginnt ab 15:00 Uhr und der Check-out erfolgt bis 11:00 Uhr. Smart-Lock-Self-Check-in ermöglicht eine reibungslose Ankunft nach Verifizierung des Gästeregisters.",
+		faq1606Q5:
+			"Wie funktionieren das Gästeregister und der Zugangscode 0XXXXXX#?",
+		faq1606A5:
+			"Vor Anreise füllt der Hauptgast das gesetzlich vorgeschriebene Online-Gästeregister aus (inkl. Datenschutz-Einwilligung nach Gesetz 1581 und Minderjährigen-Bestätigung nach Gesetz 679 bei Kindern). Danach werden der digitale Gästeführer, die Parkfreigabe für Stellplatz 87 und Ihr zufälliger temporärer Smart-Lock-Code 0XXXXXX# sofort freigeschaltet.",
+		faq1606Q6:
+			"Gibt es Gebäudegebühren oder Pool-Schließtage im Edificio Salguero Sunset?",
+		faq1606A6:
+			"Ja. Die Rezeption des Edificio Salguero Sunset erhebt bei Ankunft eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für Sicherheitsarmbänder und Gemeinschaftsbereiche. Die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Hauptnavigation",
+		breadcrumbLabel: "Brotkrumen-Navigation",
+		breadcrumbHome: "Startseite",
+		hero1707ImgAlt:
+			"Apartment 1707 in der 17. Etage direkt am Strand mit Blick auf das Karibische Meer im Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Apartment 1606 in der 16. Etage direkt am Strand mit warmem Sonnenuntergangsblick im Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Helles Wohn- und Esszimmer in der 17. Etage des Apartments 1707 im Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Swimmingpool direkt am Strand und Sonnendeck im Edificio Salguero Sunset für Gäste des Apartments 1707 in Playa Salguero",
+		about1606LivingAlt:
+			"Sonniger Küsten-Wohnbereich und Familienlounge in der 16. Etage des Apartments 1606 im Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Pool mit Meerblick und palmenbestandene Terrasse im Edificio Salguero Sunset für Gäste des Apartments 1606 in Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, Gastgeber und Verantwortlicher von OceanViewFlats in Santa Marta",
+		mainEntranceImgAlt:
+			"Strandseitiger Haupteingang und Empfangshalle des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		breadcrumbPrivacy: "Datenschutzrichtlinie",
+		schemaWebSiteDescription:
+			"Direkt buchbare Strand-Ferienunterkünfte in Playa Salguero, Santa Marta, Kolumbien mit verbindlichen COP-Preisen und 0 % OTA-Provision.",
+		schemaLodgingDescription:
+			"Strandnahe Ferienunterkünfte (1707 & 1606) im Edificio Salguero Sunset in Playa Salguero, Santa Marta, Kolumbien mit 900-Mbps-Glasfaser-WLAN, zugewiesenem Parkplatz und Direktreservierung in COP.",
+		schemaContactPageName: "OceanViewFlats kontaktieren",
+		schemaPaymentAccepted:
+			"Kreditkarte, Debitkarte, PSE-Banküberweisung, Bar-Gutschein (Efecty über Mercado Pago)",
+		schemaMasterBedroom: "Hauptschlafzimmer",
+		schemaGuestBedroom: "Gästezimmer",
+		schemaLivingRoom: "Wohnzimmer",
+		schemaAmenityParking1707: "Zugewiesener Parkplatz — Stellplatz 95",
+		schemaAmenityParking1606: "Zugewiesener Parkplatz — Stellplatz 87",
+		schemaAmenityLaundry:
+			"Waschküche in der Unterkunft (Waschmaschine & Trockner)",
+		schemaAmenityWorkspace: "Eigener Laptop-Arbeitsplatz",
 	},
 	ja: {
-		seoHomeTitle:
-			"サンタマルタ バケーションレンタル | 直接予約で最安値 | OceanViewFlats",
+		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
 		seoHomeDescription:
-			"サンタマルタ、プラヤ・サルグエロのビーチフロント貸別荘を直接予約。仲介手数料最大20%オフ。900 Mbps高速Wi-Fi、プール、美しい夕日を完備。",
-		seoTitle:
-			"オーシャンビューフラット 1707 | サンタマルタ、プラヤ・サルグエロのバケーションレンタル",
+			"サンタマルタ・プラヤサルグエロのビーチフロント宿泊施設を直接予約。OTA手数料0%で最大20%お得。900Mbps高速Wi-Fi、プール、カリブ海の夕日。",
+		seoTitle: "サンタマルタ・プラヤサルグエロ 1707 | OceanViewFlats",
 		seoDescription:
-			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707で、ビーチフロントの滞在をご予約ください。デジタルノマドに最適で、高速Wi-Fi、プール、カリブ海の美しい夕日をお楽しみいただけます。今すぐ直接予約しましょう。",
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1707を直接予約。17階オーシャンフロントでリモートワークや家族滞在に最適。900Mbps Wi-Fi・プール完備。",
 		navBook: "当サイトで予約",
 		navBookDirect: "直接予約",
 		heroTitle: "オーシャンビューフラット 1707",
@@ -3051,9 +3911,9 @@ export const dict = {
 		nomadBadgeSub: "ビデオ通話に最適",
 		aboutTitle: "お部屋について",
 		aboutText1:
-			"海の壮大な景色と素晴らしい夕日を楽しめる、17階のモダンなアパートメントをご堪能ください！ビーチからわずか1ブロックの、閑静な高級住宅街に位置しています。",
+			"プラヤ・サルグエロのビーチからわずか1ブロック、Edificio Salguero Sunsetの17階にあるモダンなビーチフロント物件です。カリブ海に沈むパノラマの夕日、900 Mbps光ファイバーWi-Fi、人間工学に基づいたワークスペースをお楽しみください。",
 		aboutText2:
-			"2つのベッドルーム、2つのバスルーム、快適なソファベッド、プライベートテラス、設備の整ったキッチン、高速Wi-Fi、室内の洗濯機、無料駐車場を備えています。",
+			"2ベッドルーム・4ベッド（主寝室：クイーンベッド1台、ゲスト寝室：シングル／ツインベッド2台、リビング：引き出し式ソファベッド1台）で最大6名様まで宿泊可能。バスルーム2室、海を望むプライベートテラス、設備の整ったキッチン、室内洗濯機、スマートロックによるセルフチェックイン、専用駐車スペース 95番（Bay 95）を備えています。",
 		amenitiesTitle: "主な設備",
 		amWifi: "高速Wi-Fi",
 		amKitchen: "設備の整ったキッチン",
@@ -3065,7 +3925,7 @@ export const dict = {
 		amOcean: "素晴らしいオーシャンビュー",
 		calendarTitle: "日付を選択して予約",
 		calendarSubtitle:
-			"旅行の日程を下からお選びください。空室状況を確認し予約を完了するために、Airbnbに安全にリダイレクトされます。",
+			"下でチェックイン日とチェックアウト日を選択すると、OTA手数料0%のコロンビアペソ（COP）建て公式見積もりをリアルタイムで算出できます。クレジットカード・デビットカード、PSE、現金バウチャー（Mercado Pago）でオンライン直接予約を完了できるほか、外部チャネルとしてAirbnbも任意でご利用いただけます。",
 		checkIn: "チェックイン",
 		checkOut: "チェックアウト",
 		addDate: "日付を追加",
@@ -3082,7 +3942,8 @@ export const dict = {
 			"カリブ海を眺めながらインスピレーションを見つけてください。",
 		nomadImgAlt: "デジタルノマドのワークスペース",
 		romanticImgAlt: "サンセットを望むプライベートテラス",
-		heroImgAlt: "バルコニーからのオーシャンビュー",
+		heroImgAlt:
+			"サンタマルタ・プラヤサルゲロのOceanViewFlats海辺バルコニーから望むカリブ海の夕日パノラマビュー",
 		heroLocation:
 			"Edificio Salguero Sunset • コロンビア、サンタマルタ、プラヤ・サルグエロ",
 		aboutBedroomAlt: "ベッドルーム",
@@ -3104,9 +3965,9 @@ export const dict = {
 		amRomanticDesc:
 			"プライベートテラスでワインを飲みながら、カリブ海に沈む夕日を眺めましょう。",
 		about1606Text1:
-			"16階にある素晴らしい隠れ家を体験してください。ビーチからわずか数歩の場所で、息をのむようなオーシャンビュー、暖かなそよ風、そして穏やかな雰囲気をお楽しみください。",
+			"プラヤ・サルグエロのビーチからすぐ、Edificio Salguero Sunsetの16階にある穏やかなビーチフロントの隠れ家です。カップルやご家族向けに設計され、カリブ海の美しい夕日と900 Mbps光ファイバーWi-Fiをお楽しみいただけます。",
 		about1606Text2:
-			"2つのベッドルーム、2つのバスルーム、プライベートテラス、設備の整ったキッチン、高速Wi-Fiを備え、リラックスに最適な居心地の良い雰囲気が自慢です。",
+			"2ベッドルーム・3ベッド（主寝室：クイーンベッド1台、ゲスト寝室：ダブルベッド1台、リビング：引き出し式ソファベッド1台）で最大6名様まで宿泊可能。バスルーム2室、サンセットテラス、設備の整ったキッチン、室内洗濯機、スマートロックによるセルフチェックイン、専用駐車スペース 87番（Bay 87）を備えています。",
 		reviewsTitle: "ゲストの体験",
 		review1Text:
 			"「リラックスや家族との時間に最適な場所で、写真の通りでした。ホストのサービスも素晴らしく、非常におすすめです。」",
@@ -3117,10 +3978,9 @@ export const dict = {
 		review1707Text:
 			"「素晴らしい景色と美しい夕日を楽しめる、とても素敵で可愛いアパートメントです。建物の設備も非常に充実しており、スタッフ全員の対応もとても親切でした。おすすめです。」",
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"オーシャンビューフラット 1606 | ロマンチック＆ファミリー ビーチフロントレンタル",
+		seo1606Title: "サンタマルタ・プラヤサルグエロ 1606 | OceanViewFlats",
 		seo1606Description:
-			"プラヤ・サルグエロのオーシャンビューフラット 1606で、穏やかなビーチフロントの滞在を予約しましょう。カップルや家族に最適で、カリブ海の美しい夕日とモダンな贅沢を楽しめます。今すぐ直接予約しましょう。",
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1606を直接予約。16階ビーチフロントでカップルや家族に最適。900Mbps Wi-Fi、プール、美しい夕日。",
 		homeWelcome: "OceanViewFlatsへようこそ",
 		homeSubtitle: "サンタマルタで最高のビーチフロント滞在を見つけましょう。",
 		homeHeroValueProp:
@@ -3223,9 +4083,10 @@ export const dict = {
 			"チェックアウト日はチェックイン日より後の日付にしてください。",
 		contactOptional: "任意",
 		contactRequired: "必須",
-		seoContactTitle: "お問い合わせ | OceanViewFlats サンタマルタ",
+		seoContactTitle:
+			"お問い合わせ | OceanViewFlats サンタマルタ・プラヤサルグエロ",
 		seoContactDescription:
-			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707および1606についてのお問い合わせ、ご予約、ご質問はこちらからお気軽にご連絡ください。",
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1707・1606に関するお問い合わせや直接予約のご相談はこちらからご連絡ください。",
 		contactAddressLabel: "住所",
 		contactEmailLabel: "メールアドレス",
 		contactPhoneLabel: "電話サポート",
@@ -3280,7 +4141,7 @@ export const dict = {
 		gallery1606_8:
 			"上質なリネンで整えられた、風通しの良い快適なマスタースイート。",
 		gallery1606_9:
-			"ファミリーに最適な、ダブルベッドが置かれた温かみのある客室。",
+			"ファミリーに最適な、ダブルベッド1台を備えた温かみのある客室。",
 		gallery1606_10: "穏やかな眠りを約束する、静かで落ち着いたゲストルーム。",
 		gallery1606_11: "エレガントな洗面台を備えた、非常に清潔なバスルーム。",
 		gallery1606_12:
@@ -3544,7 +4405,7 @@ export const dict = {
 		privacySeoTitle:
 			"個人情報処理方針（法第1581号） | OceanViewFlats サンタマルタ",
 		privacySeoDescription:
-			"2012年コロンビア法定法第1581号および2013年政令第1377号に基づくOceanViewFlatsの公式個人情報処理方針（PTDP）。",
+			"サンタマルタのOceanViewFlatsによる2012年コロンビア法定法第1581号・2013年政令第1377号に基づく公式個人情報処理方針（PTDP）。",
 		privacyBadge: "2012年コロンビア法定法第1581号 • Habeas Data",
 		privacyTitle: "個人情報処理方針（プライバシーポリシー）",
 		privacySubtitle:
@@ -3626,6 +4487,178 @@ export const dict = {
 			"スマートロックの暗証番号は暗号論的乱数により生成され、身分証明書番号の数字が含まれることはありません。",
 		privacyRetentionDesc:
 			"一時性の原則（政令第1377号第11条）に従い、終了した宿泊の個人識別データはチェックアウト日から90日後に自動的に匿名化・消去されます（またはARCO削除請求の承認時に即時消去されます）。なお、税務・会計法規で求められる集計財務記録は保持されます。",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"サンタマルタ・プラヤサルグエロのOceanViewFlatsから望むビーチフロントの夕日",
+		og1707ImageAlt:
+			"サンタマルタ・プラヤサルグエロのカリブ海を望む17階オーシャンフロント OceanViewFlats 1707",
+		og1606ImageAlt:
+			"サンタマルタ・プラヤサルグエロのカリブ海を望む16階ビーチフロント OceanViewFlats 1606",
+		ogContactImageAlt:
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats（Edificio Salguero Sunset）ビーチフロント入口",
+		ogPrivacyImageAlt:
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats — 個人情報処理方針",
+		ogEntranceImageAlt:
+			"サンタマルタ・プラヤサルグエロのEdificio Salguero Sunsetビーチフロント正面入口",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "ビーチフロント物件の比較",
+		homeCompareSubtitle:
+			"1707号室と1606号室を、階数、RNT登録番号、コロンビア・ペソ（COP）の基本宿泊料金、ベッド構成、館内規定ごとに一覧で比較できます。",
+		homeCompareCaption:
+			"サンタマルタ・プラヤ・サルグエロのEdificio Salguero Sunsetにあるオーシャンビューフラット1707（17階）とオーシャンビューフラット1606（16階）の仕様比較。",
+		homeCompareColFeature: "項目",
+		homeCompareRowFloor: "階数",
+		homeCompare1707Floor: "17階",
+		homeCompare1606Floor: "16階",
+		homeCompareRowRnt: "コロンビア国家観光登録（RNT）",
+		homeCompareRowIdealFor: "おすすめの宿泊タイプ",
+		homeCompare1707IdealFor: "リモートワーカー・グループ・ご家族向け",
+		homeCompare1606IdealFor: "カップル・ご家族向け",
+		homeCompareRowRate: "基本宿泊料金（COP）",
+		homeCompare1707Rate: "1泊 450,000 COP〜",
+		homeCompare1606Rate: "1泊 350,000 COP〜（繁忙期 550,000 COP）",
+		homeCompareRowMinStay: "最低宿泊数",
+		homeCompare1707MinStay: "2泊〜",
+		homeCompare1606MinStay: "2泊〜（繁忙期 12月15日〜1月15日は4泊〜）",
+		homeCompareRowBeds: "寝室・ベッド構成",
+		homeCompare1707Beds:
+			"2 寝室 • 4 ベッド（クイーン1台、シングル2台、ソファベッド1台）",
+		homeCompare1606Beds:
+			"2 寝室 • 3 ベッド（クイーン1台、ダブル1台、ソファベッド1台）",
+		homeCompareRowOccupancy: "最大定員",
+		homeCompareRowWifi: "光ファイバーWi-Fi",
+		homeCompareWifiValue: "最大 900 Mbps 光ファイバー",
+		homeCompareRowParking: "専用駐車区画",
+		homeCompare1707Parking: "無料付属 — 駐車区画 95番",
+		homeCompare1606Parking: "無料付属 — 駐車区画 87番",
+		homeCompareRowCheckInOut: "チェックイン / チェックアウト",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00（スマートロックによるセルフチェックイン）",
+		homeCompareRowBuildingRegistrationFee: "建物登録料",
+		homeCompareBuildingRegistrationFeeValue:
+			"お一人様 20,000 COP（フロントにて現地払い）",
+		homeCompareRowPoolMaintenance: "プールメンテナンス休業日",
+		homeComparePoolMaintenanceValue: "毎週火曜日はメンテナンスのため休業",
+		homeLocationTitle: "プラヤ・サルグエロの立地と周辺アクセス",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"両物件は静かな住宅エリアであるプラヤ・サルグエロのEdificio Salguero Sunset（Calle 26 # 2-80）に位置し、ビーチまで徒歩1ブロック。空港、エル・ロダデロ、旧市街、タイロナ国立公園へのアクセスもスムーズです。",
+		homeLocBeachName: "プラヤ・サルグエロ・ビーチ",
+		homeLocBeachProximity: "1ブロック • 徒歩約2分（約150 m）",
+		homeLocBeachDesc:
+			"Edificio Salguero Sunsetを出てすぐ。混雑が少なく穏やかなカリブ海の砂浜で散策やサンセットを楽しめます。",
+		homeLocRodaderoName: "エル・ロダデロ（El Rodadero）",
+		homeLocRodaderoProximity: "車で約5〜10分（約3 km）",
+		homeLocRodaderoDesc:
+			"海岸沿いに少し走るだけで、プロムナード、スーパーマーケット、薬局、レストラン、プラヤ・ブランカ行きボート乗り場にアクセスできます。",
+		homeLocAirportName: "シモン・ボリバル国際空港（SMR）",
+		homeLocAirportProximity: "車で約15〜20分（約10 km）",
+		homeLocAirportDesc:
+			"サンタマルタ中心部の渋滞を避け、南部ルートからタクシーや配車アプリでスムーズに空港へ移動できます。",
+		homeLocHistoricName: "サンタマルタ旧市街（Centro Histórico・マリーナ）",
+		homeLocHistoricProximity: "車で約20〜25分（約8 km）",
+		homeLocHistoricDesc:
+			"ノビオス公園、サンタマルタ国際マリーナ、コロニアル様式の広場、カフェ、シーフードレストランへ北上して気軽にアクセスできます。",
+		homeLocTayronaName: "タイロナ国立公園（El Zaino 入口）",
+		homeLocTayronaProximity: "車で約50〜60分（約40 km）",
+		homeLocTayronaDesc:
+			"沿岸の幹線道路からメインゲートEl Zainoへ直結しており、カボ・サン・フアン方面への日帰りハイキングの拠点に最適です。",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "データ管理者および公式ホスト",
+		complianceLaw1581Badge: "法第1581号（個人情報保護）",
+		complianceLaw2068Badge: "法第2068号（観光法 / TRA-SIRE）",
+		complianceLaw679Badge: "法第679号（未成年者保護 ESCNNA）",
+		reviewVerifiedGuest: "認証済みゲスト",
+		reviewViewOnAirbnb: "Airbnb掲載ページでレビューを確認する",
+		faq1707Title: "オーシャンビューフラット 1707 — よくある質問",
+		faq1707Subtitle:
+			"17階でのリモートワーク環境、ベッド構成、直接予約、チェックイン、建物ルールについてご案内します。",
+		faq1707Q1:
+			"オーシャンビューフラット 1707はリモートワークやデジタルノマドに適していますか？",
+		faq1707A1:
+			"はい。Edificio Salguero Sunsetの17階（RNT #268781）に位置し、安定した900 Mbps光ファイバーWi-Fi、人間工学に基づいたワークスペース、ビデオ通話にも最適な静かな海辺のバルコニーを備えています。",
+		faq1707Q2:
+			"物件 1707のベッド構成と専用駐車スペースについて教えてください。",
+		faq1707A2:
+			"物件 1707は2ベッドルーム・4ベッドで最大6名様まで宿泊できます（主寝室：クイーンベッド1台、ゲスト寝室：シングル／ツインベッド2台、リビング：引き出し式ソファベッド1台）。バスルーム2室と無料の専用駐車スペース 95番（Bay 95）が含まれます。",
+		faq1707Q3:
+			"直接予約の宿泊料金、最低宿泊数、キャンセルポリシーはどうなっていますか？",
+		faq1707A3:
+			"基本料金は1泊 450,000 COP（最低2泊）に一律 100,000 COPの清掃料金が加算されます。直接予約はOTA手数料0%のCOP建てで、カード・PSE・現金バウチャー（Mercado Pago）にて決済可能です。キャンセル規定：チェックイン14日前以上は100%返金、7〜13日前は50%返金、7日未満は返金不可です。",
+		faq1707Q4: "物件 1707のチェックイン・チェックアウト時間は何時ですか？",
+		faq1707A4:
+			"チェックインは15:00（午後3時）から、チェックアウトは11:00（午前11時）までです。事前の宿泊者名簿が確認され次第、スマートロックによるセルフチェックインが可能です。",
+		faq1707Q5:
+			"宿泊者名簿とスマートロック暗証番号（0XXXXXX#）の解除手順を教えてください。",
+		faq1707A5:
+			"ご到着前に代表宿泊者がオンライン宿泊者名簿（コロンビア法第1581号の個人情報同意および未成年同伴時の法第679号保護者宣誓を含む）を提出します。送信完了後、デジタルゲストガイド、専用駐車スペース 95番（Bay 95）の許可、暗号論的乱数による一時的な0XXXXXX#スマートロック暗証番号が即時に解除されます。",
+		faq1707Q6:
+			"Edificio Salguero Sunsetの建物登録料やプールの休業日はありますか？",
+		faq1707A6:
+			"はい。ご到着時にEdificio Salguero Sunsetフロントにて、セキュリティリストバンドと共用エリア利用のための建物登録料（1名あたり20,000 COP、初回のみ）をお支払いいただきます。また、建物のプールは定期メンテナンスのため毎週火曜日が休業です。",
+		faq1606Title: "オーシャンビューフラット 1606 — よくある質問",
+		faq1606Subtitle:
+			"16階のロマンチック＆ファミリー向けビーチフロント物件、直接予約、チェックイン、建物ルールについてご案内します。",
+		faq1606Q1:
+			"オーシャンビューフラット 1606がカップルやご家族に最適な理由は何ですか？",
+		faq1606A1:
+			"プラヤ・サルグエロのビーチから1ブロック、Edificio Salguero Sunsetの16階（RNT #270413）に位置し、温かく穏やかな海辺の空間、カリブ海の夕日を望むプライベートテラス、900 Mbps光ファイバーWi-Fiを備えています。",
+		faq1606Q2:
+			"物件 1606のベッド構成と専用駐車スペースについて教えてください。",
+		faq1606A2:
+			"物件 1606は2ベッドルーム・3ベッドで最大6名様まで宿泊できます（主寝室：クイーンベッド1台、ゲスト寝室：ダブルベッド1台、リビング：引き出し式ソファベッド1台）。バスルーム2室と無料の専用駐車スペース 87番（Bay 87）が含まれます。",
+		faq1606Q3:
+			"直接予約の宿泊料金、最低宿泊数、キャンセルポリシーはどうなっていますか？",
+		faq1606A3:
+			"基本料金は1泊 350,000 COP（最低2泊、12月15日〜1月15日のピーク期は1泊 550,000 COP・最低4泊）に一律 80,000 COPの清掃料金が加算されます。直接予約はOTA手数料0%のCOP建てで、カード・PSE・現金バウチャー（Mercado Pago）に対応。キャンセル規定：14日前以上100%返金、7〜13日前50%返金、7日未満返金不可です。",
+		faq1606Q4: "物件 1606のチェックイン・チェックアウト時間は何時ですか？",
+		faq1606A4:
+			"チェックインは15:00（午後3時）から、チェックアウトは11:00（午前11時）までです。事前の宿泊者名簿が確認され次第、スマートロックによるセルフチェックインが可能です。",
+		faq1606Q5:
+			"宿泊者名簿とスマートロック暗証番号（0XXXXXX#）の解除手順を教えてください。",
+		faq1606A5:
+			"ご到着前に代表宿泊者がオンライン宿泊者名簿（コロンビア法第1581号の個人情報同意および未成年同伴時の法第679号保護者宣誓を含む）を提出します。送信完了後、デジタルゲストガイド、専用駐車スペース 87番（Bay 87）の許可、暗号論的乱数による一時的な0XXXXXX#スマートロック暗証番号が即時に解除されます。",
+		faq1606Q6:
+			"Edificio Salguero Sunsetの建物登録料やプールの休業日はありますか？",
+		faq1606A6:
+			"はい。ご到着時にEdificio Salguero Sunsetフロントにて、セキュリティリストバンドと共用エリア利用のための建物登録料（1名あたり20,000 COP、初回のみ）をお支払いいただきます。また、建物のプールは定期メンテナンスのため毎週火曜日が休業です。",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "メインナビゲーション",
+		breadcrumbLabel: "パンくずリスト",
+		breadcrumbHome: "ホーム",
+		hero1707ImgAlt:
+			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット17階オーシャンビュー1707号室のカリブ海眺望スイート",
+		hero1606ImgAlt:
+			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット16階オーシャンビュー1606号室のサンセット海辺スイート",
+		about1707LivingAlt:
+			"サンタマルタのエディフィシオ・サルゲロ・サンセット17階・1707号室の明るいオープンリビング・ダイニング空間",
+		about1707PoolAlt:
+			"プラヤサルゲロのエディフィシオ・サルゲロ・サンセットで1707号室ゲストが利用できる海辺のプールとサンデッキ",
+		about1606LivingAlt:
+			"サンタマルタのエディフィシオ・サルゲロ・サンセット16階・1606号室の陽当たり豊かな海辺リビング・ファミリーラウンジ",
+		about1606PoolAlt:
+			"サンタマルタのエディフィシオ・サルゲロ・サンセットで1606号室ゲストが利用できるオーシャンフロントプールとヤシ並木テラス",
+		hostImgAlt:
+			"サンタマルタのOceanViewFlatsホスト兼管理者マヌエル・エンリケ・エレーラのポートレート",
+		mainEntranceImgAlt:
+			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット海辺メインエントランスとロビー",
+		// #303 structured data & JSON-LD
+		breadcrumbPrivacy: "個人データ処理ポリシー",
+		schemaWebSiteDescription:
+			"コロンビア・サンタマルタのプラヤ・サルグエロにあるビーチフロント直接予約物件。公式COP見積もりとOTA手数料0%で滞在できます。",
+		schemaLodgingDescription:
+			"コロンビア・サンタマルタのプラヤ・サルグエロ、Edificio Salguero Sunset内のビーチフロント物件（1707・1606）。900 Mbps光回線Wi-Fi、専用駐車スペース、COP建て直接予約に対応。",
+		schemaContactPageName: "OceanViewFlatsへのお問い合わせ",
+		schemaPaymentAccepted:
+			"クレジットカード、デビットカード、PSE銀行振込、現金バウチャー（Mercado Pago経由Efecty）",
+		schemaMasterBedroom: "主寝室",
+		schemaGuestBedroom: "ゲスト用寝室",
+		schemaLivingRoom: "リビングルーム",
+		schemaAmenityParking1707: "専用駐車スペース — 95番（Bay 95）",
+		schemaAmenityParking1606: "専用駐車スペース — 87番（Bay 87）",
+		schemaAmenityLaundry: "室内ランドリー（洗濯機・乾燥機）",
+		schemaAmenityWorkspace: "専用ワークスペース（リモートワーク対応）",
 	},
 };
 

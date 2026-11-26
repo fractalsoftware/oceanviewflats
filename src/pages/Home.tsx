@@ -1,15 +1,21 @@
 import {
 	ArrowRight,
+	Building2,
 	Calendar as CalendarIcon,
 	ChevronDown,
+	Compass,
 	Heart,
+	Landmark,
 	MapPin,
 	MessageCircle,
 	MessageSquare,
 	Percent,
+	Plane,
 	ShieldCheck,
 	Sparkles,
+	Trees,
 	Users,
+	Waves,
 	Wifi,
 } from "lucide-react";
 import React from "react";
@@ -22,7 +28,10 @@ import {
 	HOME_EXPERIENCE_CARDS,
 	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
+	HOME_PROPERTY_COMPARISON_ROWS,
+	IMAGE_DIMENSIONS,
 	IMAGES,
+	PLAYA_SALGUERO_LANDMARKS,
 } from "../constants/config";
 import { HOME_CARD_THEMES, HOME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
@@ -32,6 +41,14 @@ const EXPERIENCE_FEATURE_ICONS = {
 	wifi: Wifi,
 	users: Users,
 	heart: Heart,
+} as const;
+
+const LANDMARK_ICONS = {
+	waves: Waves,
+	compass: Compass,
+	plane: Plane,
+	landmark: Landmark,
+	trees: Trees,
 } as const;
 
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
@@ -55,6 +72,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
 						alt={t.heroImgAlt}
+						width={IMAGE_DIMENSIONS.homeHero.width}
+						height={IMAGE_DIMENSIONS.homeHero.height}
 						className={HOME_THEME.heroImage}
 						fetchPriority="high"
 						loading="eager"
@@ -103,8 +122,11 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 										<img
 											src={`${assetPrefix}${IMAGES[card.imageKey].hero}`}
 											className={cardTheme.cardImage}
-											alt={t[card.titleKey]}
+											alt={t[card.imageAltKey]}
+											width={IMAGE_DIMENSIONS[card.imageKey].hero.width}
+											height={IMAGE_DIMENSIONS[card.imageKey].hero.height}
 											loading="lazy"
+											decoding="async"
 										/>
 										<div className={cardTheme.cardOverlay}></div>
 										<span className={cardTheme.cardBadge}>
@@ -175,6 +197,67 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							<span>{t.navContact}</span>
 							<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
 						</a>
+					</div>
+				</section>
+
+				{/* Property Side-by-Side Comparison Table Section */}
+				<section id="compare-properties" className={HOME_THEME.compareSection}>
+					<div className={HOME_THEME.compareContainer}>
+						<div className={HOME_THEME.compareHeader}>
+							<h2 className={HOME_THEME.compareTitle}>{t.homeCompareTitle}</h2>
+							<p className={HOME_THEME.compareSubtitle}>
+								{t.homeCompareSubtitle}
+							</p>
+						</div>
+
+						{/* biome-ignore lint/a11y/useSemanticElements: keep region wrapper as <div> inside outer <section id="compare-properties"> */}
+						<div
+							// biome-ignore lint/a11y/noNoninteractiveTabindex: WAI scrollable table region requires keyboard focusability on overflow
+							tabIndex={0}
+							role="region"
+							aria-labelledby="home-comparison-caption"
+							className={HOME_THEME.compareTableWrapper}
+						>
+							<table className={HOME_THEME.compareTable}>
+								<caption
+									id="home-comparison-caption"
+									className={HOME_THEME.compareCaption}
+								>
+									{t.homeCompareCaption}
+								</caption>
+								<thead className={HOME_THEME.compareThead}>
+									<tr>
+										<th
+											scope="col"
+											className={HOME_THEME.compareColHeaderFirst}
+										>
+											{t.homeCompareColFeature}
+										</th>
+										<th scope="col" className={HOME_THEME.compareColHeader}>
+											{t.heroTitle}
+										</th>
+										<th scope="col" className={HOME_THEME.compareColHeader}>
+											{t.hero1606Title}
+										</th>
+									</tr>
+								</thead>
+								<tbody className={HOME_THEME.compareTbody}>
+									{HOME_PROPERTY_COMPARISON_ROWS.map((row) => (
+										<tr key={row.id} className={HOME_THEME.compareRow}>
+											<th scope="row" className={HOME_THEME.compareRowHeader}>
+												{t[row.labelKey]}
+											</th>
+											<td className={HOME_THEME.compareCell}>
+												{t[row.val1707Key]}
+											</td>
+											<td className={HOME_THEME.compareCell}>
+												{t[row.val1606Key]}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</section>
 
@@ -268,8 +351,11 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											<img
 												src={`${assetPrefix}${card.imageSrc}`}
 												alt={t[card.imageAltKey]}
+												width={card.imageWidth}
+												height={card.imageHeight}
 												className={HOME_THEME.editorialCardImage}
 												loading="lazy"
+												decoding="async"
 											/>
 											<span className={HOME_THEME.experiencesCardBadge}>
 												{t[card.titleKey]} • {t[card.badgeKey]}
@@ -331,9 +417,12 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							<div className={HOME_THEME.hostAvatarWrapper}>
 								<img
 									src={`${assetPrefix}${IMAGES.general.host}`}
-									alt={t.hostName}
+									alt={t.hostImgAlt}
+									width={IMAGE_DIMENSIONS.host.width}
+									height={IMAGE_DIMENSIONS.host.height}
 									className={HOME_THEME.hostAvatarImg}
 									loading="lazy"
+									decoding="async"
 								/>
 							</div>
 							<div>
@@ -355,6 +444,51 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								</span>
 							</div>
 						</div>
+					</div>
+				</section>
+
+				{/* Playa Salguero Location & Santa Marta Proximity Section */}
+				<section id="location" className={HOME_THEME.locationSection}>
+					<div className={HOME_THEME.locationContainer}>
+						<div className={HOME_THEME.locationHeader}>
+							<p className={HOME_THEME.locationAddressBadge}>
+								<Building2 className={HOME_THEME.iconSm} aria-hidden="true" />
+								<span>{t.homeLocationAddress}</span>
+							</p>
+							<h2 className={HOME_THEME.locationTitle}>
+								{t.homeLocationTitle}
+							</h2>
+							<p className={HOME_THEME.locationSubtitle}>
+								{t.homeLocationSubtitle}
+							</p>
+						</div>
+
+						<ul className={HOME_THEME.locationGrid}>
+							{PLAYA_SALGUERO_LANDMARKS.map((landmark) => {
+								const LandmarkIcon = LANDMARK_ICONS[landmark.iconId];
+								return (
+									<li key={landmark.id} className={HOME_THEME.locationCard}>
+										<div className={HOME_THEME.locationCardTop}>
+											<div className={HOME_THEME.locationIconBox}>
+												<LandmarkIcon
+													className={HOME_THEME.iconMd}
+													aria-hidden="true"
+												/>
+											</div>
+											<span className={HOME_THEME.locationProximityBadge}>
+												{t[landmark.proximityKey]}
+											</span>
+										</div>
+										<h3 className={HOME_THEME.locationCardTitle}>
+											{t[landmark.nameKey]}
+										</h3>
+										<p className={HOME_THEME.locationCardDesc}>
+											{t[landmark.descKey]}
+										</p>
+									</li>
+								);
+							})}
+						</ul>
 					</div>
 				</section>
 

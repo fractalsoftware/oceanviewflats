@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Relative asset path calculation for endpoints and cross-links (guide views are located in /guide/)
 	const registryPageName =
-		lang === "en" ? "registry/index.html" : `registry/${lang}.html`;
+		lang === "en" ? "registry/" : `registry/${lang}.html`;
 
 	// Safely sanitize URLs before assigning to href (blocks javascript:, data:, and protocol-relative // URLs)
 	function sanitizeUrl(url) {

@@ -14,6 +14,7 @@ import {
 	getGuidePagePath,
 	getHomePagePath,
 	getRegistryPagePath,
+	IMAGE_DIMENSIONS,
 	IMAGES,
 } from "../constants/config";
 import { BOOKING_SUCCESS_THEME } from "../constants/theme";
@@ -44,6 +45,10 @@ export default function BookingSuccess({
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
 						alt={t.heroImgAlt}
+						width={IMAGE_DIMENSIONS.homeHero.width}
+						height={IMAGE_DIMENSIONS.homeHero.height}
+						fetchPriority="high"
+						loading="eager"
 						className={BOOKING_SUCCESS_THEME.bgImage}
 					/>
 					<div className={BOOKING_SUCCESS_THEME.bgOverlay}></div>

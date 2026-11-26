@@ -70,11 +70,11 @@ export const BookingSection = ({
 
 						{/* Right: Booking Details */}
 						<div className="p-8 md:p-10 flex flex-col justify-center">
-							<h3
+							<h2
 								className={`text-2xl md:text-3xl font-bold mb-3 ${theme.headingColor}`}
 							>
 								{t.calendarTitle}
-							</h3>
+							</h2>
 							<p
 								className={`${theme.textColor} opacity-80 mb-8 leading-relaxed`}
 							>
@@ -121,11 +121,11 @@ export const BookingSection = ({
 								id="price-breakdown-card"
 								className={`hidden ${theme.bookingCaptchaBoxBg} p-6 rounded-2xl mb-6 transition-all duration-300`}
 							>
-								<h4
+								<h3
 									className={`font-bold ${theme.textColor} text-sm mb-4 uppercase tracking-wider`}
 								>
 									{t.dbPriceBreakdown}
-								</h4>
+								</h3>
 								<div className="space-y-3 text-sm">
 									<div className="flex justify-between text-slate-600">
 										<span id="rate-breakdown-label">{t.dbAccommodation}</span>
@@ -187,11 +187,11 @@ export const BookingSection = ({
 								data-mp-public-key={MERCADOPAGO_PUBLIC_KEY}
 								className="hidden space-y-4 mb-6 transition-all duration-300"
 							>
-								<h4
+								<h3
 									className={`font-bold ${theme.textColor} text-sm uppercase tracking-wider`}
 								>
 									{t.dbFormTitle}
-								</h4>
+								</h3>
 								<input
 									type="hidden"
 									name="property_id"

@@ -1,20 +1,34 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /registry/
+Disallow: /guide/
+Disallow: /booking-success/
+Disallow: /booking-failure/
+Disallow: /booking-pending/
+Disallow: /404.html
+Disallow: /404/
 
-# Allow AI crawlers explicitly
+# Allow search and AI indexing crawlers explicitly while keeping private/transactional routes disallowed
 User-agent: CCBot
-Allow: /
 User-agent: ChatGPT-User
-Allow: /
 User-agent: GPTBot
-Allow: /
+User-agent: OAI-SearchBot
 User-agent: Google-Extended
-Allow: /
 User-agent: Anthropic-ai
-Allow: /
 User-agent: Claude-Web
-Allow: /
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
 User-agent: PerplexityBot
+User-agent: Applebot-Extended
 Allow: /
+Disallow: /api/
+Disallow: /registry/
+Disallow: /guide/
+Disallow: /booking-success/
+Disallow: /booking-failure/
+Disallow: /booking-pending/
+Disallow: /404.html
+Disallow: /404/
 
 Sitemap: https://www.oceanviewflats.com/sitemap.xml

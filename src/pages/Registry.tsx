@@ -19,6 +19,7 @@ import {
 	getGuidePagePath,
 	getHomePagePath,
 	getPrivacyPolicyPath,
+	IMAGE_DIMENSIONS,
 	IMAGES,
 	PRIVACY_POLICY_VERSION,
 	REGISTRY_GUEST_SLOTS,
@@ -55,7 +56,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				<div className="absolute inset-0 w-full h-full">
 					<img
 						src={`${assetPrefix}${IMAGES.mainEntrance}`}
-						alt="OceanViewFlats Beachfront Entrance"
+						alt={t.mainEntranceImgAlt}
+						width={IMAGE_DIMENSIONS.mainEntrance.width}
+						height={IMAGE_DIMENSIONS.mainEntrance.height}
+						fetchPriority="high"
+						loading="eager"
 						className="w-full h-full object-cover"
 					/>
 					<div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>

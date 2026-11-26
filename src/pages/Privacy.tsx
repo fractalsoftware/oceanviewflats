@@ -12,11 +12,14 @@ import {
 	Users,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import {
 	DATA_CONTROLLER,
 	getContactPagePath,
+	getPrivacyPolicyPath,
+	IMAGE_DIMENSIONS,
 	IMAGES,
 	PRIVACY_POLICY_VERSION,
 } from "../constants/config";
@@ -52,7 +55,11 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				<div className="absolute inset-0 w-full h-full">
 					<img
 						src={`${assetPrefix}${IMAGES.mainEntrance}`}
-						alt="OceanViewFlats Main Entrance"
+						alt={t.mainEntranceImgAlt}
+						width={IMAGE_DIMENSIONS.mainEntrance.width}
+						height={IMAGE_DIMENSIONS.mainEntrance.height}
+						fetchPriority="high"
+						loading="eager"
 						className="w-full h-full object-cover"
 					/>
 					<div className={theme.privacyHeroOverlay}></div>
@@ -79,6 +86,13 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 			</header>
 
 			<main className="flex-grow w-full py-12 px-6 max-w-5xl mx-auto space-y-10">
+				<Breadcrumbs
+					lang={lang}
+					assetPrefix={assetPrefix}
+					currentLabel={t.breadcrumbPrivacy}
+					currentHref={getPrivacyPolicyPath(lang, assetPrefix)}
+					surface="inline"
+				/>
 				{/* 1. Data Controller Identification */}
 				<section id="data-controller" className={theme.privacySectionCard}>
 					<div className="flex items-center space-x-3 mb-4">

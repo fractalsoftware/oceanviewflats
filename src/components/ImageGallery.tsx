@@ -6,7 +6,7 @@ import {
 	X,
 } from "lucide-react";
 import React from "react";
-import { IMAGES } from "../constants/config";
+import { PROPERTY_GALLERY_IMAGES } from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
 
@@ -23,181 +23,12 @@ export const ImageGallery = ({
 }: ImageGalleryProps) => {
 	const t = dict[lang];
 
-	// Configure images based on property (14 items each)
-	const images =
-		property === "1707"
-			? [
-					{
-						src: "images/1707/balcony-1.webp",
-						thumb: "images/1707/thumbs/balcony-1.webp",
-						caption: t.gallery1707_1,
-						alt: t.gallery1707_1,
-					},
-					{
-						src: "images/1707/balcony-2.webp",
-						thumb: "images/1707/thumbs/balcony-2.webp",
-						caption: t.gallery1707_2,
-						alt: t.gallery1707_2,
-					},
-					{
-						src: "images/1707/livingroom-1.webp",
-						thumb: "images/1707/thumbs/livingroom-1.webp",
-						caption: t.gallery1707_3,
-						alt: t.gallery1707_3,
-					},
-					{
-						src: "images/1707/livingroom-2.webp",
-						thumb: "images/1707/thumbs/livingroom-2.webp",
-						caption: t.gallery1707_4,
-						alt: t.gallery1707_4,
-					},
-					{
-						src: "images/1707/dinningroom-1.webp",
-						thumb: "images/1707/thumbs/dinningroom-1.webp",
-						caption: t.gallery1707_5,
-						alt: t.gallery1707_5,
-					},
-					{
-						src: "images/1707/dinningroom-2.webp",
-						thumb: "images/1707/thumbs/dinningroom-2.webp",
-						caption: t.gallery1707_6,
-						alt: t.gallery1707_6,
-					},
-					{
-						src: "images/1707/kitchen-1.webp",
-						thumb: "images/1707/thumbs/kitchen-1.webp",
-						caption: t.gallery1707_7,
-						alt: t.gallery1707_7,
-					},
-					{
-						src: "images/1707/room1-1.webp",
-						thumb: "images/1707/thumbs/room1-1.webp",
-						caption: t.gallery1707_8,
-						alt: t.gallery1707_8,
-					},
-					{
-						src: "images/1707/room1-2.webp",
-						thumb: "images/1707/thumbs/room1-2.webp",
-						caption: t.gallery1707_9,
-						alt: t.gallery1707_9,
-					},
-					{
-						src: "images/1707/room1-3.webp",
-						thumb: "images/1707/thumbs/room1-3.webp",
-						caption: t.gallery1707_10,
-						alt: t.gallery1707_10,
-					},
-					{
-						src: "images/1707/room2-1.webp",
-						thumb: "images/1707/thumbs/room2-1.webp",
-						caption: t.gallery1707_11,
-						alt: t.gallery1707_11,
-					},
-					{
-						src: "images/1707/bathroom1-1.webp",
-						thumb: "images/1707/thumbs/bathroom1-1.webp",
-						caption: t.gallery1707_12,
-						alt: t.gallery1707_12,
-					},
-					{
-						src: "images/1707/bathroom2-1.webp",
-						thumb: "images/1707/thumbs/bathroom2-1.webp",
-						caption: t.gallery1707_13,
-						alt: t.gallery1707_13,
-					},
-					{
-						src: "images/1707/pulloutcouch-1.webp",
-						thumb: "images/1707/thumbs/pulloutcouch-1.webp",
-						caption: t.gallery1707_14,
-						alt: t.gallery1707_14,
-					},
-				]
-			: [
-					{
-						src: "images/1606/balcony-1.webp",
-						thumb: "images/1606/thumbs/balcony-1.webp",
-						caption: t.gallery1606_1,
-						alt: t.gallery1606_1,
-					},
-					{
-						src: "images/1606/livingroom-1.webp",
-						thumb: "images/1606/thumbs/livingroom-1.webp",
-						caption: t.gallery1606_2,
-						alt: t.gallery1606_2,
-					},
-					{
-						src: "images/1606/livingroom-2.webp",
-						thumb: "images/1606/thumbs/livingroom-2.webp",
-						caption: t.gallery1606_3,
-						alt: t.gallery1606_3,
-					},
-					{
-						src: "images/1606/dinningroom-1.webp",
-						thumb: "images/1606/thumbs/dinningroom-1.webp",
-						caption: t.gallery1606_4,
-						alt: t.gallery1606_4,
-					},
-					{
-						src: "images/1606/kitchen-1.webp",
-						thumb: "images/1606/thumbs/kitchen-1.webp",
-						caption: t.gallery1606_5,
-						alt: t.gallery1606_5,
-					},
-					{
-						src: "images/1606/entertainment-2.webp",
-						thumb: "images/1606/thumbs/entertainment-2.webp",
-						caption: t.gallery1606_6,
-						alt: t.gallery1606_6,
-					},
-					{
-						src: "images/1606/room1-1.webp",
-						thumb: "images/1606/thumbs/room1-1.webp",
-						caption: t.gallery1606_7,
-						alt: t.gallery1606_7,
-					},
-					{
-						src: "images/1606/room1-2.webp",
-						thumb: "images/1606/thumbs/room1-2.webp",
-						caption: t.gallery1606_8,
-						alt: t.gallery1606_8,
-					},
-					{
-						src: "images/1606/room2-1.webp",
-						thumb: "images/1606/thumbs/room2-1.webp",
-						caption: t.gallery1606_9,
-						alt: t.gallery1606_9,
-					},
-					{
-						src: "images/1606/room2-2.webp",
-						thumb: "images/1606/thumbs/room2-2.webp",
-						caption: t.gallery1606_10,
-						alt: t.gallery1606_10,
-					},
-					{
-						src: "images/1606/bathroom1-1.webp",
-						thumb: "images/1606/thumbs/bathroom1-1.webp",
-						caption: t.gallery1606_11,
-						alt: t.gallery1606_11,
-					},
-					{
-						src: "images/1606/bathroom1-2.webp",
-						thumb: "images/1606/thumbs/bathroom1-2.webp",
-						caption: t.gallery1606_12,
-						alt: t.gallery1606_12,
-					},
-					{
-						src: "images/1606/bathroom2-1.webp",
-						thumb: "images/1606/thumbs/bathroom2-1.webp",
-						caption: t.gallery1606_13,
-						alt: t.gallery1606_13,
-					},
-					{
-						src: "images/1606/pulloutcouch-1.webp",
-						thumb: "images/1606/thumbs/pulloutcouch-1.webp",
-						caption: t.gallery1606_14,
-						alt: t.gallery1606_14,
-					},
-				];
+	// Configure images from centralized PROPERTY_GALLERY_IMAGES (14 items each)
+	const images = PROPERTY_GALLERY_IMAGES[property].map((img) => ({
+		...img,
+		caption: t[img.altKey],
+		alt: t[img.altKey],
+	}));
 
 	// Theme styling based on cool/warm properties
 	const theme = {
@@ -263,8 +94,10 @@ export const ImageGallery = ({
 							<img
 								src={`${assetPrefix}${images[0].thumb}`}
 								alt={images[0].alt}
+								width={images[0].thumbWidth}
+								height={images[0].thumbHeight}
 								loading="lazy"
-								fetchPriority="auto"
+								decoding="async"
 								className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
 							/>
 							<div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
@@ -282,8 +115,10 @@ export const ImageGallery = ({
 							<img
 								src={`${assetPrefix}${images[1].thumb}`}
 								alt={images[1].alt}
+								width={images[1].thumbWidth}
+								height={images[1].thumbHeight}
 								loading="lazy"
-								fetchPriority="low"
+								decoding="async"
 								className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
 							/>
 							<div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
@@ -301,8 +136,10 @@ export const ImageGallery = ({
 							<img
 								src={`${assetPrefix}${images[2].thumb}`}
 								alt={images[2].alt}
+								width={images[2].thumbWidth}
+								height={images[2].thumbHeight}
 								loading="lazy"
-								fetchPriority="low"
+								decoding="async"
 								className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
 							/>
 							<div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
@@ -320,8 +157,10 @@ export const ImageGallery = ({
 							<img
 								src={`${assetPrefix}${images[3].thumb}`}
 								alt={images[3].alt}
+								width={images[3].thumbWidth}
+								height={images[3].thumbHeight}
 								loading="lazy"
-								fetchPriority="low"
+								decoding="async"
 								className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
 							/>
 							<div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
@@ -339,8 +178,10 @@ export const ImageGallery = ({
 							<img
 								src={`${assetPrefix}${images[4].thumb}`}
 								alt={images[4].alt}
+								width={images[4].thumbWidth}
+								height={images[4].thumbHeight}
 								loading="lazy"
-								fetchPriority="low"
+								decoding="async"
 								className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
 							/>
 							<div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
@@ -372,8 +213,10 @@ export const ImageGallery = ({
 								<img
 									src={`${assetPrefix}${img.thumb}`}
 									alt={img.alt}
+									width={img.thumbWidth}
+									height={img.thumbHeight}
 									loading="lazy"
-									fetchPriority={index === 0 ? "auto" : "low"}
+									decoding="async"
 									className="w-full h-full object-cover"
 								/>
 								<div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
@@ -443,7 +286,12 @@ export const ImageGallery = ({
 						<img
 							id="lightbox-active-img"
 							src={`${assetPrefix}${images[0].thumb}`}
-							alt="Active representation of property"
+							alt={images[0].alt}
+							width={images[0].thumbWidth}
+							height={images[0].thumbHeight}
+							loading="lazy"
+							decoding="async"
+							fetchPriority="low"
 							className="max-h-full max-w-full md:max-w-[80vw] object-contain rounded-lg shadow-2xl scale-95 opacity-0 transition-all duration-300 ease-out"
 						/>
 					</div>
