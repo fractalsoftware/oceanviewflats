@@ -6,6 +6,7 @@ import { Footer } from "../components/Footer";
 import { Hero } from "../components/Hero";
 import { ImageGallery } from "../components/ImageGallery";
 import { Navigation } from "../components/Navigation";
+import { PropertyFaq } from "../components/PropertyFaq";
 import { QuickStats } from "../components/QuickStats";
 import { ReviewsSection } from "../components/warm/ReviewsSection";
 
@@ -46,6 +47,7 @@ export default function Oceanview1606({ lang, assetPrefix = "./" }: AppProps) {
 					propertyId="1606"
 					assetPrefix={assetPrefix}
 				/>
+				<PropertyFaq lang={lang} propertyId="1606" />
 			</main>
 			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>

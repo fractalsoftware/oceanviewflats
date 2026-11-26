@@ -23,9 +23,9 @@ export const dict = {
 		nomadBadgeSub: "Perfect for video calls",
 		aboutTitle: "About the Space",
 		aboutText1:
-			"Enjoy our modern 17th-floor apartment with a spectacular ocean view and incredible sunsets! Located in an exclusive and quiet area, just 1 block from the beach.",
+			"Enjoy our modern 17th-floor beachfront apartment in Edificio Salguero Sunset with panoramic Caribbean Sea sunsets, 900 Mbps fiber Wi-Fi, and a dedicated workspace—just 1 block from Playa Salguero beach.",
 		aboutText2:
-			"Features 2 bedrooms, 2 bathrooms, a comfortable sofa bed, private terrace, fully equipped kitchen, high-speed Wi-Fi, in-unit laundry, and free parking.",
+			"Sleeps up to 6 Guests across 2 bedrooms and 4 beds (Master Bedroom with 1 Queen bed, Guest Bedroom with 2 Twin beds, and Living Room with 1 Pull-out Sofa Bed), plus 2 bathrooms, private ocean-view terrace, fully equipped kitchen, in-unit laundry, smart-lock self check-in, and Assigned Parking Space Bay 95.",
 		amenitiesTitle: "Premium Amenities",
 		amWifi: "High-Speed Wi-Fi",
 		amKitchen: "Fully Equipped Kitchen",
@@ -37,7 +37,7 @@ export const dict = {
 		amOcean: "Stunning Ocean View",
 		calendarTitle: "Select Dates & Book",
 		calendarSubtitle:
-			"Choose your travel dates below. You will be securely redirected to Airbnb to check live availability and finalize your booking.",
+			"Select your Check-in Date and Check-out Date below to calculate a live authoritative Quote in Colombian Pesos (COP) with 0% OTA commission. Complete your Direct Reservation online via Card, PSE, or Cash Voucher (Mercado Pago), or use Airbnb as an optional external channel.",
 		checkIn: "Check-in",
 		checkOut: "Check-out",
 		addDate: "Add date",
@@ -74,9 +74,9 @@ export const dict = {
 		amRomanticDesc:
 			"Sip wine on your private terrace while watching the sun dip into the Caribbean Sea.",
 		about1606Text1:
-			"Experience our stunning 16th-floor retreat. Enjoy breathtaking ocean views, warm breezes, and a peaceful atmosphere just steps from the beach.",
+			"Experience our serene 16th-floor beachfront retreat in Edificio Salguero Sunset, designed for couples and families with sweeping Caribbean Sea sunsets, 900 Mbps fiber Wi-Fi, and a peaceful atmosphere just steps from Playa Salguero beach.",
 		about1606Text2:
-			"Features 2 bedrooms, 2 bathrooms, a private terrace, a fully equipped kitchen, high-speed Wi-Fi, and a cozy atmosphere perfect for relaxation.",
+			"Sleeps up to 6 Guests across 2 bedrooms and 3 beds (Master Bedroom with 1 Queen bed, Guest Bedroom with 1 Double bed, and Living Room with 1 Pull-out Sofa Bed), plus 2 bathrooms, private sunset terrace, fully equipped kitchen, in-unit laundry, smart-lock self check-in, and Assigned Parking Space Bay 87.",
 		reviewsTitle: "Guest Experiences",
 		review1Text:
 			'"The place is ideal for relaxation and family time, exactly as shown in the photos. The host\'s service is excellent. Highly recommended."',
@@ -235,7 +235,7 @@ export const dict = {
 			"Romantic master bedroom with a plush bed and warm lighting.",
 		gallery1606_8: "Airy master suite detailed with premium linens.",
 		gallery1606_9:
-			"Warm secondary bedroom with double beds – ideal for families.",
+			"Warm secondary bedroom with 1 comfortable double bed – ideal for families.",
 		gallery1606_10: "Quiet guest suite sanctuary offering a peaceful rest.",
 		gallery1606_11: "Pristine master bathroom featuring elegant vanities.",
 		gallery1606_12: "Newly refurbished, sparkling clean shower space.",
@@ -588,6 +588,65 @@ export const dict = {
 			"Smart-lock door codes are generated using cryptographically random digits and never encode personal identification numbers.",
 		privacyRetentionDesc:
 			"In accordance with the Principle of Temporality (Decree 1377 Art. 11), personal identification and guest registry records of concluded stays are automatically redacted 90 days after check-out (or immediately upon an approved ARCO suppression claim), while preserving anonymized financial and occupancy aggregates required for tax compliance.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Data Controller & Official Host",
+		complianceLaw1581Badge: "Law 1581 of 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Law 2068 of 2020 (Tourism / TRA-SIRE)",
+		complianceLaw679Badge: "Law 679 of 2001 (ESCNNA Prevention)",
+		reviewVerifiedGuest: "Verified Guest",
+		reviewViewOnAirbnb: "Verify reviews on Airbnb listing",
+		faq1707Title: "Oceanview Flat 1707 — Frequently Asked Questions",
+		faq1707Subtitle:
+			"Everything you need to know about remote work, sleeping arrangements, Direct Reservations, check-in, and building rules on the 17th floor.",
+		faq1707Q1:
+			"Is Oceanview Flat 1707 equipped for remote work and digital nomads?",
+		faq1707A1:
+			"Yes. Located on the 17th floor of Edificio Salguero Sunset (RNT #268781), Property 1707 features reliable 900 Mbps fiber-optic Wi-Fi, an ergonomic laptop-friendly workspace, and a quiet private ocean-view balcony ideal for video calls and extended remote stays.",
+		faq1707Q2:
+			"What are the sleeping arrangements, bed count, and parking for Property 1707?",
+		faq1707A2:
+			"Property 1707 has 2 Bedrooms and 4 Beds sleeping up to 6 Guests: a Master Bedroom with 1 Queen bed, a Guest Bedroom with 2 Twin/Single beds, and a Living Room with 1 Pull-out Sofa Bed, plus 2 full bathrooms and complimentary Assigned Parking Space Bay 95 inside the building.",
+		faq1707Q3:
+			"What are the Nightly Rate, minimum stay, and cancellation policy for a Direct Reservation?",
+		faq1707A3:
+			"The baseline Nightly Rate is 450,000 COP per night with a 2-night minimum stay, plus a flat 100,000 COP Cleaning Fee. Direct Reservations settle in Colombian Pesos (COP) with 0% OTA commission via Card, PSE, or Cash Voucher (Mercado Pago). Cancellation policy: 100% refund 14 or more days before Check-in Date, 50% refund 7–13 days prior, and non-refundable within 7 days.",
+		faq1707Q4: "What are the Check-in and Check-out times at Property 1707?",
+		faq1707A4:
+			"Check-in begins at 15:00 (3:00 PM) and Check-out is by 11:00 (11:00 AM). Smart-lock self check-in allows seamless arrival once your pre-arrival Guest Registry is verified.",
+		faq1707Q5:
+			"How do the Guest Registry and 0XXXXXX# Access Credential unlock work?",
+		faq1707A5:
+			"Before arrival, the Primary Guest submits the mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors). Submission immediately unlocks your digital Guest Guide, Assigned Parking Space Bay 95 clearance, and your temporary cryptographically random 0XXXXXX# smart-lock Access Credential.",
+		faq1707Q6:
+			"Are there building fees or pool closure days at Edificio Salguero Sunset?",
+		faq1707A6:
+			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
+		faq1606Title: "Oceanview Flat 1606 — Frequently Asked Questions",
+		faq1606Subtitle:
+			"Everything you need to know about our 16th-floor romantic and family beachfront retreat, Direct Reservations, check-in, and building rules.",
+		faq1606Q1:
+			"What makes Oceanview Flat 1606 ideal for couples, families, and remote stays?",
+		faq1606A1:
+			"Located on the 16th floor of Edificio Salguero Sunset (RNT #270413) one block from Playa Salguero beach, Property 1606 pairs a warm romantic and family-friendly coastal design with a private Caribbean sunset terrace and 900 Mbps fiber-optic Wi-Fi.",
+		faq1606Q2:
+			"What are the sleeping arrangements, bed count, and parking for Property 1606?",
+		faq1606A2:
+			"Property 1606 has 2 Bedrooms and 3 Beds sleeping up to 6 Guests: a Master Bedroom with 1 Queen bed, a Guest Bedroom with 1 Double bed, and a Living Room with 1 Pull-out Sofa Bed, plus 2 full bathrooms and complimentary Assigned Parking Space Bay 87 inside the building.",
+		faq1606Q3:
+			"What are the Nightly Rate, minimum stay, and cancellation policy for a Direct Reservation?",
+		faq1606A3:
+			"The baseline Nightly Rate is 350,000 COP per night with a 2-night minimum stay (peak season Dec 15–Jan 15 is 550,000 COP per night with a 4-night minimum stay), plus a flat 80,000 COP Cleaning Fee. Direct Reservations settle in Colombian Pesos (COP) with 0% OTA commission via Card, PSE, or Cash Voucher (Mercado Pago). Cancellation policy: 100% refund 14 or more days before Check-in Date, 50% refund 7–13 days prior, and non-refundable within 7 days.",
+		faq1606Q4: "What are the Check-in and Check-out times at Property 1606?",
+		faq1606A4:
+			"Check-in begins at 15:00 (3:00 PM) and Check-out is by 11:00 (11:00 AM). Smart-lock self check-in allows seamless arrival once your pre-arrival Guest Registry is verified.",
+		faq1606Q5:
+			"How do the Guest Registry and 0XXXXXX# Access Credential unlock work?",
+		faq1606A5:
+			"Before arrival, the Primary Guest submits the mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors). Submission immediately unlocks your digital Guest Guide, Assigned Parking Space Bay 87 clearance, and your temporary cryptographically random 0XXXXXX# smart-lock Access Credential.",
+		faq1606Q6:
+			"Are there building fees or pool closure days at Edificio Salguero Sunset?",
+		faq1606A6:
+			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
 	},
 	es: {
 		seoHomeTitle:
@@ -613,9 +672,9 @@ export const dict = {
 		nomadBadgeSub: "Ideal para videollamadas",
 		aboutTitle: "Sobre el Espacio",
 		aboutText1:
-			"¡Disfruta de nuestro moderno apartamento en el piso 17 con una vista espectacular al mar e increíbles atardeceres! En una zona exclusiva, a solo 1 cuadra de la playa.",
+			"Disfruta de nuestro moderno apartamento frente al mar en el piso 17 del Edificio Salguero Sunset, con vistas panorámicas al mar Caribe, fibra óptica de 900 Mbps y espacio de trabajo ergonómico a solo 1 cuadra de Playa Salguero.",
 		aboutText2:
-			"Cuenta con 2 habitaciones, 2 baños, sofá cama, terraza privada, cocina totalmente equipada, Wi-Fi, lavandería en el apartamento y parqueadero gratis.",
+			"Capacidad para hasta 6 Huéspedes en 2 habitaciones y 4 camas (Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 2 camas sencillas y Sala con 1 sofá cama extraíble), además de 2 baños, terraza privada con vista al mar, cocina totalmente equipada, lavandería interna, llegada autónoma con cerradura inteligente y Espacio de Parqueadero Asignado Bahía 95.",
 		amenitiesTitle: "Comodidades Principales",
 		amWifi: "Wi-Fi Alta Velocidad",
 		amKitchen: "Cocina Equipada",
@@ -627,7 +686,7 @@ export const dict = {
 		amOcean: "Vista Espectacular al Mar",
 		calendarTitle: "Selecciona Fechas y Reserva",
 		calendarSubtitle:
-			"Elige tus fechas de viaje. Serás redirigido de forma segura a Airbnb para verificar disponibilidad y completar tu reserva.",
+			"Selecciona tu Fecha de Llegada y Fecha de Salida abajo para calcular una Cotización oficial en vivo en Pesos Colombianos (COP) con 0% de comisión OTA. Completa tu Reserva Directa en línea con Tarjeta, PSE o Cupón en Efectivo (Mercado Pago), o usa Airbnb como canal externo opcional.",
 		checkIn: "Llegada",
 		checkOut: "Salida",
 		addDate: "Agregar fecha",
@@ -664,9 +723,9 @@ export const dict = {
 		amRomanticDesc:
 			"Disfruta de una copa de vino en tu terraza privada mientras contemplas el sol sumergirse en el Mar Caribe.",
 		about1606Text1:
-			"Vive la experiencia de nuestro impresionante refugio en el piso 16. Disfruta de vistas espectaculares al mar, brisas cálidas y un ambiente tranquilo a pocos pasos de la playa.",
+			"Vive la experiencia de nuestro sereno refugio frente al mar en el piso 16 del Edificio Salguero Sunset, diseñado para parejas y familias con atardeceres sobre el mar Caribe, fibra óptica de 900 Mbps y un ambiente tranquilo a pocos pasos de Playa Salguero.",
 		about1606Text2:
-			"Cuenta con 2 habitaciones, 2 baños, terraza privada, cocina totalmente equipada, Wi-Fi de alta velocidad y un ambiente acogedor perfecto para el relax.",
+			"Capacidad para hasta 6 Huéspedes en 2 habitaciones y 3 camas (Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 1 cama doble y Sala con 1 sofá cama extraíble), además de 2 baños, terraza privada al atardecer, cocina totalmente equipada, lavandería interna, llegada autónoma con cerradura inteligente y Espacio de Parqueadero Asignado Bahía 87.",
 		reviewsTitle: "Experiencias de los Huéspedes",
 		review1Text:
 			'"El lugar es ideal para el descanso y compartir en familia, tal cual como se ve en las fotos. La atención del anfitrión es excelente. Súper recomendado."',
@@ -841,7 +900,7 @@ export const dict = {
 		gallery1606_8:
 			"Habitación principal amplia y ventilada con sábanas premium.",
 		gallery1606_9:
-			"Cálido dormitorio secundario con camas dobles, ideal para familias.",
+			"Cálido dormitorio secundario con 1 cómoda cama doble, ideal para familias.",
 		gallery1606_10:
 			"Santuario tranquilo en la habitación de huéspedes para un descanso pacífico.",
 		gallery1606_11: "Baño principal impecable con elegantes tocadores.",
@@ -1195,6 +1254,67 @@ export const dict = {
 			"Los códigos PIN de cerraduras inteligentes se generan de forma criptográficamente aleatoria y nunca contienen dígitos del documento de identidad del huésped.",
 		privacyRetentionDesc:
 			"En cumplimiento del Principio de Temporalidad (Decreto 1377 Art. 11), los datos de identificación personal de las reservas concluidas son objeto de supresión y anonimización automática a los 90 días posteriores a la fecha de check-out (o de inmediato ante un reclamo de supresión procedente), conservando únicamente los registros contables y financieros agregados exigidos por la ley.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Responsable del Tratamiento y Anfitrión Oficial",
+		complianceLaw1581Badge: "Ley 1581 de 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Ley 2068 de 2020 (Turismo / TRA-SIRE)",
+		complianceLaw679Badge: "Ley 679 de 2001 (Prevención ESCNNA)",
+		reviewVerifiedGuest: "Huésped Verificado",
+		reviewViewOnAirbnb: "Verificar reseñas en el anuncio de Airbnb",
+		faq1707Title: "Apartamento Vista al Mar 1707 — Preguntas Frecuentes",
+		faq1707Subtitle:
+			"Todo lo que necesitas saber sobre trabajo remoto, distribución de camas, Reservas Directas, check-in y normas del edificio en el piso 17.",
+		faq1707Q1:
+			"¿Está equipado el Apartamento 1707 para trabajo remoto y nómadas digitales?",
+		faq1707A1:
+			"Sí. Ubicado en el piso 17 del Edificio Salguero Sunset (RNT #268781), la Propiedad 1707 cuenta con Wi-Fi de fibra óptica de 900 Mbps, espacio de trabajo ergonómico apto para portátil y un balcón privado frente al mar ideal para videollamadas y estancias remotas.",
+		faq1707Q2:
+			"¿Cuál es la distribución de camas y el parqueadero asignado en la Propiedad 1707?",
+		faq1707A2:
+			"La Propiedad 1707 tiene 2 Habitaciones y 4 Camas con capacidad hasta para 6 Huéspedes: Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 2 camas sencillas y Sala con 1 sofá cama extraíble, además de 2 baños completos y Espacio de Parqueadero Asignado Bahía 95 sin costo adicional.",
+		faq1707Q3:
+			"¿Cuál es la tarifa por noche, estancia mínima y política de cancelación para Reserva Directa?",
+		faq1707A3:
+			"La tarifa base por noche es de 450.000 COP con estancia mínima de 2 noches, más una Tarifa de Limpieza fija de 100.000 COP. Las Reservas Directas se liquidan en Pesos Colombianos (COP) con 0% de comisión OTA mediante Tarjeta, PSE o Cupón en Efectivo (Mercado Pago). Política de cancelación: 100% de reembolso con 14 o más días antes de la llegada, 50% entre 7 y 13 días antes, y no reembolsable con menos de 7 días.",
+		faq1707Q4:
+			"¿Cuáles son los horarios de Check-in y Check-out en la Propiedad 1707?",
+		faq1707A4:
+			"El Check-in inicia a las 15:00 (3:00 PM) y el Check-out es hasta las 11:00 (11:00 AM). La llegada autónoma mediante cerradura inteligente permite el acceso sin contratiempos una vez verificado tu Registro de Huéspedes previo.",
+		faq1707Q5:
+			"¿Cómo funcionan el Registro de Huéspedes y la Credencial de Acceso 0XXXXXX#?",
+		faq1707A5:
+			"Antes de llegar, el Huésped Principal completa en línea el Registro de Huéspedes obligatorio (incluyendo la Autorización de Datos Personales Ley 1581 y la Declaración de Representante de Menores Ley 679 cuando viajan menores). Al enviarlo se desbloquean de inmediato la Guía del Huésped digital, la autorización del Parqueadero Bahía 95 y tu Credencial de Acceso temporal 0XXXXXX# generada aleatoriamente.",
+		faq1707Q6:
+			"¿Existen tarifas del edificio o días de cierre de piscina en el Edificio Salguero Sunset?",
+		faq1707A6:
+			"Sí. La recepción del Edificio Salguero Sunset cobra una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera al llegar para manillas de seguridad y áreas comunes. Las piscinas del edificio cierran todos los martes por mantenimiento programado.",
+		faq1606Title: "Apartamento Vista al Mar 1606 — Preguntas Frecuentes",
+		faq1606Subtitle:
+			"Todo lo que necesitas saber sobre nuestro refugio frente al mar en el piso 16 para parejas y familias, Reservas Directas, check-in y normas del edificio.",
+		faq1606Q1:
+			"¿Qué hace al Apartamento 1606 ideal para parejas, familias y estancias tranquilas?",
+		faq1606A1:
+			"Ubicado en el piso 16 del Edificio Salguero Sunset (RNT #270413) a una cuadra de Playa Salguero, la Propiedad 1606 combina un ambiente cálido, romántico y familiar frente al mar con terraza privada al atardecer y Wi-Fi de fibra óptica de 900 Mbps.",
+		faq1606Q2:
+			"¿Cuál es la distribución de camas y el parqueadero asignado en la Propiedad 1606?",
+		faq1606A2:
+			"La Propiedad 1606 tiene 2 Habitaciones y 3 Camas con capacidad hasta para 6 Huéspedes: Habitación Principal con 1 cama Queen, Habitación de Huéspedes con 1 cama doble y Sala con 1 sofá cama extraíble, además de 2 baños completos y Espacio de Parqueadero Asignado Bahía 87 sin costo adicional.",
+		faq1606Q3:
+			"¿Cuál es la tarifa por noche, estancia mínima y política de cancelación para Reserva Directa?",
+		faq1606A3:
+			"La tarifa base por noche es de 350.000 COP con estancia mínima de 2 noches (temporada alta del 15 dic al 15 ene: 550.000 COP por noche con estancia mínima de 4 noches), más una Tarifa de Limpieza fija de 80.000 COP. Las Reservas Directas se liquidan en COP con 0% de comisión OTA vía Tarjeta, PSE o Cupón en Efectivo (Mercado Pago). Cancelación: 100% de reembolso con ≥14 días, 50% entre 7–13 días y no reembolsable con menos de 7 días.",
+		faq1606Q4:
+			"¿Cuáles son los horarios de Check-in y Check-out en la Propiedad 1606?",
+		faq1606A4:
+			"El Check-in inicia a las 15:00 (3:00 PM) y el Check-out es hasta las 11:00 (11:00 AM). La llegada autónoma mediante cerradura inteligente permite el acceso sin contratiempos una vez verificado tu Registro de Huéspedes previo.",
+		faq1606Q5:
+			"¿Cómo funcionan el Registro de Huéspedes y la Credencial de Acceso 0XXXXXX#?",
+		faq1606A5:
+			"Antes de llegar, el Huésped Principal completa en línea el Registro de Huéspedes obligatorio (incluyendo la Autorización de Datos Personales Ley 1581 y la Declaración de Representante de Menores Ley 679 cuando viajan menores). Al enviarlo se desbloquean de inmediato la Guía del Huésped digital, la autorización del Parqueadero Bahía 87 y tu Credencial de Acceso temporal 0XXXXXX# generada aleatoriamente.",
+		faq1606Q6:
+			"¿Existen tarifas del edificio o días de cierre de piscina en el Edificio Salguero Sunset?",
+		faq1606A6:
+			"Sí. La recepción del Edificio Salguero Sunset cobra una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera al llegar para manillas de seguridad y áreas comunes. Las piscinas del edificio cierran todos los martes por mantenimiento programado.",
 	},
 	fr: {
 		seoHomeTitle:
@@ -1220,9 +1340,9 @@ export const dict = {
 		nomadBadgeSub: "Parfait pour les appels vidéo",
 		aboutTitle: "À propos du logement",
 		aboutText1:
-			"Profitez de notre appartement moderne au 17ème étage avec une vue spectaculaire sur l'océan et des couchers de soleil incroyables ! Dans un quartier exclusif, à seulement 1 pâté de maisons de la plage.",
+			"Profitez de notre appartement moderne en bord de mer au 17e étage de l'Edificio Salguero Sunset, avec couchers de soleil panoramiques sur la mer des Caraïbes, fibre optique 900 Mbps et espace de travail ergonomique, à 1 pâté de maisons de Playa Salguero.",
 		aboutText2:
-			"Comprend 2 chambres, 2 salles de bain, canapé-lit, terrasse privée, cuisine entièrement équipée, Wi-Fi, buanderie et parking gratuit.",
+			"Accueille jusqu'à 6 Voyageurs dans 2 chambres et 4 lits (Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 2 lits simples et Salon avec 1 canapé-lit convertible), plus 2 salles de bain, terrasse privée vue mer, cuisine équipée, buanderie intégrée, arrivée autonome par serrure connectée et Place de stationnement attribuée Baie 95.",
 		amenitiesTitle: "Équipements Principaux",
 		amWifi: "Wi-Fi Haut Débit",
 		amKitchen: "Cuisine Équipée",
@@ -1234,7 +1354,7 @@ export const dict = {
 		amOcean: "Vue Spectaculaire sur l'Océan",
 		calendarTitle: "Sélectionnez vos dates",
 		calendarSubtitle:
-			"Choisissez vos dates de voyage. Vous serez redirigé en toute sécurité vers Airbnb pour vérifier la disponibilité et finaliser votre réservation.",
+			"Sélectionnez votre date d'arrivée et de départ ci-dessous pour obtenir un Devis officiel en direct en Pesos Colombiens (COP) avec 0 % de commission OTA. Finalisez votre Réservation Directe en ligne par Carte, PSE ou Bon en espèces (Mercado Pago), ou utilisez Airbnb en option.",
 		checkIn: "Arrivée",
 		checkOut: "Départ",
 		addDate: "Ajouter une date",
@@ -1271,9 +1391,9 @@ export const dict = {
 		amRomanticDesc:
 			"Sirotez du vin sur votre terrasse privée en regardant le soleil plonger dans la mer des Caraïbes.",
 		about1606Text1:
-			"Découvrez notre superbe refuge au 16ème étage. Profitez de vues imprenables sur l'océan, de brises chaudes et d'une atmosphère paisible à quelques pas de la plage.",
+			"Découvrez notre refuge serein en bord de mer au 16e étage de l'Edificio Salguero Sunset, pensé pour les couples et les familles avec des couchers de soleil sur la mer des Caraïbes, la fibre optique 900 Mbps et une atmosphère paisible à deux pas de Playa Salguero.",
 		about1606Text2:
-			"Comprend 2 chambres, 2 salles de bain, une terrasse privée, une cuisine entièrement équipée, un Wi-Fi haut débit et une atmosphère chaleureuse parfaite pour la détente.",
+			"Accueille jusqu'à 6 Voyageurs dans 2 chambres et 3 lits (Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 1 lit double et Salon avec 1 canapé-lit convertible), plus 2 salles de bain, terrasse privée au coucher du soleil, cuisine équipée, buanderie intégrée, arrivée autonome par serrure connectée et Place de stationnement attribuée Baie 87.",
 		reviewsTitle: "Expériences des Voyageurs",
 		review1Text:
 			"\"L'endroit est idéal pour la détente et les moments en famille, exactement comme sur les photos. Le service de l'hôte est excellent. Hautement recommandé.\"",
@@ -1449,7 +1569,7 @@ export const dict = {
 		gallery1606_8:
 			"Chambre principale aérée avec des draps de qualité supérieure.",
 		gallery1606_9:
-			"Chambre secondaire chaleureuse avec lits doubles, idéale pour les familles.",
+			"Chambre secondaire chaleureuse avec 1 lit double confortable, idéale pour les familles.",
 		gallery1606_10:
 			"Havre de paix dans la suite d'invités pour un repos serein.",
 		gallery1606_11:
@@ -1810,6 +1930,67 @@ export const dict = {
 			"Les codes PIN de serrure connectée sont générés de manière aléatoire et ne contiennent jamais de chiffres issus des pièces d'identité.",
 		privacyRetentionDesc:
 			"Conformément au Principe de Temporalité (Décret 1377 Art. 11), les données d'identification personnelle des séjours terminés sont automatiquement anonymisées et purgées 90 jours après la date de départ (ou immédiatement sur demande ARCO de suppression), tout en conservant les données comptables et financières agrégées requises par la loi.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Responsable du Traitement & Hôte Officiel",
+		complianceLaw1581Badge: "Loi 1581 de 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Loi 2068 de 2020 (Tourisme / TRA-SIRE)",
+		complianceLaw679Badge: "Loi 679 de 2001 (Prévention ESCNNA)",
+		reviewVerifiedGuest: "Voyageur Vérifié",
+		reviewViewOnAirbnb: "Vérifier les avis sur l'annonce Airbnb",
+		faq1707Title: "Appartement Vue Mer 1707 — Questions Fréquentes",
+		faq1707Subtitle:
+			"Tout ce qu'il faut savoir sur le télétravail, les couchages, la Réservation Directe, l'arrivée et les règles de l'immeuble au 17e étage.",
+		faq1707Q1:
+			"L'Appartement 1707 est-il adapté au télétravail et aux nomades digitaux ?",
+		faq1707A1:
+			"Oui. Située au 17e étage de l'Edificio Salguero Sunset (RNT #268781), la Propriété 1707 offre la fibre optique 900 Mbps, un espace de travail ergonomique pour ordinateur portable et un balcon privé vue mer idéal pour les visioconférences.",
+		faq1707Q2:
+			"Quelle est la configuration des lits et du parking pour la Propriété 1707 ?",
+		faq1707A2:
+			"La Propriété 1707 compte 2 Chambres et 4 Lits pouvant accueillir jusqu'à 6 Voyageurs : Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 2 lits simples et Salon avec 1 canapé-lit convertible, ainsi que 2 salles de bain complètes et la Place de stationnement attribuée Baie 95 incluse.",
+		faq1707Q3:
+			"Quels sont le tarif par nuit, le séjour minimum et la politique d'annulation en Réservation Directe ?",
+		faq1707A3:
+			"Le tarif de base est de 450 000 COP par nuit (séjour minimum de 2 nuits) plus des frais de ménage fixes de 100 000 COP. Les Réservations Directes se règlent en COP avec 0 % de commission OTA par Carte, PSE ou Bon en espèces (Mercado Pago). Annulation : remboursement à 100 % à 14 jours ou plus, 50 % entre 7 et 13 jours, non remboursable à moins de 7 jours.",
+		faq1707Q4:
+			"Quels sont les horaires d'arrivée (Check-in) et de départ (Check-out) à la Propriété 1707 ?",
+		faq1707A4:
+			"L'arrivée s'effectue à partir de 15h00 (15:00) et le départ avant 11h00 (11:00). L'arrivée autonome par serrure connectée est disponible dès validation de votre Registre des Voyageurs préalable.",
+		faq1707Q5:
+			"Comment fonctionnent le Registre des Voyageurs et le code d'accès 0XXXXXX# ?",
+		faq1707A5:
+			"Avant votre arrivée, le Voyageur Principal remplit le Registre des Voyageurs en ligne obligatoire (incluant l'Autorisation de Données Personnelles Loi 1581 et l'Attestation de Représentant de Mineur Loi 679 en présence de mineurs). La validation débloque immédiatement le Guide du Voyageur numérique, l'accès à la Baie 95 et votre code PIN temporaire aléatoire 0XXXXXX#.",
+		faq1707Q6:
+			"Y a-t-il des frais d'immeuble ou des jours de fermeture de la piscine à l'Edificio Salguero Sunset ?",
+		faq1707A6:
+			"Oui. La réception de l'Edificio Salguero Sunset perçoit des frais uniques d'enregistrement de l'immeuble de 20 000 COP par personne payables à l'arrivée pour les bracelets de sécurité et les espaces communs. Les piscines ferment tous les mardis pour entretien programmé.",
+		faq1606Title: "Appartement Vue Mer 1606 — Questions Fréquentes",
+		faq1606Subtitle:
+			"Tout ce qu'il faut savoir sur notre refuge romantique et familial au 16e étage, la Réservation Directe, l'arrivée et les règles de l'immeuble.",
+		faq1606Q1:
+			"Qu'est-ce qui rend l'Appartement 1606 idéal pour les couples et les familles ?",
+		faq1606A1:
+			"Située au 16e étage de l'Edificio Salguero Sunset (RNT #270413) à un pâté de maisons de Playa Salguero, la Propriété 1606 allie une atmosphère côtière chaleureuse, romantique et familiale, une terrasse privée face au coucher du soleil et la fibre optique 900 Mbps.",
+		faq1606Q2:
+			"Quelle est la configuration des lits et du parking pour la Propriété 1606 ?",
+		faq1606A2:
+			"La Propriété 1606 compte 2 Chambres et 3 Lits pouvant accueillir jusqu'à 6 Voyageurs : Chambre Principale avec 1 lit Queen, Chambre d'Invités avec 1 lit double et Salon avec 1 canapé-lit convertible, ainsi que 2 salles de bain complètes et la Place de stationnement attribuée Baie 87 incluse.",
+		faq1606Q3:
+			"Quels sont le tarif par nuit, le séjour minimum et la politique d'annulation en Réservation Directe ?",
+		faq1606A3:
+			"Le tarif de base est de 350 000 COP par nuit (séjour minimum de 2 nuits ; haute saison du 15 déc. au 15 janv. : 550 000 COP par nuit, minimum 4 nuits) plus des frais de ménage fixes de 80 000 COP. Règlement direct en COP avec 0 % de commission OTA via Carte, PSE ou Bon en espèces (Mercado Pago). Annulation : 100 % à ≥14 jours, 50 % entre 7 et 13 jours, non remboursable à moins de 7 jours.",
+		faq1606Q4:
+			"Quels sont les horaires d'arrivée (Check-in) et de départ (Check-out) à la Propriété 1606 ?",
+		faq1606A4:
+			"L'arrivée s'effectue à partir de 15h00 (15:00) et le départ avant 11h00 (11:00). L'arrivée autonome par serrure connectée est disponible dès validation de votre Registre des Voyageurs préalable.",
+		faq1606Q5:
+			"Comment fonctionnent le Registre des Voyageurs et le code d'accès 0XXXXXX# ?",
+		faq1606A5:
+			"Avant votre arrivée, le Voyageur Principal remplit le Registre des Voyageurs en ligne obligatoire (incluant l'Autorisation de Données Personnelles Loi 1581 et l'Attestation de Représentant de Mineur Loi 679 en présence de mineurs). La validation débloque immédiatement le Guide du Voyageur numérique, l'accès à la Baie 87 et votre code PIN temporaire aléatoire 0XXXXXX#.",
+		faq1606Q6:
+			"Y a-t-il des frais d'immeuble ou des jours de fermeture de la piscine à l'Edificio Salguero Sunset ?",
+		faq1606A6:
+			"Oui. La réception de l'Edificio Salguero Sunset perçoit des frais uniques d'enregistrement de l'immeuble de 20 000 COP par personne payables à l'arrivée pour les bracelets de sécurité et les espaces communs. Les piscines ferment tous les mardis pour entretien programmé.",
 	},
 	it: {
 		seoHomeTitle:
@@ -1834,9 +2015,9 @@ export const dict = {
 		nomadBadgeSub: "Perfetto per le videochiamate",
 		aboutTitle: "Informazioni sullo Spazio",
 		aboutText1:
-			"Goditi il nostro moderno appartamento al 17° piano con una vista spettacolare sull'oceano e incredibili tramonti! Situato in una zona esclusiva e tranquilla, a solo 1 isolato dalla spiaggia.",
+			"Goditi il nostro moderno appartamento fronte mare al 17° piano dell'Edificio Salguero Sunset, con tramonti panoramici sul Mar dei Caraibi, fibra ottica 900 Mbps e postazione lavoro ergonomica, a solo 1 isolato da Playa Salguero.",
 		aboutText2:
-			"Dispone di 2 camere da letto, 2 bagni, un comodo divano letto, terrazza privata, cucina completamente attrezzata, Wi-Fi ad alta velocità, lavanderia interna e parcheggio gratuito.",
+			"Ospita fino a 6 Ospiti in 2 camere da letto e 4 letti (Camera Principale con 1 letto Queen, Camera degli Ospiti con 2 letti singoli e Soggiorno con 1 divano letto estraibile), oltre a 2 bagni, terrazza privata vista mare, cucina attrezzata, lavanderia interna, self check-in con serratura smart e Posto auto assegnato Stallo 95.",
 		amenitiesTitle: "Servizi Principali",
 		amWifi: "Wi-Fi ad Alta Velocità",
 		amKitchen: "Cucina Attrezzata",
@@ -1848,7 +2029,7 @@ export const dict = {
 		amOcean: "Vista Mare Spettacolare",
 		calendarTitle: "Seleziona le Date e Prenota",
 		calendarSubtitle:
-			"Scegli le date del tuo viaggio qui sotto. Verrai reindirizzato in modo sicuro su Airbnb per verificare la disponibilità e finalizzare la prenotazione.",
+			"Seleziona la data di check-in e check-out qui sotto per calcolare un Preventivo ufficiale dal vivo in Pesos Colombiani (COP) con lo 0% di commissioni OTA. Completa la Prenotazione Diretta online tramite Carta, PSE o Voucher in contanti (Mercado Pago), oppure usa Airbnb come canale esterno opzionale.",
 		checkIn: "Check-in",
 		checkOut: "Check-out",
 		addDate: "Aggiungi data",
@@ -1885,9 +2066,9 @@ export const dict = {
 		amRomanticDesc:
 			"Sorseggia un vino sulla tua terrazza privata mentre guardi il sole tuffarsi nel Mar dei Caraibi.",
 		about1606Text1:
-			"Vivi il nostro splendido rifugio al 16° piano. Goditi viste mozzafiato sull'oceano, brezze calde e un'atmosfera tranquilla a pochi passi dalla spiaggia.",
+			"Vivi il nostro sereno rifugio fronte mare al 16° piano dell'Edificio Salguero Sunset, progettato per coppie e famiglie con tramonti sul Mar dei Caraibi, fibra ottica 900 Mbps e un'atmosfera tranquilla a pochi passi da Playa Salguero.",
 		about1606Text2:
-			"Dispone di 2 camere da letto, 2 bagni, una terrazza privata, una cucina completamente attrezzata, Wi-Fi ad alta velocità e un'atmosfera accogliente perfetta per il relax.",
+			"Ospita fino a 6 Ospiti in 2 camere da letto e 3 letti (Camera Principale con 1 letto Queen, Camera degli Ospiti con 1 letto matrimoniale e Soggiorno con 1 divano letto estraibile), oltre a 2 bagni, terrazza privata al tramonto, cucina attrezzata, lavanderia interna, self check-in con serratura smart e Posto auto assegnato Stallo 87.",
 		reviewsTitle: "Esperienze degli Ospiti",
 		review1Text:
 			'"Il posto è ideale per il relax e il tempo in famiglia, esattamente come mostrato nelle foto. Il servicio dell\'host è eccellente. Altamente raccomandato."',
@@ -2057,7 +2238,7 @@ export const dict = {
 			"Camera matrimoniale romantica con un comodo letto e luci calde.",
 		gallery1606_8: "Camera da letto matrimoniale ariosa con lenzuola premium.",
 		gallery1606_9:
-			"Calda camera da letto secondaria con letti doppi, ideale per famiglie.",
+			"Calda camera da letto secondaria con 1 comodo letto matrimoniale, ideale per famiglie.",
 		gallery1606_10:
 			"Tranquillo rifugio nella camera degli ospiti per un riposo rilassante.",
 		gallery1606_11: "Bagno principale immacolato con eleganti lavabi.",
@@ -2415,6 +2596,66 @@ export const dict = {
 			"I codici PIN della serratura smart sono generati in modo crittograficamente casuale e non contengono mai cifre del documento d'identità.",
 		privacyRetentionDesc:
 			"In conformità al Principio di Temporalità (Decreto 1377 Art. 11), i dati identificativi personali dei soggiorni conclusi vengono automaticamente oscurati e cancellati 90 giorni dopo la data di check-out (o immediatamente su richiesta ARCO di cancellazione), conservando solo i dati contabili e finanziari aggregati richiesti dalla legge.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Titolare del Trattamento e Host Ufficiale",
+		complianceLaw1581Badge: "Legge 1581 del 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Legge 2068 del 2020 (Turismo / TRA-SIRE)",
+		complianceLaw679Badge: "Legge 679 del 2001 (Prevenzione ESCNNA)",
+		reviewVerifiedGuest: "Ospite Verificato",
+		reviewViewOnAirbnb: "Verifica le recensioni sull'annuncio Airbnb",
+		faq1707Title: "Appartamento Vista Mare 1707 — Domande Frequenti",
+		faq1707Subtitle:
+			"Tutto ciò che devi sapere su lavoro da remoto, distribuzione dei letti, Prenotazioni Dirette, check-in e regole condominiali al 17° piano.",
+		faq1707Q1:
+			"L'Appartamento 1707 è attrezzato per il lavoro da remoto e i nomadi digitali?",
+		faq1707A1:
+			"Sì. Situata al 17° piano dell'Edificio Salguero Sunset (RNT #268781), la Proprietà 1707 offre fibra ottica 900 Mbps affidabile, una postazione lavoro ergonomica per laptop e un tranquillo balcone privato vista mare ideale per videochiamate.",
+		faq1707Q2:
+			"Qual è la configurazione dei letti e del parcheggio per la Proprietà 1707?",
+		faq1707A2:
+			"La Proprietà 1707 dispone di 2 Camere da letto e 4 Letti per un massimo di 6 Ospiti: Camera Principale con 1 letto Queen, Camera degli Ospiti con 2 letti singoli e Soggiorno con 1 divano letto estraibile, oltre a 2 bagni completi e Posto auto assegnato Stallo 95 gratuito.",
+		faq1707Q3:
+			"Quali sono la tariffa notturna, il soggiorno minimo e la politica di cancellazione per una Prenotazione Diretta?",
+		faq1707A3:
+			"La tariffa base è di 450.000 COP a notte (soggiorno minimo 2 notti) più una Tariffa di Pulizia fissa di 100.000 COP. Le Prenotazioni Dirette vengono regolate in COP con lo 0% di commissioni OTA tramite Carta, PSE o Voucher in contanti (Mercado Pago). Cancellazione: rimborso del 100% con ≥14 giorni, 50% tra 7 e 13 giorni, non rimborsabile entro 7 giorni.",
+		faq1707Q4:
+			"Quali sono gli orari di Check-in e Check-out nella Proprietà 1707?",
+		faq1707A4:
+			"Il Check-in inizia alle 15:00 e il Check-out è entro le 11:00. Il self check-in con serratura smart consente un ingresso comodo una volta verificato il Registro degli Ospiti pre-arrivo.",
+		faq1707Q5:
+			"Come funzionano il Registro degli Ospiti e la Credenziale di Accesso 0XXXXXX#?",
+		faq1707A5:
+			"Prima dell'arrivo, l'Ospite Principale compila il Registro degli Ospiti online obbligatorio (inclusa l'Autorizzazione al Trattamento dei Dati Legge 1581 e l'Attestazione per Minori Legge 679 in caso di minori). L'invio sblocca subito la Guida dell'Ospite digitale, l'autorizzazione dello Stallo 95 e il codice PIN temporaneo casuale 0XXXXXX#.",
+		faq1707Q6:
+			"Ci sono costi condominiali o giorni di chiusura della piscina nell'Edificio Salguero Sunset?",
+		faq1707A6:
+			"Sì. La reception dell'Edificio Salguero Sunset applica una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona pagabile all'arrivo per i braccialetti di sicurezza e le aree comuni. Le piscine chiudono ogni martedì per manutenzione programmata.",
+		faq1606Title: "Appartamento Vista Mare 1606 — Domande Frequenti",
+		faq1606Subtitle:
+			"Tutto ciò che devi sapere sul nostro rifugio romantico e familiare al 16° piano, Prenotazioni Dirette, check-in e regole dell'edificio.",
+		faq1606Q1: "Cosa rende l'Appartamento 1606 ideale per coppie e famiglie?",
+		faq1606A1:
+			"Situata al 16° piano dell'Edificio Salguero Sunset (RNT #270413) a un isolato da Playa Salguero, la Proprietà 1606 unisce un ambiente costiero romantico e accogliente per famiglie, terrazza privata al tramonto e fibra ottica 900 Mbps.",
+		faq1606Q2:
+			"Qual è la configurazione dei letti e del parcheggio per la Proprietà 1606?",
+		faq1606A2:
+			"La Proprietà 1606 dispone di 2 Camere da letto e 3 Letti per un massimo di 6 Ospiti: Camera Principale con 1 letto Queen, Camera degli Ospiti con 1 letto matrimoniale e Soggiorno con 1 divano letto estraibile, oltre a 2 bagni completi e Posto auto assegnato Stallo 87 gratuito.",
+		faq1606Q3:
+			"Quali sono la tariffa notturna, il soggiorno minimo e la politica di cancellazione per una Prenotazione Diretta?",
+		faq1606A3:
+			"La tariffa base è di 350.000 COP a notte (soggiorno minimo 2 notti; alta stagione 15 dic–15 gen: 550.000 COP a notte con minimo 4 notti) più una Tariffa di Pulizia fissa di 80.000 COP. Pagamento diretto in COP con lo 0% di commissioni OTA tramite Carta, PSE o Voucher in contanti (Mercado Pago). Cancellazione: 100% con ≥14 giorni, 50% tra 7–13 giorni, non rimborsabile entro 7 giorni.",
+		faq1606Q4:
+			"Quali sono gli orari di Check-in e Check-out nella Proprietà 1606?",
+		faq1606A4:
+			"Il Check-in inizia alle 15:00 e il Check-out è entro le 11:00. Il self check-in con serratura smart consente un ingresso comodo una volta verificato il Registro degli Ospiti pre-arrivo.",
+		faq1606Q5:
+			"Come funzionano il Registro degli Ospiti e la Credenziale di Accesso 0XXXXXX#?",
+		faq1606A5:
+			"Prima dell'arrivo, l'Ospite Principale compila il Registro degli Ospiti online obbligatorio (inclusa l'Autorizzazione al Trattamento dei Dati Legge 1581 e l'Attestazione per Minori Legge 679 in caso di minori). L'invio sblocca subito la Guida dell'Ospite digitale, l'autorizzazione dello Stallo 87 e il codice PIN temporaneo casuale 0XXXXXX#.",
+		faq1606Q6:
+			"Ci sono costi condominiali o giorni di chiusura della piscina nell'Edificio Salguero Sunset?",
+		faq1606A6:
+			"Sì. La reception dell'Edificio Salguero Sunset applica una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona pagabile all'arrivo per i braccialetti di sicurezza e le aree comuni. Le piscine chiudono ogni martedì per manutenzione programmata.",
 	},
 	de: {
 		seoHomeTitle:
@@ -2439,9 +2680,9 @@ export const dict = {
 		nomadBadgeSub: "Perfekt für Videoanrufe",
 		aboutTitle: "Über die Unterkunft",
 		aboutText1:
-			"Genieße unser modernes Apartment im 17. Stock mit einem spektakulären Blick auf den Ozean und unglaublichen Sonnenuntergängen! Das Hotel liegt in einer exklusiven und ruhigen Gegend, nur 1 Block vom Strand entfernt.",
+			"Genieße unser modernes Strandapartment im 17. Stock des Edificio Salguero Sunset mit Panoramablick auf Sonnenuntergänge über der Karibik, 900-Mbit/s-Glasfaser-WLAN und ergonomischem Arbeitsplatz – nur 1 Block vom Playa Salguero entfernt.",
 		aboutText2:
-			"Verfügt über 2 Schlafzimmer, 2 Badezimmer, ein bequemes Schlafsofa, eine private Terrasse, eine voll ausgestattete Küche, High-Speed-WLAN, Waschmaschine und kostenlose Parkplätze.",
+			"Bietet Platz für bis zu 6 Gäste in 2 Schlafzimmern und 4 Betten (Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 2 Einzelbetten und Wohnzimmer mit 1 ausziehbaren Schlafsofa), sowie 2 Bäder, private Meerblick-Terrasse, voll ausgestattete Küche, Waschmaschine, Smart-Lock-Self-Check-in und Zugewiesener Parkplatz Stellplatz 95.",
 		amenitiesTitle: "Premium-Ausstattung",
 		amWifi: "High-Speed-WLAN",
 		amKitchen: "Voll ausgestattete Küche",
@@ -2453,7 +2694,7 @@ export const dict = {
 		amOcean: "Atemberaubender Meerblick",
 		calendarTitle: "Daten wählen & buchen",
 		calendarSubtitle:
-			"Wähle deine Reisedaten unten aus. Du wirst sicher zu Airbnb weitergeleitet, um die aktuelle Verfügbarkeit zu überprüfen und deine Buchung abzuschließen.",
+			"Wählen Sie unten Ihr Check-in- und Check-out-Datum, um ein verbindliches Live-Angebot in Kolumbianischen Pesos (COP) mit 0 % OTA-Provision zu berechnen. Schließen Sie Ihre Direktreservierung online per Karte, PSE oder Bar-Gutschein (Mercado Pago) ab oder nutzen Sie Airbnb optional als externen Kanal.",
 		checkIn: "Check-in",
 		checkOut: "Check-out",
 		addDate: "Datum hinzufügen",
@@ -2490,9 +2731,9 @@ export const dict = {
 		amRomanticDesc:
 			"Nippen Sie an einem Glas Wein auf Ihrer privaten Terrasse, während Sie beobachten, wie die Sonne im Karibischen Meer versinkt.",
 		about1606Text1:
-			"Erleben Sie unseren atemberaubenden Rückzugsort im 16. Stock. Genießen Sie den atemberaubenden Blick auf den Ozean, warme Brisen und eine friedliche Atmosphäre, nur wenige Schritte vom Strand entfernt.",
+			"Erleben Sie unseren ruhigen Strandrückzugsort im 16. Stock des Edificio Salguero Sunset – ideal für Paare und Familien mit weiten Karibik-Sonnenuntergängen, 900-Mbit/s-Glasfaser-WLAN und friedlicher Atmosphäre nur wenige Schritte vom Playa Salguero entfernt.",
 		about1606Text2:
-			"Verfügt über 2 Schlafzimmer, 2 Badezimmer, eine private Terrasse, eine voll ausgestattete Küche, Highspeed-WLAN und eine gemütliche Atmosphäre, die perfekt zum Entspannen einlädt.",
+			"Bietet Platz für bis zu 6 Gäste in 2 Schlafzimmern und 3 Betten (Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 1 Doppelbett und Wohnzimmer mit 1 ausziehbaren Schlafsofa), sowie 2 Bäder, private Sonnenuntergangsterrasse, voll ausgestattete Küche, Waschmaschine, Smart-Lock-Self-Check-in und Zugewiesener Parkplatz Stellplatz 87.",
 		reviewsTitle: "Gästeerlebnisse",
 		review1Text:
 			'"Der Ort ist ideal für Entspannung und Familienzeit, genau wie auf den Fotos gezeigt. Der Service des Gastgebers ist ausgezeichnet. Sehr zu empfehlen."',
@@ -2668,7 +2909,7 @@ export const dict = {
 		gallery1606_8:
 			"Luftige Master-Suite, ausgestattet mit erstklassiger Bettwäsche.",
 		gallery1606_9:
-			"Gemütliches zweites Schlafzimmer mit Doppelbetten – ideal für Familien.",
+			"Gemütliches zweites Schlafzimmer mit 1 komfortablen Doppelbett – ideal für Familien.",
 		gallery1606_10:
 			"Ruhiges Gästezimmer als Rückzugsort für einen erholsamen Schlaf.",
 		gallery1606_11: "Makelloses Hauptbadezimmer mit eleganten Waschbecken.",
@@ -3026,6 +3267,66 @@ export const dict = {
 			"Smart-Lock-Türcodes werden kryptografisch zufällig generiert und enthalten niemals Ziffern Ihrer Ausweisnummer.",
 		privacyRetentionDesc:
 			"Gemäß dem Grundsatz der zeitlichen Begrenzung (Dekret 1377 Art. 11) werden personenbezogene Identifikationsdaten abgeschlossener Aufenthalte 90 Tage nach dem Check-out automatisch anonymisiert und gelöscht (oder sofort nach einem berechtigten ARCO-Löschungsantrag), wobei die gesetzlich vorgeschriebenen Finanz- und Buchhaltungsdaten erhalten bleiben.",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "Verantwortlicher & Offizieller Gastgeber",
+		complianceLaw1581Badge: "Gesetz 1581 von 2012 (Habeas Data)",
+		complianceLaw2068Badge: "Gesetz 2068 von 2020 (Tourismus / TRA-SIRE)",
+		complianceLaw679Badge: "Gesetz 679 von 2001 (ESCNNA-Schutz)",
+		reviewVerifiedGuest: "Verifizierter Gast",
+		reviewViewOnAirbnb: "Bewertungen auf dem Airbnb-Inserat prüfen",
+		faq1707Title: "Apartment mit Meerblick 1707 — Häufige Fragen",
+		faq1707Subtitle:
+			"Alles Wissenswerte zu Remote-Arbeit, Bettenaufteilung, Direktreservierungen, Check-in und Hausregeln im 17. Stock.",
+		faq1707Q1:
+			"Ist das Apartment 1707 für Remote-Arbeit und digitale Nomaden geeignet?",
+		faq1707A1:
+			"Ja. Im 17. Stock des Edificio Salguero Sunset (RNT #268781) bietet die Unterkunft 1707 stabiles 900-Mbit/s-Glasfaser-WLAN, einen ergonomischen Laptop-Arbeitsplatz und einen ruhigen Meerblick-Balkon für Videokonferenzen.",
+		faq1707Q2:
+			"Wie sind die Bettenaufteilung und der Parkplatz der Unterkunft 1707?",
+		faq1707A2:
+			"Die Unterkunft 1707 verfügt über 2 Schlafzimmer und 4 Betten für bis zu 6 Gäste: Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 2 Einzelbetten und Wohnzimmer mit 1 ausziehbaren Schlafsofa, plus 2 Vollbäder und den kostenlosen Zugewiesenen Parkplatz Stellplatz 95.",
+		faq1707Q3:
+			"Wie lauten Nachttarif, Mindestaufenthalt und Stornierungsbedingungen für Direktreservierungen?",
+		faq1707A3:
+			"Der Basistarif beträgt 450.000 COP pro Nacht (Mindestaufenthalt 2 Nächte) zuzüglich einer pauschalen Reinigungsgebühr von 100.000 COP. Direktreservierungen werden in COP mit 0 % OTA-Provision per Karte, PSE oder Bar-Gutschein (Mercado Pago) abgerechnet. Stornierung: 100 % Erstattung ab 14 Tagen vor Check-in, 50 % bei 7–13 Tagen, nicht erstattungsfähig unter 7 Tagen.",
+		faq1707Q4:
+			"Wie sind die Check-in- und Check-out-Zeiten in der Unterkunft 1707?",
+		faq1707A4:
+			"Der Check-in beginnt ab 15:00 Uhr und der Check-out erfolgt bis 11:00 Uhr. Smart-Lock-Self-Check-in ermöglicht eine reibungslose Ankunft nach Verifizierung des Gästeregisters.",
+		faq1707Q5:
+			"Wie funktionieren das Gästeregister und der Zugangscode 0XXXXXX#?",
+		faq1707A5:
+			"Vor Anreise füllt der Hauptgast das gesetzlich vorgeschriebene Online-Gästeregister aus (inkl. Datenschutz-Einwilligung nach Gesetz 1581 und Minderjährigen-Bestätigung nach Gesetz 679 bei Kindern). Danach werden der digitale Gästeführer, die Parkfreigabe für Stellplatz 95 und Ihr zufälliger temporärer Smart-Lock-Code 0XXXXXX# sofort freigeschaltet.",
+		faq1707Q6:
+			"Gibt es Gebäudegebühren oder Pool-Schließtage im Edificio Salguero Sunset?",
+		faq1707A6:
+			"Ja. Die Rezeption des Edificio Salguero Sunset erhebt bei Ankunft eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für Sicherheitsarmbänder und Gemeinschaftsbereiche. Die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
+		faq1606Title: "Apartment mit Meerblick 1606 — Häufige Fragen",
+		faq1606Subtitle:
+			"Alles Wissenswerte zu unserem romantischen Familien-Strandapartment im 16. Stock, Direktreservierungen, Check-in und Hausregeln.",
+		faq1606Q1: "Was macht das Apartment 1606 ideal für Paare und Familien?",
+		faq1606A1:
+			"Im 16. Stock des Edificio Salguero Sunset (RNT #270413), nur einen Block vom Playa Salguero entfernt, verbindet die Unterkunft 1606 eine warme, romantische und familienfreundliche Atmosphäre mit privater Sonnenuntergangsterrasse und 900-Mbit/s-Glasfaser-WLAN.",
+		faq1606Q2:
+			"Wie sind die Bettenaufteilung und der Parkplatz der Unterkunft 1606?",
+		faq1606A2:
+			"Die Unterkunft 1606 verfügt über 2 Schlafzimmer und 3 Betten für bis zu 6 Gäste: Hauptschlafzimmer mit 1 Queen-Bett, Gästezimmer mit 1 Doppelbett und Wohnzimmer mit 1 ausziehbaren Schlafsofa, plus 2 Vollbäder und den kostenlosen Zugewiesenen Parkplatz Stellplatz 87.",
+		faq1606Q3:
+			"Wie lauten Nachttarif, Mindestaufenthalt und Stornierungsbedingungen für Direktreservierungen?",
+		faq1606A3:
+			"Der Basistarif beträgt 350.000 COP pro Nacht (Mindestaufenthalt 2 Nächte; Hochsaison 15. Dez.–15. Jan.: 550.000 COP pro Nacht, Mindestaufenthalt 4 Nächte) zuzüglich einer pauschalen Reinigungsgebühr von 80.000 COP. Direktreservierungen in COP mit 0 % OTA-Provision per Karte, PSE oder Bar-Gutschein (Mercado Pago). Stornierung: 100 % bei ≥14 Tagen, 50 % bei 7–13 Tagen, nicht erstattungsfähig unter 7 Tagen.",
+		faq1606Q4:
+			"Wie sind die Check-in- und Check-out-Zeiten in der Unterkunft 1606?",
+		faq1606A4:
+			"Der Check-in beginnt ab 15:00 Uhr und der Check-out erfolgt bis 11:00 Uhr. Smart-Lock-Self-Check-in ermöglicht eine reibungslose Ankunft nach Verifizierung des Gästeregisters.",
+		faq1606Q5:
+			"Wie funktionieren das Gästeregister und der Zugangscode 0XXXXXX#?",
+		faq1606A5:
+			"Vor Anreise füllt der Hauptgast das gesetzlich vorgeschriebene Online-Gästeregister aus (inkl. Datenschutz-Einwilligung nach Gesetz 1581 und Minderjährigen-Bestätigung nach Gesetz 679 bei Kindern). Danach werden der digitale Gästeführer, die Parkfreigabe für Stellplatz 87 und Ihr zufälliger temporärer Smart-Lock-Code 0XXXXXX# sofort freigeschaltet.",
+		faq1606Q6:
+			"Gibt es Gebäudegebühren oder Pool-Schließtage im Edificio Salguero Sunset?",
+		faq1606A6:
+			"Ja. Die Rezeption des Edificio Salguero Sunset erhebt bei Ankunft eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für Sicherheitsarmbänder und Gemeinschaftsbereiche. Die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
 	},
 	ja: {
 		seoHomeTitle:
@@ -3051,9 +3352,9 @@ export const dict = {
 		nomadBadgeSub: "ビデオ通話に最適",
 		aboutTitle: "お部屋について",
 		aboutText1:
-			"海の壮大な景色と素晴らしい夕日を楽しめる、17階のモダンなアパートメントをご堪能ください！ビーチからわずか1ブロックの、閑静な高級住宅街に位置しています。",
+			"プラヤ・サルグエロのビーチからわずか1ブロック、Edificio Salguero Sunsetの17階にあるモダンなビーチフロント物件です。カリブ海に沈むパノラマの夕日、900 Mbps光ファイバーWi-Fi、人間工学に基づいたワークスペースをお楽しみください。",
 		aboutText2:
-			"2つのベッドルーム、2つのバスルーム、快適なソファベッド、プライベートテラス、設備の整ったキッチン、高速Wi-Fi、室内の洗濯機、無料駐車場を備えています。",
+			"2ベッドルーム・4ベッド（主寝室：クイーンベッド1台、ゲスト寝室：シングル／ツインベッド2台、リビング：引き出し式ソファベッド1台）で最大6名様まで宿泊可能。バスルーム2室、海を望むプライベートテラス、設備の整ったキッチン、室内洗濯機、スマートロックによるセルフチェックイン、専用駐車スペース 95番（Bay 95）を備えています。",
 		amenitiesTitle: "主な設備",
 		amWifi: "高速Wi-Fi",
 		amKitchen: "設備の整ったキッチン",
@@ -3065,7 +3366,7 @@ export const dict = {
 		amOcean: "素晴らしいオーシャンビュー",
 		calendarTitle: "日付を選択して予約",
 		calendarSubtitle:
-			"旅行の日程を下からお選びください。空室状況を確認し予約を完了するために、Airbnbに安全にリダイレクトされます。",
+			"下でチェックイン日とチェックアウト日を選択すると、OTA手数料0%のコロンビアペソ（COP）建て公式見積もりをリアルタイムで算出できます。クレジットカード・デビットカード、PSE、現金バウチャー（Mercado Pago）でオンライン直接予約を完了できるほか、外部チャネルとしてAirbnbも任意でご利用いただけます。",
 		checkIn: "チェックイン",
 		checkOut: "チェックアウト",
 		addDate: "日付を追加",
@@ -3104,9 +3405,9 @@ export const dict = {
 		amRomanticDesc:
 			"プライベートテラスでワインを飲みながら、カリブ海に沈む夕日を眺めましょう。",
 		about1606Text1:
-			"16階にある素晴らしい隠れ家を体験してください。ビーチからわずか数歩の場所で、息をのむようなオーシャンビュー、暖かなそよ風、そして穏やかな雰囲気をお楽しみください。",
+			"プラヤ・サルグエロのビーチからすぐ、Edificio Salguero Sunsetの16階にある穏やかなビーチフロントの隠れ家です。カップルやご家族向けに設計され、カリブ海の美しい夕日と900 Mbps光ファイバーWi-Fiをお楽しみいただけます。",
 		about1606Text2:
-			"2つのベッドルーム、2つのバスルーム、プライベートテラス、設備の整ったキッチン、高速Wi-Fiを備え、リラックスに最適な居心地の良い雰囲気が自慢です。",
+			"2ベッドルーム・3ベッド（主寝室：クイーンベッド1台、ゲスト寝室：ダブルベッド1台、リビング：引き出し式ソファベッド1台）で最大6名様まで宿泊可能。バスルーム2室、サンセットテラス、設備の整ったキッチン、室内洗濯機、スマートロックによるセルフチェックイン、専用駐車スペース 87番（Bay 87）を備えています。",
 		reviewsTitle: "ゲストの体験",
 		review1Text:
 			"「リラックスや家族との時間に最適な場所で、写真の通りでした。ホストのサービスも素晴らしく、非常におすすめです。」",
@@ -3280,7 +3581,7 @@ export const dict = {
 		gallery1606_8:
 			"上質なリネンで整えられた、風通しの良い快適なマスタースイート。",
 		gallery1606_9:
-			"ファミリーに最適な、ダブルベッドが置かれた温かみのある客室。",
+			"ファミリーに最適な、ダブルベッド1台を備えた温かみのある客室。",
 		gallery1606_10: "穏やかな眠りを約束する、静かで落ち着いたゲストルーム。",
 		gallery1606_11: "エレガントな洗面台を備えた、非常に清潔なバスルーム。",
 		gallery1606_12:
@@ -3626,6 +3927,65 @@ export const dict = {
 			"スマートロックの暗証番号は暗号論的乱数により生成され、身分証明書番号の数字が含まれることはありません。",
 		privacyRetentionDesc:
 			"一時性の原則（政令第1377号第11条）に従い、終了した宿泊の個人識別データはチェックアウト日から90日後に自動的に匿名化・消去されます（またはARCO削除請求の承認時に即時消去されます）。なお、税務・会計法規で求められる集計財務記録は保持されます。",
+		// #301 property facts, FAQs & E-E-A-T
+		hostDataControllerLabel: "データ管理者および公式ホスト",
+		complianceLaw1581Badge: "法第1581号（個人情報保護）",
+		complianceLaw2068Badge: "法第2068号（観光法 / TRA-SIRE）",
+		complianceLaw679Badge: "法第679号（未成年者保護 ESCNNA）",
+		reviewVerifiedGuest: "認証済みゲスト",
+		reviewViewOnAirbnb: "Airbnb掲載ページでレビューを確認する",
+		faq1707Title: "オーシャンビューフラット 1707 — よくある質問",
+		faq1707Subtitle:
+			"17階でのリモートワーク環境、ベッド構成、直接予約、チェックイン、建物ルールについてご案内します。",
+		faq1707Q1:
+			"オーシャンビューフラット 1707はリモートワークやデジタルノマドに適していますか？",
+		faq1707A1:
+			"はい。Edificio Salguero Sunsetの17階（RNT #268781）に位置し、安定した900 Mbps光ファイバーWi-Fi、人間工学に基づいたワークスペース、ビデオ通話にも最適な静かな海辺のバルコニーを備えています。",
+		faq1707Q2:
+			"物件 1707のベッド構成と専用駐車スペースについて教えてください。",
+		faq1707A2:
+			"物件 1707は2ベッドルーム・4ベッドで最大6名様まで宿泊できます（主寝室：クイーンベッド1台、ゲスト寝室：シングル／ツインベッド2台、リビング：引き出し式ソファベッド1台）。バスルーム2室と無料の専用駐車スペース 95番（Bay 95）が含まれます。",
+		faq1707Q3:
+			"直接予約の宿泊料金、最低宿泊数、キャンセルポリシーはどうなっていますか？",
+		faq1707A3:
+			"基本料金は1泊 450,000 COP（最低2泊）に一律 100,000 COPの清掃料金が加算されます。直接予約はOTA手数料0%のCOP建てで、カード・PSE・現金バウチャー（Mercado Pago）にて決済可能です。キャンセル規定：チェックイン14日前以上は100%返金、7〜13日前は50%返金、7日未満は返金不可です。",
+		faq1707Q4: "物件 1707のチェックイン・チェックアウト時間は何時ですか？",
+		faq1707A4:
+			"チェックインは15:00（午後3時）から、チェックアウトは11:00（午前11時）までです。事前の宿泊者名簿が確認され次第、スマートロックによるセルフチェックインが可能です。",
+		faq1707Q5:
+			"宿泊者名簿とスマートロック暗証番号（0XXXXXX#）の解除手順を教えてください。",
+		faq1707A5:
+			"ご到着前に代表宿泊者がオンライン宿泊者名簿（コロンビア法第1581号の個人情報同意および未成年同伴時の法第679号保護者宣誓を含む）を提出します。送信完了後、デジタルゲストガイド、専用駐車スペース 95番（Bay 95）の許可、暗号論的乱数による一時的な0XXXXXX#スマートロック暗証番号が即時に解除されます。",
+		faq1707Q6:
+			"Edificio Salguero Sunsetの建物登録料やプールの休業日はありますか？",
+		faq1707A6:
+			"はい。ご到着時にEdificio Salguero Sunsetフロントにて、セキュリティリストバンドと共用エリア利用のための建物登録料（1名あたり20,000 COP、初回のみ）をお支払いいただきます。また、建物のプールは定期メンテナンスのため毎週火曜日が休業です。",
+		faq1606Title: "オーシャンビューフラット 1606 — よくある質問",
+		faq1606Subtitle:
+			"16階のロマンチック＆ファミリー向けビーチフロント物件、直接予約、チェックイン、建物ルールについてご案内します。",
+		faq1606Q1:
+			"オーシャンビューフラット 1606がカップルやご家族に最適な理由は何ですか？",
+		faq1606A1:
+			"プラヤ・サルグエロのビーチから1ブロック、Edificio Salguero Sunsetの16階（RNT #270413）に位置し、温かく穏やかな海辺の空間、カリブ海の夕日を望むプライベートテラス、900 Mbps光ファイバーWi-Fiを備えています。",
+		faq1606Q2:
+			"物件 1606のベッド構成と専用駐車スペースについて教えてください。",
+		faq1606A2:
+			"物件 1606は2ベッドルーム・3ベッドで最大6名様まで宿泊できます（主寝室：クイーンベッド1台、ゲスト寝室：ダブルベッド1台、リビング：引き出し式ソファベッド1台）。バスルーム2室と無料の専用駐車スペース 87番（Bay 87）が含まれます。",
+		faq1606Q3:
+			"直接予約の宿泊料金、最低宿泊数、キャンセルポリシーはどうなっていますか？",
+		faq1606A3:
+			"基本料金は1泊 350,000 COP（最低2泊、12月15日〜1月15日のピーク期は1泊 550,000 COP・最低4泊）に一律 80,000 COPの清掃料金が加算されます。直接予約はOTA手数料0%のCOP建てで、カード・PSE・現金バウチャー（Mercado Pago）に対応。キャンセル規定：14日前以上100%返金、7〜13日前50%返金、7日未満返金不可です。",
+		faq1606Q4: "物件 1606のチェックイン・チェックアウト時間は何時ですか？",
+		faq1606A4:
+			"チェックインは15:00（午後3時）から、チェックアウトは11:00（午前11時）までです。事前の宿泊者名簿が確認され次第、スマートロックによるセルフチェックインが可能です。",
+		faq1606Q5:
+			"宿泊者名簿とスマートロック暗証番号（0XXXXXX#）の解除手順を教えてください。",
+		faq1606A5:
+			"ご到着前に代表宿泊者がオンライン宿泊者名簿（コロンビア法第1581号の個人情報同意および未成年同伴時の法第679号保護者宣誓を含む）を提出します。送信完了後、デジタルゲストガイド、専用駐車スペース 87番（Bay 87）の許可、暗号論的乱数による一時的な0XXXXXX#スマートロック暗証番号が即時に解除されます。",
+		faq1606Q6:
+			"Edificio Salguero Sunsetの建物登録料やプールの休業日はありますか？",
+		faq1606A6:
+			"はい。ご到着時にEdificio Salguero Sunsetフロントにて、セキュリティリストバンドと共用エリア利用のための建物登録料（1名あたり20,000 COP、初回のみ）をお支払いいただきます。また、建物のプールは定期メンテナンスのため毎週火曜日が休業です。",
 	},
 };
 

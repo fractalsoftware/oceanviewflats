@@ -1,15 +1,24 @@
 import {
 	Car,
 	Coffee,
+	FileCheck,
 	Globe,
 	Lock,
+	Mail,
 	MapPin,
+	MessageCircle,
+	Scale,
+	ShieldCheck,
 	Waves,
 	Wifi,
 	Wind,
 } from "lucide-react";
 import React from "react";
-import { IMAGES } from "../constants/config";
+import {
+	DATA_CONTROLLER,
+	getPrivacyPolicyPath,
+	IMAGES,
+} from "../constants/config";
 import { THEMES } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
@@ -25,6 +34,7 @@ export const AboutAmenities = ({
 }) => {
 	const t = dict[lang];
 	const theme = THEMES[propertyId];
+	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
 
 	return (
 		<section className="py-24 px-6 max-w-6xl mx-auto">
@@ -34,8 +44,8 @@ export const AboutAmenities = ({
 						{t.aboutTitle}
 					</h2>
 					<div className={`prose prose-lg ${theme.textColor} mb-8`}>
-						<p className="mb-4 leading-relaxed">{t.aboutText1}</p>
-						<p className="leading-relaxed">{t.aboutText2}</p>
+						<p className="mb-4 leading-relaxed">{t[theme.aboutText1Key]}</p>
+						<p className="leading-relaxed">{t[theme.aboutText2Key]}</p>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
 						<img
@@ -108,6 +118,69 @@ export const AboutAmenities = ({
 					<p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
 						{t.hostBio}
 					</p>
+					<div className={theme.aboutHostMetaRow}>
+						<span className={theme.aboutHostControllerBadge}>
+							<FileCheck className={theme.aboutHostIconSm} aria-hidden="true" />
+							<span>
+								{t.hostDataControllerLabel}: {DATA_CONTROLLER.name}
+							</span>
+						</span>
+						<span className={theme.aboutHostRntBadge}>
+							<ShieldCheck
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>
+								{t.rntTitle}: {theme.rntNumber}
+							</span>
+						</span>
+					</div>
+					<div className={theme.aboutHostComplianceRow}>
+						<span className={theme.aboutHostComplianceBadge}>
+							<Scale className={theme.aboutHostIconSm} aria-hidden="true" />
+							<span>{t.complianceLaw1581Badge}</span>
+						</span>
+						<span className={theme.aboutHostComplianceBadge}>
+							<ShieldCheck
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>{t.complianceLaw2068Badge}</span>
+						</span>
+						<span className={theme.aboutHostComplianceBadge}>
+							<ShieldCheck
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>{t.complianceLaw679Badge}</span>
+						</span>
+						<a href={privacyHref} className={theme.aboutHostComplianceLink}>
+							{t.footerPrivacyLink}
+						</a>
+					</div>
+					<div className={theme.aboutHostActionsRow}>
+						<a
+							href={DATA_CONTROLLER.whatsappHref}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={theme.aboutHostWhatsAppBtn}
+						>
+							<MessageCircle
+								className={theme.aboutHostIconSm}
+								aria-hidden="true"
+							/>
+							<span>
+								{t.homeCtaWhatsApp} ({DATA_CONTROLLER.phone})
+							</span>
+						</a>
+						<a
+							href={`mailto:${DATA_CONTROLLER.email}`}
+							className={theme.aboutHostEmailBtn}
+						>
+							<Mail className={theme.aboutHostIconSm} aria-hidden="true" />
+							<span>{DATA_CONTROLLER.email}</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</section>

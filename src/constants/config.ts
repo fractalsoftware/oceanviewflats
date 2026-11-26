@@ -347,3 +347,163 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 		reviewAuthorKey: "review1Author",
 	},
 ];
+
+// #301 per-Property FAQ & verified review configs (shared with #303 JSON-LD)
+export type PropertyId = "1707" | "1606";
+
+export type PropertyFaq1707QKey =
+	| "faq1707Q1"
+	| "faq1707Q2"
+	| "faq1707Q3"
+	| "faq1707Q4"
+	| "faq1707Q5"
+	| "faq1707Q6";
+
+export type PropertyFaq1707AKey =
+	| "faq1707A1"
+	| "faq1707A2"
+	| "faq1707A3"
+	| "faq1707A4"
+	| "faq1707A5"
+	| "faq1707A6";
+
+export type PropertyFaq1606QKey =
+	| "faq1606Q1"
+	| "faq1606Q2"
+	| "faq1606Q3"
+	| "faq1606Q4"
+	| "faq1606Q5"
+	| "faq1606Q6";
+
+export type PropertyFaq1606AKey =
+	| "faq1606A1"
+	| "faq1606A2"
+	| "faq1606A3"
+	| "faq1606A4"
+	| "faq1606A5"
+	| "faq1606A6";
+
+export type PropertyFaqQKey = PropertyFaq1707QKey | PropertyFaq1606QKey;
+export type PropertyFaqAKey = PropertyFaq1707AKey | PropertyFaq1606AKey;
+
+export interface PropertyFaqItemConfig {
+	id: string;
+	qKey: PropertyFaqQKey;
+	aKey: PropertyFaqAKey;
+	defaultOpen: boolean;
+}
+
+export const PROPERTY_1707_FAQ_ITEMS: readonly PropertyFaqItemConfig[] = [
+	{ id: "faq-1707-1", qKey: "faq1707Q1", aKey: "faq1707A1", defaultOpen: true },
+	{
+		id: "faq-1707-2",
+		qKey: "faq1707Q2",
+		aKey: "faq1707A2",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1707-3",
+		qKey: "faq1707Q3",
+		aKey: "faq1707A3",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1707-4",
+		qKey: "faq1707Q4",
+		aKey: "faq1707A4",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1707-5",
+		qKey: "faq1707Q5",
+		aKey: "faq1707A5",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1707-6",
+		qKey: "faq1707Q6",
+		aKey: "faq1707A6",
+		defaultOpen: false,
+	},
+];
+
+export const PROPERTY_1606_FAQ_ITEMS: readonly PropertyFaqItemConfig[] = [
+	{ id: "faq-1606-1", qKey: "faq1606Q1", aKey: "faq1606A1", defaultOpen: true },
+	{
+		id: "faq-1606-2",
+		qKey: "faq1606Q2",
+		aKey: "faq1606A2",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1606-3",
+		qKey: "faq1606Q3",
+		aKey: "faq1606A3",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1606-4",
+		qKey: "faq1606Q4",
+		aKey: "faq1606A4",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1606-5",
+		qKey: "faq1606Q5",
+		aKey: "faq1606A5",
+		defaultOpen: false,
+	},
+	{
+		id: "faq-1606-6",
+		qKey: "faq1606Q6",
+		aKey: "faq1606A6",
+		defaultOpen: false,
+	},
+];
+
+export const PROPERTY_FAQ_ITEMS: Record<
+	PropertyId,
+	readonly PropertyFaqItemConfig[]
+> = {
+	"1707": PROPERTY_1707_FAQ_ITEMS,
+	"1606": PROPERTY_1606_FAQ_ITEMS,
+};
+
+export interface PropertyReviewMeta {
+	id: string;
+	authorKey: "review1707Author" | "review1Author" | "review2Author";
+	textKey: "review1707Text" | "review1Text" | "review2Text";
+	datePublished: string;
+	ratingValue: number;
+}
+
+export const PROPERTY_REVIEWS: Record<
+	PropertyId,
+	readonly PropertyReviewMeta[]
+> = {
+	"1707": [
+		{
+			id: "review-1707-1",
+			authorKey: "review1707Author",
+			textKey: "review1707Text",
+			datePublished: "2026-06-28",
+			ratingValue: 5,
+		},
+	],
+	"1606": [
+		{
+			id: "review-1606-1",
+			authorKey: "review1Author",
+			textKey: "review1Text",
+			datePublished: "2026-04-02",
+			ratingValue: 5,
+		},
+		{
+			id: "review-1606-2",
+			authorKey: "review2Author",
+			textKey: "review2Text",
+			datePublished: "2026-03-20",
+			ratingValue: 5,
+		},
+	],
+};
