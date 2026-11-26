@@ -2146,7 +2146,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expected1707ReviewSnippet: "素晴らしい景色と美しい夕日",
 			expected1707ReviewAuthor: "Karol Ximena",
 			expected1606ReviewSnippet: "リラックスや家族との時間に最適な場所",
-			expected1606ReviewAuthor: "リナ・マルセラ",
+			expected1606ReviewAuthor: "Lina Marcela",
 		},
 	];
 

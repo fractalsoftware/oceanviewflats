@@ -83,6 +83,11 @@ export const dict = {
 		review2Text:
 			'"A truly amazing stay—everything was clean, comfortable, and conveniently located, with beautiful scenery and very comfortable beds. Highly recommended!"',
 		review2Author: "Sheyla",
+		review3Text: '"Excellent location and host, I will be back."',
+		review3Author: "Rubiela Rubina",
+		review4Text:
+			'"The apartment is super comfortable, lovely, and well located."',
+		review4Author: "Pedro",
 		review1707Text:
 			'"A very nice apartment with an excellent view, beautiful sunsets, highly complete building facilities, and very good service from everyone. Recommended."',
 		review1707Author: "Karol Ximena",
@@ -843,6 +848,10 @@ export const dict = {
 		review2Text:
 			'"Una estadía realmente increíble: todo estaba limpio, cómodo y convenientemente ubicado, con hermosos paisajes y camas muy cómodas. ¡Muy recomendado!"',
 		review2Author: "Sheyla",
+		review3Text: '"Excelente ubicación y anfitrión, volveré"',
+		review3Author: "Rubiela Rubina",
+		review4Text: '"El apartamento super cómodo, bonito, bien ubicado"',
+		review4Author: "Pedro",
 		review1707Text:
 			'"Un apartamento muy lindo con una excelente vista, atardeceres hermosos, el edificio muy completo y la atención de todos muy buena. Recomendado."',
 		review1707Author: "Karol Ximena",
@@ -1623,6 +1632,10 @@ export const dict = {
 		review2Text:
 			'"Un séjour vraiment incroyable — tout était propre, confortable et bien situé, avec des paysages magnifiques et des lits très confortables. Hautement recommandé !"',
 		review2Author: "Sheyla",
+		review3Text: '"Emplacement et hôte excellents, je reviendrai."',
+		review3Author: "Rubiela Rubina",
+		review4Text: '"L\'appartement est super confortable, joli et bien situé."',
+		review4Author: "Pedro",
 		review1707Text:
 			'"Un très bel appartement avec une excellente vue, de magnifiques couchers de soleil, un bâtiment très complet et une très bonne attention de la part de tous. Recommandé."',
 		review1707Author: "Karol Ximena",
@@ -2407,11 +2420,15 @@ export const dict = {
 			"Ospita fino a 6 Ospiti in 2 camere da letto e 3 letti (Camera Principale con 1 letto Queen, Camera degli Ospiti con 1 letto matrimoniale e Soggiorno con 1 divano letto estraibile), oltre a 2 bagni, terrazza privata al tramonto, cucina attrezzata, lavanderia interna, self check-in con serratura smart e Posto auto assegnato Stallo 87.",
 		reviewsTitle: "Esperienze degli Ospiti",
 		review1Text:
-			'"Il posto è ideale per il relax e il tempo in famiglia, esattamente come mostrato nelle foto. Il servicio dell\'host è eccellente. Altamente raccomandato."',
+			'"Il posto è ideale per il relax e il tempo in famiglia, esattamente come mostrato nelle foto. Il servizio dell\'host è eccellente. Altamente raccomandato."',
 		review1Author: "Lina Marcela",
 		review2Text:
 			'"Un soggiorno davvero fantastico: tutto era pulito, confortevole e convenientemente situato, con splendidi paesaggi e letti molto comodi. Altamente raccomandato!"',
 		review2Author: "Sheyla",
+		review3Text: '"Posizione e host eccellenti, tornerò."',
+		review3Author: "Rubiela Rubina",
+		review4Text: '"L\'appartamento è super comodo, carino e ben posizionato."',
+		review4Author: "Pedro",
 		review1707Text:
 			"\"Un appartamento molto carino con un'ottima vista, tramonti bellissimi, l'edificio molto completo e l'attenzione di tutti molto buona. Raccomandato.\"",
 		review1707Author: "Karol Ximena",
@@ -3189,6 +3206,12 @@ export const dict = {
 		review2Text:
 			'"Ein wirklich fantastischer Aufenthalt – alles war sauber, komfortabel und günstig gelegen, mit wunderschöner Landschaft und sehr bequemen Betten. Sehr zu empfehlen!"',
 		review2Author: "Sheyla",
+		review3Text:
+			'"Ausgezeichnete Lage und großartiger Gastgeber, ich komme wieder."',
+		review3Author: "Rubiela Rubina",
+		review4Text:
+			'"Das Apartment ist super komfortabel, schön und gut gelegen."',
+		review4Author: "Pedro",
 		review1707Text:
 			'"Eine sehr schöne Wohnung mit einer hervorragenden Aussicht, wunderschönen Sonnenuntergängen, einem sehr gut ausgestatteten Gebäude und einem sehr guten Service von allen. Empfehlenswert."',
 		review1707Author: "Karol Ximena",
@@ -3971,10 +3994,14 @@ export const dict = {
 		reviewsTitle: "ゲストの体験",
 		review1Text:
 			"「リラックスや家族との時間に最適な場所で、写真の通りでした。ホストのサービスも素晴らしく、非常におすすめです。」",
-		review1Author: "リナ・マルセラ",
+		review1Author: "Lina Marcela",
 		review2Text:
 			"「本当に素晴らしい滞在でした。すべてが清潔で快適、場所も便利で、景色も美しくベッドもとても快適でした。強くおすすめします！」",
-		review2Author: "シェイラ",
+		review2Author: "Sheyla",
+		review3Text: "「立地もホストも素晴らしく、また泊まりたいです。」",
+		review3Author: "Rubiela Rubina",
+		review4Text: "「アパートメントはとても快適で素敵、立地も良かったです。」",
+		review4Author: "Pedro",
 		review1707Text:
 			"「素晴らしい景色と美しい夕日を楽しめる、とても素敵で可愛いアパートメントです。建物の設備も非常に充実しており、スタッフ全員の対応もとても親切でした。おすすめです。」",
 		review1707Author: "Karol Ximena",
