@@ -245,6 +245,13 @@ test("Apache .htaccess enables mod_deflate, mod_expires, tiered Cache-Control in
 		"public/.htaccess must define <IfModule mod_deflate.c>",
 	);
 	const deflateBlock = deflateMatch[1];
+	const deflateMimes = new Set(
+		deflateBlock
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter((line) => /^AddOutputFilterByType\s+DEFLATE\s+/i.test(line))
+			.flatMap((line) => line.split(/\s+/).slice(2)),
+	);
 	for (const mime of [
 		"text/html",
 		"text/plain",
@@ -255,14 +262,7 @@ test("Apache .htaccess enables mod_deflate, mod_expires, tiered Cache-Control in
 		"application/xml",
 		"image/svg+xml",
 	]) {
-		assert.match(
-			deflateBlock,
-			new RegExp(
-				`AddOutputFilterByType\\s+DEFLATE\\s+${mime.replace(/[+/]/g, "\\$&")}`,
-				"i",
-			),
-			`mod_deflate must compress ${mime}`,
-		);
+		assert.ok(deflateMimes.has(mime), `mod_deflate must compress ${mime}`);
 	}
 
 	// 3. <IfModule mod_expires.c> defines tiered expiry rules

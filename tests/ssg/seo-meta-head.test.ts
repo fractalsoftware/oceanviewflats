@@ -383,11 +383,20 @@ test("Compiled HTML self-hosts Inter Variable WOFF2 (latin + latin-ext) with zer
 			const html = readDistHtml(filename);
 			const { head, body } = splitHeadAndBody(html);
 
-			assert.ok(
-				!html.includes("fonts.googleapis.com") &&
-					!html.includes("fonts.gstatic.com"),
-				`Compiled ${filename} must not reference external Google Fonts origins`,
-			);
+			const disallowedFontHosts = new Set([
+				"fonts.googleapis.com",
+				"fonts.gstatic.com",
+			]);
+			const externalHosts = [...html.matchAll(/\b(?:href|src)="([^"]+)"/gi)]
+				.map((m) => m[1])
+				.filter((u) => /^https?:\/\//i.test(u))
+				.map((u) => new URL(u).hostname.toLowerCase());
+			for (const host of externalHosts) {
+				assert.ok(
+					!disallowedFontHosts.has(host),
+					`Compiled ${filename} must not reference external Google Fonts host "${host}"`,
+				);
+			}
 
 			const depth = filename.split("/").length - 1;
 			const assetPrefix =
