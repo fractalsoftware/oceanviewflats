@@ -241,6 +241,10 @@ _Avoid_: Door Password, Key Code, Room Key
 A pre-booking question or message submitted by a prospective visitor via the contact form. Inquiries may reference desired stay dates but never create a calendar hold or reservation record; visitors must always complete direct checkout to book.
 _Avoid_: Contact Message, Lead, Ticket, Support Request
 
+**Guest Review**:
+A verified post-stay rating and written evaluation submitted by a Guest for a specific Property, published on an external Online Travel Agency (e.g., Airbnb) or direct platform and surfaced on Property pages and structured data with verified attribution and publication date.
+_Avoid_: Testimonial, Comment, Feedback, Blurb
+
 **Reservation Confirmation**:
 The automated transactional email dispatched to the Primary Guest upon payment settlement, containing confirmed stay dates, a payment receipt, and the mandatory link to complete the Guest Registry.
 _Avoid_: Booking Receipt, Order Confirmation, Welcome Email

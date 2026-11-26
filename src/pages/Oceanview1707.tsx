@@ -9,7 +9,7 @@ import { Navigation } from "../components/Navigation";
 import { NomadSection } from "../components/NomadSection";
 import { PropertyFaq } from "../components/PropertyFaq";
 import { QuickStats } from "../components/QuickStats";
-import { ReviewsSection1707 } from "../components/ReviewsSection1707";
+import { ReviewsSection } from "../components/ReviewsSection";
 import { getOceanview1707Path } from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
@@ -50,7 +50,7 @@ export default function Oceanview1707({ lang, assetPrefix = "./" }: AppProps) {
 					propertyId="1707"
 					assetPrefix={assetPrefix}
 				/>
-				<ReviewsSection1707 lang={lang} />
+				<ReviewsSection lang={lang} propertyId="1707" />
 				<BookingSection
 					lang={lang}
 					propertyId="1707"

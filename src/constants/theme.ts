@@ -63,7 +63,22 @@ export interface PropertyTheme {
 	aboutHostEmailBtn: string;
 	aboutHostIconSm: string;
 
-	// Reviews centralized E-E-A-T styles
+	// Guest Reviews centralized styles
+	reviewSection: string;
+	reviewGlow: string;
+	reviewContainer: string;
+	reviewTitle: string;
+	reviewGrid: string;
+	reviewListItem: string;
+	reviewCard: string;
+	reviewQuoteIcon: string;
+	reviewStarsRow: string;
+	reviewStarIcon: string;
+	reviewText: string;
+	reviewAuthorRow: string;
+	reviewAvatar: string;
+	reviewAuthorDetails: string;
+	reviewAuthorName: string;
 	reviewMetaRow: string;
 	reviewVerifiedBadge: string;
 	reviewDate: string;
@@ -620,12 +635,34 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			"inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30",
 		aboutHostIconSm: "w-4 h-4 shrink-0",
 
-		// Reviews E-E-A-T
-		reviewMetaRow: "mt-2 flex flex-wrap items-center justify-center gap-2",
+		// Guest Reviews
+		reviewSection:
+			"py-24 px-6 bg-slate-50 border-t border-slate-200/60 relative overflow-hidden",
+		reviewGlow:
+			"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FF5A5F]/5 rounded-full blur-3xl pointer-events-none",
+		reviewContainer: "max-w-6xl mx-auto relative z-10",
+		reviewTitle:
+			"text-3xl font-bold mb-12 text-center text-slate-900 tracking-tight",
+		reviewGrid: "grid grid-cols-1 md:grid-cols-2 gap-8 list-none p-0 m-0",
+		reviewListItem: "flex",
+		reviewCard:
+			"bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-sm border border-slate-200/70 flex flex-col relative w-full",
+		reviewQuoteIcon:
+			"absolute top-6 right-6 w-8 h-8 text-slate-200/80 pointer-events-none select-none",
+		reviewStarsRow: "flex text-amber-400 mb-4 space-x-1",
+		reviewStarIcon: "w-5 h-5 fill-current",
+		reviewText:
+			"text-slate-600 mb-6 flex-grow italic leading-relaxed relative z-10",
+		reviewAuthorRow: "flex items-center space-x-3",
+		reviewAvatar:
+			"w-10 h-10 bg-slate-100 text-slate-700 border border-slate-200 rounded-full flex items-center justify-center font-bold shrink-0",
+		reviewAuthorDetails: "min-w-0",
+		reviewAuthorName: "font-semibold text-slate-900 block",
+		reviewMetaRow: "mt-1 flex flex-wrap items-center gap-2",
 		reviewVerifiedBadge:
 			"inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full",
 		reviewDate: "text-xs font-medium text-slate-500",
-		reviewAttributionWrapper: "mt-8 flex justify-center",
+		reviewAttributionWrapper: "mt-10 flex justify-center",
 		reviewAttributionLink:
 			"inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-rose-700 bg-white px-5 py-2.5 rounded-full border border-slate-200 shadow-xs hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/30",
 		reviewIconSm: "w-3.5 h-3.5 shrink-0",
@@ -744,7 +781,26 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			"inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-stone-800 hover:bg-stone-700 text-stone-100 border border-stone-700 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30",
 		aboutHostIconSm: "w-4 h-4 shrink-0",
 
-		// Reviews E-E-A-T
+		// Guest Reviews
+		reviewSection: "py-24 px-6 bg-stone-50 border-t border-stone-200",
+		reviewGlow: "hidden",
+		reviewContainer: "max-w-6xl mx-auto",
+		reviewTitle: "text-3xl font-bold mb-12 text-center text-stone-900",
+		reviewGrid: "grid grid-cols-1 md:grid-cols-2 gap-8 list-none p-0 m-0",
+		reviewListItem: "flex",
+		reviewCard:
+			"bg-white p-8 rounded-2xl shadow-sm border border-stone-100 flex flex-col relative w-full",
+		reviewQuoteIcon:
+			"absolute top-6 right-6 w-8 h-8 text-stone-100 pointer-events-none select-none",
+		reviewStarsRow: "flex text-amber-400 mb-4 space-x-1",
+		reviewStarIcon: "w-5 h-5 fill-current",
+		reviewText:
+			"text-stone-600 mb-6 flex-grow italic leading-relaxed relative z-10",
+		reviewAuthorRow: "flex items-center space-x-3",
+		reviewAvatar:
+			"w-10 h-10 bg-rose-100 text-rose-700 rounded-full flex items-center justify-center font-bold shrink-0",
+		reviewAuthorDetails: "min-w-0",
+		reviewAuthorName: "font-semibold text-stone-900 block",
 		reviewMetaRow: "mt-1 flex flex-wrap items-center gap-2",
 		reviewVerifiedBadge:
 			"inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full",
