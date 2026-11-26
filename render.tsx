@@ -16,6 +16,7 @@ import { IMAGES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
 import type { Lang } from "./src/types";
+import { buildPricingSummary, type PriceTierRow } from "./src/utils/schema";
 
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
@@ -33,7 +34,8 @@ if (fs.existsSync(publicDir)) {
 }
 
 // Parse public/data/prices.csv to generate build-time prices.json caches for client usage
-const parsePricesCsv = () => {
+// and return parsed tiers for build-time JSON-LD structured data injection.
+const parsePricesCsv = (): PriceTierRow[] => {
 	const csvPath = path.join(process.cwd(), "public", "data", "prices.csv");
 	const cacheDir = path.join(process.cwd(), "public", "cache");
 	const distCacheDir = path.join(distDir, "cache");
@@ -45,6 +47,8 @@ const parsePricesCsv = () => {
 		fs.mkdirSync(distCacheDir, { recursive: true });
 	}
 
+	const prices: PriceTierRow[] = [];
+
 	if (fs.existsSync(csvPath)) {
 		const csvContent = fs.readFileSync(csvPath, "utf-8");
 		const lines = csvContent
@@ -53,14 +57,6 @@ const parsePricesCsv = () => {
 			.filter((l) => l.length > 0);
 
 		if (lines.length > 1) {
-			const prices: {
-				property_id: string;
-				start_date: string;
-				end_date: string;
-				nightly_rate_cop: number;
-				minimum_stay: number;
-			}[] = [];
-
 			for (let i = 1; i < lines.length; i++) {
 				const cols = lines[i].split(",");
 				if (cols.length >= 5) {
@@ -82,9 +78,12 @@ const parsePricesCsv = () => {
 	} else {
 		console.log("Warning: public/data/prices.csv not found to parse.");
 	}
+
+	return prices;
 };
 
-parsePricesCsv();
+const parsedPriceTiers = parsePricesCsv();
+const pricingSummary = buildPricingSummary(parsedPriceTiers);
 
 const generateSitemap = (
 	pages: PageConfig[],
@@ -147,7 +146,12 @@ pages.forEach((page) => {
 		);
 
 		const url = getCanonicalUrl(BASE_URL, page.path, lang);
-		const structuredData = page.getStructuredData(t, lang, BASE_URL);
+		const structuredData = page.getStructuredData(
+			t,
+			lang,
+			BASE_URL,
+			pricingSummary,
+		);
 
 		const apiBase = page.id === "404" ? "/api/" : `${assetPrefix}api/`;
 		const i18nSlice = page.clientI18n
