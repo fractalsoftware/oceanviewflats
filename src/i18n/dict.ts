@@ -741,6 +741,23 @@ export const dict = {
 			"Manuel Enrique Herrera, host and Data Controller of OceanViewFlats in Santa Marta",
 		mainEntranceImgAlt:
 			"Beachfront main entrance and lobby of Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		schemaBreadcrumbHome: "Home",
+		schemaBreadcrumbPrivacy: "Data Processing Policy",
+		schemaWebSiteDescription:
+			"Direct beachfront short-term rental Properties in Playa Salguero, Santa Marta, Colombia with authoritative COP Quotes and 0% OTA commission.",
+		schemaLodgingDescription:
+			"Direct beachfront vacation rental Properties (1707 & 1606) at Edificio Salguero Sunset in Playa Salguero, Santa Marta, Colombia with 900 Mbps fiber Wi-Fi, Assigned Parking Spaces, and Settlement Currency (COP) checkout.",
+		schemaContactPageName: "Contact OceanViewFlats",
+		schemaPaymentAccepted:
+			"Credit Card, Debit Card, PSE Bank Transfer, Cash Voucher (Efecty via Mercado Pago)",
+		schemaMasterBedroom: "Master Bedroom",
+		schemaGuestBedroom: "Guest Bedroom",
+		schemaLivingRoom: "Living Room",
+		schemaAmenityParking1707: "Assigned Parking Space — Bay 95",
+		schemaAmenityParking1606: "Assigned Parking Space — Bay 87",
+		schemaAmenityLaundry: "In-Unit Laundry (Washer & Dryer)",
+		schemaAmenityWorkspace: "Dedicated Laptop-Friendly Workspace",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -1505,6 +1522,23 @@ export const dict = {
 			"Manuel Enrique Herrera, anfitrión y responsable de OceanViewFlats en Santa Marta",
 		mainEntranceImgAlt:
 			"Entrada principal frente a la playa y recepción del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		schemaBreadcrumbHome: "Inicio",
+		schemaBreadcrumbPrivacy: "Política de Tratamiento de Datos",
+		schemaWebSiteDescription:
+			"Propiedades de alquiler vacacional directo frente al mar en Playa Salguero, Santa Marta, Colombia, con cotizaciones oficiales en COP y 0% de comisión OTA.",
+		schemaLodgingDescription:
+			"Propiedades frente al mar (1707 y 1606) en el Edificio Salguero Sunset, Playa Salguero, Santa Marta, Colombia, con fibra óptica de 900 Mbps, parqueadero asignado y Reserva Directa en COP.",
+		schemaContactPageName: "Contactar a OceanViewFlats",
+		schemaPaymentAccepted:
+			"Tarjeta de Crédito, Tarjeta Débito, Transferencia PSE, Cupón en Efectivo (Efecty vía Mercado Pago)",
+		schemaMasterBedroom: "Habitación Principal",
+		schemaGuestBedroom: "Habitación de Huéspedes",
+		schemaLivingRoom: "Sala de Estar",
+		schemaAmenityParking1707: "Parqueadero Privado Asignado — Bahía 95",
+		schemaAmenityParking1606: "Parqueadero Privado Asignado — Bahía 87",
+		schemaAmenityLaundry: "Lavandería en la Propiedad (Lavadora y Secadora)",
+		schemaAmenityWorkspace: "Espacio de Trabajo Dedicado para Portátil",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -2277,6 +2311,23 @@ export const dict = {
 			"Manuel Enrique Herrera, hôte et responsable d'OceanViewFlats à Santa Marta",
 		mainEntranceImgAlt:
 			"Entrée principale en bord de mer et hall de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		schemaBreadcrumbHome: "Accueil",
+		schemaBreadcrumbPrivacy: "Politique de Traitement des Données",
+		schemaWebSiteDescription:
+			"Locations de vacances directes en bord de mer à Playa Salguero, Santa Marta, Colombie, avec devis officiels en COP et 0 % de commission OTA.",
+		schemaLodgingDescription:
+			"Propriétés en bord de mer (1707 et 1606) à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta, Colombie, avec fibre optique 900 Mbps, stationnement attribué et Réservation Directe en COP.",
+		schemaContactPageName: "Contacter OceanViewFlats",
+		schemaPaymentAccepted:
+			"Carte de Crédit, Carte de Débit, Virement PSE, Bon en Espèces (Efecty via Mercado Pago)",
+		schemaMasterBedroom: "Chambre Principale",
+		schemaGuestBedroom: "Chambre d'Invités",
+		schemaLivingRoom: "Salon",
+		schemaAmenityParking1707: "Place de Stationnement Attribuée — Baie 95",
+		schemaAmenityParking1606: "Place de Stationnement Attribuée — Baie 87",
+		schemaAmenityLaundry: "Buanderie Privée (Lave-linge et Sèche-linge)",
+		schemaAmenityWorkspace: "Espace de Travail Dédié pour Ordinateur Portable",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -3036,6 +3087,23 @@ export const dict = {
 			"Manuel Enrique Herrera, host e titolare di OceanViewFlats a Santa Marta",
 		mainEntranceImgAlt:
 			"Ingresso principale fronte mare e reception di Edificio Salguero Sunset a Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		schemaBreadcrumbHome: "Pagina iniziale",
+		schemaBreadcrumbPrivacy: "Informativa sul Trattamento dei Dati",
+		schemaWebSiteDescription:
+			"Proprietà fronte mare in affitto breve diretto a Playa Salguero, Santa Marta, Colombia, con preventivi ufficiali in COP e 0% di commissioni OTA.",
+		schemaLodgingDescription:
+			"Proprietà fronte mare (1707 e 1606) nell'Edificio Salguero Sunset a Playa Salguero, Santa Marta, Colombia, con fibra ottica 900 Mbps, parcheggio assegnato e Prenotazione Diretta in COP.",
+		schemaContactPageName: "Contatta OceanViewFlats",
+		schemaPaymentAccepted:
+			"Carta di Credito, Carta di Debito, Bonifico PSE, Voucher in Contanti (Efecty tramite Mercado Pago)",
+		schemaMasterBedroom: "Camera Padronale",
+		schemaGuestBedroom: "Camera degli Ospiti",
+		schemaLivingRoom: "Soggiorno",
+		schemaAmenityParking1707: "Parcheggio Privato Assegnato — Stallo 95",
+		schemaAmenityParking1606: "Parcheggio Privato Assegnato — Stallo 87",
+		schemaAmenityLaundry: "Lavanderia Interna (Lavatrice e Asciugatrice)",
+		schemaAmenityWorkspace: "Postazione di Lavoro Dedicata per Laptop",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3803,6 +3871,24 @@ export const dict = {
 			"Manuel Enrique Herrera, Gastgeber und Verantwortlicher von OceanViewFlats in Santa Marta",
 		mainEntranceImgAlt:
 			"Strandseitiger Haupteingang und Empfangshalle des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		// #303 structured data & JSON-LD
+		schemaBreadcrumbHome: "Startseite",
+		schemaBreadcrumbPrivacy: "Datenschutzrichtlinie",
+		schemaWebSiteDescription:
+			"Direkt buchbare Strand-Ferienunterkünfte in Playa Salguero, Santa Marta, Kolumbien mit verbindlichen COP-Preisen und 0 % OTA-Provision.",
+		schemaLodgingDescription:
+			"Strandnahe Ferienunterkünfte (1707 & 1606) im Edificio Salguero Sunset in Playa Salguero, Santa Marta, Kolumbien mit 900-Mbps-Glasfaser-WLAN, zugewiesenem Parkplatz und Direktreservierung in COP.",
+		schemaContactPageName: "OceanViewFlats kontaktieren",
+		schemaPaymentAccepted:
+			"Kreditkarte, Debitkarte, PSE-Banküberweisung, Bar-Gutschein (Efecty über Mercado Pago)",
+		schemaMasterBedroom: "Hauptschlafzimmer",
+		schemaGuestBedroom: "Gästezimmer",
+		schemaLivingRoom: "Wohnzimmer",
+		schemaAmenityParking1707: "Zugewiesener Parkplatz — Stellplatz 95",
+		schemaAmenityParking1606: "Zugewiesener Parkplatz — Stellplatz 87",
+		schemaAmenityLaundry:
+			"Waschküche in der Unterkunft (Waschmaschine & Trockner)",
+		schemaAmenityWorkspace: "Eigener Laptop-Arbeitsplatz",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -4557,6 +4643,23 @@ export const dict = {
 			"サンタマルタのOceanViewFlatsホスト兼管理者マヌエル・エンリケ・エレーラのポートレート",
 		mainEntranceImgAlt:
 			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット海辺メインエントランスとロビー",
+		// #303 structured data & JSON-LD
+		schemaBreadcrumbHome: "ホーム",
+		schemaBreadcrumbPrivacy: "個人データ処理ポリシー",
+		schemaWebSiteDescription:
+			"コロンビア・サンタマルタのプラヤ・サルグエロにあるビーチフロント直接予約物件。公式COP見積もりとOTA手数料0%で滞在できます。",
+		schemaLodgingDescription:
+			"コロンビア・サンタマルタのプラヤ・サルグエロ、Edificio Salguero Sunset内のビーチフロント物件（1707・1606）。900 Mbps光回線Wi-Fi、専用駐車スペース、COP建て直接予約に対応。",
+		schemaContactPageName: "OceanViewFlatsへのお問い合わせ",
+		schemaPaymentAccepted:
+			"クレジットカード、デビットカード、PSE銀行振込、現金バウチャー（Mercado Pago経由Efecty）",
+		schemaMasterBedroom: "主寝室",
+		schemaGuestBedroom: "ゲスト用寝室",
+		schemaLivingRoom: "リビングルーム",
+		schemaAmenityParking1707: "専用駐車スペース — 95番（Bay 95）",
+		schemaAmenityParking1606: "専用駐車スペース — 87番（Bay 87）",
+		schemaAmenityLaundry: "室内ランドリー（洗濯機・乾燥機）",
+		schemaAmenityWorkspace: "専用ワークスペース（リモートワーク対応）",
 	},
 };
 

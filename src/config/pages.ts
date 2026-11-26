@@ -12,6 +12,14 @@ import Oceanview1707 from "../pages/Oceanview1707";
 import Privacy from "../pages/Privacy";
 import Registry from "../pages/Registry";
 import type { Lang } from "../types";
+import {
+	buildContactStructuredData,
+	buildHomeStructuredData,
+	buildPrivacyStructuredData,
+	buildPropertyStructuredData,
+	buildWebPageStructuredData,
+	type PortfolioPricingSummary,
+} from "../utils/schema";
 
 export const BASE_URL = "https://www.oceanviewflats.com";
 export const LANGUAGES: Lang[] = ["en", "es", "fr", "it", "de", "ja"];
@@ -55,7 +63,12 @@ export interface PageConfig {
 	path: string;
 	component: any; // React Component
 	filename: (lang: Lang) => string;
-	getStructuredData: (t: any, lang: Lang, baseUrl: string) => string;
+	getStructuredData: (
+		t: TranslationDict,
+		lang: Lang,
+		baseUrl: string,
+		pricingSummary?: PortfolioPricingSummary,
+	) => string;
 	scripts: string[];
 	seoTitle?: (t: any) => string;
 	seoDescription?: (t: any) => string;
@@ -193,102 +206,8 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@graph": [
-					{
-						"@type": "WebSite",
-						"@id": `${url}#website`,
-						url: url,
-						name: "OceanViewFlats",
-						description:
-							"Premium beachfront vacation rentals in Santa Marta, Colombia.",
-					},
-					{
-						"@type": "LodgingBusiness",
-						"@id": `${url}#business`,
-						name: "OceanViewFlats",
-						legalName: "OceanViewFlats Santa Marta",
-						license: "Registro Nacional de Turismo RNT #268781 & RNT #270413",
-						description:
-							"Direct beachfront rental apartments in Playa Salguero, Santa Marta.",
-						url: url,
-						telephone: "+573108155234",
-						email: "rentals@oceanviewflats.com",
-						address: {
-							"@type": "PostalAddress",
-							streetAddress: "Calle 26 # 2-80. Playa Salguero",
-							addressLocality: "Santa Marta",
-							addressRegion: "Magdalena",
-							postalCode: "470006",
-							addressCountry: "CO",
-						},
-						geo: {
-							"@type": "GeoCoordinates",
-							latitude: 11.1876481,
-							longitude: -74.2313921,
-						},
-						priceRange: "$110 - $165 USD",
-					},
-					{
-						"@type": "FAQPage",
-						"@id": `${url}#faq`,
-						mainEntity: [
-							{
-								"@type": "Question",
-								name: t.faqQ1,
-								acceptedAnswer: {
-									"@type": "Answer",
-									text: t.faqA1,
-								},
-							},
-							{
-								"@type": "Question",
-								name: t.faqQ2,
-								acceptedAnswer: {
-									"@type": "Answer",
-									text: t.faqA2,
-								},
-							},
-							{
-								"@type": "Question",
-								name: t.faqQ3,
-								acceptedAnswer: {
-									"@type": "Answer",
-									text: t.faqA3,
-								},
-							},
-							{
-								"@type": "Question",
-								name: t.faqQ4,
-								acceptedAnswer: {
-									"@type": "Answer",
-									text: t.faqA4,
-								},
-							},
-							{
-								"@type": "Question",
-								name: t.faqQ5,
-								acceptedAnswer: {
-									"@type": "Answer",
-									text: t.faqA5,
-								},
-							},
-							{
-								"@type": "Question",
-								name: t.faqQ6,
-								acceptedAnswer: {
-									"@type": "Answer",
-									text: t.faqA6,
-								},
-							},
-						],
-					},
-				],
-			});
-		},
+		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
+			buildHomeStructuredData(t, lang, baseUrl, pricingSummary),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -304,144 +223,8 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.propertyHero.height,
 		ogImageAlt: (t: TranslationDict) => t.og1707ImageAlt,
 		heroImage: IMAGES["1707"].hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "Oceanview1707", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "VacationRental",
-				identifier: "1500108514798091235",
-				name: "OceanViewFlats 1707",
-				description: t.seoDescription,
-				provider: {
-					"@type": "LodgingBusiness",
-					name: "OceanViewFlats",
-					url: baseUrl,
-					telephone: "+573108155234",
-				},
-				hasMap: "https://maps.google.com/?q=11.1876481,-74.2313921",
-				numberOfBedrooms: 2,
-				numberOfBathroomsTotal: 2,
-				image: [
-					`${baseUrl}/${IMAGES["1707"].hero}`,
-					`${baseUrl}/${IMAGES["1707"].nomad}`,
-					`${baseUrl}/${IMAGES["1707"].bedroom}`,
-					`${baseUrl}/${IMAGES["1707"].pool}`,
-					`${baseUrl}/${IMAGES["1606"].hero}`,
-					`${baseUrl}/${IMAGES["1606"].romantic}`,
-					`${baseUrl}/${IMAGES["1606"].bedroom}`,
-					`${baseUrl}/${IMAGES["1606"].pool}`,
-				],
-				url: url,
-				address: {
-					"@type": "PostalAddress",
-					streetAddress: "Calle 26 # 2-80. Playa Salguero",
-					addressLocality: "Santa Marta",
-					addressRegion: "Magdalena",
-					postalCode: "470006",
-					addressCountry: "CO",
-				},
-				geo: {
-					"@type": "GeoCoordinates",
-					latitude: 11.1876481,
-					longitude: -74.2313921,
-				},
-				containsPlace: [
-					{
-						"@type": "Room",
-						name: "Master Bedroom",
-						additionalType: "http://schema.googleapis.com/BedRoom",
-						occupancy: { "@type": "QuantitativeValue", value: 2 },
-						numberOfBedrooms: 1,
-						numberOfBathroomsTotal: 1,
-						bed: [
-							{ "@type": "BedDetails", typeOfBed: "Queen", numberOfBeds: 1 },
-						],
-						amenityFeature: [
-							{
-								"@type": "LocationFeatureSpecification",
-								name: "Air conditioning",
-								value: true,
-							},
-							{
-								"@type": "LocationFeatureSpecification",
-								name: "TV",
-								value: true,
-							},
-						],
-					},
-					{
-						"@type": "Room",
-						name: "Guest Bedroom",
-						additionalType: "http://schema.googleapis.com/BedRoom",
-						occupancy: { "@type": "QuantitativeValue", value: 4 },
-						numberOfBedrooms: 1,
-						numberOfBathroomsTotal: 1,
-						bed: [
-							{ "@type": "BedDetails", typeOfBed: "Double", numberOfBeds: 2 },
-						],
-						amenityFeature: [
-							{
-								"@type": "LocationFeatureSpecification",
-								name: "Air conditioning",
-								value: true,
-							},
-						],
-					},
-				],
-				numberOfRooms: 2,
-				occupancy: {
-					"@type": "QuantitativeValue",
-					value: 6,
-				},
-				offers: {
-					"@type": "AggregateOffer",
-					priceCurrency: "USD",
-					lowPrice: "120",
-					highPrice: "165",
-					offerCount: "1",
-					priceRange: "$120 - $165 USD per night",
-					offers: {
-						"@type": "Offer",
-						price: "120",
-						priceCurrency: "USD",
-						availability: "https://schema.org/InStock",
-						validFrom: "2026-05-25",
-					},
-				},
-				petsAllowed: false,
-				amenityFeature: [
-					{
-						"@type": "LocationFeatureSpecification",
-						name: t.amWifi,
-						value: true,
-					},
-					{
-						"@type": "LocationFeatureSpecification",
-						name: t.amOcean,
-						value: true,
-					},
-					{
-						"@type": "LocationFeatureSpecification",
-						name: t.amPool,
-						value: true,
-					},
-				],
-				aggregateRating: {
-					"@type": "AggregateRating",
-					ratingValue: "5.0",
-					reviewCount: "1",
-				},
-				review: [
-					{
-						"@type": "Review",
-						author: { "@type": "Person", name: t.review1707Author },
-						datePublished: "2026-06-28",
-						reviewRating: { "@type": "Rating", ratingValue: "5" },
-						reviewBody: t.review1707Text,
-					},
-				],
-			});
-		},
+		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
+			buildPropertyStructuredData("1707", t, lang, baseUrl, pricingSummary),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -457,151 +240,8 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.propertyHero.height,
 		ogImageAlt: (t: TranslationDict) => t.og1606ImageAlt,
 		heroImage: IMAGES["1606"].hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "Oceanview1606", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "VacationRental",
-				identifier: "1584825560087571592",
-				name: "OceanViewFlats 1606",
-				description: t.seo1606Description,
-				provider: {
-					"@type": "LodgingBusiness",
-					name: "OceanViewFlats",
-					url: baseUrl,
-					telephone: "+573108155234",
-				},
-				hasMap: "https://maps.google.com/?q=11.1876481,-74.2313921",
-				numberOfBedrooms: 2,
-				numberOfBathroomsTotal: 2,
-				image: [
-					`${baseUrl}/${IMAGES["1606"].hero}`,
-					`${baseUrl}/${IMAGES["1606"].romantic}`,
-					`${baseUrl}/${IMAGES["1606"].bedroom}`,
-					`${baseUrl}/${IMAGES["1606"].pool}`,
-					`${baseUrl}/${IMAGES["1707"].hero}`,
-					`${baseUrl}/${IMAGES["1707"].nomad}`,
-					`${baseUrl}/${IMAGES["1707"].bedroom}`,
-					`${baseUrl}/${IMAGES["1707"].pool}`,
-				],
-				url: url,
-				address: {
-					"@type": "PostalAddress",
-					streetAddress: "Calle 26 # 2-80. Playa Salguero",
-					addressLocality: "Santa Marta",
-					addressRegion: "Magdalena",
-					postalCode: "470006",
-					addressCountry: "CO",
-				},
-				geo: {
-					"@type": "GeoCoordinates",
-					latitude: 11.1876481,
-					longitude: -74.2313921,
-				},
-				containsPlace: [
-					{
-						"@type": "Room",
-						name: "Master Bedroom",
-						additionalType: "http://schema.googleapis.com/BedRoom",
-						occupancy: { "@type": "QuantitativeValue", value: 2 },
-						numberOfBedrooms: 1,
-						numberOfBathroomsTotal: 1,
-						bed: [
-							{ "@type": "BedDetails", typeOfBed: "Queen", numberOfBeds: 1 },
-						],
-						amenityFeature: [
-							{
-								"@type": "LocationFeatureSpecification",
-								name: "Air conditioning",
-								value: true,
-							},
-							{
-								"@type": "LocationFeatureSpecification",
-								name: "TV",
-								value: true,
-							},
-						],
-					},
-					{
-						"@type": "Room",
-						name: "Guest Bedroom",
-						additionalType: "http://schema.googleapis.com/BedRoom",
-						occupancy: { "@type": "QuantitativeValue", value: 4 },
-						numberOfBedrooms: 1,
-						numberOfBathroomsTotal: 1,
-						bed: [
-							{ "@type": "BedDetails", typeOfBed: "Double", numberOfBeds: 2 },
-						],
-						amenityFeature: [
-							{
-								"@type": "LocationFeatureSpecification",
-								name: "Air conditioning",
-								value: true,
-							},
-						],
-					},
-				],
-				numberOfRooms: 2,
-				occupancy: {
-					"@type": "QuantitativeValue",
-					value: 6,
-				},
-				offers: {
-					"@type": "AggregateOffer",
-					priceCurrency: "USD",
-					lowPrice: "110",
-					highPrice: "160",
-					offerCount: "1",
-					priceRange: "$110 - $160 USD per night",
-					offers: {
-						"@type": "Offer",
-						price: "110",
-						priceCurrency: "USD",
-						availability: "https://schema.org/InStock",
-						validFrom: "2026-05-25",
-					},
-				},
-				petsAllowed: false,
-				amenityFeature: [
-					{
-						"@type": "LocationFeatureSpecification",
-						name: t.amWifi,
-						value: true,
-					},
-					{
-						"@type": "LocationFeatureSpecification",
-						name: t.amOcean,
-						value: true,
-					},
-					{
-						"@type": "LocationFeatureSpecification",
-						name: t.amPool,
-						value: true,
-					},
-				],
-				aggregateRating: {
-					"@type": "AggregateRating",
-					ratingValue: "5",
-					reviewCount: "2",
-				},
-				review: [
-					{
-						"@type": "Review",
-						author: { "@type": "Person", name: t.review1Author },
-						datePublished: "2026-04-02",
-						reviewRating: { "@type": "Rating", ratingValue: "5" },
-						reviewBody: t.review1Text,
-					},
-					{
-						"@type": "Review",
-						author: { "@type": "Person", name: t.review2Author },
-						datePublished: "2026-03-20",
-						reviewRating: { "@type": "Rating", ratingValue: "5" },
-						reviewBody: t.review2Text,
-					},
-				],
-			});
-		},
+		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
+			buildPropertyStructuredData("1606", t, lang, baseUrl, pricingSummary),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -617,16 +257,8 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
 		ogImageAlt: (t: TranslationDict) => t.ogContactImageAlt,
 		heroImage: IMAGES.mainEntrance,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "contact", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "ContactPage",
-				name: "Contact OceanViewFlats",
-				description: t.seoContactDescription,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildContactStructuredData(t, lang, baseUrl),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -643,16 +275,14 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
 		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
 		heroImage: IMAGES.mainEntrance,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "registry", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.registryTitle,
-				description: t.registrySubtitle,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildWebPageStructuredData(
+				"registry",
+				t.registryTitle,
+				t.registrySubtitle,
+				lang,
+				baseUrl,
+			),
 		scripts: ["js/main.js", "js/registry.js"],
 	},
 	{
@@ -669,16 +299,14 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
 		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
 		heroImage: IMAGES.mainEntrance,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "guide", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.guideTitle,
-				description: t.guideHeader,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildWebPageStructuredData(
+				"guide",
+				t.guideTitle,
+				t.guideHeader,
+				lang,
+				baseUrl,
+			),
 		scripts: ["js/main.js", "js/guide.js"],
 	},
 	{
@@ -694,16 +322,14 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "404", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.notFoundTitle,
-				description: t.notFoundSubtitle,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildWebPageStructuredData(
+				"404",
+				t.notFoundTitle,
+				t.notFoundSubtitle,
+				lang,
+				baseUrl,
+			),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -722,16 +348,14 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "booking-success", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.dbSuccessTitle,
-				description: t.dbSuccessSubtitle,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildWebPageStructuredData(
+				"booking-success",
+				t.dbSuccessTitle,
+				t.dbSuccessSubtitle,
+				lang,
+				baseUrl,
+			),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -750,16 +374,14 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "booking-failure", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.dbFailureTitle,
-				description: t.dbFailureSubtitle,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildWebPageStructuredData(
+				"booking-failure",
+				t.dbFailureTitle,
+				t.dbFailureSubtitle,
+				lang,
+				baseUrl,
+			),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -778,16 +400,14 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "booking-pending", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.dbPendingTitle,
-				description: t.dbPendingSubtitle,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildWebPageStructuredData(
+				"booking-pending",
+				t.dbPendingTitle,
+				t.dbPendingSubtitle,
+				lang,
+				baseUrl,
+			),
 		scripts: ["js/main.js"],
 	},
 	{
@@ -803,16 +423,8 @@ export const pages: PageConfig[] = [
 		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
 		ogImageAlt: (t: TranslationDict) => t.ogPrivacyImageAlt,
 		heroImage: IMAGES.mainEntrance,
-		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = getCanonicalUrl(baseUrl, "privacy", lang);
-			return JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebPage",
-				name: t.privacySeoTitle,
-				description: t.privacySeoDescription,
-				url: url,
-			});
-		},
+		getStructuredData: (t, lang, baseUrl) =>
+			buildPrivacyStructuredData(t, lang, baseUrl),
 		scripts: ["js/main.js"],
 	},
 ];
