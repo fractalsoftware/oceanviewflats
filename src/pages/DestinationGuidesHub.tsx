@@ -16,7 +16,9 @@ import { Navigation } from "../components/Navigation";
 import {
 	getDestinationGuidePath,
 	getDestinationGuidesHubPath,
+	getHeroImageSrcSet,
 	getPropertyPagePath,
+	HERO_IMAGE_SIZES,
 	IMAGE_DIMENSIONS,
 	IMAGES,
 	type PropertyId,
@@ -90,6 +92,8 @@ export default function DestinationGuidesHub({
 				<div className={DESTINATION_GUIDES_THEME.heroMediaWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
+						srcSet={getHeroImageSrcSet(IMAGES.home.hero, assetPrefix)}
+						sizes={HERO_IMAGE_SIZES}
 						alt={hubCopy.heroImageAlt}
 						width={IMAGE_DIMENSIONS.homeHero.width}
 						height={IMAGE_DIMENSIONS.homeHero.height}

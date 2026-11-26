@@ -13,6 +13,7 @@ import {
 	type PageConfig,
 	pages,
 } from "./src/config/pages";
+import { getHeroImageSrcSet, HERO_IMAGE_SIZES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
 import type { Lang } from "./src/types";
@@ -211,6 +212,10 @@ pages.forEach((page) => {
 			i18n: i18nSlice,
 		};
 
+		const heroPreloadSrcSet = page.heroImage
+			? getHeroImageSrcSet(page.heroImage, assetPrefix)
+			: undefined;
+
 		const html = baseTemplate({
 			markup,
 			lang,
@@ -231,6 +236,8 @@ pages.forEach((page) => {
 			heroPreloadHref: page.heroImage
 				? `${assetPrefix}${page.heroImage}`
 				: undefined,
+			heroPreloadSrcSet,
+			heroPreloadSizes: heroPreloadSrcSet ? HERO_IMAGE_SIZES : undefined,
 			hrefLangTags,
 			structuredData,
 			assetPrefix,

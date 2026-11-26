@@ -20,7 +20,9 @@ import { Navigation } from "../components/Navigation";
 import {
 	getDestinationGuidePath,
 	getDestinationGuidesHubPath,
+	getHeroImageSrcSet,
 	getPropertyPagePath,
+	HERO_IMAGE_SIZES,
 	type PropertyId,
 } from "../constants/config";
 import { DESTINATION_GUIDES_THEME } from "../constants/theme";
@@ -88,6 +90,7 @@ export default function DestinationGuideArticle({
 
 	const hubHref = getDestinationGuidesHubPath(lang, assetPrefix);
 	const currentHref = getDestinationGuidePath(guide.slug, lang, assetPrefix);
+	const heroSrcSet = getHeroImageSrcSet(guide.heroImage, assetPrefix);
 
 	const resolvedTitle = interpolateGuideText(content.title, tokens);
 	const resolvedSubtitle = interpolateGuideText(content.subtitle, tokens);
@@ -114,6 +117,8 @@ export default function DestinationGuideArticle({
 				<div className={DESTINATION_GUIDES_THEME.heroMediaWrapper}>
 					<img
 						src={`${assetPrefix}${guide.heroImage}`}
+						srcSet={heroSrcSet}
+						sizes={heroSrcSet ? HERO_IMAGE_SIZES : undefined}
 						alt={content.heroImageAlt}
 						width={guide.heroImageDimensions.width}
 						height={guide.heroImageDimensions.height}
