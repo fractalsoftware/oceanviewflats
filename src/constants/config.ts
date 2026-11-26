@@ -500,8 +500,8 @@ export interface HomeExperienceCardConfig {
 	titleKey: "heroTitle" | "hero1606Title";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
 	features: readonly HomeExperienceFeatureConfig[];
-	reviewTextKey: "review1707Text" | "review1Text";
-	reviewAuthorKey: "review1707Author" | "review1Author";
+	reviewTextKey: PropertyReviewMeta["textKey"];
+	reviewAuthorKey: PropertyReviewMeta["authorKey"];
 }
 
 export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
@@ -527,8 +527,8 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 				descKey: "homeExp1707FamilyDesc",
 			},
 		],
-		reviewTextKey: "review1707Text",
-		reviewAuthorKey: "review1707Author",
+		reviewTextKey: "review1707_2Text",
+		reviewAuthorKey: "review1707_2Author",
 	},
 	{
 		propertyId: "1606",
@@ -891,8 +891,20 @@ export const PROPERTY_FAQ_ITEMS: Record<
 
 export interface PropertyReviewMeta {
 	id: string;
-	authorKey: "review1707Author" | "review1Author" | "review2Author";
-	textKey: "review1707Text" | "review1Text" | "review2Text";
+	authorKey:
+		| "review1707_2Author"
+		| "review1707Author"
+		| "review1Author"
+		| "review2Author"
+		| "review3Author"
+		| "review4Author";
+	textKey:
+		| "review1707_2Text"
+		| "review1707Text"
+		| "review1Text"
+		| "review2Text"
+		| "review3Text"
+		| "review4Text";
 	datePublished: string;
 	ratingValue: number;
 }
@@ -903,26 +915,47 @@ export const PROPERTY_REVIEWS: Record<
 > = {
 	"1707": [
 		{
+			id: "review-1707-2",
+			authorKey: "review1707_2Author",
+			textKey: "review1707_2Text",
+			datePublished: "2026-10-11",
+			ratingValue: 5,
+		},
+		{
 			id: "review-1707-1",
 			authorKey: "review1707Author",
 			textKey: "review1707Text",
-			datePublished: "2026-06-28",
+			datePublished: "2026-06-29",
 			ratingValue: 5,
 		},
 	],
 	"1606": [
 		{
+			id: "review-1606-3",
+			authorKey: "review3Author",
+			textKey: "review3Text",
+			datePublished: "2026-10-12",
+			ratingValue: 5,
+		},
+		{
+			id: "review-1606-4",
+			authorKey: "review4Author",
+			textKey: "review4Text",
+			datePublished: "2026-10-07",
+			ratingValue: 5,
+		},
+		{
 			id: "review-1606-1",
 			authorKey: "review1Author",
 			textKey: "review1Text",
-			datePublished: "2026-04-02",
+			datePublished: "2026-04-06",
 			ratingValue: 5,
 		},
 		{
 			id: "review-1606-2",
 			authorKey: "review2Author",
 			textKey: "review2Text",
-			datePublished: "2026-03-20",
+			datePublished: "2026-03-23",
 			ratingValue: 5,
 		},
 	],

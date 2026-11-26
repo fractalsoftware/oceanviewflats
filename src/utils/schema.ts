@@ -13,6 +13,7 @@ import {
 	PROPERTY_GALLERY_IMAGES,
 	PROPERTY_REVIEWS,
 	type PropertyId,
+	type PropertyReviewMeta,
 } from "../constants/config";
 import {
 	buildGuidePricingTokens,
@@ -28,6 +29,7 @@ import type {
 	PropertyPricingSummary,
 	SeasonalRateTierRow,
 } from "../types";
+import { calculateAggregateRatingValue, clampReviewRating } from "./reviews";
 
 export type {
 	PortfolioPricingSummary,
@@ -407,6 +409,7 @@ export const buildPropertyStructuredData = (
 	lang: Lang,
 	baseUrl: string,
 	pricingSummary: PortfolioPricingSummary = DEFAULT_PRICING_SUMMARY,
+	reviews: readonly PropertyReviewMeta[] = PROPERTY_REVIEWS[propertyId],
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
 	const spec = PROPERTY_SCHEMA_SPECS[propertyId];
@@ -549,7 +552,13 @@ export const buildPropertyStructuredData = (
 		},
 	}));
 
-	const reviews = PROPERTY_REVIEWS[propertyId];
+	const validReviews = reviews
+		.filter((rev) => Number.isFinite(rev.ratingValue))
+		.map((rev) => ({
+			...rev,
+			ratingValue: clampReviewRating(rev.ratingValue),
+		}));
+	const aggregateRatingValue = calculateAggregateRatingValue(validReviews);
 	const faqItems = PROPERTY_FAQ_ITEMS[propertyId];
 	const propertySameAsUrls = getPropertySameAsUrls(propertyId);
 	const propertySameAs =
@@ -652,14 +661,18 @@ export const buildPropertyStructuredData = (
 					url: pageUrl,
 					offers: tierOffers,
 				},
-				aggregateRating: {
-					"@type": "AggregateRating",
-					ratingValue: "5.0",
-					bestRating: "5",
-					worstRating: "1",
-					reviewCount: String(reviews.length),
-				},
-				review: reviews.map((rev) => ({
+				...(aggregateRatingValue !== null
+					? {
+							aggregateRating: {
+								"@type": "AggregateRating",
+								ratingValue: aggregateRatingValue,
+								bestRating: "5",
+								worstRating: "1",
+								reviewCount: String(validReviews.length),
+							},
+						}
+					: {}),
+				review: validReviews.map((rev) => ({
 					"@type": "Review",
 					author: { "@type": "Person", name: t[rev.authorKey] },
 					datePublished: rev.datePublished,
