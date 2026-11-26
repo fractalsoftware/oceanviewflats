@@ -2,7 +2,13 @@ import { Clock, Copy, ExternalLink, Home } from "lucide-react";
 import React from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
-import { getHomePagePath, IMAGE_DIMENSIONS, IMAGES } from "../constants/config";
+import {
+	getHeroImageSrcSet,
+	getHomePagePath,
+	HERO_IMAGE_SIZES,
+	IMAGE_DIMENSIONS,
+	IMAGES,
+} from "../constants/config";
 import { BOOKING_PENDING_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
@@ -28,6 +34,8 @@ export default function BookingPending({
 				<div className={BOOKING_PENDING_THEME.bgWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
+						srcSet={getHeroImageSrcSet(IMAGES.home.hero, assetPrefix)}
+						sizes={HERO_IMAGE_SIZES}
 						alt={t.heroImgAlt}
 						width={IMAGE_DIMENSIONS.homeHero.width}
 						height={IMAGE_DIMENSIONS.homeHero.height}

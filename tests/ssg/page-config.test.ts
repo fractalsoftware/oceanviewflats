@@ -86,12 +86,14 @@ test("SSG output files embed valid #ovf-page-config across locales", () => {
 		assert.equal(parsed.apiBase, `${expectedPrefix}api/`);
 		assert.equal(typeof parsed.i18n, "object");
 
-		// Verify page-config.js is included
-		assert.ok(
-			content.includes(
-				`<script src="${expectedPrefix}js/page-config.js"></script>`,
+		// Verify versioned page-config.js is included
+		const escapedPrefix = expectedPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		assert.match(
+			content,
+			new RegExp(
+				`<script src="${escapedPrefix}js/page-config\\.js\\?v=[0-9a-f]{8}"></script>`,
 			),
-			`page-config.js script tag must be included in ${sample.file}`,
+			`versioned page-config.js script tag must be included in ${sample.file}`,
 		);
 	}
 });

@@ -38,6 +38,60 @@ Options -Indexes
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self)"
     # Staged CSP rollout (Report-Only initially to validate Mercado Pago Checkout Bricks, Matomo, Google Fonts, and FX API origins)
     Header always set Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' https://sdk.mercadopago.com https://api-static.mercadopago.com https://http2.mlstatic.com https://stats.fractalserver.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://http2.mlstatic.com; font-src 'self' https://fonts.gstatic.com https://http2.mlstatic.com data:; img-src 'self' data: https://http2.mlstatic.com https://api-static.mercadopago.com https://stats.fractalserver.com; connect-src 'self' https://api.mercadopago.com https://api-static.mercadopago.com https://sdk.mercadopago.com https://http2.mlstatic.com https://stats.fractalserver.com https://open.er-api.com; frame-src 'self' https://sdk.mercadopago.com https://api-static.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.co; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
+
+    # Tiered HTTP caching headers (static assets vs. HTML vs. dynamic PHP)
+    <FilesMatch "\.(webp|png|jpg|jpeg|svg|ico|woff2)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+    <FilesMatch "\.(html|xml|txt|webmanifest)$">
+        Header set Cache-Control "public, max-age=300, must-revalidate"
+    </FilesMatch>
+    <FilesMatch "\.php$">
+        Header always set Cache-Control "no-store, no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# =============================================================================
+# Performance: Compression & Browser Caching
+# =============================================================================
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 5 minutes"
+
+    # Images & self-hosted fonts (30 days)
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType image/x-icon "access plus 30 days"
+    ExpiresByType image/vnd.microsoft.icon "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 30 days"
+
+    # Cache-busted CSS & JS assets (7 days)
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+
+    # HTML, sitemaps, crawler text & webmanifest (5 minutes)
+    ExpiresByType text/html "access plus 5 minutes"
+    ExpiresByType application/xml "access plus 5 minutes"
+    ExpiresByType text/xml "access plus 5 minutes"
+    ExpiresByType text/plain "access plus 5 minutes"
+    ExpiresByType application/manifest+json "access plus 5 minutes"
 </IfModule>
 
 # =============================================================================

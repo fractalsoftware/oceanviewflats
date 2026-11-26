@@ -101,6 +101,23 @@ export interface PropertyTheme {
 	propertyFaqAnswerWrapper: string;
 	propertyFaqAnswer: string;
 
+	// PropertyDestinationGuides centralized styles & copy keys
+	propertyGuidesTitleKey: "property1707GuidesTitle" | "property1606GuidesTitle";
+	propertyGuidesSubtitleKey:
+		| "property1707GuidesSubtitle"
+		| "property1606GuidesSubtitle";
+	propertyGuidesSection: string;
+	propertyGuidesContainer: string;
+	propertyGuidesCard: string;
+	propertyGuidesHeader: string;
+	propertyGuidesEyebrow: string;
+	propertyGuidesTitle: string;
+	propertyGuidesSubtitle: string;
+	propertyGuidesLinksRow: string;
+	propertyGuidesLink: string;
+	propertyGuidesHubLink: string;
+	propertyGuidesIcon: string;
+
 	// BookingSection centralized styles
 	bookingSectionBg: string;
 	bookingCardBorder: string;
@@ -171,6 +188,13 @@ export const CHROME_THEME = {
 	},
 	navLogoIcon: "w-6 h-6 fill-current",
 	navActions: "flex items-center space-x-3 md:space-x-6",
+	navGuides: {
+		top: "inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		scrolled:
+			"inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors rounded-lg text-slate-600 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	},
+	navGuidesIcon: "w-5 h-5 md:hidden",
+	navGuidesText: "hidden md:inline",
 	navContact: {
 		top: "inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2 text-sm font-semibold transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 		scrolled:
@@ -208,6 +232,14 @@ export const CHROME_THEME = {
 	footerPrivacyWrapper: "text-xs mb-4",
 	footerPrivacyLink:
 		"text-slate-300 hover:text-white underline transition-colors",
+	footerGuidesNav:
+		"w-full max-w-3xl border-t border-b border-slate-800 py-4 my-4",
+	footerGuidesHeading:
+		"text-xs font-bold uppercase tracking-wider text-slate-300 mb-2",
+	footerGuidesList:
+		"flex flex-wrap items-center justify-center gap-x-5 gap-y-2 list-none m-0 p-0",
+	footerGuidesLink:
+		"text-xs md:text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
 	footerCopyright: "text-sm text-slate-300 mb-6",
 	footerBadge:
 		"group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 hover:border-slate-500 text-xs font-mono font-semibold text-slate-300 hover:text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5",
@@ -373,6 +405,16 @@ export const HOME_THEME = {
 		"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white",
 	locationCardTitle: "text-lg md:text-xl font-bold text-slate-900 mb-2",
 	locationCardDesc: "text-sm text-slate-700 leading-relaxed",
+	locationGuidesBanner:
+		"mt-10 bg-slate-900 text-white rounded-3xl p-6 md:p-8 border border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6",
+	locationGuidesContent: "flex items-start gap-4",
+	locationGuidesIconBox:
+		"w-12 h-12 shrink-0 bg-slate-800 text-white border border-slate-700 rounded-2xl flex items-center justify-center",
+	locationGuidesEyebrow:
+		"text-xs font-bold uppercase tracking-wider text-slate-300 mb-1",
+	locationGuidesText: "text-sm md:text-base text-slate-200 leading-relaxed",
+	locationGuidesCta:
+		"shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] bg-white hover:bg-slate-100 text-slate-900 px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
@@ -687,6 +729,27 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			"px-6 pb-6 md:px-7 md:pb-7 pt-4 border-t border-slate-100",
 		propertyFaqAnswer: "text-slate-700 leading-relaxed",
 
+		// PropertyDestinationGuides
+		propertyGuidesTitleKey: "property1707GuidesTitle",
+		propertyGuidesSubtitleKey: "property1707GuidesSubtitle",
+		propertyGuidesSection: "py-16 px-6 bg-white border-t border-slate-200/80",
+		propertyGuidesContainer: "max-w-5xl mx-auto",
+		propertyGuidesCard:
+			"bg-slate-50 rounded-3xl p-8 md:p-10 border border-slate-200 shadow-xs",
+		propertyGuidesHeader: "mb-6",
+		propertyGuidesEyebrow:
+			"text-xs font-bold uppercase tracking-wider text-slate-600 mb-2",
+		propertyGuidesTitle:
+			"text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 mb-2",
+		propertyGuidesSubtitle:
+			"text-sm md:text-base text-slate-700 leading-relaxed",
+		propertyGuidesLinksRow: "flex flex-wrap items-center gap-3",
+		propertyGuidesLink:
+			"inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full bg-white border border-slate-300 text-sm font-semibold text-slate-900 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		propertyGuidesHubLink:
+			"inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full bg-slate-900 text-white hover:bg-slate-800 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		propertyGuidesIcon: "w-4 h-4 shrink-0",
+
 		// BookingSection
 		bookingSectionBg: "bg-slate-100 border-t border-slate-200",
 		bookingCardBorder: "border border-slate-200",
@@ -830,6 +893,27 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			"px-6 pb-6 md:px-7 md:pb-7 pt-4 border-t border-stone-100",
 		propertyFaqAnswer: "text-stone-700 leading-relaxed",
 
+		// PropertyDestinationGuides
+		propertyGuidesTitleKey: "property1606GuidesTitle",
+		propertyGuidesSubtitleKey: "property1606GuidesSubtitle",
+		propertyGuidesSection: "py-16 px-6 bg-white border-t border-stone-200/80",
+		propertyGuidesContainer: "max-w-5xl mx-auto",
+		propertyGuidesCard:
+			"bg-stone-50 rounded-3xl p-8 md:p-10 border border-stone-200 shadow-xs",
+		propertyGuidesHeader: "mb-6",
+		propertyGuidesEyebrow:
+			"text-xs font-bold uppercase tracking-wider text-stone-600 mb-2",
+		propertyGuidesTitle:
+			"text-2xl md:text-3xl font-extrabold tracking-tight text-stone-900 mb-2",
+		propertyGuidesSubtitle:
+			"text-sm md:text-base text-stone-700 leading-relaxed",
+		propertyGuidesLinksRow: "flex flex-wrap items-center gap-3",
+		propertyGuidesLink:
+			"inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full bg-white border border-stone-300 text-sm font-semibold text-stone-900 hover:border-rose-700 hover:bg-rose-700 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/40",
+		propertyGuidesHubLink:
+			"inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full bg-stone-900 text-white hover:bg-stone-800 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/40",
+		propertyGuidesIcon: "w-4 h-4 shrink-0",
+
 		// BookingSection
 		bookingSectionBg: "bg-stone-100 border-t border-stone-200",
 		bookingCardBorder: "border border-stone-200",
@@ -864,3 +948,135 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 		...PRIVACY_THEME_STYLES,
 	},
 };
+
+export const DESTINATION_GUIDES_THEME = {
+	pageWrapper:
+		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",
+	heroHeader:
+		"relative bg-slate-900 pt-32 pb-16 md:pt-36 md:pb-20 px-6 text-center overflow-hidden",
+	heroMediaWrapper: "absolute inset-0 w-full h-full",
+	heroImage: "w-full h-full object-cover",
+	heroOverlay:
+		"absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/65 to-slate-900/90",
+	heroContent:
+		"relative z-10 max-w-4xl mx-auto mt-4 flex flex-col items-center",
+	heroBadge:
+		"inline-flex items-center gap-2 bg-white/15 border border-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs font-bold tracking-wider uppercase mb-5",
+	heroTitle:
+		"text-3xl md:text-5xl font-extrabold mb-4 text-white tracking-tight leading-tight drop-shadow-md",
+	heroSubtitle:
+		"text-base md:text-xl text-slate-200 font-light max-w-3xl mx-auto leading-relaxed drop-shadow",
+	heroMetaRow:
+		"mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs md:text-sm text-slate-200 bg-slate-900/65 border border-white/15 backdrop-blur-md px-5 py-2.5 rounded-full",
+	heroMetaItem: "inline-flex items-center gap-1.5",
+	heroMetaDivider: "text-slate-400",
+	main: "flex-grow w-full py-12 md:py-16 px-6 max-w-5xl mx-auto space-y-12",
+	introCard:
+		"bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-200",
+	introHeading:
+		"text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 mb-4",
+	introBody: "text-base md:text-lg text-slate-700 leading-relaxed",
+	sectionHeader: "mb-8",
+	sectionTitle:
+		"text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 mb-2",
+	sectionSubtitle: "text-base text-slate-600 leading-relaxed",
+	guidesGrid: "grid grid-cols-1 md:grid-cols-2 gap-8",
+	guideCard:
+		"group flex flex-col bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	guideCardMedia: "h-56 relative overflow-hidden bg-slate-900",
+	guideCardImage:
+		"w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
+	guideCardOverlay:
+		"absolute inset-0 bg-gradient-to-t from-slate-900/75 via-slate-900/20 to-transparent",
+	guideCardBadge:
+		"absolute top-4 left-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/85 text-white border border-white/20 backdrop-blur-md",
+	guideCardBody: "flex-grow flex flex-col justify-between p-7",
+	guideCardMeta:
+		"flex items-center gap-3 text-xs font-semibold text-slate-500 mb-2",
+	guideCardTitle:
+		"text-xl md:text-2xl font-bold text-slate-900 mb-3 group-hover:text-rose-700 transition-colors",
+	guideCardSummary: "text-sm md:text-base text-slate-700 leading-relaxed mb-6",
+	guideCardCtaRow:
+		"pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-rose-700 group-hover:text-slate-900 transition-colors",
+	guideWrapper: "space-y-10",
+	takeawaysCard:
+		"bg-slate-900 text-white rounded-3xl p-8 md:p-10 border border-slate-800 shadow-md",
+	takeawaysTitle: "text-xl md:text-2xl font-extrabold text-white mb-5",
+	takeawaysList: "space-y-3",
+	takeawaysItem:
+		"flex items-start gap-3 text-sm md:text-base text-slate-200 leading-relaxed",
+	takeawaysIcon: "w-5 h-5 text-[#FF5A5F] shrink-0 mt-0.5",
+	sectionCard:
+		"bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-200 space-y-5",
+	sectionHeading:
+		"text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900",
+	sectionParagraph: "text-base text-slate-700 leading-relaxed",
+	sectionBulletList: "space-y-3 pt-1",
+	sectionBulletItem:
+		"flex items-start gap-3 text-sm md:text-base text-slate-700 leading-relaxed",
+	sectionBulletIcon: "w-5 h-5 text-rose-700 shrink-0 mt-0.5",
+	sectionCallout:
+		"p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 text-sm md:text-base leading-relaxed",
+	sectionCalloutLabel:
+		"block text-xs font-bold uppercase tracking-wider text-rose-700 mb-1",
+	factGrid: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2",
+	factCard: "p-5 rounded-2xl bg-slate-50 border border-slate-200",
+	factLabel: "text-xs font-bold uppercase tracking-wider text-slate-500 mb-1",
+	factValue: "text-lg font-extrabold text-slate-900",
+	factDetail: "text-xs text-slate-600 mt-1 leading-relaxed",
+	tableWrapper:
+		"overflow-x-auto rounded-2xl border border-slate-200 bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	table:
+		"w-full min-w-[540px] border-separate border-spacing-0 text-left text-sm md:text-base",
+	tableCaption:
+		"px-5 py-3 text-left text-xs font-semibold tracking-wide text-slate-600 bg-slate-50 border-b border-slate-200",
+	tableHead: "bg-slate-900 text-white",
+	tableHeaderCell:
+		"py-3.5 px-5 text-xs md:text-sm font-bold uppercase tracking-wider text-white border-b border-slate-800",
+	tableBody: "bg-white",
+	tableRow: "odd:bg-white even:bg-slate-50",
+	tableRowHeader:
+		"py-3.5 px-5 font-semibold text-slate-900 align-top border-b border-slate-200",
+	tableCell:
+		"py-3.5 px-5 text-slate-700 align-top border-b border-slate-200 leading-relaxed",
+	faqSection: "space-y-6",
+	faqTitle: "text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900",
+	faqList: "space-y-4",
+	faqDetails:
+		"group bg-white rounded-2xl border border-slate-200 shadow-xs open:shadow-md transition-shadow",
+	faqSummary:
+		"flex items-center justify-between gap-4 p-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-bold text-base md:text-lg text-slate-900 select-none rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	faqChevron:
+		"w-5 h-5 text-slate-500 shrink-0 motion-safe:transition-transform motion-safe:duration-300 group-open:rotate-180",
+	faqAnswerWrapper: "px-6 pb-6 pt-4 border-t border-slate-100",
+	faqAnswer: "text-slate-700 leading-relaxed",
+	propertyCtaSection:
+		"bg-slate-900 text-white rounded-3xl p-8 md:p-10 border border-slate-800 shadow-xl space-y-6",
+	propertyCtaHeader: "max-w-3xl",
+	propertyCtaEyebrow:
+		"text-xs font-bold uppercase tracking-wider text-rose-300 mb-2",
+	propertyCtaTitle:
+		"text-2xl md:text-3xl font-extrabold tracking-tight text-white mb-2",
+	propertyCtaSubtitle: "text-sm md:text-base text-slate-200 leading-relaxed",
+	propertyCtaGrid: "grid grid-cols-1 md:grid-cols-2 gap-6",
+	propertyCtaCard:
+		"flex flex-col justify-between bg-slate-800/90 rounded-2xl p-6 border border-slate-700",
+	propertyCtaCardBadge:
+		"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-slate-200 border border-slate-700 mb-3 self-start",
+	propertyCtaCardTitle: "text-xl font-bold text-white mb-2",
+	propertyCtaCardDesc: "text-sm text-slate-200 leading-relaxed mb-4",
+	propertyCtaPriceRow: "space-y-1 mb-5",
+	propertyCtaRateLine: "text-sm font-bold text-emerald-300",
+	propertyCtaCleaningLine: "text-xs text-slate-300",
+	propertyCtaButton:
+		"inline-flex items-center justify-center gap-2 min-h-[44px] w-full bg-white hover:bg-slate-100 text-slate-900 px-5 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
+	relatedSection: "space-y-6 pt-4 border-t border-slate-200",
+	relatedLinksRow: "flex flex-wrap items-center gap-3",
+	relatedLink:
+		"inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full bg-white border border-slate-300 text-sm font-semibold text-slate-900 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	backToHubLink:
+		"inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full bg-slate-900 text-white hover:bg-slate-800 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	iconXs: "w-3.5 h-3.5 shrink-0",
+	iconSm: "w-4 h-4 shrink-0",
+	iconMd: "w-5 h-5 shrink-0",
+} as const;

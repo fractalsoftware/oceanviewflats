@@ -2,7 +2,12 @@ import { ArrowLeft, Compass, Home, Mail, MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
-import { IMAGE_DIMENSIONS, IMAGES } from "../constants/config";
+import {
+	getHeroImageSrcSet,
+	HERO_IMAGE_SIZES,
+	IMAGE_DIMENSIONS,
+	IMAGES,
+} from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
@@ -49,6 +54,8 @@ export default function NotFound({ lang, assetPrefix = "/" }: AppProps) {
 				<div className="absolute inset-0 w-full h-full">
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
+						srcSet={getHeroImageSrcSet(IMAGES.home.hero, assetPrefix)}
+						sizes={HERO_IMAGE_SIZES}
 						alt={t.heroImgAlt}
 						width={IMAGE_DIMENSIONS.homeHero.width}
 						height={IMAGE_DIMENSIONS.homeHero.height}

@@ -12,8 +12,10 @@ import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import {
 	getGuidePagePath,
+	getHeroImageSrcSet,
 	getHomePagePath,
 	getRegistryPagePath,
+	HERO_IMAGE_SIZES,
 	IMAGE_DIMENSIONS,
 	IMAGES,
 } from "../constants/config";
@@ -44,6 +46,8 @@ export default function BookingSuccess({
 				<div className={BOOKING_SUCCESS_THEME.bgWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
+						srcSet={getHeroImageSrcSet(IMAGES.home.hero, assetPrefix)}
+						sizes={HERO_IMAGE_SIZES}
 						alt={t.heroImgAlt}
 						width={IMAGE_DIMENSIONS.homeHero.width}
 						height={IMAGE_DIMENSIONS.homeHero.height}

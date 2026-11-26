@@ -1,6 +1,10 @@
-import { Mail } from "lucide-react";
+import { Compass, Mail } from "lucide-react";
 import React from "react";
-import { getContactPagePath, getHomePagePath } from "../constants/config";
+import {
+	getContactPagePath,
+	getDestinationGuidesHubPath,
+	getHomePagePath,
+} from "../constants/config";
 import { CHROME_THEME, getChromeScrollState } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
@@ -28,6 +32,7 @@ export const Navigation = ({
 	const t = dict[lang];
 	const scrollState = getChromeScrollState(isScrolled);
 	const homeHref = getHomePagePath(lang, assetPrefix);
+	const guidesHref = getDestinationGuidesHubPath(lang, assetPrefix);
 	const contactHref = getContactPagePath(lang, assetPrefix);
 
 	return (
@@ -53,12 +58,24 @@ export const Navigation = ({
 				</a>
 				<div className={CHROME_THEME.navActions}>
 					<a
+						id="nav-guides"
+						href={guidesHref}
+						className={CHROME_THEME.navGuides[scrollState]}
+						aria-label={t.navGuidesAriaLabel}
+					>
+						<Compass
+							className={CHROME_THEME.navGuidesIcon}
+							aria-hidden="true"
+						/>
+						<span className={CHROME_THEME.navGuidesText}>{t.navGuides}</span>
+					</a>
+					<a
 						id="nav-contact"
 						href={contactHref}
 						className={CHROME_THEME.navContact[scrollState]}
 						aria-label={t.navContact}
 					>
-						<Mail className={CHROME_THEME.navContactIcon} />
+						<Mail className={CHROME_THEME.navContactIcon} aria-hidden="true" />
 						<span className={CHROME_THEME.navContactText}>{t.navContact}</span>
 					</a>
 					<LanguageDropdown

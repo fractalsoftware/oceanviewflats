@@ -1,5 +1,6 @@
-import fs from "fs";
-import path from "path";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -12,9 +13,11 @@ import {
 	type PageConfig,
 	pages,
 } from "./src/config/pages";
+import { getHeroImageSrcSet, HERO_IMAGE_SIZES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
 import type { Lang } from "./src/types";
+import { buildLlmsFullTxt, buildLlmsTxt } from "./src/utils/llms";
 import {
 	buildPricingSummary,
 	type SeasonalRateTierRow,
@@ -23,17 +26,57 @@ import {
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
 
-if (fs.existsSync(distDir)) {
-	fs.rmSync(distDir, { recursive: true, force: true });
-	console.log("Cleaned dist/ directory");
-}
-fs.mkdirSync(distDir, { recursive: true });
+const preserveDist = process.argv.includes("--preserve-dist");
+const distExisted = fs.existsSync(distDir);
 
-// Copy public assets to dist
-if (fs.existsSync(publicDir)) {
+if (!distExisted) {
+	fs.mkdirSync(distDir, { recursive: true });
+}
+
+if ((!preserveDist || !distExisted) && fs.existsSync(publicDir)) {
 	fs.cpSync(publicDir, distDir, { recursive: true });
 	console.log("Copied public assets to dist/");
 }
+
+const computeFileHash = (filePath: string): string =>
+	crypto
+		.createHash("sha256")
+		.update(fs.readFileSync(filePath))
+		.digest("hex")
+		.slice(0, 8);
+
+const buildAssetVersions = (): Record<string, string> => {
+	const assetPaths = new Set<string>([
+		"css/style.css",
+		"js/lang-detect.js",
+		"js/page-config.js",
+	]);
+	for (const page of pages) {
+		for (const script of page.scripts) {
+			assetPaths.add(script);
+		}
+	}
+
+	const versions: Record<string, string> = {};
+	for (const assetPath of assetPaths) {
+		const distAssetPath = path.join(distDir, assetPath);
+		if (fs.existsSync(distAssetPath)) {
+			versions[assetPath] = computeFileHash(distAssetPath);
+			continue;
+		}
+		const fallbackPath =
+			assetPath === "css/style.css"
+				? path.join(process.cwd(), "src", "style.css")
+				: path.join(publicDir, assetPath);
+		if (fs.existsSync(fallbackPath)) {
+			versions[assetPath] = computeFileHash(fallbackPath);
+		}
+	}
+
+	return versions;
+};
+
+const assetVersions = buildAssetVersions();
 
 // Parse public/data/prices.csv to generate build-time prices.json caches for client usage
 // and return parsed tiers for build-time JSON-LD structured data injection.
@@ -138,7 +181,11 @@ pages.forEach((page) => {
 			page.id === "404" ? "/" : depth === 0 ? "./" : "../".repeat(depth);
 
 		const rawMarkup = renderToStaticMarkup(
-			<PageComponent lang={lang} assetPrefix={assetPrefix} />,
+			<PageComponent
+				lang={lang}
+				assetPrefix={assetPrefix}
+				pricingSummary={pricingSummary}
+			/>,
 		);
 		// Strip React 19's auto-injected <link rel="preload" .../> tags from body markup;
 		// hero image preload hints are emitted inside <head> via baseTemplate.
@@ -169,12 +216,18 @@ pages.forEach((page) => {
 			i18n: i18nSlice,
 		};
 
+		const heroPreloadSrcSet = page.heroImage
+			? getHeroImageSrcSet(page.heroImage, assetPrefix)
+			: undefined;
+
 		const html = baseTemplate({
 			markup,
 			lang,
-			title: page.seoTitle ? page.seoTitle(t) : t.seoTitle,
+			title: page.seoTitle
+				? page.seoTitle(t, lang, pricingSummary)
+				: t.seoTitle,
 			description: page.seoDescription
-				? page.seoDescription(t)
+				? page.seoDescription(t, lang, pricingSummary)
 				: t.seoDescription,
 			url,
 			baseUrl: BASE_URL,
@@ -182,14 +235,17 @@ pages.forEach((page) => {
 				url: `${BASE_URL}/${page.ogImage.path}`,
 				width: page.ogImage.width,
 				height: page.ogImage.height,
-				alt: page.ogImage.getAlt(t),
+				alt: page.ogImage.getAlt(t, lang),
 			},
 			heroPreloadHref: page.heroImage
 				? `${assetPrefix}${page.heroImage}`
 				: undefined,
+			heroPreloadSrcSet,
+			heroPreloadSizes: heroPreloadSrcSet ? HERO_IMAGE_SIZES : undefined,
 			hrefLangTags,
 			structuredData,
 			assetPrefix,
+			assetVersions,
 			noIndex: Boolean(page.noIndex),
 			customScripts: page.scripts,
 			pageConfig,
@@ -215,3 +271,16 @@ const sitemap = generateSitemap(
 );
 fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
 console.log("Generated sitemap.xml");
+
+// Generate and save llms.txt & llms-full.txt dynamically from build-time pricing & content
+fs.writeFileSync(
+	path.join(distDir, "llms.txt"),
+	buildLlmsTxt(BASE_URL, pricingSummary),
+);
+console.log("Generated llms.txt");
+
+fs.writeFileSync(
+	path.join(distDir, "llms-full.txt"),
+	buildLlmsFullTxt(BASE_URL, pricingSummary),
+);
+console.log("Generated llms-full.txt");

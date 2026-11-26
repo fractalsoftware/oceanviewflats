@@ -10,7 +10,7 @@
 		"docs:api": "php scripts/generate-docs.php",
 		"build:docs": "php scripts/generate-docs.php",
 		"build:admin": "vite build --config vite.admin.config.ts && node -e \"const fs = require('node:fs'); fs.mkdirSync('admin/public/assets', { recursive: true }); fs.copyFileSync('node_modules/htmx.org/dist/htmx.min.js', 'admin/public/assets/htmx.min.js');\"",
-		"build": "tsx render.tsx && vite build && npm run build:admin && npx terser public/js/page-config.js -o dist/js/page-config.js -c -m && npx terser public/js/main.js -o dist/js/main.js -c -m && npx terser public/js/lang-detect.js -o dist/js/lang-detect.js -c -m && npx terser public/js/registry.js -o dist/js/registry.js -c -m && npx terser public/js/guide.js -o dist/js/guide.js -c -m"
+		"build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && vite build && npm run build:admin && npx terser public/js/page-config.js -o dist/js/page-config.js -c -m && npx terser public/js/main.js -o dist/js/main.js -c -m && npx terser public/js/lang-detect.js -o dist/js/lang-detect.js -c -m && npx terser public/js/registry.js -o dist/js/registry.js -c -m && npx terser public/js/guide.js -o dist/js/guide.js -c -m && tsx render.tsx --preserve-dist"
 	},
 	"keywords": [],
 	"author": "",

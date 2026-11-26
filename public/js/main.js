@@ -83,6 +83,7 @@ function syncNavbarScrollState() {
 	const nav = document.getElementById("navbar");
 	const logo = document.getElementById("nav-logo");
 	const toggle = document.getElementById("lang-toggle");
+	const guides = document.getElementById("nav-guides");
 	const contact = document.getElementById("nav-contact");
 	const bookBtn = document.getElementById("nav-book");
 	if (!nav || !logo || !toggle) return;
@@ -103,6 +104,10 @@ function syncNavbarScrollState() {
 			"text-white",
 			"backdrop-blur-sm",
 		);
+		if (guides) {
+			guides.classList.add("text-slate-600", "hover:text-rose-700");
+			guides.classList.remove("text-white", "hover:text-white/80");
+		}
 		if (contact) {
 			contact.classList.add("text-slate-600", "hover:text-rose-700");
 			contact.classList.remove("text-white", "hover:text-white/80");
@@ -132,6 +137,10 @@ function syncNavbarScrollState() {
 			"text-white",
 			"backdrop-blur-sm",
 		);
+		if (guides) {
+			guides.classList.remove("text-slate-600", "hover:text-rose-700");
+			guides.classList.add("text-white", "hover:text-white/80");
+		}
 		if (contact) {
 			contact.classList.remove("text-slate-600", "hover:text-rose-700");
 			contact.classList.add("text-white", "hover:text-white/80");
@@ -145,6 +154,24 @@ function syncNavbarScrollState() {
 
 window.addEventListener("scroll", syncNavbarScrollState);
 document.addEventListener("DOMContentLoaded", syncNavbarScrollState);
+
+// Delegated Matomo CTA tracking for Destination Guide -> Property links (#311)
+document.addEventListener("click", (e) => {
+	const target = e && e.target ? e.target : null;
+	if (!target || typeof target.closest !== "function") return;
+	const ctaLink = target.closest("[data-guide-cta-property][data-guide-slug]");
+	if (!ctaLink || typeof ctaLink.getAttribute !== "function") return;
+	const propertyId = ctaLink.getAttribute("data-guide-cta-property");
+	const slug = ctaLink.getAttribute("data-guide-slug");
+	if (!propertyId || !slug) return;
+	const paq = (window._paq = window._paq || []);
+	paq.push([
+		"trackEvent",
+		"DestinationGuide",
+		"PropertyCTA",
+		`${slug}:${propertyId}`,
+	]);
+});
 
 // Language Dropdown Mobile & Keyboard Toggle
 document.addEventListener("DOMContentLoaded", () => {

@@ -3,7 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { BASE_URL, LANGUAGES, pages } from "../../src/config/pages";
-import { IMAGES } from "../../src/constants/config";
+import {
+	getHeroImageSrcSet,
+	HERO_IMAGE_SIZES,
+	IMAGES,
+} from "../../src/constants/config";
 import { dict } from "../../src/i18n/dict";
 import { baseTemplate } from "../../src/templates/base";
 
@@ -292,50 +296,143 @@ test("baseTemplate escapes HTML attribute special characters in og:image:alt and
 	);
 });
 
-test("Compiled HTML emits Google Fonts preconnect and hero preload in <head> with zero preloads in <body>", () => {
+test("Compiled HTML self-hosts Inter Variable WOFF2 (latin + latin-ext) with zero Google Fonts requests and emits responsive hero preloads in <head> with zero preloads in <body> (#314)", () => {
+	// 1. Verify bundled latin and latin-ext WOFF2 fonts exist in public/ and dist/ with valid wOF2 magic headers and reasonable sizes
+	for (const fontFile of ["inter-var.woff2", "inter-var-latin-ext.woff2"]) {
+		for (const fontPath of [
+			path.join(process.cwd(), "public", "fonts", fontFile),
+			path.join(DIST_DIR, "fonts", fontFile),
+		]) {
+			assert.ok(fs.existsSync(fontPath), `Missing bundled font: ${fontPath}`);
+			const fontBytes = fs.readFileSync(fontPath);
+			assert.equal(
+				fontBytes.toString("ascii", 0, 4),
+				"wOF2",
+				`Font file ${fontPath} must have valid wOF2 magic header`,
+			);
+			assert.ok(
+				fontBytes.length >= 20_000 && fontBytes.length <= 150_000,
+				`Font file ${fontPath} size (${fontBytes.length} bytes) outside expected variable subset bounds`,
+			);
+		}
+	}
+
+	// 2. Verify compiled dist/css/style.css declares @font-face blocks for Inter (latin-ext + latin) with unicode-range
+	const compiledCssPath = path.join(DIST_DIR, "css", "style.css");
+	assert.ok(
+		fs.existsSync(compiledCssPath),
+		`Missing compiled CSS: ${compiledCssPath}`,
+	);
+	const compiledCss = fs.readFileSync(compiledCssPath, "utf-8");
+	const fontFaceBlocks = compiledCss.match(/@font-face\s*\{[^}]*\}/g) ?? [];
+	assert.equal(
+		fontFaceBlocks.length,
+		2,
+		"Compiled dist/css/style.css must declare exactly two @font-face blocks (latin-ext and latin)",
+	);
+	const expectedFontUrls = [
+		"../fonts/inter-var-latin-ext.woff2",
+		"../fonts/inter-var.woff2",
+	];
+	for (let i = 0; i < expectedFontUrls.length; i++) {
+		const fontFaceBlock = fontFaceBlocks[i];
+		assert.match(
+			fontFaceBlock,
+			/font-family:\s*["']?Inter["']?/i,
+			`@font-face must declare Inter family: ${fontFaceBlock}`,
+		);
+		const fontUrlMatch = fontFaceBlock.match(
+			/url\(\s*["']?([^"')]+)["']?\s*\)/i,
+		);
+		assert.ok(
+			fontUrlMatch,
+			`@font-face must declare font src url(): ${fontFaceBlock}`,
+		);
+		assert.equal(
+			fontUrlMatch[1],
+			expectedFontUrls[i],
+			`@font-face src must use relative ${expectedFontUrls[i]} path`,
+		);
+		assert.ok(
+			fs.existsSync(
+				path.resolve(path.dirname(compiledCssPath), fontUrlMatch[1]),
+			),
+			`Compiled @font-face relative path ${fontUrlMatch[1]} must resolve to an existing file in dist/`,
+		);
+		assert.match(
+			fontFaceBlock,
+			/font-weight:\s*300\s+800/i,
+			`@font-face must declare variable weight range 300 800: ${fontFaceBlock}`,
+		);
+		assert.match(
+			fontFaceBlock,
+			/font-display:\s*swap/i,
+			`@font-face must declare font-display: swap: ${fontFaceBlock}`,
+		);
+		assert.match(
+			fontFaceBlock,
+			/unicode-range:/i,
+			`@font-face must declare unicode-range for subsetting: ${fontFaceBlock}`,
+		);
+	}
+
+	// 3. Verify every compiled page across all 6 locales
 	for (const page of pages) {
 		for (const lang of LANGUAGES) {
 			const filename = page.filename(lang);
 			const html = readDistHtml(filename);
 			const { head, body } = splitHeadAndBody(html);
 
-			const preconnectApisIdx = head.indexOf(
-				'<link rel="preconnect" href="https://fonts.googleapis.com" />',
-			);
-			const preconnectGstaticIdx = head.indexOf(
-				'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
-			);
-			const googleFontsCssIdx = head.indexOf(
-				'href="https://fonts.googleapis.com/css2?',
-			);
-
-			assert.ok(
-				preconnectApisIdx !== -1,
-				`Missing fonts.googleapis.com preconnect in ${filename}`,
-			);
-			assert.ok(
-				preconnectGstaticIdx !== -1,
-				`Missing fonts.gstatic.com preconnect in ${filename}`,
-			);
-			assert.ok(
-				googleFontsCssIdx !== -1,
-				`Missing Google Fonts stylesheet in ${filename}`,
-			);
-			assert.ok(
-				preconnectApisIdx < googleFontsCssIdx &&
-					preconnectGstaticIdx < googleFontsCssIdx,
-				`Google Fonts preconnect links must precede font stylesheet in ${filename}`,
-			);
+			const disallowedFontHosts = new Set([
+				"fonts.googleapis.com",
+				"fonts.gstatic.com",
+			]);
+			const externalHosts = [...html.matchAll(/\b(?:href|src)="([^"]+)"/gi)]
+				.map((m) => m[1])
+				.filter((u) => /^https?:\/\//i.test(u))
+				.map((u) => new URL(u).hostname.toLowerCase());
+			for (const host of externalHosts) {
+				assert.ok(
+					!disallowedFontHosts.has(host),
+					`Compiled ${filename} must not reference external Google Fonts host "${host}"`,
+				);
+			}
 
 			const depth = filename.split("/").length - 1;
 			const assetPrefix =
 				page.id === "404" ? "/" : depth === 0 ? "./" : "../".repeat(depth);
+
+			const expectedFontPreload = `<link rel="preload" as="font" type="font/woff2" href="${assetPrefix}fonts/inter-var.woff2" crossorigin />`;
+			const fontPreloadIdx = head.indexOf(expectedFontPreload);
+			const escapedPrefix = assetPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+			const styleCssMatch = head.match(
+				new RegExp(
+					`<link rel="stylesheet" href="${escapedPrefix}css/style\\.css(?:\\?v=[0-9a-f]{8})?">`,
+				),
+			);
+			const styleCssIdx = styleCssMatch?.index ?? -1;
+			assert.ok(
+				fontPreloadIdx !== -1,
+				`Missing local font preload "${expectedFontPreload}" in <head> of ${filename}`,
+			);
+			assert.ok(
+				!head.includes("inter-var-latin-ext.woff2"),
+				`Compiled ${filename} must not preload inter-var-latin-ext.woff2 in <head>`,
+			);
+			assert.ok(
+				styleCssIdx !== -1 && fontPreloadIdx < styleCssIdx,
+				`Local font preload must precede main stylesheet in <head> of ${filename}`,
+			);
+
 			assert.ok(
 				page.heroImage,
 				`Page ${page.id} should define heroImage for <head> preload`,
 			);
 			const expectedHeroHref = `${assetPrefix}${page.heroImage}`;
-			const expectedPreloadTag = `<link rel="preload" as="image" href="${expectedHeroHref}" fetchpriority="high" />`;
+			const expectedSrcSet = getHeroImageSrcSet(page.heroImage, assetPrefix);
+			const expectedPreloadTag = expectedSrcSet
+				? `<link rel="preload" as="image" href="${expectedHeroHref}" imagesrcset="${expectedSrcSet}" imagesizes="${HERO_IMAGE_SIZES}" fetchpriority="high" />`
+				: `<link rel="preload" as="image" href="${expectedHeroHref}" fetchpriority="high" />`;
 			assert.ok(
 				head.includes(expectedPreloadTag),
 				`Missing hero preload "${expectedPreloadTag}" in <head> of ${filename}`,

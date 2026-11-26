@@ -19,10 +19,63 @@ export const getCanonicalUrl = (
 	return lang === "en" ? `${dirBase}/` : `${dirBase}/${lang}.html`;
 };
 
-export const AIRBNB_URLS = {
+export const AIRBNB_URLS: Readonly<Record<PropertyId, string>> = {
 	"1707": "https://www.airbnb.com/rooms/1500108514798091235",
 	"1606": "https://www.airbnb.com/rooms/1584825560087571592",
 };
+
+export interface ExternalEntityUrlsConfig {
+	readonly googleBusinessProfile: string;
+	readonly appleBusinessConnect: string;
+	readonly instagram: string;
+	readonly tripadvisor: string;
+}
+
+export const EXTERNAL_ENTITY_URLS: ExternalEntityUrlsConfig = {
+	googleBusinessProfile: "",
+	appleBusinessConnect: "",
+	instagram: "",
+	tripadvisor: "",
+} as const;
+
+const filterVerifiedHttpsUrls = (urls: readonly string[]): string[] => {
+	const seen = new Set<string>();
+	const valid: string[] = [];
+	for (const raw of urls) {
+		const trimmed = raw.trim();
+		if (!trimmed.startsWith("https://")) continue;
+		try {
+			const parsed = new URL(trimmed);
+			if (parsed.protocol !== "https:" || !parsed.hostname) continue;
+			if (!seen.has(trimmed)) {
+				seen.add(trimmed);
+				valid.push(trimmed);
+			}
+		} catch {
+			// Ignore malformed URLs
+		}
+	}
+	return valid;
+};
+
+export const getBusinessSameAsUrls = (
+	externalUrls: Partial<ExternalEntityUrlsConfig> = EXTERNAL_ENTITY_URLS,
+	airbnbUrls: Readonly<Record<PropertyId, string>> = AIRBNB_URLS,
+): string[] =>
+	filterVerifiedHttpsUrls([
+		airbnbUrls["1707"],
+		airbnbUrls["1606"],
+		externalUrls.googleBusinessProfile ?? "",
+		externalUrls.appleBusinessConnect ?? "",
+		externalUrls.instagram ?? "",
+		externalUrls.tripadvisor ?? "",
+	]);
+
+export const getPropertySameAsUrls = (
+	propertyId: PropertyId,
+	extraUrls: readonly string[] = [],
+	airbnbUrls: Readonly<Record<PropertyId, string>> = AIRBNB_URLS,
+): string[] => filterVerifiedHttpsUrls([airbnbUrls[propertyId], ...extraUrls]);
 
 export const MERCADOPAGO_PUBLIC_KEY =
 	process.env.MERCADOPAGO_PUBLIC_KEY ||
@@ -132,6 +185,57 @@ export const OCEANVIEW_1606_PATHS: Record<string, string> = {
 	ja: "Oceanview1606/ja.html",
 };
 
+export const DESTINATION_GUIDES_HUB_PATHS: Record<string, string> = {
+	en: "santa-marta/",
+	es: "santa-marta/es.html",
+	fr: "santa-marta/fr.html",
+	it: "santa-marta/it.html",
+	de: "santa-marta/de.html",
+	ja: "santa-marta/ja.html",
+};
+
+export const PROPERTY_CLEANING_FEES_COP: Record<PropertyId, number> = {
+	"1707": 100000,
+	"1606": 80000,
+};
+
+export const BUILDING_REGISTRATION_FEE_COP = 20000;
+
+export interface ContextualGuideLinkConfig {
+	slug: string;
+	labelKey:
+		| "guideTopicRemoteWork"
+		| "guideTopicDirectReservation"
+		| "guideTopicBeachComparison"
+		| "guideTopicDayTrips";
+}
+
+export const PROPERTY_CONTEXTUAL_GUIDE_LINKS: Record<
+	PropertyId,
+	readonly ContextualGuideLinkConfig[]
+> = {
+	"1707": [
+		{
+			slug: "digital-nomad-remote-work",
+			labelKey: "guideTopicRemoteWork",
+		},
+		{
+			slug: "direct-reservation-guide",
+			labelKey: "guideTopicDirectReservation",
+		},
+	],
+	"1606": [
+		{
+			slug: "playa-salguero-vs-el-rodadero",
+			labelKey: "guideTopicBeachComparison",
+		},
+		{
+			slug: "day-trips-from-playa-salguero",
+			labelKey: "guideTopicDayTrips",
+		},
+	],
+};
+
 const resolveLocalizedPath = (
 	paths: Record<string, string>,
 	lang: string,
@@ -139,6 +243,23 @@ const resolveLocalizedPath = (
 ): string => {
 	const relPath = paths[lang] || paths.en;
 	return `${assetPrefix}${relPath}`;
+};
+
+export const getDestinationGuidesHubPath = (
+	lang: string,
+	assetPrefix = "./",
+): string =>
+	resolveLocalizedPath(DESTINATION_GUIDES_HUB_PATHS, lang, assetPrefix);
+
+export const getDestinationGuidePath = (
+	slug: string,
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const cleanSlug = slug.replace(/^\/+|\/+$/g, "");
+	const isNonEnglishLocale = lang !== "en" && LANGUAGES.includes(lang as Lang);
+	const suffix = isNonEnglishLocale ? `${lang}.html` : "";
+	return `${assetPrefix}santa-marta/${cleanSlug}/${suffix}`;
 };
 
 export const getPrivacyPolicyPath = (
@@ -315,6 +436,45 @@ export const IMAGE_DIMENSIONS = {
 		pool: { width: 501, height: 333 },
 	},
 } as const;
+
+export const HERO_IMAGE_SIZES = "100vw";
+
+export interface HeroResponsiveVariant {
+	readonly src: string;
+	readonly width: number;
+}
+
+export const HERO_RESPONSIVE_VARIANTS: Readonly<
+	Record<string, readonly HeroResponsiveVariant[]>
+> = {
+	[IMAGES.home.hero]: [
+		{ src: "images/home-hero-640w.webp", width: 640 },
+		{ src: "images/home-hero-1024w.webp", width: 1024 },
+		{ src: IMAGES.home.hero, width: IMAGE_DIMENSIONS.homeHero.width },
+	],
+	[IMAGES["1707"].hero]: [
+		{ src: "images/1707-main-room-seaside-640w.webp", width: 640 },
+		{ src: "images/1707-main-room-seaside-1024w.webp", width: 1024 },
+		{ src: IMAGES["1707"].hero, width: IMAGE_DIMENSIONS["1707"].hero.width },
+	],
+	[IMAGES["1606"].hero]: [
+		{ src: "images/1606-main-room-seaside-640w.webp", width: 640 },
+		{ src: "images/1606-main-room-seaside-1024w.webp", width: 1024 },
+		{ src: IMAGES["1606"].hero, width: IMAGE_DIMENSIONS["1606"].hero.width },
+	],
+};
+
+export const getHeroImageSrcSet = (
+	heroImagePath: string,
+	assetPrefix = "./",
+): string | undefined => {
+	if (!Object.hasOwn(HERO_RESPONSIVE_VARIANTS, heroImagePath)) {
+		return undefined;
+	}
+	return HERO_RESPONSIVE_VARIANTS[heroImagePath]
+		.map((variant) => `${assetPrefix}${variant.src} ${variant.width}w`)
+		.join(", ");
+};
 
 export interface HomeExperienceFeatureConfig {
 	iconId: "wifi" | "users" | "heart";

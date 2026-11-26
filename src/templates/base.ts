@@ -14,13 +14,28 @@ interface TemplateProps {
 	baseUrl: string;
 	ogImage: OgImageMeta | string;
 	heroPreloadHref?: string;
+	heroPreloadSrcSet?: string;
+	heroPreloadSizes?: string;
 	hrefLangTags: string;
 	structuredData: string;
 	assetPrefix: string;
+	assetVersions?: Record<string, string>;
 	noIndex?: boolean;
 	customScripts?: string[];
 	pageConfig?: Record<string, any>;
 }
+
+const withAssetVersion = (
+	assetPath: string,
+	assetVersions?: Record<string, string>,
+): string => {
+	const normalized = assetPath.replace(/^\/+/, "");
+	const version = assetVersions?.[normalized];
+	if (!version || normalized.includes("?")) {
+		return assetPath;
+	}
+	return `${assetPath}?v=${version}`;
+};
 
 const escapeHtmlAttr = (value: string): string =>
 	value
@@ -47,9 +62,12 @@ export const baseTemplate = ({
 	baseUrl,
 	ogImage,
 	heroPreloadHref,
+	heroPreloadSrcSet,
+	heroPreloadSizes,
 	hrefLangTags,
 	structuredData,
 	assetPrefix,
+	assetVersions,
 	noIndex = false,
 	customScripts = [],
 	pageConfig,
@@ -66,7 +84,9 @@ export const baseTemplate = ({
 		scripts.push(
 			`<script id="ovf-page-config" type="application/json">${JSON.stringify(pageConfig).replace(/</g, "\\u003c")}</script>`,
 		);
-		scripts.push(`<script src="${assetPrefix}js/page-config.js"></script>`);
+		scripts.push(
+			`<script src="${assetPrefix}${withAssetVersion("js/page-config.js", assetVersions)}"></script>`,
+		);
 	}
 	for (const src of customScripts) {
 		if (
@@ -75,7 +95,9 @@ export const baseTemplate = ({
 		) {
 			continue;
 		}
-		scripts.push(`<script src="${assetPrefix}${src}"></script>`);
+		scripts.push(
+			`<script src="${assetPrefix}${withAssetVersion(src, assetVersions)}"></script>`,
+		);
 	}
 	const scriptsMarkup =
 		scripts.length > 0 ? `\n    ${scripts.join("\n    ")}` : "";
@@ -109,7 +131,21 @@ export const baseTemplate = ({
 		? `\n    <meta name="twitter:image:alt" content="${escapedOgImageAlt}">`
 		: "";
 	const heroPreloadMarkup = heroPreloadHref
-		? `\n    <link rel="preload" as="image" href="${escapeHtmlAttr(heroPreloadHref)}" fetchpriority="high" />`
+		? (() => {
+				const attrs = [
+					'rel="preload"',
+					'as="image"',
+					`href="${escapeHtmlAttr(heroPreloadHref)}"`,
+				];
+				if (heroPreloadSrcSet) {
+					attrs.push(`imagesrcset="${escapeHtmlAttr(heroPreloadSrcSet)}"`);
+					if (heroPreloadSizes) {
+						attrs.push(`imagesizes="${escapeHtmlAttr(heroPreloadSizes)}"`);
+					}
+				}
+				attrs.push('fetchpriority="high"');
+				return `\n    <link ${attrs.join(" ")} />`;
+			})()
 		: "";
 
 	return `<!DOCTYPE html>
@@ -151,16 +187,14 @@ export const baseTemplate = ({
     <meta name="twitter:description" content="${description}">
     <meta name="twitter:image" content="${escapedOgImageUrl}">${twitterImageAltMarkup}
 
-    <script src="${assetPrefix}js/lang-detect.js" defer></script>${hrefLangMarkup}
+    <script src="${assetPrefix}${withAssetVersion("js/lang-detect.js", assetVersions)}" defer></script>${hrefLangMarkup}
 
     <!-- Structured Data (JSON-LD) for Generative Engines & Rich Snippets -->
     <script type="application/ld+json">
         ${structuredData}
     </script>${heroPreloadMarkup}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="${assetPrefix}css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="font" type="font/woff2" href="${assetPrefix}fonts/inter-var.woff2" crossorigin />
+    <link rel="stylesheet" href="${assetPrefix}${withAssetVersion("css/style.css", assetVersions)}">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .scroll-smooth { scroll-behavior: smooth; }

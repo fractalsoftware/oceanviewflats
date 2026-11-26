@@ -7,3 +7,9 @@ e3b1b1c521c972f4a1a276d85d968b8fb17c038f:docs/research/mercadopago-refund-protoc
 src/Domain/Security/PayloadEncryptor.php:generic-api-key:21
 14e0133babe7d4b796897ae9b551f2a5e93dc5b4:src/constants/config.ts:generic-api-key:646
 14e0133babe7d4b796897ae9b551f2a5e93dc5b4:src/constants/config.ts:generic-api-key:647
+664c94ca18a27b145d5632adfbe741c33e925aea:src/pages/DestinationGuideArticle.tsx:generic-api-key:58
+664c94ca18a27b145d5632adfbe741c33e925aea:src/pages/DestinationGuideArticle.tsx:generic-api-key:64
+664c94ca18a27b145d5632adfbe741c33e925aea:src/pages/DestinationGuideArticle.tsx:generic-api-key:69
+664c94ca18a27b145d5632adfbe741c33e925aea:src/pages/DestinationGuidesHub.tsx:generic-api-key:54
+664c94ca18a27b145d5632adfbe741c33e925aea:src/pages/DestinationGuidesHub.tsx:generic-api-key:60
+664c94ca18a27b145d5632adfbe741c33e925aea:src/pages/DestinationGuidesHub.tsx:generic-api-key:66

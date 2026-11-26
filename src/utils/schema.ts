@@ -1,48 +1,41 @@
 import {
-	AIRBNB_URLS,
 	BUILDING_LOCATION,
 	DATA_CONTROLLER,
+	getBusinessSameAsUrls,
 	getCanonicalUrl,
+	getPropertySameAsUrls,
 	HOME_FAQ_ITEMS,
 	IMAGES,
 	LANGUAGES,
 	PRIVACY_POLICY_VERSION,
+	PROPERTY_CLEANING_FEES_COP,
 	PROPERTY_FAQ_ITEMS,
 	PROPERTY_GALLERY_IMAGES,
 	PROPERTY_REVIEWS,
 	type PropertyId,
 	type PropertyReviewMeta,
 } from "../constants/config";
+import {
+	buildGuidePricingTokens,
+	DESTINATION_GUIDES,
+	DESTINATION_GUIDES_HUB_COPY,
+	type DestinationGuideDefinition,
+	interpolateGuideText,
+} from "../i18n/destinationGuides";
 import type { TranslationDict } from "../i18n/dict";
-import type { Lang } from "../types";
+import type {
+	Lang,
+	PortfolioPricingSummary,
+	PropertyPricingSummary,
+	SeasonalRateTierRow,
+} from "../types";
 import { calculateAggregateRatingValue, clampReviewRating } from "./reviews";
 
-export interface SeasonalRateTierRow {
-	property_id: string;
-	start_date: string;
-	end_date: string;
-	nightly_rate_cop: number;
-	minimum_stay: number;
-}
-
-export interface PropertyPricingSummary {
-	propertyId: PropertyId;
-	lowPrice: number;
-	highPrice: number;
-	baselinePrice: number;
-	minStay: number;
-	maxMinStay: number;
-	currency: "COP";
-	tiers: SeasonalRateTierRow[];
-}
-
-export interface PortfolioPricingSummary {
-	currency: "COP";
-	lowPrice: number;
-	highPrice: number;
-	priceRange: string;
-	properties: Record<PropertyId, PropertyPricingSummary>;
-}
+export type {
+	PortfolioPricingSummary,
+	PropertyPricingSummary,
+	SeasonalRateTierRow,
+};
 
 const DEFAULT_PROPERTY_RATES_COP: Record<PropertyId, number> = {
 	"1707": 450000,
@@ -136,6 +129,7 @@ const summarizePropertyPricing = (
 			lowPrice: fallbackRate,
 			highPrice: fallbackRate,
 			baselinePrice: fallbackRate,
+			cleaningFeeCop: PROPERTY_CLEANING_FEES_COP[propertyId],
 			minStay: DEFAULT_MIN_STAY,
 			maxMinStay: DEFAULT_MIN_STAY,
 			currency: "COP",
@@ -168,6 +162,7 @@ const summarizePropertyPricing = (
 		lowPrice,
 		highPrice,
 		baselinePrice: lowPrice,
+		cleaningFeeCop: PROPERTY_CLEANING_FEES_COP[propertyId],
 		minStay,
 		maxMinStay,
 		currency: "COP",
@@ -314,6 +309,7 @@ export const buildHomeStructuredData = (
 	const contactUrl = getCanonicalUrl(normalizedBase, "contact", lang);
 	const url1707 = getCanonicalUrl(normalizedBase, "Oceanview1707", lang);
 	const url1606 = getCanonicalUrl(normalizedBase, "Oceanview1606", lang);
+	const businessSameAsUrls = getBusinessSameAsUrls();
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
@@ -363,7 +359,9 @@ export const buildHomeStructuredData = (
 				knowsLanguage: [...LANGUAGES],
 				license: `Registro Nacional de Turismo ${DATA_CONTROLLER.rntCombined}`,
 				hasCredential: buildRntCredentials(),
-				sameAs: [AIRBNB_URLS["1707"], AIRBNB_URLS["1606"]],
+				...(businessSameAsUrls.length > 0
+					? { sameAs: businessSameAsUrls }
+					: {}),
 				founder: {
 					"@id": `${normalizedBase}/#host`,
 				},
@@ -562,6 +560,13 @@ export const buildPropertyStructuredData = (
 		}));
 	const aggregateRatingValue = calculateAggregateRatingValue(validReviews);
 	const faqItems = PROPERTY_FAQ_ITEMS[propertyId];
+	const propertySameAsUrls = getPropertySameAsUrls(propertyId);
+	const propertySameAs =
+		propertySameAsUrls.length === 1
+			? propertySameAsUrls[0]
+			: propertySameAsUrls.length > 1
+				? propertySameAsUrls
+				: undefined;
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
@@ -615,7 +620,7 @@ export const buildPropertyStructuredData = (
 				floorLevel: spec.floorLevel,
 				checkinTime: CHECKIN_TIME,
 				checkoutTime: CHECKOUT_TIME,
-				sameAs: AIRBNB_URLS[propertyId],
+				...(propertySameAs ? { sameAs: propertySameAs } : {}),
 				provider: {
 					"@type": "LodgingBusiness",
 					"@id": `${normalizedBase}/#business`,
@@ -809,6 +814,208 @@ export const buildPrivacyStructuredData = (
 			},
 			buildHostPersonNode(t, lang, normalizedBase),
 		],
+	});
+};
+
+export const buildDestinationGuidesHubStructuredData = (
+	t: TranslationDict,
+	lang: Lang,
+	baseUrl: string,
+	guides: readonly DestinationGuideDefinition[] = DESTINATION_GUIDES,
+	pricingSummary: PortfolioPricingSummary = DEFAULT_PRICING_SUMMARY,
+): string => {
+	const normalizedBase = normalizeBaseUrl(baseUrl);
+	const homeUrl = getCanonicalUrl(normalizedBase, "", lang);
+	const pageUrl = getCanonicalUrl(normalizedBase, "santa-marta", lang);
+	const hubCopy = DESTINATION_GUIDES_HUB_COPY[lang];
+	const tokens = buildGuidePricingTokens(pricingSummary, lang);
+
+	const itemListElement = guides.map((guide, idx) => ({
+		"@type": "ListItem",
+		position: idx + 1,
+		name: interpolateGuideText(guide.locales[lang].title, tokens),
+		url: getCanonicalUrl(normalizedBase, `santa-marta/${guide.slug}`, lang),
+	}));
+
+	return JSON.stringify({
+		"@context": "https://schema.org",
+		"@graph": [
+			{
+				"@type": "CollectionPage",
+				"@id": `${pageUrl}#collectionpage`,
+				url: pageUrl,
+				name: hubCopy.seoTitle,
+				description: hubCopy.seoDescription,
+				inLanguage: lang,
+				isPartOf: {
+					"@id": `${normalizedBase}/#website`,
+				},
+				about: {
+					"@id": `${normalizedBase}/#business`,
+				},
+				publisher: {
+					"@id": `${normalizedBase}/#business`,
+				},
+				breadcrumb: {
+					"@id": `${pageUrl}#breadcrumb`,
+				},
+				mainEntity: {
+					"@id": `${pageUrl}#itemlist`,
+				},
+			},
+			buildBreadcrumbList(pageUrl, [
+				{ name: t.breadcrumbHome, item: homeUrl },
+				{ name: hubCopy.breadcrumbLabel, item: pageUrl },
+			]),
+			{
+				"@type": "ItemList",
+				"@id": `${pageUrl}#itemlist`,
+				name: hubCopy.heroTitle,
+				numberOfItems: itemListElement.length,
+				itemListElement,
+			},
+			{
+				"@type": "LodgingBusiness",
+				"@id": `${normalizedBase}/#business`,
+				name: "OceanViewFlats",
+				legalName: DATA_CONTROLLER.legalName,
+				description: t.schemaLodgingDescription,
+				url: homeUrl,
+				logo: buildLogoObject(normalizedBase),
+				telephone: PHONE_E164,
+				email: DATA_CONTROLLER.email,
+				priceRange: pricingSummary.priceRange,
+				currenciesAccepted: "COP",
+				address: buildPostalAddress(),
+				geo: buildGeoCoordinates(),
+			},
+		],
+	});
+};
+
+export const buildDestinationGuideStructuredData = (
+	guide: DestinationGuideDefinition,
+	t: TranslationDict,
+	lang: Lang,
+	baseUrl: string,
+	pricingSummary: PortfolioPricingSummary = DEFAULT_PRICING_SUMMARY,
+): string => {
+	const normalizedBase = normalizeBaseUrl(baseUrl);
+	const homeUrl = getCanonicalUrl(normalizedBase, "", lang);
+	const hubUrl = getCanonicalUrl(normalizedBase, "santa-marta", lang);
+	const pageUrl = getCanonicalUrl(
+		normalizedBase,
+		`santa-marta/${guide.slug}`,
+		lang,
+	);
+	const hubCopy = DESTINATION_GUIDES_HUB_COPY[lang];
+	const localeContent = guide.locales[lang];
+	const tokens = buildGuidePricingTokens(pricingSummary, lang);
+
+	const resolvedTitle = interpolateGuideText(localeContent.title, tokens);
+	const resolvedDescription = interpolateGuideText(
+		localeContent.seoDescription,
+		tokens,
+	);
+
+	const relatedRentalNodes = guide.relatedProperties.map((propertyId) => {
+		const spec = PROPERTY_SCHEMA_SPECS[propertyId];
+		return {
+			"@type": "VacationRental",
+			"@id": `${normalizedBase}/${spec.pagePath}/#rental`,
+			name: spec.name,
+			url: getCanonicalUrl(normalizedBase, spec.pagePath, lang),
+		};
+	});
+
+	const graph: Record<string, unknown>[] = [
+		{
+			"@type": "WebPage",
+			"@id": `${pageUrl}#webpage`,
+			url: pageUrl,
+			name: localeContent.seoTitle,
+			description: resolvedDescription,
+			inLanguage: lang,
+			isPartOf: {
+				"@id": `${normalizedBase}/#website`,
+			},
+			breadcrumb: {
+				"@id": `${pageUrl}#breadcrumb`,
+			},
+			mainEntity: {
+				"@id": `${pageUrl}#article`,
+			},
+		},
+		buildBreadcrumbList(pageUrl, [
+			{ name: t.breadcrumbHome, item: homeUrl },
+			{ name: hubCopy.breadcrumbLabel, item: hubUrl },
+			{ name: localeContent.breadcrumbLabel, item: pageUrl },
+		]),
+		{
+			"@type": "Article",
+			"@id": `${pageUrl}#article`,
+			url: pageUrl,
+			mainEntityOfPage: {
+				"@id": `${pageUrl}#webpage`,
+			},
+			headline: resolvedTitle,
+			description: resolvedDescription,
+			inLanguage: lang,
+			image: {
+				"@type": "ImageObject",
+				url: `${normalizedBase}/${guide.ogImage.path}`,
+				width: guide.ogImage.width,
+				height: guide.ogImage.height,
+				caption: localeContent.ogImageAlt,
+			},
+			datePublished: guide.datePublished,
+			dateModified: guide.dateModified,
+			author: {
+				"@id": `${normalizedBase}/#host`,
+			},
+			publisher: {
+				"@type": "LodgingBusiness",
+				"@id": `${normalizedBase}/#business`,
+				name: "OceanViewFlats",
+				url: homeUrl,
+				logo: buildLogoObject(normalizedBase),
+			},
+			about: [
+				{
+					"@id": `${normalizedBase}/#business`,
+				},
+				...relatedRentalNodes.map((rental) => ({
+					"@id": rental["@id"],
+				})),
+			],
+			mentions: relatedRentalNodes,
+		},
+		buildHostPersonNode(t, lang, normalizedBase),
+	];
+
+	if (localeContent.faqs.length > 0) {
+		graph.push({
+			"@type": "FAQPage",
+			"@id": `${pageUrl}#faq`,
+			url: pageUrl,
+			inLanguage: lang,
+			isPartOf: {
+				"@id": `${pageUrl}#webpage`,
+			},
+			mainEntity: localeContent.faqs.map((faq) => ({
+				"@type": "Question",
+				name: interpolateGuideText(faq.question, tokens),
+				acceptedAnswer: {
+					"@type": "Answer",
+					text: interpolateGuideText(faq.answer, tokens),
+				},
+			})),
+		});
+	}
+
+	return JSON.stringify({
+		"@context": "https://schema.org",
+		"@graph": graph,
 	});
 };
 

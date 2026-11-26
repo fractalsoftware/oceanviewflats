@@ -766,6 +766,29 @@ export const dict = {
 		schemaAmenityParking1606: "Assigned Parking Space — Bay 87",
 		schemaAmenityLaundry: "In-Unit Laundry (Washer & Dryer)",
 		schemaAmenityWorkspace: "Dedicated Laptop-Friendly Workspace",
+		// #311 Destination Guides navigation, footer & contextual links
+		navGuides: "Santa Marta",
+		navGuidesAriaLabel: "Santa Marta Destination Guides",
+		footerGuidesLabel: "Destination Guides",
+		footerGuidesHubLink: "Santa Marta Destination Guides",
+		homeLocationGuidesEyebrow: "Santa Marta Destination Guides",
+		homeLocationGuidesDesc:
+			"Compare Playa Salguero vs. El Rodadero, explore 900 Mbps remote-work tips, plan Tayrona & Minca day trips, and review how 0% OTA fee Direct Reservations work.",
+		homeLocationGuidesCta: "Explore Santa Marta Guides",
+		propertyGuidesEyebrow: "Santa Marta Destination Guides",
+		property1707GuidesTitle:
+			"Plan Your Remote Work & Direct Stay in Playa Salguero",
+		property1707GuidesSubtitle:
+			"Explore our local Destination Guides tailored to remote workers, digital nomads, and Guests booking a Direct Reservation in COP.",
+		property1606GuidesTitle:
+			"Explore Playa Salguero Beaches & Santa Marta Day Trips",
+		property1606GuidesSubtitle:
+			"Discover our local Destination Guides covering Playa Salguero's tranquil beachfront and easy day trips across Santa Marta.",
+		guideTopicRemoteWork: "Remote Work & Digital Nomad Guide",
+		guideTopicDirectReservation: "Direct Reservation Guide (COP & RNT)",
+		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
+		guideTopicDayTrips: "Day Trips from Playa Salguero",
+		propertyGuidesHubCta: "All Santa Marta Guides",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -1553,6 +1576,29 @@ export const dict = {
 		schemaAmenityParking1606: "Parqueadero Privado Asignado — Bahía 87",
 		schemaAmenityLaundry: "Lavandería en la Propiedad (Lavadora y Secadora)",
 		schemaAmenityWorkspace: "Espacio de Trabajo Dedicado para Portátil",
+		// #311 Destination Guides navigation, footer & contextual links
+		navGuides: "Santa Marta",
+		navGuidesAriaLabel: "Guías de Destino en Santa Marta",
+		footerGuidesLabel: "Guías de Destino",
+		footerGuidesHubLink: "Guías de Destino en Santa Marta",
+		homeLocationGuidesEyebrow: "Guías de Destino en Santa Marta",
+		homeLocationGuidesDesc:
+			"Compara Playa Salguero vs. El Rodadero, conoce consejos de trabajo remoto con fibra de 900 Mbps, organiza excursiones a Tayrona y Minca, y descubre cómo funciona la Reserva Directa sin comisión OTA.",
+		homeLocationGuidesCta: "Explorar Guías de Santa Marta",
+		propertyGuidesEyebrow: "Guías de Destino en Santa Marta",
+		property1707GuidesTitle:
+			"Planifica Tu Trabajo Remoto y Reserva Directa en Playa Salguero",
+		property1707GuidesSubtitle:
+			"Consulta nuestras Guías de Destino locales para trabajadores remotos, nómadas digitales y Huéspedes que reservan directamente en COP.",
+		property1606GuidesTitle:
+			"Explora Playa Salguero y Excursiones desde Santa Marta",
+		property1606GuidesSubtitle:
+			"Descubre nuestras Guías de Destino locales sobre la tranquilidad de Playa Salguero y las mejores excursiones de un día en Santa Marta.",
+		guideTopicRemoteWork: "Guía de Trabajo Remoto y Nómadas Digitales",
+		guideTopicDirectReservation: "Guía de Reserva Directa (COP y RNT)",
+		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
+		guideTopicDayTrips: "Excursiones de un Día desde Playa Salguero",
+		propertyGuidesHubCta: "Todas las Guías de Santa Marta",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -2349,6 +2395,29 @@ export const dict = {
 		schemaAmenityParking1606: "Place de Stationnement Attribuée — Baie 87",
 		schemaAmenityLaundry: "Buanderie Privée (Lave-linge et Sèche-linge)",
 		schemaAmenityWorkspace: "Espace de Travail Dédié pour Ordinateur Portable",
+		// #311 Destination Guides navigation, footer & contextual links
+		navGuides: "Santa Marta",
+		navGuidesAriaLabel: "Guides de Destination à Santa Marta",
+		footerGuidesLabel: "Guides de Destination",
+		footerGuidesHubLink: "Guides de Destination à Santa Marta",
+		homeLocationGuidesEyebrow: "Guides de Destination à Santa Marta",
+		homeLocationGuidesDesc:
+			"Comparez Playa Salguero et El Rodadero, découvrez nos conseils télétravail 900 Mbps, préparez vos excursions vers Tayrona et Minca, et comprenez la Réservation Directe en COP sans commission OTA.",
+		homeLocationGuidesCta: "Explorer les Guides Santa Marta",
+		propertyGuidesEyebrow: "Guides de Destination à Santa Marta",
+		property1707GuidesTitle:
+			"Préparez Votre Télétravail et Réservation Directe à Playa Salguero",
+		property1707GuidesSubtitle:
+			"Consultez nos Guides de Destination dédiés aux télétravailleurs, nomades digitaux et voyageurs réservant directement en COP.",
+		property1606GuidesTitle:
+			"Découvrez les Plages de Playa Salguero et Excursions à Santa Marta",
+		property1606GuidesSubtitle:
+			"Parcourez nos Guides de Destination sur le littoral paisible de Playa Salguero et les excursions d'une journée autour de Santa Marta.",
+		guideTopicRemoteWork: "Guide Télétravail et Nomades Digitaux",
+		guideTopicDirectReservation: "Guide de Réservation Directe (COP & RNT)",
+		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
+		guideTopicDayTrips: "Excursions d'une Journée depuis Playa Salguero",
+		propertyGuidesHubCta: "Tous les Guides Santa Marta",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -3133,6 +3202,29 @@ export const dict = {
 		schemaAmenityParking1606: "Parcheggio Privato Assegnato — Stallo 87",
 		schemaAmenityLaundry: "Lavanderia Interna (Lavatrice e Asciugatrice)",
 		schemaAmenityWorkspace: "Postazione di Lavoro Dedicata per Laptop",
+		// #311 Destination Guides navigation, footer & contextual links
+		navGuides: "Santa Marta",
+		navGuidesAriaLabel: "Guide di Destinazione a Santa Marta",
+		footerGuidesLabel: "Guide di Destinazione",
+		footerGuidesHubLink: "Guide di Destinazione a Santa Marta",
+		homeLocationGuidesEyebrow: "Guide di Destinazione a Santa Marta",
+		homeLocationGuidesDesc:
+			"Confronta Playa Salguero ed El Rodadero, scopri i consigli per il lavoro da remoto a 900 Mbps, pianifica gite a Tayrona e Minca e verifica come funziona la Prenotazione Diretta in COP senza commissioni OTA.",
+		homeLocationGuidesCta: "Esplora le Guide di Santa Marta",
+		propertyGuidesEyebrow: "Guide di Destinazione a Santa Marta",
+		property1707GuidesTitle:
+			"Pianifica il Lavoro da Remoto e la Prenotazione Diretta a Playa Salguero",
+		property1707GuidesSubtitle:
+			"Consulta le nostre Guide di Destinazione locali dedicate a lavoratori da remoto, nomadi digitali e Ospiti che prenotano direttamente in COP.",
+		property1606GuidesTitle:
+			"Scopri Playa Salguero e le Gite in Giornata da Santa Marta",
+		property1606GuidesSubtitle:
+			"Esplora le nostre Guide di Destinazione locali sulla quiete di Playa Salguero e le migliori escursioni intorno a Santa Marta.",
+		guideTopicRemoteWork: "Guida Lavoro da Remoto e Nomadi Digitali",
+		guideTopicDirectReservation: "Guida alla Prenotazione Diretta (COP e RNT)",
+		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
+		guideTopicDayTrips: "Gite in Giornata da Playa Salguero",
+		propertyGuidesHubCta: "Tutte le Guide di Santa Marta",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3926,6 +4018,29 @@ export const dict = {
 		schemaAmenityLaundry:
 			"Waschküche in der Unterkunft (Waschmaschine & Trockner)",
 		schemaAmenityWorkspace: "Eigener Laptop-Arbeitsplatz",
+		// #311 Destination Guides navigation, footer & contextual links
+		navGuides: "Santa Marta",
+		navGuidesAriaLabel: "Santa Marta Reiseführer",
+		footerGuidesLabel: "Reiseführer",
+		footerGuidesHubLink: "Santa Marta Reiseführer",
+		homeLocationGuidesEyebrow: "Santa Marta Reiseführer",
+		homeLocationGuidesDesc:
+			"Vergleichen Sie Playa Salguero mit El Rodadero, entdecken Sie 900 Mbit/s Remote-Work-Tipps, planen Sie Ausflüge nach Tayrona & Minca und erfahren Sie alles über Direktbuchungen in COP ohne OTA-Provision.",
+		homeLocationGuidesCta: "Santa Marta Guides entdecken",
+		propertyGuidesEyebrow: "Santa Marta Reiseführer",
+		property1707GuidesTitle:
+			"Planen Sie Remote Work & Direktbuchung in Playa Salguero",
+		property1707GuidesSubtitle:
+			"Lesen Sie unsere lokalen Reiseführer für Remote-Arbeitende, digitale Nomaden und Gäste mit Direktbuchung in COP.",
+		property1606GuidesTitle:
+			"Playa Salguero Strände & Tagesausflüge ab Santa Marta",
+		property1606GuidesSubtitle:
+			"Entdecken Sie unsere lokalen Reiseführer zur entspannten Küste von Playa Salguero und lohnenden Ausflügen rund um Santa Marta.",
+		guideTopicRemoteWork: "Remote Work & Digitale Nomaden Guide",
+		guideTopicDirectReservation: "Leitfaden zur Direktbuchung (COP & RNT)",
+		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
+		guideTopicDayTrips: "Tagesausflüge ab Playa Salguero",
+		propertyGuidesHubCta: "Alle Santa Marta Guides",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -4704,6 +4819,29 @@ export const dict = {
 		schemaAmenityParking1606: "専用駐車スペース — 87番（Bay 87）",
 		schemaAmenityLaundry: "室内ランドリー（洗濯機・乾燥機）",
 		schemaAmenityWorkspace: "専用ワークスペース（リモートワーク対応）",
+		// #311 Destination Guides navigation, footer & contextual links
+		navGuides: "サンタマルタ",
+		navGuidesAriaLabel: "サンタマルタ現地ガイド",
+		footerGuidesLabel: "現地ガイド",
+		footerGuidesHubLink: "サンタマルタ現地ガイド",
+		homeLocationGuidesEyebrow: "サンタマルタ現地ガイド",
+		homeLocationGuidesDesc:
+			"プラヤ・サルグエロとエル・ロダデロの比較、900 Mbpsリモートワーク環境、タイロナ国立公園やミンカへの日帰り旅、OTA手数料0%のCOP直接予約ガイドをご覧いただけます。",
+		homeLocationGuidesCta: "サンタマルタ現地ガイドを見る",
+		propertyGuidesEyebrow: "サンタマルタ現地ガイド",
+		property1707GuidesTitle:
+			"プラヤ・サルグエロでのリモートワーク＆直接予約を計画する",
+		property1707GuidesSubtitle:
+			"リモートワーカーやノマド滞在、COP建て直接予約の手順をまとめた現地ガイドをご覧ください。",
+		property1606GuidesTitle:
+			"プラヤ・サルグエロのビーチとサンタマルタ日帰り旅を探る",
+		property1606GuidesSubtitle:
+			"静かなプラヤ・サルグエロの魅力とサンタマルタ発の日帰りモデルコースをまとめた現地ガイドをご覧ください。",
+		guideTopicRemoteWork: "リモートワーク＆ノマド滞在ガイド",
+		guideTopicDirectReservation: "COP直接予約・RNTガイド",
+		guideTopicBeachComparison: "プラヤ・サルグエロ vs エル・ロダデロ",
+		guideTopicDayTrips: "プラヤ・サルグエロ発の日帰りモデルコース",
+		propertyGuidesHubCta: "すべてのサンタマルタ現地ガイド",
 	},
 };
 

@@ -777,27 +777,33 @@ test("#307 #308 Homepage #experiences features curated quotes for both Propertie
 		}
 	}
 
-	// LLM overview file must remain free of duplicated Guest Review bodies or authors across all 6 reviews
-	const publicLlms = fs.readFileSync(
-		path.join(process.cwd(), "public", "llms.txt"),
+	// Generated LLM discovery files must remain free of duplicated Guest Review bodies or authors across all 6 reviews
+	const distLlms = fs.readFileSync(path.join(DIST_DIR, "llms.txt"), "utf-8");
+	const distLlmsFull = fs.readFileSync(
+		path.join(DIST_DIR, "llms-full.txt"),
 		"utf-8",
 	);
-	const distLlms = fs.readFileSync(path.join(DIST_DIR, "llms.txt"), "utf-8");
-	assert.equal(distLlms, publicLlms);
-	for (const forbidden of [
-		"Julian Alfredo",
-		"Karol Ximena",
-		"Rubiela Rubina",
-		"Pedro",
-		"Lina Marcela",
-		"Sheyla",
-		"El apartamento súper confortable",
-		"Excelente ubicación y anfitrión",
-		"El apartamento super cómodo",
-	]) {
-		assert.ok(
-			!distLlms.includes(forbidden),
-			`llms.txt must not duplicate Guest Review content ("${forbidden}")`,
-		);
+	assert.ok(distLlms.length > 0, "Expected generated dist/llms.txt");
+	assert.ok(distLlmsFull.length > 0, "Expected generated dist/llms-full.txt");
+	for (const [label, content] of [
+		["dist/llms.txt", distLlms],
+		["dist/llms-full.txt", distLlmsFull],
+	] as const) {
+		for (const forbidden of [
+			"Julian Alfredo",
+			"Karol Ximena",
+			"Rubiela Rubina",
+			"Pedro",
+			"Lina Marcela",
+			"Sheyla",
+			"El apartamento súper confortable",
+			"Excelente ubicación y anfitrión",
+			"El apartamento super cómodo",
+		]) {
+			assert.ok(
+				!content.includes(forbidden),
+				`${label} must not duplicate Guest Review content ("${forbidden}")`,
+			);
+		}
 	}
 });

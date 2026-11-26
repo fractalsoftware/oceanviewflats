@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
-import { getHomePagePath } from "../../src/constants/config";
+import {
+	getHeroImageSrcSet,
+	getHomePagePath,
+	HERO_IMAGE_SIZES,
+	HERO_RESPONSIVE_VARIANTS,
+	IMAGES,
+} from "../../src/constants/config";
 import { dict } from "../../src/i18n/dict";
 import type { Lang } from "../../src/types";
 
@@ -476,5 +482,199 @@ test('All rendered <img> elements declare exact on-disk width/height, lazy image
 		assert.notEqual(t.hero1707ImgAlt, t.hero1606ImgAlt);
 		assert.notEqual(t.about1707LivingAlt, t.about1606LivingAlt);
 		assert.notEqual(t.about1707PoolAlt, t.about1606PoolAlt);
+	}
+});
+
+test("Committed 640w and 1024w hero WebP variants match dimensions/size constraints and stay in 1:1 parity between <head> imagesrcset and hero <img srcSet> across all 6 locales (#314)", () => {
+	// 1. Verify on-disk 640w & 1024w WebP files exist in public/ and dist/, match widths, and shrink payload bytes
+	const expectedHeroOriginals = [
+		IMAGES.home.hero,
+		IMAGES["1707"].hero,
+		IMAGES["1606"].hero,
+	];
+
+	for (const originalRelPath of expectedHeroOriginals) {
+		const variants = HERO_RESPONSIVE_VARIANTS[originalRelPath];
+		assert.ok(
+			variants && variants.length === 3,
+			`Expected 3 responsive variants (640w, 1024w, full) for ${originalRelPath}`,
+		);
+
+		const [v640, v1024, vFull] = variants;
+		assert.equal(
+			v640.width,
+			640,
+			`${originalRelPath} first variant must be 640w`,
+		);
+		assert.equal(
+			v1024.width,
+			1024,
+			`${originalRelPath} second variant must be 1024w`,
+		);
+		assert.equal(
+			vFull.src,
+			originalRelPath,
+			`${originalRelPath} final variant must reference full-resolution original`,
+		);
+
+		const sizes: number[] = [];
+		for (const variant of variants) {
+			const publicPath = path.join(PUBLIC_DIR, variant.src);
+			const distPath = path.join(DIST_DIR, variant.src);
+			assert.ok(
+				fs.existsSync(publicPath),
+				`Missing committed responsive hero WebP: ${publicPath}`,
+			);
+			assert.ok(
+				fs.existsSync(distPath),
+				`Missing compiled responsive hero WebP: ${distPath}`,
+			);
+
+			const dims = getWebpDimensions(publicPath);
+			assert.ok(dims, `Unable to parse WebP dimensions for ${publicPath}`);
+			assert.equal(
+				dims.width,
+				variant.width,
+				`${variant.src} on-disk width (${dims.width}) must match declared ${variant.width}w descriptor`,
+			);
+			sizes.push(fs.statSync(publicPath).size);
+		}
+
+		assert.ok(
+			sizes[0] < sizes[1] && sizes[1] < sizes[2],
+			`${originalRelPath} variant byte sizes must grow strictly (640w=${sizes[0]} < 1024w=${sizes[1]} < full=${sizes[2]})`,
+		);
+	}
+
+	// 2. Verify <head> preload imagesrcset/imagesizes matches hero <img srcSet/sizes> across all 6 locales
+	const responsiveHeroPages = [
+		{ id: "home", dir: "", heroImage: IMAGES.home.hero },
+		{
+			id: "Oceanview1707",
+			dir: "Oceanview1707",
+			heroImage: IMAGES["1707"].hero,
+		},
+		{
+			id: "Oceanview1606",
+			dir: "Oceanview1606",
+			heroImage: IMAGES["1606"].hero,
+		},
+		{ id: "404", dir: "404", heroImage: IMAGES.home.hero },
+		{
+			id: "booking-success",
+			dir: "booking-success",
+			heroImage: IMAGES.home.hero,
+		},
+		{
+			id: "booking-failure",
+			dir: "booking-failure",
+			heroImage: IMAGES.home.hero,
+		},
+		{
+			id: "booking-pending",
+			dir: "booking-pending",
+			heroImage: IMAGES.home.hero,
+		},
+		{
+			id: "destination-guides",
+			dir: "santa-marta",
+			heroImage: IMAGES.home.hero,
+		},
+	] as const;
+
+	for (const page of responsiveHeroPages) {
+		for (const lang of LOCALES) {
+			const relPath = resolveDistFile(page.id, page.dir, lang);
+			const depth = relPath.split("/").length - 1;
+			const assetPrefix =
+				page.id === "404" ? "/" : depth === 0 ? "./" : "../".repeat(depth);
+			const expectedSrcSet = getHeroImageSrcSet(page.heroImage, assetPrefix);
+			assert.ok(expectedSrcSet, `Missing srcset for ${page.heroImage}`);
+
+			const html = fs.readFileSync(path.join(DIST_DIR, relPath), "utf-8");
+			const headMatch = html.match(/<head>([\s\S]*?)<\/head>/i);
+			const bodyMatch = html.match(/<body>([\s\S]*?)<\/body>/i);
+			assert.ok(
+				headMatch && bodyMatch,
+				`${relPath} must have <head> and <body>`,
+			);
+
+			const preloadTagMatch = headMatch[1].match(
+				/<link\b[^>]*\brel="preload"[^>]*\bas="image"[^>]*>/i,
+			);
+			assert.ok(
+				preloadTagMatch,
+				`${relPath} missing <link rel="preload" as="image"> in <head>`,
+			);
+			const headImageSrcSet = extractTagAttr(preloadTagMatch[0], "imagesrcset");
+			const headImageSizes = extractTagAttr(preloadTagMatch[0], "imagesizes");
+			assert.equal(
+				headImageSrcSet,
+				expectedSrcSet,
+				`${relPath} <head> preload imagesrcset mismatch`,
+			);
+			assert.equal(
+				headImageSizes,
+				HERO_IMAGE_SIZES,
+				`${relPath} <head> preload imagesizes must be "${HERO_IMAGE_SIZES}"`,
+			);
+
+			const heroImgMatch = bodyMatch[1].match(
+				/<img\b[^>]*\bfetchpriority="high"[^>]*>/i,
+			);
+			assert.ok(
+				heroImgMatch,
+				`${relPath} missing hero <img fetchpriority="high"> in <body>`,
+			);
+			const imgSrcSet = extractTagAttr(heroImgMatch[0], "srcset");
+			const imgSizes = extractTagAttr(heroImgMatch[0], "sizes");
+			assert.equal(
+				imgSrcSet,
+				headImageSrcSet,
+				`${relPath} hero <img srcSet> must match <head> preload imagesrcset 1:1`,
+			);
+			assert.equal(
+				imgSizes,
+				HERO_IMAGE_SIZES,
+				`${relPath} hero <img sizes> must be "${HERO_IMAGE_SIZES}"`,
+			);
+
+			// Verify every srcset candidate resolves to a real WebP file in dist/
+			for (const entry of expectedSrcSet.split(",").map((s) => s.trim())) {
+				const candidateUrl = entry.split(/\s+/)[0];
+				const resolvedPath = candidateUrl.startsWith("/")
+					? path.join(DIST_DIR, candidateUrl.slice(1))
+					: path.resolve(
+							path.dirname(path.join(DIST_DIR, relPath)),
+							candidateUrl,
+						);
+				assert.ok(
+					fs.existsSync(resolvedPath),
+					`${relPath} srcset candidate "${candidateUrl}" did not resolve to ${resolvedPath}`,
+				);
+			}
+		}
+	}
+
+	// 3. Architectural guard: React hero components consume centralized helpers (zero hardcoded srcset suffixes)
+	for (const relComponent of [
+		"src/pages/Home.tsx",
+		"src/components/Hero.tsx",
+		"src/pages/DestinationGuidesHub.tsx",
+		"src/pages/DestinationGuidePage.tsx",
+	]) {
+		const source = fs.readFileSync(
+			path.join(process.cwd(), relComponent),
+			"utf-8",
+		);
+		assert.ok(
+			source.includes("getHeroImageSrcSet") &&
+				source.includes("HERO_IMAGE_SIZES"),
+			`${relComponent} must consume centralized getHeroImageSrcSet and HERO_IMAGE_SIZES from src/constants/config.ts`,
+		);
+		assert.ok(
+			!source.includes("-640w.webp") && !source.includes("-1024w.webp"),
+			`${relComponent} must not hardcode responsive WebP filenames inline`,
+		);
 	}
 });
