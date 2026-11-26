@@ -14,6 +14,7 @@ import {
 } from "../constants/config";
 import type { TranslationDict } from "../i18n/dict";
 import type { Lang } from "../types";
+import { calculateAggregateRatingValue } from "./reviews";
 
 export interface SeasonalRateTierRow {
 	property_id: string;
@@ -552,6 +553,7 @@ export const buildPropertyStructuredData = (
 	}));
 
 	const reviews = PROPERTY_REVIEWS[propertyId];
+	const aggregateRatingValue = calculateAggregateRatingValue(reviews);
 	const faqItems = PROPERTY_FAQ_ITEMS[propertyId];
 
 	return JSON.stringify({
@@ -647,13 +649,17 @@ export const buildPropertyStructuredData = (
 					url: pageUrl,
 					offers: tierOffers,
 				},
-				aggregateRating: {
-					"@type": "AggregateRating",
-					ratingValue: "5.0",
-					bestRating: "5",
-					worstRating: "1",
-					reviewCount: String(reviews.length),
-				},
+				...(aggregateRatingValue !== null
+					? {
+							aggregateRating: {
+								"@type": "AggregateRating",
+								ratingValue: aggregateRatingValue,
+								bestRating: "5",
+								worstRating: "1",
+								reviewCount: String(reviews.length),
+							},
+						}
+					: {}),
 				review: reviews.map((rev) => ({
 					"@type": "Review",
 					author: { "@type": "Person", name: t[rev.authorKey] },
