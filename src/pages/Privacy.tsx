@@ -89,7 +89,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				<Breadcrumbs
 					lang={lang}
 					assetPrefix={assetPrefix}
-					currentLabel={t.privacyTitle}
+					currentLabel={t.breadcrumbPrivacy}
 					currentHref={getPrivacyPolicyPath(lang, assetPrefix)}
 					surface="inline"
 				/>

@@ -252,6 +252,25 @@ test("Non-public transactional and error pages emit noindex, nofollow, omit href
 				!sitemapXml.includes(`<loc>${canonicalUrl}</loc>`),
 				`sitemap.xml must exclude noIndex page ${canonicalUrl}`,
 			);
+
+			// Regression (#298): Localized 404 pages must switch English cleanly to /404.html instead of /404/ (403 Forbidden)
+			if (page.id === "404" && lang !== "en") {
+				const dropdownMatch = html.match(
+					/<div[^>]*id="lang-dropdown"[^>]*>([\s\S]*?)<\/ul>/i,
+				);
+				assert.ok(
+					dropdownMatch,
+					`${page.filename(lang)} must render #lang-dropdown`,
+				);
+				assert.ok(
+					dropdownMatch[1].includes('href="/404.html"'),
+					`Localized 404 page ${page.filename(lang)} must link English to "/404.html"`,
+				);
+				assert.ok(
+					!dropdownMatch[1].includes('href="./"'),
+					`Localized 404 page ${page.filename(lang)} must NOT link English to "./" (resolves to /404/)`,
+				);
+			}
 		}
 	}
 });

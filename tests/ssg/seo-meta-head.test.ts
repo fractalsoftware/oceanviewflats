@@ -135,6 +135,11 @@ test("All public pages across all 6 locales enforce <= 60 char titles and <= 160
 			);
 
 			assert.match(
+				compiledTitle,
+				LOCATION_KEYWORDS[lang],
+				`<title> for ${publicPage.id} (${lang}) must include Santa Marta / Playa Salguero geo keyword: "${compiledTitle}"`,
+			);
+			assert.match(
 				`${compiledTitle} ${compiledDesc}`,
 				LOCATION_KEYWORDS[lang],
 				`Snippet for ${publicPage.id} (${lang}) must reference Santa Marta / Playa Salguero`,
@@ -262,10 +267,12 @@ test("baseTemplate escapes HTML attribute special characters in og:image:alt and
 		description: "Test Description",
 		url: "https://www.oceanviewflats.com/",
 		baseUrl: "https://www.oceanviewflats.com",
-		ogImage: "https://www.oceanviewflats.com/images/home-hero.webp",
-		ogImageWidth: 1600,
-		ogImageHeight: 1355,
-		ogImageAlt: 'OceanView "Sunset" & <Caribbean> View',
+		ogImage: {
+			url: "https://www.oceanviewflats.com/images/home-hero.webp",
+			width: 1600,
+			height: 1355,
+			alt: 'OceanView "Sunset" & <Caribbean> View',
+		},
 		heroPreloadHref: "./images/home-hero.webp",
 		hrefLangTags: "",
 		structuredData: "{}",

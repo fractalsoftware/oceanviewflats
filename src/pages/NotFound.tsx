@@ -40,6 +40,7 @@ export default function NotFound({ lang, assetPrefix = "/" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				englishHref="/404.html"
 			/>
 
 			{/* Main 404 Section */}

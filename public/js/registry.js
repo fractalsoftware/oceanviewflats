@@ -91,6 +91,20 @@ document.addEventListener("DOMContentLoaded", () => {
 		return "#";
 	}
 
+	function buildGuideUrl(targetLang, config, reservationCode) {
+		const pageName = targetLang === "en" ? "" : `${targetLang}.html`;
+		const cfgApiBase =
+			typeof config?.apiBase === "string" ? config.apiBase : "";
+		const assetPrefix =
+			config?.assetPrefix ||
+			(cfgApiBase ? cfgApiBase.replace(/api\/?$/, "") : "");
+		const guideBase = `${assetPrefix}guide/${pageName}`;
+		const query = reservationCode
+			? `?code=${encodeURIComponent(reservationCode)}`
+			: "";
+		return `${guideBase}${query}`;
+	}
+
 	const defaultErrorMsg = t(
 		"registryGenericError",
 		{},
@@ -349,14 +363,9 @@ document.addEventListener("DOMContentLoaded", () => {
 						btnSubmit.disabled = true;
 					}
 					if (btnUnlockedGuide) {
-						const pageName = lang === "en" ? "" : `${lang}.html`;
-						const assetPrefix =
-							pageConfig.assetPrefix ||
-							(apiBase ? apiBase.replace(/api\/?$/, "") : "");
-						const guideBase = `${assetPrefix}guide/${pageName}`;
 						const rawGuideUrl =
 							data.guide_url ||
-							`${guideBase}?code=${encodeURIComponent(reservationCodeVal)}`;
+							buildGuideUrl(lang, pageConfig, reservationCodeVal);
 						btnUnlockedGuide.href = sanitizeUrl(rawGuideUrl);
 					}
 					if (successDesc) {
@@ -836,15 +845,11 @@ document.addEventListener("DOMContentLoaded", () => {
 						btnUnlockedGuide.href = sanitizedGuideUrl;
 					} else {
 						const effectiveCode = result.reservation_code || reservationCodeVal;
-						const pageName = lang === "en" ? "" : `${lang}.html`;
-						const assetPrefix =
-							pageConfig.assetPrefix ||
-							(apiBase ? apiBase.replace(/api\/?$/, "") : "");
-						const guideBase = `${assetPrefix}guide/${pageName}`;
-						const query = effectiveCode
-							? `?code=${encodeURIComponent(effectiveCode)}`
-							: "";
-						btnUnlockedGuide.href = `${guideBase}${query}`;
+						btnUnlockedGuide.href = buildGuideUrl(
+							lang,
+							pageConfig,
+							effectiveCode,
+						);
 					}
 				}
 

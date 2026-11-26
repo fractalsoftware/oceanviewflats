@@ -2,17 +2,20 @@ import {
 	AIRBNB_URLS,
 	BUILDING_LOCATION,
 	DATA_CONTROLLER,
+	getCanonicalUrl,
 	HOME_FAQ_ITEMS,
 	IMAGES,
+	LANGUAGES,
 	PRIVACY_POLICY_VERSION,
 	PROPERTY_FAQ_ITEMS,
+	PROPERTY_GALLERY_IMAGES,
 	PROPERTY_REVIEWS,
 	type PropertyId,
 } from "../constants/config";
 import type { TranslationDict } from "../i18n/dict";
 import type { Lang } from "../types";
 
-export interface PriceTierRow {
+export interface SeasonalRateTierRow {
 	property_id: string;
 	start_date: string;
 	end_date: string;
@@ -28,7 +31,7 @@ export interface PropertyPricingSummary {
 	minStay: number;
 	maxMinStay: number;
 	currency: "COP";
-	tiers: PriceTierRow[];
+	tiers: SeasonalRateTierRow[];
 }
 
 export interface PortfolioPricingSummary {
@@ -39,15 +42,6 @@ export interface PortfolioPricingSummary {
 	properties: Record<PropertyId, PropertyPricingSummary>;
 }
 
-const SUPPORTED_LANGUAGES: readonly Lang[] = [
-	"en",
-	"es",
-	"fr",
-	"it",
-	"de",
-	"ja",
-];
-
 const DEFAULT_PROPERTY_RATES_COP: Record<PropertyId, number> = {
 	"1707": 450000,
 	"1606": 350000,
@@ -56,32 +50,65 @@ const DEFAULT_PROPERTY_RATES_COP: Record<PropertyId, number> = {
 const DEFAULT_MIN_STAY = 2;
 
 const MAP_URL = `https://maps.google.com/?q=${BUILDING_LOCATION.latitude},${BUILDING_LOCATION.longitude}`;
-const PHONE_E164 = "+573108155234";
+const PHONE_E164 = DATA_CONTROLLER.phoneHref.replace(/^tel:/, "");
 const CHECKIN_TIME = "15:00";
 const CHECKOUT_TIME = "11:00";
 
-const PROPERTY_SCHEMA_IMAGES: Record<PropertyId, readonly string[]> = {
-	"1707": [
-		IMAGES["1707"].hero,
-		IMAGES["1707"].nomad,
-		IMAGES["1707"].bedroom,
-		IMAGES["1707"].pool,
-		"images/1707/balcony-1.webp",
-		"images/1707/room1-1.webp",
-		"images/1707/room2-1.webp",
-		"images/1707/pulloutcouch-1.webp",
-	],
-	"1606": [
-		IMAGES["1606"].hero,
-		IMAGES["1606"].romantic,
-		IMAGES["1606"].bedroom,
-		IMAGES["1606"].pool,
-		"images/1606/balcony-1.webp",
-		"images/1606/room1-1.webp",
-		"images/1606/room2-1.webp",
-		"images/1606/pulloutcouch-1.webp",
-	],
+interface PropertySchemaSpec {
+	pagePath: "Oceanview1707" | "Oceanview1606";
+	name: string;
+	rntDigits: string;
+	rntLabel: string;
+	floorLevel: string;
+	titleKey: "seoTitle" | "seo1606Title";
+	descriptionKey: "seoDescription" | "seo1606Description";
+	displayNameKey: "heroTitle" | "hero1606Title";
+	parkingFeatureKey: "schemaAmenityParking1707" | "schemaAmenityParking1606";
+	signatureAmenityKey: "schemaAmenityWorkspace" | "amRomantic";
+	guestBedroomBeds: readonly {
+		"@type": "BedDetails";
+		typeOfBed: string;
+		numberOfBeds: number;
+	}[];
+}
+
+const PROPERTY_SCHEMA_SPECS: Record<PropertyId, PropertySchemaSpec> = {
+	"1707": {
+		pagePath: "Oceanview1707",
+		name: "OceanViewFlats 1707",
+		rntDigits: "268781",
+		rntLabel: DATA_CONTROLLER.rnt1707,
+		floorLevel: "17",
+		titleKey: "seoTitle",
+		descriptionKey: "seoDescription",
+		displayNameKey: "heroTitle",
+		parkingFeatureKey: "schemaAmenityParking1707",
+		signatureAmenityKey: "schemaAmenityWorkspace",
+		guestBedroomBeds: [
+			{ "@type": "BedDetails", typeOfBed: "Single", numberOfBeds: 2 },
+		],
+	},
+	"1606": {
+		pagePath: "Oceanview1606",
+		name: "OceanViewFlats 1606",
+		rntDigits: "270413",
+		rntLabel: DATA_CONTROLLER.rnt1606,
+		floorLevel: "16",
+		titleKey: "seo1606Title",
+		descriptionKey: "seo1606Description",
+		displayNameKey: "hero1606Title",
+		parkingFeatureKey: "schemaAmenityParking1606",
+		signatureAmenityKey: "amRomantic",
+		guestBedroomBeds: [
+			{ "@type": "BedDetails", typeOfBed: "Double", numberOfBeds: 1 },
+		],
+	},
 };
+
+const getPropertySchemaImages = (propertyId: PropertyId): string[] => [
+	...Object.values(IMAGES[propertyId]),
+	...PROPERTY_GALLERY_IMAGES[propertyId].map((img) => img.src),
+];
 
 const formatCopAmount = (amount: number): string =>
 	Math.round(amount).toLocaleString("en-US");
@@ -89,26 +116,9 @@ const formatCopAmount = (amount: number): string =>
 const normalizeBaseUrl = (baseUrl: string): string =>
 	baseUrl.replace(/\/+$/, "");
 
-const buildCanonicalUrl = (
-	baseUrl: string,
-	pagePath: string,
-	lang: Lang,
-): string => {
-	const normalizedBase = normalizeBaseUrl(baseUrl);
-	if (pagePath === "404") {
-		return lang === "en"
-			? `${normalizedBase}/404.html`
-			: `${normalizedBase}/404/${lang}.html`;
-	}
-	const dirBase = pagePath
-		? `${normalizedBase}/${pagePath.replace(/^\/+|\/+$/g, "")}`
-		: normalizedBase;
-	return lang === "en" ? `${dirBase}/` : `${dirBase}/${lang}.html`;
-};
-
 const summarizePropertyPricing = (
 	propertyId: PropertyId,
-	rows: readonly PriceTierRow[],
+	rows: readonly SeasonalRateTierRow[],
 ): PropertyPricingSummary => {
 	const matching = rows.filter(
 		(row) =>
@@ -171,7 +181,7 @@ const summarizePropertyPricing = (
 };
 
 export const buildPricingSummary = (
-	rows: readonly PriceTierRow[],
+	rows: readonly SeasonalRateTierRow[],
 ): PortfolioPricingSummary => {
 	const prop1707 = summarizePropertyPricing("1707", rows);
 	const prop1606 = summarizePropertyPricing("1606", rows);
@@ -221,7 +231,7 @@ const buildContactPoints = (contactPageUrl: string) => [
 		contactType: "reservations",
 		telephone: PHONE_E164,
 		url: DATA_CONTROLLER.whatsappHref,
-		availableLanguage: [...SUPPORTED_LANGUAGES],
+		availableLanguage: [...LANGUAGES],
 		areaServed: "CO",
 	},
 	{
@@ -229,7 +239,7 @@ const buildContactPoints = (contactPageUrl: string) => [
 		contactType: "customer support",
 		email: DATA_CONTROLLER.email,
 		url: contactPageUrl,
-		availableLanguage: [...SUPPORTED_LANGUAGES],
+		availableLanguage: [...LANGUAGES],
 		areaServed: "CO",
 	},
 ];
@@ -270,11 +280,11 @@ const buildHostPersonNode = (
 	image: `${normalizedBase}/${IMAGES.general.host}`,
 	email: DATA_CONTROLLER.email,
 	telephone: PHONE_E164,
-	url: buildCanonicalUrl(normalizedBase, "contact", lang),
+	url: getCanonicalUrl(normalizedBase, "contact", lang),
 	worksFor: {
 		"@id": `${normalizedBase}/#business`,
 	},
-	knowsLanguage: [...SUPPORTED_LANGUAGES],
+	knowsLanguage: [...LANGUAGES],
 });
 
 const buildBreadcrumbList = (
@@ -298,10 +308,10 @@ export const buildHomeStructuredData = (
 	pricingSummary: PortfolioPricingSummary = DEFAULT_PRICING_SUMMARY,
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
-	const homeUrl = buildCanonicalUrl(normalizedBase, "", lang);
-	const contactUrl = buildCanonicalUrl(normalizedBase, "contact", lang);
-	const url1707 = buildCanonicalUrl(normalizedBase, "Oceanview1707", lang);
-	const url1606 = buildCanonicalUrl(normalizedBase, "Oceanview1606", lang);
+	const homeUrl = getCanonicalUrl(normalizedBase, "", lang);
+	const contactUrl = getCanonicalUrl(normalizedBase, "contact", lang);
+	const url1707 = getCanonicalUrl(normalizedBase, "Oceanview1707", lang);
+	const url1606 = getCanonicalUrl(normalizedBase, "Oceanview1606", lang);
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
@@ -335,7 +345,7 @@ export const buildHomeStructuredData = (
 				"@type": "LodgingBusiness",
 				"@id": `${normalizedBase}/#business`,
 				name: "OceanViewFlats",
-				legalName: "OceanViewFlats Santa Marta",
+				legalName: DATA_CONTROLLER.legalName,
 				description: t.schemaLodgingDescription,
 				url: homeUrl,
 				logo: buildLogoObject(normalizedBase),
@@ -348,7 +358,7 @@ export const buildHomeStructuredData = (
 				priceRange: pricingSummary.priceRange,
 				currenciesAccepted: "COP",
 				paymentAccepted: t.schemaPaymentAccepted,
-				knowsLanguage: [...SUPPORTED_LANGUAGES],
+				knowsLanguage: [...LANGUAGES],
 				license: `Registro Nacional de Turismo ${DATA_CONTROLLER.rntCombined}`,
 				hasCredential: buildRntCredentials(),
 				sameAs: [AIRBNB_URLS["1707"], AIRBNB_URLS["1606"]],
@@ -401,26 +411,17 @@ export const buildPropertyStructuredData = (
 	pricingSummary: PortfolioPricingSummary = DEFAULT_PRICING_SUMMARY,
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
-	const is1707 = propertyId === "1707";
-	const pagePath = is1707 ? "Oceanview1707" : "Oceanview1606";
-	const homeUrl = buildCanonicalUrl(normalizedBase, "", lang);
-	const pageUrl = buildCanonicalUrl(normalizedBase, pagePath, lang);
-	const rentalId = `${normalizedBase}/${pagePath}/#rental`;
+	const spec = PROPERTY_SCHEMA_SPECS[propertyId];
+	const homeUrl = getCanonicalUrl(normalizedBase, "", lang);
+	const pageUrl = getCanonicalUrl(normalizedBase, spec.pagePath, lang);
+	const rentalId = `${normalizedBase}/${spec.pagePath}/#rental`;
 	const propPricing = pricingSummary.properties[propertyId];
 
-	const rntDigits = is1707 ? "268781" : "270413";
-	const rntLabel = is1707 ? DATA_CONTROLLER.rnt1707 : DATA_CONTROLLER.rnt1606;
-	const floorLevel = is1707 ? "17" : "16";
-	const pageTitle = is1707 ? t.seoTitle : t.seo1606Title;
-	const pageDescription = is1707 ? t.seoDescription : t.seo1606Description;
-	const propertyDisplayName = is1707 ? t.heroTitle : t.hero1606Title;
-	const parkingFeatureName = is1707
-		? t.schemaAmenityParking1707
-		: t.schemaAmenityParking1606;
-
-	const guestBedroomBeds = is1707
-		? [{ "@type": "BedDetails", typeOfBed: "Single", numberOfBeds: 2 }]
-		: [{ "@type": "BedDetails", typeOfBed: "Double", numberOfBeds: 1 }];
+	const pageTitle = t[spec.titleKey];
+	const pageDescription = t[spec.descriptionKey];
+	const propertyDisplayName = t[spec.displayNameKey];
+	const parkingFeatureName = t[spec.parkingFeatureKey];
+	const guestBedroomBeds = spec.guestBedroomBeds;
 
 	const containsPlace = [
 		{
@@ -529,7 +530,7 @@ export const buildPropertyStructuredData = (
 		},
 		{
 			"@type": "LocationFeatureSpecification",
-			name: is1707 ? t.schemaAmenityWorkspace : t.amRomantic,
+			name: t[spec.signatureAmenityKey],
 			value: true,
 		},
 	];
@@ -544,9 +545,9 @@ export const buildPropertyStructuredData = (
 		validThrough: tier.end_date,
 		eligibleDuration: {
 			"@type": "QuantitativeValue",
+			value: tier.minimum_stay,
 			minValue: tier.minimum_stay,
 			unitCode: "DAY",
-			value: `P${tier.minimum_stay}D`,
 		},
 	}));
 
@@ -574,7 +575,7 @@ export const buildPropertyStructuredData = (
 				},
 			},
 			buildBreadcrumbList(pageUrl, [
-				{ name: t.schemaBreadcrumbHome, item: homeUrl },
+				{ name: t.breadcrumbHome, item: homeUrl },
 				{ name: propertyDisplayName, item: pageUrl },
 			]),
 			{
@@ -584,7 +585,7 @@ export const buildPropertyStructuredData = (
 				mainEntityOfPage: {
 					"@id": `${pageUrl}#webpage`,
 				},
-				name: is1707 ? "OceanViewFlats 1707" : "OceanViewFlats 1606",
+				name: spec.name,
 				alternateName: propertyDisplayName,
 				description: pageDescription,
 				identifier: [
@@ -592,7 +593,7 @@ export const buildPropertyStructuredData = (
 						"@type": "PropertyValue",
 						name: "Registro Nacional de Turismo (RNT)",
 						propertyID: "RNT",
-						value: rntDigits,
+						value: spec.rntDigits,
 					},
 					{
 						"@type": "PropertyValue",
@@ -601,8 +602,8 @@ export const buildPropertyStructuredData = (
 						value: propertyId,
 					},
 				],
-				license: `Registro Nacional de Turismo ${rntLabel}`,
-				floorLevel,
+				license: `Registro Nacional de Turismo ${spec.rntLabel}`,
+				floorLevel: spec.floorLevel,
 				checkinTime: CHECKIN_TIME,
 				checkoutTime: CHECKOUT_TIME,
 				sameAs: AIRBNB_URLS[propertyId],
@@ -623,7 +624,7 @@ export const buildPropertyStructuredData = (
 				hasMap: MAP_URL,
 				address: buildPostalAddress(),
 				geo: buildGeoCoordinates(),
-				image: PROPERTY_SCHEMA_IMAGES[propertyId].map(
+				image: getPropertySchemaImages(propertyId).map(
 					(img) => `${normalizedBase}/${img}`,
 				),
 				numberOfBedrooms: 2,
@@ -694,14 +695,14 @@ export const buildContactStructuredData = (
 	baseUrl: string,
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
-	const homeUrl = buildCanonicalUrl(normalizedBase, "", lang);
-	const pageUrl = buildCanonicalUrl(normalizedBase, "contact", lang);
+	const homeUrl = getCanonicalUrl(normalizedBase, "", lang);
+	const pageUrl = getCanonicalUrl(normalizedBase, "contact", lang);
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
 		"@graph": [
 			buildBreadcrumbList(pageUrl, [
-				{ name: t.schemaBreadcrumbHome, item: homeUrl },
+				{ name: t.breadcrumbHome, item: homeUrl },
 				{ name: t.navContact, item: pageUrl },
 			]),
 			{
@@ -725,7 +726,7 @@ export const buildContactStructuredData = (
 				"@type": "LodgingBusiness",
 				"@id": `${normalizedBase}/#business`,
 				name: "OceanViewFlats",
-				legalName: "OceanViewFlats Santa Marta",
+				legalName: DATA_CONTROLLER.legalName,
 				description: t.schemaLodgingDescription,
 				url: homeUrl,
 				logo: buildLogoObject(normalizedBase),
@@ -734,7 +735,7 @@ export const buildContactStructuredData = (
 				address: buildPostalAddress(),
 				geo: buildGeoCoordinates(),
 				hasMap: MAP_URL,
-				knowsLanguage: [...SUPPORTED_LANGUAGES],
+				knowsLanguage: [...LANGUAGES],
 				founder: {
 					"@id": `${normalizedBase}/#host`,
 				},
@@ -750,15 +751,15 @@ export const buildPrivacyStructuredData = (
 	baseUrl: string,
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
-	const homeUrl = buildCanonicalUrl(normalizedBase, "", lang);
-	const pageUrl = buildCanonicalUrl(normalizedBase, "privacy", lang);
+	const homeUrl = getCanonicalUrl(normalizedBase, "", lang);
+	const pageUrl = getCanonicalUrl(normalizedBase, "privacy", lang);
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
 		"@graph": [
 			buildBreadcrumbList(pageUrl, [
-				{ name: t.schemaBreadcrumbHome, item: homeUrl },
-				{ name: t.schemaBreadcrumbPrivacy, item: pageUrl },
+				{ name: t.breadcrumbHome, item: homeUrl },
+				{ name: t.breadcrumbPrivacy, item: pageUrl },
 			]),
 			{
 				"@type": "WebPage",
@@ -785,7 +786,7 @@ export const buildPrivacyStructuredData = (
 				"@type": "LodgingBusiness",
 				"@id": `${normalizedBase}/#business`,
 				name: "OceanViewFlats",
-				legalName: DATA_CONTROLLER.name,
+				legalName: DATA_CONTROLLER.legalName,
 				description: t.schemaLodgingDescription,
 				url: homeUrl,
 				email: DATA_CONTROLLER.email,
@@ -806,7 +807,7 @@ export const buildWebPageStructuredData = (
 	baseUrl: string,
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
-	const pageUrl = buildCanonicalUrl(normalizedBase, pagePath, lang);
+	const pageUrl = getCanonicalUrl(normalizedBase, pagePath, lang);
 
 	return JSON.stringify({
 		"@context": "https://schema.org",

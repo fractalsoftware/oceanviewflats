@@ -12,11 +12,13 @@ import {
 	type PageConfig,
 	pages,
 } from "./src/config/pages";
-import { IMAGES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
 import type { Lang } from "./src/types";
-import { buildPricingSummary, type PriceTierRow } from "./src/utils/schema";
+import {
+	buildPricingSummary,
+	type SeasonalRateTierRow,
+} from "./src/utils/schema";
 
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
@@ -35,7 +37,7 @@ if (fs.existsSync(publicDir)) {
 
 // Parse public/data/prices.csv to generate build-time prices.json caches for client usage
 // and return parsed tiers for build-time JSON-LD structured data injection.
-const parsePricesCsv = (): PriceTierRow[] => {
+const parsePricesCsv = (): SeasonalRateTierRow[] => {
 	const csvPath = path.join(process.cwd(), "public", "data", "prices.csv");
 	const cacheDir = path.join(process.cwd(), "public", "cache");
 	const distCacheDir = path.join(distDir, "cache");
@@ -47,7 +49,7 @@ const parsePricesCsv = (): PriceTierRow[] => {
 		fs.mkdirSync(distCacheDir, { recursive: true });
 	}
 
-	const prices: PriceTierRow[] = [];
+	const prices: SeasonalRateTierRow[] = [];
 
 	if (fs.existsSync(csvPath)) {
 		const csvContent = fs.readFileSync(csvPath, "utf-8");
@@ -82,13 +84,13 @@ const parsePricesCsv = (): PriceTierRow[] => {
 	return prices;
 };
 
-const parsedPriceTiers = parsePricesCsv();
-const pricingSummary = buildPricingSummary(parsedPriceTiers);
+const parsedSeasonalRateTiers = parsePricesCsv();
+const pricingSummary = buildPricingSummary(parsedSeasonalRateTiers);
 
 const generateSitemap = (
 	pages: PageConfig[],
 	baseUrl: string,
-	languages: Lang[],
+	languages: readonly Lang[],
 ) => {
 	const urls: string[] = [];
 	const now = new Date().toISOString().split("T")[0];
@@ -176,10 +178,12 @@ pages.forEach((page) => {
 				: t.seoDescription,
 			url,
 			baseUrl: BASE_URL,
-			ogImage: `${BASE_URL}/${page.ogImage}`,
-			ogImageWidth: page.ogImageWidth,
-			ogImageHeight: page.ogImageHeight,
-			ogImageAlt: page.ogImageAlt ? page.ogImageAlt(t) : undefined,
+			ogImage: {
+				url: `${BASE_URL}/${page.ogImage.path}`,
+				width: page.ogImage.width,
+				height: page.ogImage.height,
+				alt: page.ogImage.getAlt(t),
+			},
 			heroPreloadHref: page.heroImage
 				? `${assetPrefix}${page.heroImage}`
 				: undefined,

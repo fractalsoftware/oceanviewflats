@@ -13,6 +13,7 @@ interface NavigationProps {
 	bookHref?: string;
 	bookLabelKey?: "navBook" | "navBookDirect";
 	assetPrefix?: string;
+	englishHref?: string;
 }
 
 export const Navigation = ({
@@ -22,6 +23,7 @@ export const Navigation = ({
 	bookHref = "#booking",
 	bookLabelKey = "navBook",
 	assetPrefix = "./",
+	englishHref = "./",
 }: NavigationProps) => {
 	const t = dict[lang];
 	const scrollState = getChromeScrollState(isScrolled);
@@ -59,7 +61,11 @@ export const Navigation = ({
 						<Mail className={CHROME_THEME.navContactIcon} />
 						<span className={CHROME_THEME.navContactText}>{t.navContact}</span>
 					</a>
-					<LanguageDropdown currentLang={lang} isScrolled={isScrolled} />
+					<LanguageDropdown
+						currentLang={lang}
+						isScrolled={isScrolled}
+						englishHref={englishHref}
+					/>
 					{showBookButton && (
 						<a
 							id="nav-book"

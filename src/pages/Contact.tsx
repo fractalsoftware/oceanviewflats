@@ -69,7 +69,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				<Breadcrumbs
 					lang={lang}
 					assetPrefix={assetPrefix}
-					currentLabel={t.contactTitle}
+					currentLabel={t.navContact}
 					currentHref={getContactPagePath(lang, assetPrefix)}
 					surface="inline"
 				/>

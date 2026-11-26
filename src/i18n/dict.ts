@@ -499,7 +499,7 @@ export const dict = {
 			"I declare under penalty of perjury that I hold parental authority (patria potestad) or express written legal guardianship for every minor under 18 registered in this stay, in compliance with Colombian Law 1581 of 2012 (Art. 7) and Law 679 of 2001 / Law 1336 of 2009 (ESCNNA prevention).",
 		registryErrMinorConsent:
 			"Parental authority or legal guardian attestation is required when registering minors under 18.",
-		privacySeoTitle: "Data Processing Policy (Law 1581) | OceanViewFlats",
+		privacySeoTitle: "Data Processing Policy | OceanViewFlats Santa Marta",
 		privacySeoDescription:
 			"Official Data Processing Policy (PTDP) of OceanViewFlats in Playa Salguero, Santa Marta under Colombian Law 1581 of 2012 and Decree 1377 of 2013.",
 		privacyBadge: "Colombian Statutory Law 1581 of 2012 • Habeas Data",
@@ -632,8 +632,9 @@ export const dict = {
 		homeCompare1606Parking: "Included — Bay 87",
 		homeCompareRowCheckInOut: "Check-in / Check-out",
 		homeCompareCheckInOutValue: "15:00 / 11:00 (Smart-lock self check-in)",
-		homeCompareRowBuildingFee: "Building Registration Fee",
-		homeCompareBuildingFeeValue: "20,000 COP per person (payable at reception)",
+		homeCompareRowBuildingRegistrationFee: "Building Registration Fee",
+		homeCompareBuildingRegistrationFeeValue:
+			"20,000 COP per person (payable at reception)",
 		homeCompareRowPoolMaintenance: "Pool Maintenance Schedule",
 		homeComparePoolMaintenanceValue: "Closed Tuesdays for maintenance",
 		homeLocationTitle: "Location & Getting Around Playa Salguero",
@@ -668,7 +669,7 @@ export const dict = {
 		complianceLaw2068Badge: "Law 2068 of 2020 (Tourism / TRA-SIRE)",
 		complianceLaw679Badge: "Law 679 of 2001 (ESCNNA Prevention)",
 		reviewVerifiedGuest: "Verified Guest",
-		reviewViewOnAirbnb: "Verify reviews on Airbnb listing",
+		reviewViewOnAirbnb: "Verify reviews on Airbnb",
 		faq1707Title: "Oceanview Flat 1707 — Frequently Asked Questions",
 		faq1707Subtitle:
 			"Everything you need to know about remote work, sleeping arrangements, Direct Reservations, check-in, and building rules on the 17th floor.",
@@ -692,7 +693,7 @@ export const dict = {
 		faq1707A5:
 			"Before arrival, the Primary Guest submits the mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors). Submission immediately unlocks your digital Guest Guide, Assigned Parking Space Bay 95 clearance, and your temporary cryptographically random 0XXXXXX# smart-lock Access Credential.",
 		faq1707Q6:
-			"Are there building fees or pool closure days at Edificio Salguero Sunset?",
+			"Is there a Building Registration Fee or pool closure days at Edificio Salguero Sunset?",
 		faq1707A6:
 			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
 		faq1606Title: "Oceanview Flat 1606 — Frequently Asked Questions",
@@ -718,7 +719,7 @@ export const dict = {
 		faq1606A5:
 			"Before arrival, the Primary Guest submits the mandatory online Guest Registry (including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors). Submission immediately unlocks your digital Guest Guide, Assigned Parking Space Bay 87 clearance, and your temporary cryptographically random 0XXXXXX# smart-lock Access Credential.",
 		faq1606Q6:
-			"Are there building fees or pool closure days at Edificio Salguero Sunset?",
+			"Is there a Building Registration Fee or pool closure days at Edificio Salguero Sunset?",
 		faq1606A6:
 			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
 		// #300 semantic breadcrumbs & localized image alts
@@ -742,8 +743,7 @@ export const dict = {
 		mainEntranceImgAlt:
 			"Beachfront main entrance and lobby of Edificio Salguero Sunset in Playa Salguero, Santa Marta",
 		// #303 structured data & JSON-LD
-		schemaBreadcrumbHome: "Home",
-		schemaBreadcrumbPrivacy: "Data Processing Policy",
+		breadcrumbPrivacy: "Data Processing Policy",
 		schemaWebSiteDescription:
 			"Direct beachfront short-term rental Properties in Playa Salguero, Santa Marta, Colombia with authoritative COP Quotes and 0% OTA commission.",
 		schemaLodgingDescription:
@@ -1411,8 +1411,8 @@ export const dict = {
 		homeCompareRowCheckInOut: "Check-in / Check-out",
 		homeCompareCheckInOutValue:
 			"15:00 / 11:00 (Ingreso autónomo con cerradura inteligente)",
-		homeCompareRowBuildingFee: "Tarifa de Registro del Edificio",
-		homeCompareBuildingFeeValue:
+		homeCompareRowBuildingRegistrationFee: "Tarifa de Registro del Edificio",
+		homeCompareBuildingRegistrationFeeValue:
 			"20.000 COP por persona (se paga en recepción)",
 		homeCompareRowPoolMaintenance: "Mantenimiento de Piscina",
 		homeComparePoolMaintenanceValue: "Cerrada los martes por mantenimiento",
@@ -1523,8 +1523,7 @@ export const dict = {
 		mainEntranceImgAlt:
 			"Entrada principal frente a la playa y recepción del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
 		// #303 structured data & JSON-LD
-		schemaBreadcrumbHome: "Inicio",
-		schemaBreadcrumbPrivacy: "Política de Tratamiento de Datos",
+		breadcrumbPrivacy: "Política de Tratamiento de Datos",
 		schemaWebSiteDescription:
 			"Propiedades de alquiler vacacional directo frente al mar en Playa Salguero, Santa Marta, Colombia, con cotizaciones oficiales en COP y 0% de comisión OTA.",
 		schemaLodgingDescription:
@@ -2062,7 +2061,7 @@ export const dict = {
 			"Je déclare sur l'honneur détenir l'autorité parentale (patria potestad) ou une autorisation écrite de représentation légale pour chaque mineur de moins de 18 ans enregistré pour ce séjour, conformément à la Loi colombienne 1581 de 2012 (Art. 7) et à la Loi 679 de 2001 / Loi 1336 de 2009 (prévention ESCNNA).",
 		registryErrMinorConsent:
 			"L'attestation d'autorité parentale ou de tutelle légale est requise lors de l'enregistrement de mineurs de moins de 18 ans.",
-		privacySeoTitle: "Politique de Données (Loi 1581) | OceanViewFlats",
+		privacySeoTitle: "Confidentialité (Loi 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
 			"Politique officielle de Traitement des Données Personnelles (PTDP) d'OceanViewFlats à Santa Marta selon la Loi 1581 de 2012 et le Décret 1377 de 2013.",
 		privacyBadge: "Loi Statutaire Colombienne 1581 de 2012 • Habeas Data",
@@ -2200,8 +2199,9 @@ export const dict = {
 		homeCompareRowCheckInOut: "Arrivée / Départ",
 		homeCompareCheckInOutValue:
 			"15:00 / 11:00 (Arrivée autonome par serrure connectée)",
-		homeCompareRowBuildingFee: "Frais d'Enregistrement de l'Immeuble",
-		homeCompareBuildingFeeValue:
+		homeCompareRowBuildingRegistrationFee:
+			"Frais d'Enregistrement de l'Immeuble",
+		homeCompareBuildingRegistrationFeeValue:
 			"20 000 COP par personne (à régler à la réception)",
 		homeCompareRowPoolMaintenance: "Entretien de la Piscine",
 		homeComparePoolMaintenanceValue: "Fermée le mardi pour entretien",
@@ -2312,8 +2312,7 @@ export const dict = {
 		mainEntranceImgAlt:
 			"Entrée principale en bord de mer et hall de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
 		// #303 structured data & JSON-LD
-		schemaBreadcrumbHome: "Accueil",
-		schemaBreadcrumbPrivacy: "Politique de Traitement des Données",
+		breadcrumbPrivacy: "Politique de Traitement des Données",
 		schemaWebSiteDescription:
 			"Locations de vacances directes en bord de mer à Playa Salguero, Santa Marta, Colombie, avec devis officiels en COP et 0 % de commission OTA.",
 		schemaLodgingDescription:
@@ -2844,7 +2843,7 @@ export const dict = {
 			"Dichiaro sotto la mia responsabilità di esercitare la responsabilità genitoriale (patria potestad) o di disporre di autorizzazione scritta di rappresentanza legale per ogni minore di 18 anni registrato in questo soggiorno, in conformità con la Legge colombiana 1581 del 2012 (Art. 7) e la Legge 679 del 2001 / Legge 1336 del 2009 (prevenzione ESCNNA).",
 		registryErrMinorConsent:
 			"L'attestazione di responsabilità genitoriale o tutela legale è obbligatoria quando si registrano minori di 18 anni.",
-		privacySeoTitle: "Informativa Dati (Legge 1581) | OceanViewFlats",
+		privacySeoTitle: "Privacy (Legge 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
 			"Politica ufficiale sul Trattamento dei Dati Personali (PTDP) di OceanViewFlats a Santa Marta ai sensi della Legge 1581 del 2012 e Decreto 1377 del 2013.",
 		privacyBadge: "Legge Statutaria Colombiana 1581 del 2012 • Habeas Data",
@@ -2978,8 +2977,10 @@ export const dict = {
 		homeCompareRowCheckInOut: "Check-in / Check-out",
 		homeCompareCheckInOutValue:
 			"15:00 / 11:00 (Check-in autonomo con serratura smart)",
-		homeCompareRowBuildingFee: "Quota di Registrazione dell'Edificio",
-		homeCompareBuildingFeeValue: "20.000 COP a persona (pagabile in reception)",
+		homeCompareRowBuildingRegistrationFee:
+			"Quota di Registrazione dell'Edificio",
+		homeCompareBuildingRegistrationFeeValue:
+			"20.000 COP a persona (pagabile in reception)",
 		homeCompareRowPoolMaintenance: "Manutenzione della Piscina",
 		homeComparePoolMaintenanceValue: "Chiusa il martedì per manutenzione",
 		homeLocationTitle: "Posizione e Spostamenti a Playa Salguero",
@@ -3088,8 +3089,7 @@ export const dict = {
 		mainEntranceImgAlt:
 			"Ingresso principale fronte mare e reception di Edificio Salguero Sunset a Playa Salguero, Santa Marta",
 		// #303 structured data & JSON-LD
-		schemaBreadcrumbHome: "Pagina iniziale",
-		schemaBreadcrumbPrivacy: "Informativa sul Trattamento dei Dati",
+		breadcrumbPrivacy: "Informativa sul Trattamento dei Dati",
 		schemaWebSiteDescription:
 			"Proprietà fronte mare in affitto breve diretto a Playa Salguero, Santa Marta, Colombia, con preventivi ufficiali in COP e 0% di commissioni OTA.",
 		schemaLodgingDescription:
@@ -3761,8 +3761,8 @@ export const dict = {
 		homeCompareRowCheckInOut: "Check-in / Check-out",
 		homeCompareCheckInOutValue:
 			"15:00 / 11:00 (Selbst-Check-in mit Smart-Lock)",
-		homeCompareRowBuildingFee: "Gebäude-Registrierungsgebühr",
-		homeCompareBuildingFeeValue:
+		homeCompareRowBuildingRegistrationFee: "Gebäude-Registrierungsgebühr",
+		homeCompareBuildingRegistrationFeeValue:
 			"20.000 COP pro Person (zahlbar an der Rezeption)",
 		homeCompareRowPoolMaintenance: "Pool-Wartungszeiten",
 		homeComparePoolMaintenanceValue: "Dienstags wegen Wartung geschlossen",
@@ -3872,8 +3872,7 @@ export const dict = {
 		mainEntranceImgAlt:
 			"Strandseitiger Haupteingang und Empfangshalle des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
 		// #303 structured data & JSON-LD
-		schemaBreadcrumbHome: "Startseite",
-		schemaBreadcrumbPrivacy: "Datenschutzrichtlinie",
+		breadcrumbPrivacy: "Datenschutzrichtlinie",
 		schemaWebSiteDescription:
 			"Direkt buchbare Strand-Ferienunterkünfte in Playa Salguero, Santa Marta, Kolumbien mit verbindlichen COP-Preisen und 0 % OTA-Provision.",
 		schemaLodgingDescription:
@@ -4535,8 +4534,9 @@ export const dict = {
 		homeCompareRowCheckInOut: "チェックイン / チェックアウト",
 		homeCompareCheckInOutValue:
 			"15:00 / 11:00（スマートロックによるセルフチェックイン）",
-		homeCompareRowBuildingFee: "建物登録料",
-		homeCompareBuildingFeeValue: "お一人様 20,000 COP（フロントにて現地払い）",
+		homeCompareRowBuildingRegistrationFee: "建物登録料",
+		homeCompareBuildingRegistrationFeeValue:
+			"お一人様 20,000 COP（フロントにて現地払い）",
 		homeCompareRowPoolMaintenance: "プールメンテナンス休業日",
 		homeComparePoolMaintenanceValue: "毎週火曜日はメンテナンスのため休業",
 		homeLocationTitle: "プラヤ・サルグエロの立地と周辺アクセス",
@@ -4644,8 +4644,7 @@ export const dict = {
 		mainEntranceImgAlt:
 			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット海辺メインエントランスとロビー",
 		// #303 structured data & JSON-LD
-		schemaBreadcrumbHome: "ホーム",
-		schemaBreadcrumbPrivacy: "個人データ処理ポリシー",
+		breadcrumbPrivacy: "個人データ処理ポリシー",
 		schemaWebSiteDescription:
 			"コロンビア・サンタマルタのプラヤ・サルグエロにあるビーチフロント直接予約物件。公式COP見積もりとOTA手数料0%で滞在できます。",
 		schemaLodgingDescription:

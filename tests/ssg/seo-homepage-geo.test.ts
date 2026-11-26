@@ -18,7 +18,7 @@ interface LocaleExpectation {
 	rate1707: string;
 	rate1606Base: string;
 	rate1606Peak: string;
-	buildingFee: string;
+	buildingRegistrationFee: string;
 	parking1707: string;
 	parking1606: string;
 	tuesdayToken: string;
@@ -43,7 +43,7 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450,000 COP",
 		rate1606Base: "350,000 COP",
 		rate1606Peak: "550,000 COP",
-		buildingFee: "20,000 COP",
+		buildingRegistrationFee: "20,000 COP",
 		parking1707: "Bay 95",
 		parking1606: "Bay 87",
 		tuesdayToken: "Tuesdays",
@@ -66,7 +66,7 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450.000 COP",
 		rate1606Base: "350.000 COP",
 		rate1606Peak: "550.000 COP",
-		buildingFee: "20.000 COP",
+		buildingRegistrationFee: "20.000 COP",
 		parking1707: "Bahía 95",
 		parking1606: "Bahía 87",
 		tuesdayToken: "martes",
@@ -89,7 +89,7 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450 000 COP",
 		rate1606Base: "350 000 COP",
 		rate1606Peak: "550 000 COP",
-		buildingFee: "20 000 COP",
+		buildingRegistrationFee: "20 000 COP",
 		parking1707: "Place 95",
 		parking1606: "Place 87",
 		tuesdayToken: "mardi",
@@ -112,7 +112,7 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450.000 COP",
 		rate1606Base: "350.000 COP",
 		rate1606Peak: "550.000 COP",
-		buildingFee: "20.000 COP",
+		buildingRegistrationFee: "20.000 COP",
 		parking1707: "Posto 95",
 		parking1606: "Posto 87",
 		tuesdayToken: "martedì",
@@ -135,7 +135,7 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450.000 COP",
 		rate1606Base: "350.000 COP",
 		rate1606Peak: "550.000 COP",
-		buildingFee: "20.000 COP",
+		buildingRegistrationFee: "20.000 COP",
 		parking1707: "Stellplatz 95",
 		parking1606: "Stellplatz 87",
 		tuesdayToken: "Dienstags",
@@ -158,7 +158,7 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450,000 COP",
 		rate1606Base: "350,000 COP",
 		rate1606Peak: "550,000 COP",
-		buildingFee: "20,000 COP",
+		buildingRegistrationFee: "20,000 COP",
 		parking1707: "95番",
 		parking1606: "87番",
 		tuesdayToken: "火曜日",
@@ -200,6 +200,12 @@ test("Homepage renders semantic HTML comparison <table> covering all 12 reconcil
 		HOME_PROPERTY_COMPARISON_ROWS.length,
 		12,
 		"HOME_PROPERTY_COMPARISON_ROWS must declare all 12 comparison attributes",
+	);
+	assert.ok(
+		HOME_PROPERTY_COMPARISON_ROWS.some(
+			(row) => row.id === "building-registration-fee",
+		),
+		"HOME_PROPERTY_COMPARISON_ROWS must use canonical 'building-registration-fee' id",
 	);
 
 	for (const locale of LOCALE_EXPECTATIONS) {
@@ -272,7 +278,7 @@ test("Homepage renders semantic HTML comparison <table> covering all 12 reconcil
 			locale.parking1606,
 			"15:00",
 			"11:00",
-			locale.buildingFee,
+			locale.buildingRegistrationFee,
 			locale.tuesdayToken,
 		];
 		for (const token of requiredFacts) {

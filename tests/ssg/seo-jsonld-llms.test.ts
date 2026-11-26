@@ -22,7 +22,10 @@ import {
 } from "../../src/constants/config";
 import { dict } from "../../src/i18n/dict";
 import type { Lang } from "../../src/types";
-import { buildPricingSummary, type PriceTierRow } from "../../src/utils/schema";
+import {
+	buildPricingSummary,
+	type SeasonalRateTierRow,
+} from "../../src/utils/schema";
 
 const DIST_DIR = path.join(process.cwd(), "dist");
 const PUBLIC_DIR = path.join(process.cwd(), "public");
@@ -79,7 +82,47 @@ const findNodeByType = (
 	return node;
 };
 
-const readPricesCsvRows = (): PriceTierRow[] => {
+const decodeHtmlEntities = (value: string): string =>
+	value
+		.replace(/&#x27;/g, "'")
+		.replace(/&#39;/g, "'")
+		.replace(/&quot;/g, '"')
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">");
+
+const escapeHtmlAttr = (value: string): string =>
+	value
+		.replace(/&/g, "&amp;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#x27;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
+
+const extractVisibleBreadcrumbLabels = (
+	html: string,
+	ariaLabel: string,
+	label: string,
+): string[] => {
+	const escapedAttr = escapeHtmlAttr(ariaLabel).replace(
+		/[.*+?^${}()|[\]\\]/g,
+		"\\$&",
+	);
+	const navMatch = html.match(
+		new RegExp(
+			`<nav\\b[^>]*aria-label="${escapedAttr}"[^>]*>([\\s\\S]*?)<\\/nav>`,
+		),
+	);
+	assert.ok(navMatch, `${label} must render visible breadcrumb <nav>`);
+	const anchorMatches = [
+		...navMatch[1].matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi),
+	];
+	return anchorMatches.map((m) =>
+		decodeHtmlEntities(m[1].replace(/<[^>]+>/g, "")).trim(),
+	);
+};
+
+const readPricesCsvRows = (): SeasonalRateTierRow[] => {
 	const csvPath = path.join(PUBLIC_DIR, "data", "prices.csv");
 	const csv = fs.readFileSync(csvPath, "utf-8");
 	return csv
@@ -198,6 +241,7 @@ test("#303 homepage JSON-LD @graph connects WebSite, LodgingBusiness, Person (#h
 
 		const business = findNodeByType(graph, "LodgingBusiness", label);
 		assert.equal(business["@id"], `${BASE_URL}/#business`);
+		assert.equal(business.legalName, DATA_CONTROLLER.legalName);
 		assert.equal(business.url, homeUrl);
 		assert.equal(business.description, t.schemaLodgingDescription);
 		assert.equal(business.image, `${BASE_URL}/${IMAGES.home.hero}`);
@@ -309,19 +353,22 @@ test("#303 Property 1707 & 1606 JSON-LD @graph enforce isolated photos, COP CSV 
 			const t = dict[lang];
 			const homeUrl = getCanonicalUrl(BASE_URL, "", lang);
 			const pageUrl = getCanonicalUrl(BASE_URL, page.path, lang);
-			const parsed = parseJsonLdGraph(
-				readCompiledHtml(page.filename(lang)),
-				label,
-			);
+			const html = readCompiledHtml(page.filename(lang));
+			const parsed = parseJsonLdGraph(html, label);
 			const graph = parsed["@graph"];
 
-			// BreadcrumbList with canonical trailing-slash URLs
+			// BreadcrumbList with canonical trailing-slash URLs and exact UI parity
 			const breadcrumb = findNodeByType(graph, "BreadcrumbList", label);
 			assert.equal(breadcrumb["@id"], `${pageUrl}#breadcrumb`);
 			assert.equal(breadcrumb.itemListElement.length, 2);
-			assert.equal(breadcrumb.itemListElement[0].name, t.schemaBreadcrumbHome);
+			assert.equal(breadcrumb.itemListElement[0].name, t.breadcrumbHome);
 			assert.equal(breadcrumb.itemListElement[0].item, homeUrl);
 			assert.equal(breadcrumb.itemListElement[1].item, pageUrl);
+			assert.deepEqual(
+				extractVisibleBreadcrumbLabels(html, t.breadcrumbLabel, label),
+				breadcrumb.itemListElement.map((item: JsonLdNode) => item.name),
+				`${label} visible <Breadcrumbs /> labels must match JSON-LD BreadcrumbList`,
+			);
 			if (lang === "en") {
 				assert.ok(breadcrumb.itemListElement[0].item.endsWith("/"));
 				assert.ok(breadcrumb.itemListElement[1].item.endsWith("/"));
@@ -431,13 +478,18 @@ test("#303 Property 1707 & 1606 JSON-LD @graph enforce isolated photos, COP CSV 
 				assert.equal(tierOffers[idx].validFrom, tier.start_date);
 				assert.equal(tierOffers[idx].validThrough, tier.end_date);
 				assert.equal(
+					tierOffers[idx].eligibleDuration?.["@type"],
+					"QuantitativeValue",
+				);
+				assert.equal(
 					tierOffers[idx].eligibleDuration?.value,
-					`P${tier.minimum_stay}D`,
+					tier.minimum_stay,
 				);
 				assert.equal(
 					tierOffers[idx].eligibleDuration?.minValue,
 					tier.minimum_stay,
 				);
+				assert.equal(tierOffers[idx].eligibleDuration?.unitCode, "DAY");
 			});
 
 			// Verified reviews synced with PROPERTY_REVIEWS
@@ -480,10 +532,8 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 		// Contact page
 		const contactLabel = `contact (${lang})`;
 		const contactUrl = getCanonicalUrl(BASE_URL, "contact", lang);
-		const contactGraph = parseJsonLdGraph(
-			readCompiledHtml(contactPage.filename(lang)),
-			contactLabel,
-		)["@graph"];
+		const contactHtml = readCompiledHtml(contactPage.filename(lang));
+		const contactGraph = parseJsonLdGraph(contactHtml, contactLabel)["@graph"];
 
 		const contactBreadcrumb = findNodeByType(
 			contactGraph,
@@ -491,8 +541,19 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 			contactLabel,
 		);
 		assert.equal(contactBreadcrumb["@id"], `${contactUrl}#breadcrumb`);
+		assert.equal(contactBreadcrumb.itemListElement[0].name, t.breadcrumbHome);
 		assert.equal(contactBreadcrumb.itemListElement[0].item, homeUrl);
+		assert.equal(contactBreadcrumb.itemListElement[1].name, t.navContact);
 		assert.equal(contactBreadcrumb.itemListElement[1].item, contactUrl);
+		assert.deepEqual(
+			extractVisibleBreadcrumbLabels(
+				contactHtml,
+				t.breadcrumbLabel,
+				contactLabel,
+			),
+			contactBreadcrumb.itemListElement.map((item: JsonLdNode) => item.name),
+			`${contactLabel} visible <Breadcrumbs /> labels must match JSON-LD BreadcrumbList`,
+		);
 
 		const contactNode = findNodeByType(
 			contactGraph,
@@ -511,6 +572,7 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 			contactLabel,
 		);
 		assert.equal(contactBusiness["@id"], `${BASE_URL}/#business`);
+		assert.equal(contactBusiness.legalName, DATA_CONTROLLER.legalName);
 		assert.ok(
 			Array.isArray(contactBusiness.contactPoint) &&
 				contactBusiness.contactPoint.length >= 2,
@@ -535,10 +597,8 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 		// Data Processing Policy (Privacy) page
 		const privacyLabel = `privacy (${lang})`;
 		const privacyUrl = getCanonicalUrl(BASE_URL, "privacy", lang);
-		const privacyGraph = parseJsonLdGraph(
-			readCompiledHtml(privacyPage.filename(lang)),
-			privacyLabel,
-		)["@graph"];
+		const privacyHtml = readCompiledHtml(privacyPage.filename(lang));
+		const privacyGraph = parseJsonLdGraph(privacyHtml, privacyLabel)["@graph"];
 
 		const privacyBreadcrumb = findNodeByType(
 			privacyGraph,
@@ -546,8 +606,22 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 			privacyLabel,
 		);
 		assert.equal(privacyBreadcrumb["@id"], `${privacyUrl}#breadcrumb`);
+		assert.equal(privacyBreadcrumb.itemListElement[0].name, t.breadcrumbHome);
 		assert.equal(privacyBreadcrumb.itemListElement[0].item, homeUrl);
+		assert.equal(
+			privacyBreadcrumb.itemListElement[1].name,
+			t.breadcrumbPrivacy,
+		);
 		assert.equal(privacyBreadcrumb.itemListElement[1].item, privacyUrl);
+		assert.deepEqual(
+			extractVisibleBreadcrumbLabels(
+				privacyHtml,
+				t.breadcrumbLabel,
+				privacyLabel,
+			),
+			privacyBreadcrumb.itemListElement.map((item: JsonLdNode) => item.name),
+			`${privacyLabel} visible <Breadcrumbs /> labels must match JSON-LD BreadcrumbList`,
+		);
 
 		const privacyNode = findNodeByType(privacyGraph, "WebPage", privacyLabel);
 		assert.equal(privacyNode["@id"], `${privacyUrl}#webpage`);
@@ -557,6 +631,14 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 		assert.equal(privacyNode.version, PRIVACY_POLICY_VERSION);
 		assert.equal(privacyNode.publisher?.["@id"], `${BASE_URL}/#business`);
 		assert.equal(privacyNode.author?.["@id"], `${BASE_URL}/#host`);
+
+		const privacyBusiness = findNodeByType(
+			privacyGraph,
+			"LodgingBusiness",
+			privacyLabel,
+		);
+		assert.equal(privacyBusiness["@id"], `${BASE_URL}/#business`);
+		assert.equal(privacyBusiness.legalName, DATA_CONTROLLER.legalName);
 
 		const privacyHost = findNodeByType(privacyGraph, "Person", privacyLabel);
 		assert.equal(privacyHost["@id"], `${BASE_URL}/#host`);
@@ -577,15 +659,13 @@ test("#303 public/llms.txt and dist/llms.txt synchronize canonical trailing-slas
 		"dist/llms.txt must match public/llms.txt",
 	);
 
-	// Canonical trailing-slash English URLs
+	// Canonical trailing-slash public English URLs
 	const requiredCanonicalUrls = [
 		"https://www.oceanviewflats.com/",
 		"https://www.oceanviewflats.com/Oceanview1707/",
 		"https://www.oceanviewflats.com/Oceanview1606/",
 		"https://www.oceanviewflats.com/contact/",
 		"https://www.oceanviewflats.com/privacy/",
-		"https://www.oceanviewflats.com/registry/",
-		"https://www.oceanviewflats.com/guide/",
 	];
 	for (const url of requiredCanonicalUrls) {
 		assert.ok(
@@ -593,6 +673,28 @@ test("#303 public/llms.txt and dist/llms.txt synchronize canonical trailing-slas
 			`llms.txt must contain canonical trailing-slash URL: ${url}`,
 		);
 	}
+
+	// Disallowed noindex/robots.txt transactional URLs (/registry/, /guide/) must NOT be advertised
+	for (const disallowedUrl of [
+		"https://www.oceanviewflats.com/registry/",
+		"https://www.oceanviewflats.com/guide/",
+		"/registry/",
+		"/guide/",
+	]) {
+		assert.ok(
+			!publicLlms.includes(disallowedUrl),
+			`llms.txt must NOT advertise robots.txt-disallowed URL or path: ${disallowedUrl}`,
+		);
+	}
+	assert.ok(
+		publicLlms.includes("Guest Registry") && publicLlms.includes("Guest Guide"),
+		"llms.txt must still document the mandatory Guest Registry and Guest Guide onboarding workflow textually",
+	);
+	assert.ok(
+		publicLlms.includes("External OTA Channel (Optional)") &&
+			!publicLlms.includes("External OTA Listing"),
+		"llms.txt must use canonical domain term 'External OTA Channel (Optional)'",
+	);
 
 	// Zero non-trailing-slash English directory URLs
 	const nonCanonicalAbsMatches = publicLlms.match(

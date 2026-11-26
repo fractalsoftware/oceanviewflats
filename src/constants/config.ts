@@ -1,3 +1,24 @@
+import type { Lang } from "../types";
+
+export const LANGUAGES: readonly Lang[] = ["en", "es", "fr", "it", "de", "ja"];
+
+export const getCanonicalUrl = (
+	baseUrl: string,
+	pagePath: string,
+	lang: Lang,
+): string => {
+	const normalizedBase = baseUrl.replace(/\/+$/, "");
+	if (pagePath === "404") {
+		return lang === "en"
+			? `${normalizedBase}/404.html`
+			: `${normalizedBase}/404/${lang}.html`;
+	}
+	const dirBase = pagePath
+		? `${normalizedBase}/${pagePath.replace(/^\/+|\/+$/g, "")}`
+		: normalizedBase;
+	return lang === "en" ? `${dirBase}/` : `${dirBase}/${lang}.html`;
+};
+
 export const AIRBNB_URLS = {
 	"1707": "https://www.airbnb.com/rooms/1500108514798091235",
 	"1606": "https://www.airbnb.com/rooms/1584825560087571592",
@@ -16,6 +37,7 @@ export const MINOR_DOC_TYPES = [
 
 export const DATA_CONTROLLER = {
 	name: "OceanViewFlats — Manuel Enrique Herrera",
+	legalName: "OceanViewFlats — Manuel Enrique Herrera",
 	rnt1707: "RNT #268781",
 	rnt1606: "RNT #270413",
 	rntCombined: "RNT #268781 & RNT #270413",
@@ -389,7 +411,7 @@ export interface HomeComparisonRowConfig {
 		| "homeCompareRowWifi"
 		| "homeCompareRowParking"
 		| "homeCompareRowCheckInOut"
-		| "homeCompareRowBuildingFee"
+		| "homeCompareRowBuildingRegistrationFee"
 		| "homeCompareRowPoolMaintenance";
 	val1707Key:
 		| "homeCompare1707Floor"
@@ -402,7 +424,7 @@ export interface HomeComparisonRowConfig {
 		| "homeCompareWifiValue"
 		| "homeCompare1707Parking"
 		| "homeCompareCheckInOutValue"
-		| "homeCompareBuildingFeeValue"
+		| "homeCompareBuildingRegistrationFeeValue"
 		| "homeComparePoolMaintenanceValue";
 	val1606Key:
 		| "homeCompare1606Floor"
@@ -415,7 +437,7 @@ export interface HomeComparisonRowConfig {
 		| "homeCompareWifiValue"
 		| "homeCompare1606Parking"
 		| "homeCompareCheckInOutValue"
-		| "homeCompareBuildingFeeValue"
+		| "homeCompareBuildingRegistrationFeeValue"
 		| "homeComparePoolMaintenanceValue";
 }
 
@@ -482,10 +504,10 @@ export const HOME_PROPERTY_COMPARISON_ROWS: readonly HomeComparisonRowConfig[] =
 			val1606Key: "homeCompareCheckInOutValue",
 		},
 		{
-			id: "building-fee",
-			labelKey: "homeCompareRowBuildingFee",
-			val1707Key: "homeCompareBuildingFeeValue",
-			val1606Key: "homeCompareBuildingFeeValue",
+			id: "building-registration-fee",
+			labelKey: "homeCompareRowBuildingRegistrationFee",
+			val1707Key: "homeCompareBuildingRegistrationFeeValue",
+			val1606Key: "homeCompareBuildingRegistrationFeeValue",
 		},
 		{
 			id: "pool-maintenance",
@@ -742,6 +764,250 @@ export const PROPERTY_REVIEWS: Record<
 			textKey: "review2Text",
 			datePublished: "2026-03-20",
 			ratingValue: 5,
+		},
+	],
+};
+
+export type GalleryAltKey =
+	| "gallery1707_1"
+	| "gallery1707_2"
+	| "gallery1707_3"
+	| "gallery1707_4"
+	| "gallery1707_5"
+	| "gallery1707_6"
+	| "gallery1707_7"
+	| "gallery1707_8"
+	| "gallery1707_9"
+	| "gallery1707_10"
+	| "gallery1707_11"
+	| "gallery1707_12"
+	| "gallery1707_13"
+	| "gallery1707_14"
+	| "gallery1606_1"
+	| "gallery1606_2"
+	| "gallery1606_3"
+	| "gallery1606_4"
+	| "gallery1606_5"
+	| "gallery1606_6"
+	| "gallery1606_7"
+	| "gallery1606_8"
+	| "gallery1606_9"
+	| "gallery1606_10"
+	| "gallery1606_11"
+	| "gallery1606_12"
+	| "gallery1606_13"
+	| "gallery1606_14";
+
+export interface GalleryImageConfig {
+	src: string;
+	thumb: string;
+	altKey: GalleryAltKey;
+	thumbWidth: number;
+	thumbHeight: number;
+}
+
+export const PROPERTY_GALLERY_IMAGES: Record<
+	PropertyId,
+	readonly GalleryImageConfig[]
+> = {
+	"1707": [
+		{
+			src: "images/1707/balcony-1.webp",
+			thumb: "images/1707/thumbs/balcony-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 270,
+			altKey: "gallery1707_1",
+		},
+		{
+			src: "images/1707/balcony-2.webp",
+			thumb: "images/1707/thumbs/balcony-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 345,
+			altKey: "gallery1707_2",
+		},
+		{
+			src: "images/1707/livingroom-1.webp",
+			thumb: "images/1707/thumbs/livingroom-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 653,
+			altKey: "gallery1707_3",
+		},
+		{
+			src: "images/1707/livingroom-2.webp",
+			thumb: "images/1707/thumbs/livingroom-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 299,
+			altKey: "gallery1707_4",
+		},
+		{
+			src: "images/1707/dinningroom-1.webp",
+			thumb: "images/1707/thumbs/dinningroom-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 723,
+			altKey: "gallery1707_5",
+		},
+		{
+			src: "images/1707/dinningroom-2.webp",
+			thumb: "images/1707/thumbs/dinningroom-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 696,
+			altKey: "gallery1707_6",
+		},
+		{
+			src: "images/1707/kitchen-1.webp",
+			thumb: "images/1707/thumbs/kitchen-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 270,
+			altKey: "gallery1707_7",
+		},
+		{
+			src: "images/1707/room1-1.webp",
+			thumb: "images/1707/thumbs/room1-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 325,
+			altKey: "gallery1707_8",
+		},
+		{
+			src: "images/1707/room1-2.webp",
+			thumb: "images/1707/thumbs/room1-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 284,
+			altKey: "gallery1707_9",
+		},
+		{
+			src: "images/1707/room1-3.webp",
+			thumb: "images/1707/thumbs/room1-3.webp",
+			thumbWidth: 480,
+			thumbHeight: 270,
+			altKey: "gallery1707_10",
+		},
+		{
+			src: "images/1707/room2-1.webp",
+			thumb: "images/1707/thumbs/room2-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 269,
+			altKey: "gallery1707_11",
+		},
+		{
+			src: "images/1707/bathroom1-1.webp",
+			thumb: "images/1707/thumbs/bathroom1-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 664,
+			altKey: "gallery1707_12",
+		},
+		{
+			src: "images/1707/bathroom2-1.webp",
+			thumb: "images/1707/thumbs/bathroom2-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 341,
+			altKey: "gallery1707_13",
+		},
+		{
+			src: "images/1707/pulloutcouch-1.webp",
+			thumb: "images/1707/thumbs/pulloutcouch-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 309,
+			altKey: "gallery1707_14",
+		},
+	],
+	"1606": [
+		{
+			src: "images/1606/balcony-1.webp",
+			thumb: "images/1606/thumbs/balcony-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 304,
+			altKey: "gallery1606_1",
+		},
+		{
+			src: "images/1606/livingroom-1.webp",
+			thumb: "images/1606/thumbs/livingroom-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 286,
+			altKey: "gallery1606_2",
+		},
+		{
+			src: "images/1606/livingroom-2.webp",
+			thumb: "images/1606/thumbs/livingroom-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 586,
+			altKey: "gallery1606_3",
+		},
+		{
+			src: "images/1606/dinningroom-1.webp",
+			thumb: "images/1606/thumbs/dinningroom-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 768,
+			altKey: "gallery1606_4",
+		},
+		{
+			src: "images/1606/kitchen-1.webp",
+			thumb: "images/1606/thumbs/kitchen-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 270,
+			altKey: "gallery1606_5",
+		},
+		{
+			src: "images/1606/entertainment-2.webp",
+			thumb: "images/1606/thumbs/entertainment-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 280,
+			altKey: "gallery1606_6",
+		},
+		{
+			src: "images/1606/room1-1.webp",
+			thumb: "images/1606/thumbs/room1-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 286,
+			altKey: "gallery1606_7",
+		},
+		{
+			src: "images/1606/room1-2.webp",
+			thumb: "images/1606/thumbs/room1-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 283,
+			altKey: "gallery1606_8",
+		},
+		{
+			src: "images/1606/room2-1.webp",
+			thumb: "images/1606/thumbs/room2-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 276,
+			altKey: "gallery1606_9",
+		},
+		{
+			src: "images/1606/room2-2.webp",
+			thumb: "images/1606/thumbs/room2-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 248,
+			altKey: "gallery1606_10",
+		},
+		{
+			src: "images/1606/bathroom1-1.webp",
+			thumb: "images/1606/thumbs/bathroom1-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 270,
+			altKey: "gallery1606_11",
+		},
+		{
+			src: "images/1606/bathroom1-2.webp",
+			thumb: "images/1606/thumbs/bathroom1-2.webp",
+			thumbWidth: 480,
+			thumbHeight: 722,
+			altKey: "gallery1606_12",
+		},
+		{
+			src: "images/1606/bathroom2-1.webp",
+			thumb: "images/1606/thumbs/bathroom2-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 283,
+			altKey: "gallery1606_13",
+		},
+		{
+			src: "images/1606/pulloutcouch-1.webp",
+			thumb: "images/1606/thumbs/pulloutcouch-1.webp",
+			thumbWidth: 480,
+			thumbHeight: 593,
+			altKey: "gallery1606_14",
 		},
 	],
 };

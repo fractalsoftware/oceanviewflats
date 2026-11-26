@@ -183,8 +183,8 @@ test("Subpages (Property 1707, Property 1606, Contact, Data Processing Policy) r
 			dir: "Oceanview1606",
 			labelKey: "hero1606Title" as const,
 		},
-		{ id: "contact", dir: "contact", labelKey: "contactTitle" as const },
-		{ id: "privacy", dir: "privacy", labelKey: "privacyTitle" as const },
+		{ id: "contact", dir: "contact", labelKey: "navContact" as const },
+		{ id: "privacy", dir: "privacy", labelKey: "breadcrumbPrivacy" as const },
 	];
 
 	for (const subpage of subpages) {

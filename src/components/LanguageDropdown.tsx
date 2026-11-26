@@ -6,6 +6,7 @@ import type { Lang } from "../types";
 interface LanguageDropdownProps {
 	currentLang: Lang;
 	isScrolled: boolean;
+	englishHref?: string;
 }
 
 const LANGUAGES: { code: Lang; label: string; link: string }[] = [
@@ -20,6 +21,7 @@ const LANGUAGES: { code: Lang; label: string; link: string }[] = [
 export const LanguageDropdown = ({
 	currentLang,
 	isScrolled,
+	englishHref = "./",
 }: LanguageDropdownProps) => {
 	const currentLangObj =
 		LANGUAGES.find((l) => l.code === currentLang) || LANGUAGES[0];
@@ -47,7 +49,10 @@ export const LanguageDropdown = ({
 					<ul className={CHROME_THEME.langDropdownList}>
 						{otherLangs.map((lang) => (
 							<li key={lang.code}>
-								<a href={lang.link} className={CHROME_THEME.langDropdownItem}>
+								<a
+									href={lang.code === "en" ? englishHref : lang.link}
+									className={CHROME_THEME.langDropdownItem}
+								>
 									{lang.label}
 								</a>
 							</li>

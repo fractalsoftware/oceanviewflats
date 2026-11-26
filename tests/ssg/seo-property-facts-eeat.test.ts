@@ -378,7 +378,7 @@ test("#301 E-E-A-T host credentials, statutory compliance badges & dated verifie
 
 			assert.ok(
 				main.includes(expectedAirbnbUrl) && main.includes(t.reviewViewOnAirbnb),
-				`Property ${propertyId} (${lang}) must include verified external OTA listing attribution link`,
+				`Property ${propertyId} (${lang}) must include verified external OTA channel attribution link`,
 			);
 		}
 	}

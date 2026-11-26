@@ -1,3 +1,10 @@
+export interface OgImageMeta {
+	url: string;
+	width?: number;
+	height?: number;
+	alt?: string;
+}
+
 interface TemplateProps {
 	markup: string;
 	lang: "en" | "es" | "fr" | "it" | "de" | "ja";
@@ -5,10 +12,7 @@ interface TemplateProps {
 	description: string;
 	url: string;
 	baseUrl: string;
-	ogImage: string;
-	ogImageWidth?: number;
-	ogImageHeight?: number;
-	ogImageAlt?: string;
+	ogImage: OgImageMeta | string;
 	heroPreloadHref?: string;
 	hrefLangTags: string;
 	structuredData: string;
@@ -42,9 +46,6 @@ export const baseTemplate = ({
 	url,
 	baseUrl,
 	ogImage,
-	ogImageWidth,
-	ogImageHeight,
-	ogImageAlt,
 	heroPreloadHref,
 	hrefLangTags,
 	structuredData,
@@ -79,18 +80,23 @@ export const baseTemplate = ({
 	const scriptsMarkup =
 		scripts.length > 0 ? `\n    ${scripts.join("\n    ")}` : "";
 
-	const escapedOgImageAlt = ogImageAlt ? escapeHtmlAttr(ogImageAlt) : "";
+	const resolvedOgImage: OgImageMeta =
+		typeof ogImage === "string" ? { url: ogImage } : ogImage;
+	const escapedOgImageUrl = escapeHtmlAttr(resolvedOgImage.url);
+	const escapedOgImageAlt = resolvedOgImage.alt
+		? escapeHtmlAttr(resolvedOgImage.alt)
+		: "";
 	const ogImageMetaLines: string[] = [
-		`<meta property="og:image" content="${escapeHtmlAttr(ogImage)}">`,
+		`<meta property="og:image" content="${escapedOgImageUrl}">`,
 	];
-	if (ogImageWidth) {
+	if (resolvedOgImage.width) {
 		ogImageMetaLines.push(
-			`<meta property="og:image:width" content="${ogImageWidth}">`,
+			`<meta property="og:image:width" content="${resolvedOgImage.width}">`,
 		);
 	}
-	if (ogImageHeight) {
+	if (resolvedOgImage.height) {
 		ogImageMetaLines.push(
-			`<meta property="og:image:height" content="${ogImageHeight}">`,
+			`<meta property="og:image:height" content="${resolvedOgImage.height}">`,
 		);
 	}
 	if (escapedOgImageAlt) {
@@ -143,7 +149,7 @@ export const baseTemplate = ({
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${title}">
     <meta name="twitter:description" content="${description}">
-    <meta name="twitter:image" content="${escapeHtmlAttr(ogImage)}">${twitterImageAltMarkup}
+    <meta name="twitter:image" content="${escapedOgImageUrl}">${twitterImageAltMarkup}
 
     <script src="${assetPrefix}js/lang-detect.js" defer></script>${hrefLangMarkup}
 

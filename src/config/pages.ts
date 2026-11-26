@@ -1,4 +1,10 @@
-import { IMAGES, MINOR_DOC_TYPES } from "../constants/config";
+import {
+	getCanonicalUrl,
+	IMAGE_DIMENSIONS,
+	IMAGES,
+	LANGUAGES,
+	MINOR_DOC_TYPES,
+} from "../constants/config";
 import type { TranslationDict } from "../i18n/dict";
 import BookingFailure from "../pages/BookingFailure";
 import BookingPending from "../pages/BookingPending";
@@ -22,29 +28,12 @@ import {
 } from "../utils/schema";
 
 export const BASE_URL = "https://www.oceanviewflats.com";
-export const LANGUAGES: Lang[] = ["en", "es", "fr", "it", "de", "ja"];
-
-export const getCanonicalUrl = (
-	baseUrl: string,
-	pagePath: string,
-	lang: Lang,
-): string => {
-	const normalizedBase = baseUrl.replace(/\/+$/, "");
-	if (pagePath === "404") {
-		return lang === "en"
-			? `${normalizedBase}/404.html`
-			: `${normalizedBase}/404/${lang}.html`;
-	}
-	const dirBase = pagePath
-		? `${normalizedBase}/${pagePath.replace(/^\/+|\/+$/g, "")}`
-		: normalizedBase;
-	return lang === "en" ? `${dirBase}/` : `${dirBase}/${lang}.html`;
-};
+export { getCanonicalUrl, LANGUAGES };
 
 export const getHrefLangTags = (
 	baseUrl: string,
 	path: string,
-	languages: Lang[],
+	languages: readonly Lang[],
 ) => {
 	const defaultUrl = getCanonicalUrl(baseUrl, path, "en");
 	return (
@@ -57,6 +46,13 @@ export const getHrefLangTags = (
 		`\n    <link rel="alternate" hreflang="x-default" href="${defaultUrl}" />`
 	);
 };
+
+export interface PageOgImageConfig {
+	path: string;
+	width: number;
+	height: number;
+	getAlt: (t: TranslationDict) => string;
+}
 
 export interface PageConfig {
 	id: string;
@@ -72,20 +68,11 @@ export interface PageConfig {
 	scripts: string[];
 	seoTitle?: (t: any) => string;
 	seoDescription?: (t: any) => string;
-	ogImage?: string;
-	ogImageWidth?: number;
-	ogImageHeight?: number;
-	ogImageAlt?: (t: TranslationDict) => string;
+	ogImage: PageOgImageConfig;
 	heroImage?: string;
 	noIndex?: boolean;
 	clientI18n?: (t: TranslationDict) => Record<string, string>;
 }
-
-const HERO_IMAGE_DIMENSIONS = {
-	homeHero: { width: 1600, height: 1355 },
-	propertyHero: { width: 1980, height: 1280 },
-	mainEntrance: { width: 1280, height: 677 },
-} as const;
 
 export const getClientDictionaryForPage = (
 	pageId: string,
@@ -201,10 +188,11 @@ export const pages: PageConfig[] = [
 		filename: (lang: Lang) => (lang === "en" ? "index.html" : `${lang}.html`),
 		seoTitle: (t: any) => t.seoHomeTitle,
 		seoDescription: (t: any) => t.seoHomeDescription,
-		ogImage: IMAGES.home.hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
-		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		ogImage: {
+			path: IMAGES.home.hero,
+			...IMAGE_DIMENSIONS.homeHero,
+			getAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		},
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
 			buildHomeStructuredData(t, lang, baseUrl, pricingSummary),
@@ -218,10 +206,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "Oceanview1707/index.html" : `Oceanview1707/${lang}.html`,
 		seoTitle: (t: any) => t.seoTitle,
 		seoDescription: (t: any) => t.seoDescription,
-		ogImage: IMAGES["1707"].hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.propertyHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.propertyHero.height,
-		ogImageAlt: (t: TranslationDict) => t.og1707ImageAlt,
+		ogImage: {
+			path: IMAGES["1707"].hero,
+			...IMAGE_DIMENSIONS["1707"].hero,
+			getAlt: (t: TranslationDict) => t.og1707ImageAlt,
+		},
 		heroImage: IMAGES["1707"].hero,
 		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
 			buildPropertyStructuredData("1707", t, lang, baseUrl, pricingSummary),
@@ -235,10 +224,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "Oceanview1606/index.html" : `Oceanview1606/${lang}.html`,
 		seoTitle: (t: any) => t.seo1606Title,
 		seoDescription: (t: any) => t.seo1606Description,
-		ogImage: IMAGES["1606"].hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.propertyHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.propertyHero.height,
-		ogImageAlt: (t: TranslationDict) => t.og1606ImageAlt,
+		ogImage: {
+			path: IMAGES["1606"].hero,
+			...IMAGE_DIMENSIONS["1606"].hero,
+			getAlt: (t: TranslationDict) => t.og1606ImageAlt,
+		},
 		heroImage: IMAGES["1606"].hero,
 		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
 			buildPropertyStructuredData("1606", t, lang, baseUrl, pricingSummary),
@@ -252,10 +242,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "contact/index.html" : `contact/${lang}.html`,
 		seoTitle: (t: any) => t.seoContactTitle,
 		seoDescription: (t: any) => t.seoContactDescription,
-		ogImage: IMAGES.mainEntrance,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
-		ogImageAlt: (t: TranslationDict) => t.ogContactImageAlt,
+		ogImage: {
+			path: IMAGES.mainEntrance,
+			...IMAGE_DIMENSIONS.mainEntrance,
+			getAlt: (t: TranslationDict) => t.ogContactImageAlt,
+		},
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildContactStructuredData(t, lang, baseUrl),
@@ -270,10 +261,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "registry/index.html" : `registry/${lang}.html`,
 		seoTitle: (t: any) => t.registryTitle,
 		seoDescription: (t: any) => t.registrySubtitle,
-		ogImage: IMAGES.mainEntrance,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
-		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
+		ogImage: {
+			path: IMAGES.mainEntrance,
+			...IMAGE_DIMENSIONS.mainEntrance,
+			getAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
+		},
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildWebPageStructuredData(
@@ -294,10 +286,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "guide/index.html" : `guide/${lang}.html`,
 		seoTitle: (t: any) => t.guideTitle,
 		seoDescription: (t: any) => t.guideHeader,
-		ogImage: IMAGES.mainEntrance,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
-		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
+		ogImage: {
+			path: IMAGES.mainEntrance,
+			...IMAGE_DIMENSIONS.mainEntrance,
+			getAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
+		},
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildWebPageStructuredData(
@@ -317,10 +310,11 @@ export const pages: PageConfig[] = [
 		filename: (lang: Lang) => (lang === "en" ? "404.html" : `404/${lang}.html`),
 		seoTitle: (t: any) => t.notFoundTitle,
 		seoDescription: (t: any) => t.notFoundSubtitle,
-		ogImage: IMAGES.home.hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
-		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		ogImage: {
+			path: IMAGES.home.hero,
+			...IMAGE_DIMENSIONS.homeHero,
+			getAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		},
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildWebPageStructuredData(
@@ -343,10 +337,11 @@ export const pages: PageConfig[] = [
 				: `booking-success/${lang}.html`,
 		seoTitle: (t: any) => t.dbSuccessTitle,
 		seoDescription: (t: any) => t.dbSuccessSubtitle,
-		ogImage: IMAGES.home.hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
-		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		ogImage: {
+			path: IMAGES.home.hero,
+			...IMAGE_DIMENSIONS.homeHero,
+			getAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		},
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildWebPageStructuredData(
@@ -369,10 +364,11 @@ export const pages: PageConfig[] = [
 				: `booking-failure/${lang}.html`,
 		seoTitle: (t: any) => t.dbFailureTitle,
 		seoDescription: (t: any) => t.dbFailureSubtitle,
-		ogImage: IMAGES.home.hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
-		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		ogImage: {
+			path: IMAGES.home.hero,
+			...IMAGE_DIMENSIONS.homeHero,
+			getAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		},
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildWebPageStructuredData(
@@ -395,10 +391,11 @@ export const pages: PageConfig[] = [
 				: `booking-pending/${lang}.html`,
 		seoTitle: (t: any) => t.dbPendingTitle,
 		seoDescription: (t: any) => t.dbPendingSubtitle,
-		ogImage: IMAGES.home.hero,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
-		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		ogImage: {
+			path: IMAGES.home.hero,
+			...IMAGE_DIMENSIONS.homeHero,
+			getAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		},
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildWebPageStructuredData(
@@ -418,10 +415,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "privacy/index.html" : `privacy/${lang}.html`,
 		seoTitle: (t: any) => t.privacySeoTitle,
 		seoDescription: (t: any) => t.privacySeoDescription,
-		ogImage: IMAGES.mainEntrance,
-		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
-		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
-		ogImageAlt: (t: TranslationDict) => t.ogPrivacyImageAlt,
+		ogImage: {
+			path: IMAGES.mainEntrance,
+			...IMAGE_DIMENSIONS.mainEntrance,
+			getAlt: (t: TranslationDict) => t.ogPrivacyImageAlt,
+		},
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t, lang, baseUrl) =>
 			buildPrivacyStructuredData(t, lang, baseUrl),
