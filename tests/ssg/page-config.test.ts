@@ -2079,8 +2079,9 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expectedFaq2Day: "Tuesday",
 			expectedNomadAlt: "Digital Nomad Workspace",
 			expectedRomanticAlt: "Romantic Sunset Terrace",
-			expected1707ReviewSnippet: "excellent view, beautiful sunsets",
-			expected1707ReviewAuthor: "Karol Ximena",
+			expected1707ReviewSnippet:
+				"super comfortable apartment and a beautiful place",
+			expected1707ReviewAuthor: "Julian Alfredo",
 			expected1606ReviewSnippet: "ideal for relaxation and family time",
 			expected1606ReviewAuthor: "Lina Marcela",
 		},
@@ -2091,8 +2092,8 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expectedFaq2Day: "martes",
 			expectedNomadAlt: "Espacio de trabajo para Nómadas Digitales",
 			expectedRomanticAlt: "Terraza Privada al Atardecer",
-			expected1707ReviewSnippet: "excelente vista, atardeceres hermosos",
-			expected1707ReviewAuthor: "Karol Ximena",
+			expected1707ReviewSnippet: "apartamento súper confortable, hermoso lugar",
+			expected1707ReviewAuthor: "Julian Alfredo",
 			expected1606ReviewSnippet:
 				"ideal para el descanso y compartir en familia",
 			expected1606ReviewAuthor: "Lina Marcela",
@@ -2105,8 +2106,8 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expectedNomadAlt: "Espace de travail pour Nomades Digitaux",
 			expectedRomanticAlt: "Terrasse Privée au Coucher du Soleil",
 			expected1707ReviewSnippet:
-				"excellente vue, de magnifiques couchers de soleil",
-			expected1707ReviewAuthor: "Karol Ximena",
+				"appartement super confortable, un endroit magnifique",
+			expected1707ReviewAuthor: "Julian Alfredo",
 			expected1606ReviewSnippet:
 				"idéal pour la détente et les moments en famille",
 			expected1606ReviewAuthor: "Lina Marcela",
@@ -2118,8 +2119,9 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expectedFaq2Day: "martedì",
 			expectedNomadAlt: "Spazio di lavoro per Nomadi Digitali",
 			expectedRomanticAlt: "Terrazza Privata al Tramonto",
-			expected1707ReviewSnippet: "tramonti bellissimi",
-			expected1707ReviewAuthor: "Karol Ximena",
+			expected1707ReviewSnippet:
+				"appartamento super confortevole, un posto bellissimo",
+			expected1707ReviewAuthor: "Julian Alfredo",
 			expected1606ReviewSnippet: "ideale per il relax e il tempo in famiglia",
 			expected1606ReviewAuthor: "Lina Marcela",
 		},
@@ -2131,8 +2133,8 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expectedNomadAlt: "Arbeitsplatz für Digitale Nomaden",
 			expectedRomanticAlt: "Private Terrasse bei Sonnenuntergang",
 			expected1707ReviewSnippet:
-				"hervorragenden Aussicht, wunderschönen Sonnenuntergängen",
-			expected1707ReviewAuthor: "Karol Ximena",
+				"super komfortable Wohnung, ein wunderschöner Ort",
+			expected1707ReviewAuthor: "Julian Alfredo",
 			expected1606ReviewSnippet: "ideal für Entspannung und Familienzeit",
 			expected1606ReviewAuthor: "Lina Marcela",
 		},
@@ -2143,8 +2145,8 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			expectedFaq2Day: "火曜日",
 			expectedNomadAlt: "デジタルノマドのワークスペース",
 			expectedRomanticAlt: "サンセットを望むプライベートテラス",
-			expected1707ReviewSnippet: "素晴らしい景色と美しい夕日",
-			expected1707ReviewAuthor: "Karol Ximena",
+			expected1707ReviewSnippet: "とても快適なアパートメントで、素晴らしい場所",
+			expected1707ReviewAuthor: "Julian Alfredo",
 			expected1606ReviewSnippet: "リラックスや家族との時間に最適な場所",
 			expected1606ReviewAuthor: "Lina Marcela",
 		},
@@ -2199,7 +2201,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			`${locale.file} #faq-6 must structure check-in, Guest Registry (Law 1581 & Law 679), 0XXXXXX# PIN, and 20,000 COP reception fee into numbered steps`,
 		);
 
-		// 3. #experiences renders verified guest testimonials (Karol Ximena on 1707, Lina Marcela on 1606) and descriptive image alts
+		// 3. #experiences renders verified guest reviews (Julian Alfredo on 1707, Lina Marcela on 1606) and descriptive image alts
 		const expMatch = html.match(
 			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
 		);
@@ -2222,7 +2224,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			card1707Html.includes(locale.expected1707ReviewSnippet) &&
 				card1707Html.includes(locale.expected1707ReviewAuthor) &&
 				card1707Html.includes("border-t border-slate-700/80"),
-			`${locale.file} #experiences 1707 card must render Karol Ximena's verified review`,
+			`${locale.file} #experiences 1707 card must render Julian Alfredo's verified Guest Review`,
 		);
 
 		assert.ok(

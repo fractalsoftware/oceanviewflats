@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import {
 	AIRBNB_URLS,
+	HOME_EXPERIENCE_CARDS,
 	PROPERTY_REVIEWS,
 	type PropertyId,
 } from "../../src/constants/config";
@@ -320,6 +321,196 @@ function parseJsonLdGraphNodes(html: string): Array<Record<string, unknown>> {
 	};
 	return parsed["@graph"];
 }
+
+test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, features Julian Alfredo on homepage, and keeps homepage JSON-LD and llms.txt free of review duplication across all 6 locales", () => {
+	const reviews1707 = PROPERTY_REVIEWS["1707"];
+	assert.equal(
+		reviews1707.length,
+		2,
+		"Property 1707 must configure exactly 2 Airbnb Guest Reviews",
+	);
+	assert.deepEqual(
+		reviews1707.map((review) => ({
+			id: review.id,
+			authorKey: review.authorKey,
+			textKey: review.textKey,
+			datePublished: review.datePublished,
+			ratingValue: review.ratingValue,
+		})),
+		[
+			{
+				id: "review-1707-2",
+				authorKey: "review1707_2Author",
+				textKey: "review1707_2Text",
+				datePublished: "2026-10-11",
+				ratingValue: 5,
+			},
+			{
+				id: "review-1707-1",
+				authorKey: "review1707Author",
+				textKey: "review1707Text",
+				datePublished: "2026-06-29",
+				ratingValue: 5,
+			},
+		],
+		"Property 1707 Guest Reviews must be ordered most-recent first with exact Airbnb publication dates",
+	);
+
+	// Explicit homepage curation for Property 1707
+	const card1707Config = HOME_EXPERIENCE_CARDS.find(
+		(card) => card.propertyId === "1707",
+	);
+	assert.ok(card1707Config, "HOME_EXPERIENCE_CARDS must include Property 1707");
+	assert.equal(card1707Config.reviewTextKey, "review1707_2Text");
+	assert.equal(card1707Config.reviewAuthorKey, "review1707_2Author");
+
+	// Verbatim Spanish copy for Julian Alfredo with trailing star emojis stripped
+	assert.equal(
+		dict.es.review1707_2Text,
+		'"El apartamento súper confortable, hermoso lugar, los aires muy buenos. Amoblado confortable detalle muy lindo todo. Volvería sin ningún problema. Muchas gracias por todo"',
+		"Spanish copy for Julian Alfredo must match Airbnb verbatim with trailing star emojis removed",
+	);
+
+	const julianCopies = new Set<string>();
+	const starEmojiPattern = /[⭐★☆]/u;
+
+	for (const lang of LOCALES) {
+		const t = dict[lang];
+
+		// Latin-script author names across all 6 locales (including ja)
+		assert.equal(
+			t.review1707_2Author,
+			"Julian Alfredo",
+			`${lang} review1707_2Author must use original Latin script`,
+		);
+		assert.equal(
+			t.review1707Author,
+			"Karol Ximena",
+			`${lang} review1707Author must use original Latin script`,
+		);
+		assert.ok(
+			!starEmojiPattern.test(t.review1707_2Text),
+			`${lang} review1707_2Text must not contain trailing star emojis`,
+		);
+		julianCopies.add(t.review1707_2Text);
+
+		// Compiled Property 1707 HTML assertions
+		const propertyHtml = getPropertyHtml("1707", lang);
+		const section = extractSectionById(propertyHtml, "guest-reviews");
+		const julianPos = section.indexOf('id="review-1707-2"');
+		const karolPos = section.indexOf('id="review-1707-1"');
+		assert.ok(
+			julianPos !== -1 && karolPos !== -1 && julianPos < karolPos,
+			`Property 1707 (${lang}) must render Julian Alfredo before Karol Ximena`,
+		);
+
+		const julianArticle = extractArticleById(section, "review-1707-2");
+		const karolArticle = extractArticleById(section, "review-1707-1");
+		assert.ok(
+			julianArticle.includes("Julian Alfredo") &&
+				julianArticle.includes(t.review1707_2Text) &&
+				/<time[^>]*\bdatetime="2026-10-11"/i.test(julianArticle),
+			`Property 1707 (${lang}) review-1707-2 must render Julian Alfredo, localized text, and 2026-10-11`,
+		);
+		assert.ok(
+			karolArticle.includes("Karol Ximena") &&
+				karolArticle.includes(t.review1707Text) &&
+				/<time[^>]*\bdatetime="2026-06-29"/i.test(karolArticle),
+			`Property 1707 (${lang}) review-1707-1 must render Karol Ximena, localized text, and 2026-06-29`,
+		);
+
+		// Compiled Property 1707 VacationRental JSON-LD assertions
+		const rental = parseVacationRentalJsonLd(propertyHtml);
+		const aggregateRating = rental.aggregateRating as {
+			ratingValue: string;
+			reviewCount: string;
+		};
+		assert.equal(aggregateRating.reviewCount, "2");
+		assert.equal(aggregateRating.ratingValue, "5.0");
+
+		const jsonLdReviews = rental.review as Array<{
+			author: { name: string };
+			datePublished: string;
+			inLanguage: string;
+			reviewBody: string;
+			reviewRating: { ratingValue: string };
+		}>;
+		assert.equal(jsonLdReviews.length, 2);
+		assert.deepEqual(
+			jsonLdReviews.map((item) => ({
+				author: item.author.name,
+				datePublished: item.datePublished,
+				inLanguage: item.inLanguage,
+				reviewBody: item.reviewBody,
+				ratingValue: item.reviewRating.ratingValue,
+			})),
+			[
+				{
+					author: "Julian Alfredo",
+					datePublished: "2026-10-11",
+					inLanguage: lang,
+					reviewBody: t.review1707_2Text,
+					ratingValue: "5",
+				},
+				{
+					author: "Karol Ximena",
+					datePublished: "2026-06-29",
+					inLanguage: lang,
+					reviewBody: t.review1707Text,
+					ratingValue: "5",
+				},
+			],
+			`Property 1707 (${lang}) JSON-LD reviews must match Airbnb order, dates, localized text, and 5-star ratings`,
+		);
+
+		// Homepage #experiences features Julian Alfredo for Property 1707 and keeps JSON-LD free of review nodes
+		const homeFile = lang === "en" ? "index.html" : `${lang}.html`;
+		const homeHtml = getHomeHtml(lang);
+		const experiencesSection = extractSectionById(homeHtml, "experiences");
+		const cardMatches = experiencesSection.match(
+			/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>[\s\S]*?<\/a>/g,
+		);
+		assert.ok(cardMatches && cardMatches.length === 2);
+		const card1707Html = cardMatches[0];
+		assert.ok(
+			card1707Html.includes(t.review1707_2Text) &&
+				card1707Html.includes("Julian Alfredo"),
+			`Homepage ${homeFile} #experiences Property 1707 card must feature Julian Alfredo's localized Guest Review`,
+		);
+
+		const homeGraph = parseJsonLdGraphNodes(homeHtml);
+		for (const node of homeGraph) {
+			assert.equal(
+				"review" in node,
+				false,
+				`Homepage ${homeFile} JSON-LD must not duplicate Guest Review bodies`,
+			);
+			assert.equal(
+				"aggregateRating" in node,
+				false,
+				`Homepage ${homeFile} JSON-LD must not duplicate aggregateRating counts`,
+			);
+		}
+	}
+
+	assert.equal(
+		julianCopies.size,
+		LOCALES.length,
+		"Julian Alfredo's Guest Review must have distinct localized copy across all 6 locales",
+	);
+
+	// LLM overview file remains free of duplicated review bodies
+	const publicLlms = fs.readFileSync(
+		path.join(process.cwd(), "public/llms.txt"),
+		"utf-8",
+	);
+	const distLlms = fs.readFileSync(path.join(DIST_DIR, "llms.txt"), "utf-8");
+	assert.equal(distLlms, publicLlms);
+	assert.ok(
+		!distLlms.includes("Julian Alfredo") && !distLlms.includes("Karol Ximena"),
+		"llms.txt must remain free of duplicated Guest Review bodies or authors",
+	);
+});
 
 test("#308 Property 1606 renders all 4 synced Airbnb Guest Reviews most-recent first with exact dates, verbatim Spanish copy, Latin-script authors, Italian typo fix, and matching JSON-LD across all 6 locales", () => {
 	const expectedOrder = [
