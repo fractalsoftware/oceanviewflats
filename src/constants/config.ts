@@ -132,6 +132,57 @@ export const OCEANVIEW_1606_PATHS: Record<string, string> = {
 	ja: "Oceanview1606/ja.html",
 };
 
+export const DESTINATION_GUIDES_HUB_PATHS: Record<string, string> = {
+	en: "santa-marta/",
+	es: "santa-marta/es.html",
+	fr: "santa-marta/fr.html",
+	it: "santa-marta/it.html",
+	de: "santa-marta/de.html",
+	ja: "santa-marta/ja.html",
+};
+
+export const PROPERTY_CLEANING_FEES_COP: Record<PropertyId, number> = {
+	"1707": 100000,
+	"1606": 80000,
+};
+
+export const BUILDING_REGISTRATION_FEE_COP = 20000;
+
+export interface ContextualGuideLinkConfig {
+	slug: string;
+	labelKey:
+		| "guideTopicRemoteWork"
+		| "guideTopicDirectReservation"
+		| "guideTopicBeachComparison"
+		| "guideTopicDayTrips";
+}
+
+export const PROPERTY_CONTEXTUAL_GUIDE_LINKS: Record<
+	PropertyId,
+	readonly ContextualGuideLinkConfig[]
+> = {
+	"1707": [
+		{
+			slug: "digital-nomad-remote-work",
+			labelKey: "guideTopicRemoteWork",
+		},
+		{
+			slug: "direct-reservation-guide",
+			labelKey: "guideTopicDirectReservation",
+		},
+	],
+	"1606": [
+		{
+			slug: "playa-salguero-vs-el-rodadero",
+			labelKey: "guideTopicBeachComparison",
+		},
+		{
+			slug: "day-trips-from-playa-salguero",
+			labelKey: "guideTopicDayTrips",
+		},
+	],
+};
+
 const resolveLocalizedPath = (
 	paths: Record<string, string>,
 	lang: string,
@@ -139,6 +190,23 @@ const resolveLocalizedPath = (
 ): string => {
 	const relPath = paths[lang] || paths.en;
 	return `${assetPrefix}${relPath}`;
+};
+
+export const getDestinationGuidesHubPath = (
+	lang: string,
+	assetPrefix = "./",
+): string =>
+	resolveLocalizedPath(DESTINATION_GUIDES_HUB_PATHS, lang, assetPrefix);
+
+export const getDestinationGuidePath = (
+	slug: string,
+	lang: string,
+	assetPrefix = "./",
+): string => {
+	const cleanSlug = slug.replace(/^\/+|\/+$/g, "");
+	const isNonEnglishLocale = lang !== "en" && LANGUAGES.includes(lang as Lang);
+	const suffix = isNonEnglishLocale ? `${lang}.html` : "";
+	return `${assetPrefix}santa-marta/${cleanSlug}/${suffix}`;
 };
 
 export const getPrivacyPolicyPath = (

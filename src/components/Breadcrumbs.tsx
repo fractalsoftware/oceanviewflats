@@ -5,9 +5,15 @@ import { BREADCRUMB_THEME, type BreadcrumbSurface } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
 
+export interface BreadcrumbItem {
+	label: string;
+	href: string;
+}
+
 export interface BreadcrumbsProps {
 	lang: Lang;
 	assetPrefix?: string;
+	parents?: readonly BreadcrumbItem[];
 	currentLabel: string;
 	currentHref: string;
 	surface?: BreadcrumbSurface;
@@ -16,6 +22,7 @@ export interface BreadcrumbsProps {
 export const Breadcrumbs = ({
 	lang,
 	assetPrefix = "../",
+	parents = [],
 	currentLabel,
 	currentHref,
 	surface = "inline",
@@ -33,6 +40,14 @@ export const Breadcrumbs = ({
 							{t.breadcrumbHome}
 						</a>
 					</li>
+					{parents.map((parent) => (
+						<li key={parent.href} className={styles.item}>
+							<ChevronRight className={styles.separator} aria-hidden="true" />
+							<a href={parent.href} className={styles.link}>
+								{parent.label}
+							</a>
+						</li>
+					))}
 					<li className={styles.item}>
 						<ChevronRight className={styles.separator} aria-hidden="true" />
 						<a

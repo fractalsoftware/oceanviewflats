@@ -1,8 +1,37 @@
 export type Lang = "en" | "es" | "fr" | "it" | "de" | "ja";
 
+export interface SeasonalRateTierRow {
+	property_id: string;
+	start_date: string;
+	end_date: string;
+	nightly_rate_cop: number;
+	minimum_stay: number;
+}
+
+export interface PropertyPricingSummary {
+	propertyId: "1707" | "1606";
+	lowPrice: number;
+	highPrice: number;
+	baselinePrice: number;
+	cleaningFeeCop: number;
+	minStay: number;
+	maxMinStay: number;
+	currency: "COP";
+	tiers: SeasonalRateTierRow[];
+}
+
+export interface PortfolioPricingSummary {
+	currency: "COP";
+	lowPrice: number;
+	highPrice: number;
+	priceRange: string;
+	properties: Record<"1707" | "1606", PropertyPricingSummary>;
+}
+
 export interface AppProps {
 	lang: Lang;
 	assetPrefix?: string;
+	pricingSummary?: PortfolioPricingSummary;
 }
 
 export interface CalendarWidgetProps {

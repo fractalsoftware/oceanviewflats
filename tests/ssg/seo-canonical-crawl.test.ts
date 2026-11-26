@@ -9,6 +9,7 @@ import {
 	LANGUAGES,
 	pages,
 } from "../../src/config/pages";
+import { DESTINATION_GUIDES } from "../../src/i18n/destinationGuides";
 
 const DIST_DIR = path.join(process.cwd(), "dist");
 const PUBLIC_DIR = path.join(process.cwd(), "public");
@@ -136,7 +137,15 @@ test("Apache .htaccess enforces multipart hardening first, single-hop index.html
 test("Public pages emit canonical trailing-slash URLs, og:url, reciprocal hreflang + x-default, no noindex, and zero index.html internal links across all 6 locales (#298)", () => {
 	assert.deepEqual(
 		PUBLIC_PAGES.map((p) => p.id),
-		["home", "Oceanview1707", "Oceanview1606", "contact", "privacy"],
+		[
+			"home",
+			"Oceanview1707",
+			"Oceanview1606",
+			"contact",
+			"privacy",
+			"destination-guides",
+			...DESTINATION_GUIDES.map((guide) => `destination-guide-${guide.slug}`),
+		],
 	);
 
 	for (const page of PUBLIC_PAGES) {
@@ -294,7 +303,7 @@ test("Generated XML sitemap declares xhtml namespace, lists only indexable canon
 	assert.equal(
 		urlBlocks.length,
 		PUBLIC_PAGES.length * LANGUAGES.length,
-		"sitemap.xml must contain exactly 30 <url> entries (5 public pages × 6 locales)",
+		`sitemap.xml must contain exactly ${PUBLIC_PAGES.length * LANGUAGES.length} <url> entries (${PUBLIC_PAGES.length} public pages × ${LANGUAGES.length} locales)`,
 	);
 
 	assert.ok(

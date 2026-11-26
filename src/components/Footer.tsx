@@ -1,6 +1,11 @@
 import React from "react";
-import { getPrivacyPolicyPath } from "../constants/config";
+import {
+	getDestinationGuidePath,
+	getDestinationGuidesHubPath,
+	getPrivacyPolicyPath,
+} from "../constants/config";
 import { CHROME_THEME } from "../constants/theme";
+import { DESTINATION_GUIDES } from "../i18n/destinationGuides";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
 
@@ -13,6 +18,7 @@ export const Footer = ({
 }) => {
 	const t = dict[lang];
 	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
+	const guidesHubHref = getDestinationGuidesHubPath(lang, assetPrefix);
 
 	return (
 		<footer className={CHROME_THEME.footer}>
@@ -28,6 +34,36 @@ export const Footer = ({
 				<p className={CHROME_THEME.footerRntText}>
 					{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
 				</p>
+				<nav
+					id="footer-destination-guides"
+					aria-label={t.footerGuidesLabel}
+					className={CHROME_THEME.footerGuidesNav}
+				>
+					<p className={CHROME_THEME.footerGuidesHeading}>
+						{t.footerGuidesLabel}
+					</p>
+					<ul className={CHROME_THEME.footerGuidesList}>
+						<li>
+							<a
+								id="footer-guides-hub-link"
+								href={guidesHubHref}
+								className={CHROME_THEME.footerGuidesLink}
+							>
+								{t.footerGuidesHubLink}
+							</a>
+						</li>
+						{DESTINATION_GUIDES.map((guide) => (
+							<li key={guide.slug}>
+								<a
+									href={getDestinationGuidePath(guide.slug, lang, assetPrefix)}
+									className={CHROME_THEME.footerGuidesLink}
+								>
+									{guide.locales[lang].breadcrumbLabel}
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
 				<p className={CHROME_THEME.footerPrivacyWrapper}>
 					<a
 						id="footer-privacy-link"

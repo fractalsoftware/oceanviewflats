@@ -24,6 +24,7 @@ import { Navigation } from "../components/Navigation";
 import {
 	DATA_CONTROLLER,
 	getContactPagePath,
+	getDestinationGuidesHubPath,
 	getPropertyPagePath,
 	HOME_EXPERIENCE_CARDS,
 	HOME_FAQ_ITEMS,
@@ -54,6 +55,7 @@ const LANDMARK_ICONS = {
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const t = dict[lang];
 	const contactHref = getContactPagePath(lang, assetPrefix);
+	const destinationGuidesHref = getDestinationGuidesHubPath(lang, assetPrefix);
 
 	return (
 		<div className={HOME_THEME.pageWrapper}>
@@ -489,6 +491,34 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								);
 							})}
 						</ul>
+
+						{/* Contextual Santa Marta Destination Guides Hub Callout */}
+						<div
+							id="home-destination-guides-callout"
+							className={HOME_THEME.locationGuidesBanner}
+						>
+							<div className={HOME_THEME.locationGuidesContent}>
+								<div className={HOME_THEME.locationGuidesIconBox}>
+									<Compass className={HOME_THEME.iconLg} aria-hidden="true" />
+								</div>
+								<div>
+									<p className={HOME_THEME.locationGuidesEyebrow}>
+										{t.homeLocationGuidesEyebrow}
+									</p>
+									<p className={HOME_THEME.locationGuidesText}>
+										{t.homeLocationGuidesDesc}
+									</p>
+								</div>
+							</div>
+							<a
+								id="home-destination-guides-link"
+								href={destinationGuidesHref}
+								className={HOME_THEME.locationGuidesCta}
+							>
+								<span>{t.homeLocationGuidesCta}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+						</div>
 					</div>
 				</section>
 

@@ -176,7 +176,11 @@ pages.forEach((page) => {
 			page.id === "404" ? "/" : depth === 0 ? "./" : "../".repeat(depth);
 
 		const rawMarkup = renderToStaticMarkup(
-			<PageComponent lang={lang} assetPrefix={assetPrefix} />,
+			<PageComponent
+				lang={lang}
+				assetPrefix={assetPrefix}
+				pricingSummary={pricingSummary}
+			/>,
 		);
 		// Strip React 19's auto-injected <link rel="preload" .../> tags from body markup;
 		// hero image preload hints are emitted inside <head> via baseTemplate.
@@ -210,9 +214,11 @@ pages.forEach((page) => {
 		const html = baseTemplate({
 			markup,
 			lang,
-			title: page.seoTitle ? page.seoTitle(t) : t.seoTitle,
+			title: page.seoTitle
+				? page.seoTitle(t, lang, pricingSummary)
+				: t.seoTitle,
 			description: page.seoDescription
-				? page.seoDescription(t)
+				? page.seoDescription(t, lang, pricingSummary)
 				: t.seoDescription,
 			url,
 			baseUrl: BASE_URL,
@@ -220,7 +226,7 @@ pages.forEach((page) => {
 				url: `${BASE_URL}/${page.ogImage.path}`,
 				width: page.ogImage.width,
 				height: page.ogImage.height,
-				alt: page.ogImage.getAlt(t),
+				alt: page.ogImage.getAlt(t, lang),
 			},
 			heroPreloadHref: page.heroImage
 				? `${assetPrefix}${page.heroImage}`
