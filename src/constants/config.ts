@@ -340,8 +340,8 @@ export interface HomeExperienceCardConfig {
 	titleKey: "heroTitle" | "hero1606Title";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
 	features: readonly HomeExperienceFeatureConfig[];
-	reviewTextKey: "review1707Text" | "review1Text";
-	reviewAuthorKey: "review1707Author" | "review1Author";
+	reviewTextKey: "review1707_2Text" | "review1Text";
+	reviewAuthorKey: "review1707_2Author" | "review1Author";
 }
 
 export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
@@ -367,8 +367,8 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 				descKey: "homeExp1707FamilyDesc",
 			},
 		],
-		reviewTextKey: "review1707Text",
-		reviewAuthorKey: "review1707Author",
+		reviewTextKey: "review1707_2Text",
+		reviewAuthorKey: "review1707_2Author",
 	},
 	{
 		propertyId: "1606",
@@ -731,8 +731,16 @@ export const PROPERTY_FAQ_ITEMS: Record<
 
 export interface PropertyReviewMeta {
 	id: string;
-	authorKey: "review1707Author" | "review1Author" | "review2Author";
-	textKey: "review1707Text" | "review1Text" | "review2Text";
+	authorKey:
+		| "review1707_2Author"
+		| "review1707Author"
+		| "review1Author"
+		| "review2Author";
+	textKey:
+		| "review1707_2Text"
+		| "review1707Text"
+		| "review1Text"
+		| "review2Text";
 	datePublished: string;
 	ratingValue: number;
 }
@@ -743,10 +751,17 @@ export const PROPERTY_REVIEWS: Record<
 > = {
 	"1707": [
 		{
+			id: "review-1707-2",
+			authorKey: "review1707_2Author",
+			textKey: "review1707_2Text",
+			datePublished: "2026-10-11",
+			ratingValue: 5,
+		},
+		{
 			id: "review-1707-1",
 			authorKey: "review1707Author",
 			textKey: "review1707Text",
-			datePublished: "2026-06-28",
+			datePublished: "2026-06-29",
 			ratingValue: 5,
 		},
 	],

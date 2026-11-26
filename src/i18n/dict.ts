@@ -86,6 +86,9 @@ export const dict = {
 		review1707Text:
 			'"A very nice apartment with an excellent view, beautiful sunsets, highly complete building facilities, and very good service from everyone. Recommended."',
 		review1707Author: "Karol Ximena",
+		review1707_2Text:
+			'"A super comfortable apartment and a beautiful place, with great air conditioning. Comfortably furnished with lovely details throughout. I would gladly come back without hesitation. Thank you very much for everything."',
+		review1707_2Author: "Julian Alfredo",
 		seo1606Title: "Playa Salguero, Santa Marta | OceanViewFlats 1606",
 		seo1606Description:
 			"Reserve Property 1606 in Playa Salguero, Santa Marta. 16th-floor beachfront stay for couples and families with Caribbean sunsets, pool, and 900 Mbps Wi-Fi.",
@@ -846,6 +849,9 @@ export const dict = {
 		review1707Text:
 			'"Un apartamento muy lindo con una excelente vista, atardeceres hermosos, el edificio muy completo y la atención de todos muy buena. Recomendado."',
 		review1707Author: "Karol Ximena",
+		review1707_2Text:
+			'"El apartamento súper confortable, hermoso lugar, los aires muy buenos. Amoblado confortable detalle muy lindo todo. Volvería sin ningún problema. Muchas gracias por todo"',
+		review1707_2Author: "Julian Alfredo",
 		seo1606Title: "Vista al Mar 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Reserva directa en OceanViewFlats 1606, Playa Salguero, Santa Marta. Piso 16 frente al mar para parejas y familias con Wi-Fi 900 Mbps, piscina y atardeceres.",
@@ -1626,6 +1632,9 @@ export const dict = {
 		review1707Text:
 			'"Un très bel appartement avec une excellente vue, de magnifiques couchers de soleil, un bâtiment très complet et une très bonne attention de la part de tous. Recommandé."',
 		review1707Author: "Karol Ximena",
+		review1707_2Text:
+			'"Un appartement super confortable, un endroit magnifique et une très bonne climatisation. Bien meublé avec de très jolis détails partout. J\'y reviendrais sans aucune hésitation. Merci beaucoup pour tout."',
+		review1707_2Author: "Julian Alfredo",
 		seo1606Title: "Séjour Vue Mer 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Réservez en direct OceanViewFlats 1606 à Playa Salguero, Santa Marta. 16e étage face à la mer pour couples et familles : Wi-Fi 900 Mbps et piscine.",
@@ -2415,6 +2424,9 @@ export const dict = {
 		review1707Text:
 			"\"Un appartamento molto carino con un'ottima vista, tramonti bellissimi, l'edificio molto completo e l'attenzione di tutti molto buona. Raccomandato.\"",
 		review1707Author: "Karol Ximena",
+		review1707_2Text:
+			'"Un appartamento super confortevole, un posto bellissimo e aria condizionata ottima. Arredato con gusto e comfort, con dettagli molto curati ovunque. Ci tornerei senza alcun dubbio. Grazie mille di tutto."',
+		review1707_2Author: "Julian Alfredo",
 		seo1606Title: "Fronte Mare 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Prenota diretto OceanViewFlats 1606 a Playa Salguero, Santa Marta. 16° piano fronte mare per coppie e famiglie con Wi-Fi 900 Mbps, piscina e tramonti.",
@@ -3192,6 +3204,9 @@ export const dict = {
 		review1707Text:
 			'"Eine sehr schöne Wohnung mit einer hervorragenden Aussicht, wunderschönen Sonnenuntergängen, einem sehr gut ausgestatteten Gebäude und einem sehr guten Service von allen. Empfehlenswert."',
 		review1707Author: "Karol Ximena",
+		review1707_2Text:
+			'"Eine super komfortable Wohnung, ein wunderschöner Ort und sehr gute Klimaanlagen. Komfortabel möbliert mit sehr schönen Details überall. Ich würde ohne zu zögern wiederkommen. Vielen Dank für alles."',
+		review1707_2Author: "Julian Alfredo",
 		seo1606Title: "Meerblick-Apartment 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Buchen Sie OceanViewFlats 1606 direkt in Playa Salguero, Santa Marta. 16. Etage am Strand für Paare und Familien mit 900-Mbps-WLAN, Pool und Meerblick.",
@@ -3978,6 +3993,9 @@ export const dict = {
 		review1707Text:
 			"「素晴らしい景色と美しい夕日を楽しめる、とても素敵で可愛いアパートメントです。建物の設備も非常に充実しており、スタッフ全員の対応もとても親切でした。おすすめです。」",
 		review1707Author: "Karol Ximena",
+		review1707_2Text:
+			"「とても快適なアパートメントで、素晴らしい場所でした。エアコンの効きも非常に良かったです。家具も心地よく、細部まで素敵なこだわりが感じられました。また迷わず戻ってきたいと思います。いろいろと本当にありがとうございました。」",
+		review1707_2Author: "Julian Alfredo",
 		seo1606Title: "サンタマルタ・プラヤサルグエロ 1606 | OceanViewFlats",
 		seo1606Description:
 			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1606を直接予約。16階ビーチフロントでカップルや家族に最適。900Mbps Wi-Fi、プール、美しい夕日。",
