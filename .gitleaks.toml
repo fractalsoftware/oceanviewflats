@@ -8,3 +8,17 @@ description = "Ignore documentation and research sample code"
 paths = [
     '''^docs/research/.*''',
 ]
+
+[[rules]]
+id = "generic-api-key"
+
+    [[rules.allowlists]]
+    description = "Ignore TypeScript union type aliases whose identifier ends in Key"
+    condition = "AND"
+    paths = [
+        '''^src/.*\.tsx?$''',
+    ]
+    regexTarget = "line"
+    regexes = [
+        '''^\s*(?:export\s+)?type\s+[A-Za-z0-9_]+Key\s*=\s*[A-Za-z0-9_| ]+;\s*$''',
+    ]
