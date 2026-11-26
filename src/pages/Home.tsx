@@ -29,6 +29,7 @@ import {
 	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
 	HOME_PROPERTY_COMPARISON_ROWS,
+	IMAGE_DIMENSIONS,
 	IMAGES,
 	PLAYA_SALGUERO_LANDMARKS,
 } from "../constants/config";
@@ -71,6 +72,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
 						alt={t.heroImgAlt}
+						width={IMAGE_DIMENSIONS.homeHero.width}
+						height={IMAGE_DIMENSIONS.homeHero.height}
 						className={HOME_THEME.heroImage}
 						fetchPriority="high"
 						loading="eager"
@@ -119,8 +122,11 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 										<img
 											src={`${assetPrefix}${IMAGES[card.imageKey].hero}`}
 											className={cardTheme.cardImage}
-											alt={t[card.titleKey]}
+											alt={t[card.imageAltKey]}
+											width={IMAGE_DIMENSIONS[card.imageKey].hero.width}
+											height={IMAGE_DIMENSIONS[card.imageKey].hero.height}
 											loading="lazy"
+											decoding="async"
 										/>
 										<div className={cardTheme.cardOverlay}></div>
 										<span className={cardTheme.cardBadge}>
@@ -345,8 +351,11 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											<img
 												src={`${assetPrefix}${card.imageSrc}`}
 												alt={t[card.imageAltKey]}
+												width={card.imageWidth}
+												height={card.imageHeight}
 												className={HOME_THEME.editorialCardImage}
 												loading="lazy"
+												decoding="async"
 											/>
 											<span className={HOME_THEME.experiencesCardBadge}>
 												{t[card.titleKey]} • {t[card.badgeKey]}
@@ -408,9 +417,12 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							<div className={HOME_THEME.hostAvatarWrapper}>
 								<img
 									src={`${assetPrefix}${IMAGES.general.host}`}
-									alt={t.hostName}
+									alt={t.hostImgAlt}
+									width={IMAGE_DIMENSIONS.host.width}
+									height={IMAGE_DIMENSIONS.host.height}
 									className={HOME_THEME.hostAvatarImg}
 									loading="lazy"
+									decoding="async"
 								/>
 							</div>
 							<div>

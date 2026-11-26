@@ -16,15 +16,14 @@ export const Hero = ({
 	const t = dict[lang];
 	const theme = THEMES[propertyId];
 
-	const titleText = propertyId === "1707" ? t.heroTitle : t.hero1606Title;
-	const subText = propertyId === "1707" ? t.heroSub : t.hero1606Sub;
-
 	return (
 		<header className="relative h-[85vh] flex items-center justify-center pt-20">
 			<div className="absolute inset-0 w-full h-full">
 				<img
 					src={`${assetPrefix}${theme.images.hero}`}
-					alt={t.heroImgAlt}
+					alt={t[theme.heroImgAltKey]}
+					width={theme.imageDimensions.hero.width}
+					height={theme.imageDimensions.hero.height}
 					className="w-full h-full object-cover"
 					fetchPriority="high"
 					loading="eager"
@@ -37,12 +36,12 @@ export const Hero = ({
 					<span>{t.heroLocation}</span>
 				</div>
 				<h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
-					{titleText}
+					{t[theme.heroTitleKey]}
 				</h1>
 				<p
 					className={`text-lg md:text-2xl ${theme.heroSubtitleColor} mb-10 font-light drop-shadow`}
 				>
-					{subText}
+					{t[theme.heroSubKey]}
 				</p>
 				<a
 					href="#booking"

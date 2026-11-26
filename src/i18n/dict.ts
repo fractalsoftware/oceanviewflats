@@ -50,7 +50,8 @@ export const dict = {
 		nomadOceanDesc: "Find inspiration looking out at the Caribbean sea.",
 		nomadImgAlt: "Digital Nomad Workspace",
 		romanticImgAlt: "Romantic Sunset Terrace",
-		heroImgAlt: "Balcony Ocean View",
+		heroImgAlt:
+			"Panoramic Caribbean Sea sunset view from the OceanViewFlats beachfront balcony in Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Bedroom",
@@ -720,6 +721,26 @@ export const dict = {
 			"Are there building fees or pool closure days at Edificio Salguero Sunset?",
 		faq1606A6:
 			"Yes. Edificio Salguero Sunset front-desk reception charges a one-time Building Registration Fee of 20,000 COP per person payable upon arrival for security wristbands and common areas. Building swimming pools are closed every Tuesday for scheduled maintenance.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Main navigation",
+		breadcrumbLabel: "Breadcrumb",
+		breadcrumbHome: "Home",
+		hero1707ImgAlt:
+			"Property 1707 17th-floor beachfront suite and Caribbean Sea balcony view at Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Property 1606 16th-floor beachfront suite and warm sunset ocean view at Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Bright 17th-floor open living room and dining space in Property 1707 at Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Beachfront swimming pool and sun deck at Edificio Salguero Sunset for Property 1707 guests in Playa Salguero",
+		about1606LivingAlt:
+			"Sunlit 16th-floor coastal living area and family lounge in Property 1606 at Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Oceanfront swimming pool and palm-lined terrace at Edificio Salguero Sunset for Property 1606 guests in Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, host and Data Controller of OceanViewFlats in Santa Marta",
+		mainEntranceImgAlt:
+			"Beachfront main entrance and lobby of Edificio Salguero Sunset in Playa Salguero, Santa Marta",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -772,7 +793,8 @@ export const dict = {
 		nomadOceanDesc: "Encuentra inspiración mirando al mar Caribe.",
 		nomadImgAlt: "Espacio de trabajo para Nómadas Digitales",
 		romanticImgAlt: "Terraza Privada al Atardecer",
-		heroImgAlt: "Vista al mar desde el balcón",
+		heroImgAlt:
+			"Vista panorámica al atardecer del mar Caribe desde el balcón frente a la playa de OceanViewFlats en Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Habitación",
@@ -1463,6 +1485,26 @@ export const dict = {
 			"¿Existen tarifas del edificio o días de cierre de piscina en el Edificio Salguero Sunset?",
 		faq1606A6:
 			"Sí. La recepción del Edificio Salguero Sunset cobra una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera al llegar para manillas de seguridad y áreas comunes. Las piscinas del edificio cierran todos los martes por mantenimiento programado.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Navegación principal",
+		breadcrumbLabel: "Ruta de navegación",
+		breadcrumbHome: "Inicio",
+		hero1707ImgAlt:
+			"Apartamento 1707 en el piso 17 frente a la playa con vista al mar Caribe en Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Apartamento 1606 en el piso 16 frente a la playa con cálida vista al atardecer en Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Luminosa sala y comedor de concepto abierto en el piso 17 del Apartamento 1707 en Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Piscina frente al mar y zona de descanso en Edificio Salguero Sunset para huéspedes del Apartamento 1707 en Playa Salguero",
+		about1606LivingAlt:
+			"Acogedora sala costera y zona familiar en el piso 16 del Apartamento 1606 en Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Piscina frente a la playa y terraza con palmeras en Edificio Salguero Sunset para huéspedes del Apartamento 1606 en Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, anfitrión y responsable de OceanViewFlats en Santa Marta",
+		mainEntranceImgAlt:
+			"Entrada principal frente a la playa y recepción del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -1515,7 +1557,8 @@ export const dict = {
 		nomadOceanDesc: "Trouvez l'inspiration face à la mer des Caraïbes.",
 		nomadImgAlt: "Espace de travail pour Nomades Digitaux",
 		romanticImgAlt: "Terrasse Privée au Coucher du Soleil",
-		heroImgAlt: "Vue sur l'océan depuis le balcon",
+		heroImgAlt:
+			"Vue panoramique au coucher du soleil sur la mer des Caraïbes depuis le balcon face à la mer d'OceanViewFlats à Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombie",
 		aboutBedroomAlt: "Chambre",
@@ -2214,6 +2257,26 @@ export const dict = {
 			"Y a-t-il des frais d'immeuble ou des jours de fermeture de la piscine à l'Edificio Salguero Sunset ?",
 		faq1606A6:
 			"Oui. La réception de l'Edificio Salguero Sunset perçoit des frais uniques d'enregistrement de l'immeuble de 20 000 COP par personne payables à l'arrivée pour les bracelets de sécurité et les espaces communs. Les piscines ferment tous les mardis pour entretien programmé.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Navigation principale",
+		breadcrumbLabel: "Fil d'Ariane",
+		breadcrumbHome: "Accueil",
+		hero1707ImgAlt:
+			"Appartement 1707 au 17e étage face à la mer avec vue sur la mer des Caraïbes à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Appartement 1606 au 16e étage en bord de mer avec vue sur le coucher du soleil à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Salon lumineux et salle à manger ouverte au 17e étage de l'Appartement 1707 à l'Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Piscine face à la mer et terrasse ensoleillée de l'Edificio Salguero Sunset pour les voyageurs de l'Appartement 1707 à Playa Salguero",
+		about1606LivingAlt:
+			"Salon côtier ensoleillé et espace familial au 16e étage de l'Appartement 1606 à l'Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Piscine en bord de mer et terrasse bordée de palmiers à l'Edificio Salguero Sunset pour les voyageurs de l'Appartement 1606 à Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, hôte et responsable d'OceanViewFlats à Santa Marta",
+		mainEntranceImgAlt:
+			"Entrée principale en bord de mer et hall de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -2266,7 +2329,8 @@ export const dict = {
 		nomadOceanDesc: "Trova l'ispirazione guardando il mar dei Caraibi.",
 		nomadImgAlt: "Spazio di lavoro per Nomadi Digitali",
 		romanticImgAlt: "Terrazza Privata al Tramonto",
-		heroImgAlt: "Vista oceano dal balcone",
+		heroImgAlt:
+			"Vista panoramica al tramonto sul Mar dei Caraibi dal balcone fronte mare di OceanViewFlats a Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Colombia",
 		aboutBedroomAlt: "Camera da letto",
@@ -2952,6 +3016,26 @@ export const dict = {
 			"Ci sono costi condominiali o giorni di chiusura della piscina nell'Edificio Salguero Sunset?",
 		faq1606A6:
 			"Sì. La reception dell'Edificio Salguero Sunset applica una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona pagabile all'arrivo per i braccialetti di sicurezza e le aree comuni. Le piscine chiudono ogni martedì per manutenzione programmata.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Navigazione principale",
+		breadcrumbLabel: "Percorso di navigazione",
+		breadcrumbHome: "Home",
+		hero1707ImgAlt:
+			"Appartamento 1707 al 17° piano fronte mare con vista sul Mar dei Caraibi presso Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Appartamento 1606 al 16° piano fronte mare con calda vista sul tramonto presso Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Luminoso soggiorno e zona pranzo al 17° piano dell'Appartamento 1707 presso Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Piscina fronte mare e solarium presso Edificio Salguero Sunset per gli ospiti dell'Appartamento 1707 a Playa Salguero",
+		about1606LivingAlt:
+			"Soleggiato soggiorno costiero e area relax per famiglie al 16° piano dell'Appartamento 1606 presso Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Piscina sul mare e terrazza con palme presso Edificio Salguero Sunset per gli ospiti dell'Appartamento 1606 a Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, host e titolare di OceanViewFlats a Santa Marta",
+		mainEntranceImgAlt:
+			"Ingresso principale fronte mare e reception di Edificio Salguero Sunset a Playa Salguero, Santa Marta",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3004,7 +3088,8 @@ export const dict = {
 		nomadOceanDesc: "Finde Inspiration beim Blick auf die Karibik.",
 		nomadImgAlt: "Arbeitsplatz für Digitale Nomaden",
 		romanticImgAlt: "Private Terrasse bei Sonnenuntergang",
-		heroImgAlt: "Meerblick vom Balkon",
+		heroImgAlt:
+			"Panoramablick bei Sonnenuntergang auf das Karibische Meer vom Strandbalkon der OceanViewFlats in Playa Salguero, Santa Marta",
 		heroLocation:
 			"Edificio Salguero Sunset • Playa Salguero, Santa Marta, Kolumbien",
 		aboutBedroomAlt: "Schlafzimmer",
@@ -3698,6 +3783,26 @@ export const dict = {
 			"Gibt es Gebäudegebühren oder Pool-Schließtage im Edificio Salguero Sunset?",
 		faq1606A6:
 			"Ja. Die Rezeption des Edificio Salguero Sunset erhebt bei Ankunft eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für Sicherheitsarmbänder und Gemeinschaftsbereiche. Die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "Hauptnavigation",
+		breadcrumbLabel: "Brotkrumen-Navigation",
+		breadcrumbHome: "Startseite",
+		hero1707ImgAlt:
+			"Apartment 1707 in der 17. Etage direkt am Strand mit Blick auf das Karibische Meer im Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		hero1606ImgAlt:
+			"Apartment 1606 in der 16. Etage direkt am Strand mit warmem Sonnenuntergangsblick im Edificio Salguero Sunset, Playa Salguero, Santa Marta",
+		about1707LivingAlt:
+			"Helles Wohn- und Esszimmer in der 17. Etage des Apartments 1707 im Edificio Salguero Sunset, Santa Marta",
+		about1707PoolAlt:
+			"Swimmingpool direkt am Strand und Sonnendeck im Edificio Salguero Sunset für Gäste des Apartments 1707 in Playa Salguero",
+		about1606LivingAlt:
+			"Sonniger Küsten-Wohnbereich und Familienlounge in der 16. Etage des Apartments 1606 im Edificio Salguero Sunset, Santa Marta",
+		about1606PoolAlt:
+			"Pool mit Meerblick und palmenbestandene Terrasse im Edificio Salguero Sunset für Gäste des Apartments 1606 in Santa Marta",
+		hostImgAlt:
+			"Manuel Enrique Herrera, Gastgeber und Verantwortlicher von OceanViewFlats in Santa Marta",
+		mainEntranceImgAlt:
+			"Strandseitiger Haupteingang und Empfangshalle des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -3752,7 +3857,8 @@ export const dict = {
 			"カリブ海を眺めながらインスピレーションを見つけてください。",
 		nomadImgAlt: "デジタルノマドのワークスペース",
 		romanticImgAlt: "サンセットを望むプライベートテラス",
-		heroImgAlt: "バルコニーからのオーシャンビュー",
+		heroImgAlt:
+			"サンタマルタ・プラヤサルゲロのOceanViewFlats海辺バルコニーから望むカリブ海の夕日パノラマビュー",
 		heroLocation:
 			"Edificio Salguero Sunset • コロンビア、サンタマルタ、プラヤ・サルグエロ",
 		aboutBedroomAlt: "ベッドルーム",
@@ -4431,6 +4537,26 @@ export const dict = {
 			"Edificio Salguero Sunsetの建物登録料やプールの休業日はありますか？",
 		faq1606A6:
 			"はい。ご到着時にEdificio Salguero Sunsetフロントにて、セキュリティリストバンドと共用エリア利用のための建物登録料（1名あたり20,000 COP、初回のみ）をお支払いいただきます。また、建物のプールは定期メンテナンスのため毎週火曜日が休業です。",
+		// #300 semantic breadcrumbs & localized image alts
+		navPrimaryLabel: "メインナビゲーション",
+		breadcrumbLabel: "パンくずリスト",
+		breadcrumbHome: "ホーム",
+		hero1707ImgAlt:
+			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット17階オーシャンビュー1707号室のカリブ海眺望スイート",
+		hero1606ImgAlt:
+			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット16階オーシャンビュー1606号室のサンセット海辺スイート",
+		about1707LivingAlt:
+			"サンタマルタのエディフィシオ・サルゲロ・サンセット17階・1707号室の明るいオープンリビング・ダイニング空間",
+		about1707PoolAlt:
+			"プラヤサルゲロのエディフィシオ・サルゲロ・サンセットで1707号室ゲストが利用できる海辺のプールとサンデッキ",
+		about1606LivingAlt:
+			"サンタマルタのエディフィシオ・サルゲロ・サンセット16階・1606号室の陽当たり豊かな海辺リビング・ファミリーラウンジ",
+		about1606PoolAlt:
+			"サンタマルタのエディフィシオ・サルゲロ・サンセットで1606号室ゲストが利用できるオーシャンフロントプールとヤシ並木テラス",
+		hostImgAlt:
+			"サンタマルタのOceanViewFlatsホスト兼管理者マヌエル・エンリケ・エレーラのポートレート",
+		mainEntranceImgAlt:
+			"サンタマルタ・プラヤサルゲロのエディフィシオ・サルゲロ・サンセット海辺メインエントランスとロビー",
 	},
 };
 

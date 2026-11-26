@@ -29,7 +29,11 @@ export const Navigation = ({
 	const contactHref = getContactPagePath(lang, assetPrefix);
 
 	return (
-		<nav className={CHROME_THEME.nav[scrollState]} id="navbar">
+		<nav
+			aria-label={t.navPrimaryLabel}
+			className={CHROME_THEME.nav[scrollState]}
+			id="navbar"
+		>
 			<div className={CHROME_THEME.navContainer}>
 				<a
 					href={homeHref}

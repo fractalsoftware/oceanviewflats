@@ -17,6 +17,7 @@ import React from "react";
 import {
 	DATA_CONTROLLER,
 	getPrivacyPolicyPath,
+	IMAGE_DIMENSIONS,
 	IMAGES,
 } from "../constants/config";
 import { THEMES } from "../constants/theme";
@@ -50,15 +51,21 @@ export const AboutAmenities = ({
 					<div className="grid grid-cols-2 gap-4">
 						<img
 							src={`${assetPrefix}${theme.images.bedroom}`}
-							alt={t.aboutBedroomAlt}
+							alt={t[theme.aboutBedroomAltKey]}
+							width={theme.imageDimensions.bedroom.width}
+							height={theme.imageDimensions.bedroom.height}
 							className="rounded-xl shadow-md h-48 w-full object-cover"
 							loading="lazy"
+							decoding="async"
 						/>
 						<img
 							src={`${assetPrefix}${theme.images.pool}`}
-							alt={t.aboutPoolAlt}
+							alt={t[theme.aboutPoolAltKey]}
+							width={theme.imageDimensions.pool.width}
+							height={theme.imageDimensions.pool.height}
 							className="rounded-xl shadow-md h-48 w-full object-cover"
 							loading="lazy"
+							decoding="async"
 						/>
 					</div>
 				</div>
@@ -100,21 +107,24 @@ export const AboutAmenities = ({
 					className={`w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden flex-shrink-0 border-4 ${theme.aboutHostBorder}`}
 				>
 					<img
-						src={`${assetPrefix}${IMAGES["general"].host}`}
-						alt={t.hostName}
+						src={`${assetPrefix}${IMAGES.general.host}`}
+						alt={t.hostImgAlt}
+						width={IMAGE_DIMENSIONS.host.width}
+						height={IMAGE_DIMENSIONS.host.height}
 						className="w-full h-full object-cover"
 						loading="lazy"
+						decoding="async"
 					/>
 				</div>
 				<div>
-					<h2
+					<p
 						className={`text-sm font-bold uppercase tracking-widest ${theme.aboutHostAccent} mb-2`}
 					>
 						{t.hostTitle}
-					</h2>
-					<h3 className={`text-3xl font-bold mb-4 ${theme.aboutHostName}`}>
+					</p>
+					<h2 className={`text-3xl font-bold mb-4 ${theme.aboutHostName}`}>
 						{t.hostName}
-					</h3>
+					</h2>
 					<p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
 						{t.hostBio}
 					</p>

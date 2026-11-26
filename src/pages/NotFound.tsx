@@ -2,7 +2,7 @@ import { ArrowLeft, Compass, Home, Mail, MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
-import { IMAGES } from "../constants/config";
+import { IMAGE_DIMENSIONS, IMAGES } from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
@@ -48,7 +48,11 @@ export default function NotFound({ lang, assetPrefix = "/" }: AppProps) {
 				<div className="absolute inset-0 w-full h-full">
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
-						alt="OceanViewFlats Ocean Backdrop"
+						alt={t.heroImgAlt}
+						width={IMAGE_DIMENSIONS.homeHero.width}
+						height={IMAGE_DIMENSIONS.homeHero.height}
+						fetchPriority="high"
+						loading="eager"
 						className="w-full h-full object-cover scale-105 motion-safe:animate-[pulse_10s_infinite]"
 					/>
 					<div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/60 to-slate-950/90 backdrop-blur-[2px]"></div>

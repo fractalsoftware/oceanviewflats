@@ -1217,7 +1217,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			forbiddenNavAirbnb: "Book on Airbnb",
 			expected1707Href: "./Oceanview1707/",
 			expected1606Href: "./Oceanview1606/",
-			expectedHeroAlt: "Balcony Ocean View",
+			expectedHeroAlt:
+				"Panoramic Caribbean Sea sunset view from the OceanViewFlats beachfront balcony in Playa Salguero, Santa Marta",
 			expected1707Title: "Oceanview Flat 1707",
 			expected1606Title: "Oceanview Flat 1606",
 			expected1707Badge: "17th Floor • RNT #268781",
@@ -1233,7 +1234,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			forbiddenNavAirbnb: "Reservar en Airbnb",
 			expected1707Href: "./Oceanview1707/es.html",
 			expected1606Href: "./Oceanview1606/es.html",
-			expectedHeroAlt: "Vista al mar desde el balcón",
+			expectedHeroAlt:
+				"Vista panorámica al atardecer del mar Caribe desde el balcón frente a la playa de OceanViewFlats en Playa Salguero, Santa Marta",
 			expected1707Title: "Apartamento Vista al Mar 1707",
 			expected1606Title: "Apartamento Vista al Mar 1606",
 			expected1707Badge: "Piso 17 • RNT #268781",
@@ -1249,7 +1251,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			forbiddenNavAirbnb: "Réserver sur Airbnb",
 			expected1707Href: "./Oceanview1707/fr.html",
 			expected1606Href: "./Oceanview1606/fr.html",
-			expectedHeroAlt: "Vue sur l&#x27;océan depuis le balcon",
+			expectedHeroAlt:
+				"Vue panoramique au coucher du soleil sur la mer des Caraïbes depuis le balcon face à la mer d&#x27;OceanViewFlats à Playa Salguero, Santa Marta",
 			expected1707Title: "Appartement Vue Mer 1707",
 			expected1606Title: "Appartement Vue Mer 1606",
 			expected1707Badge: "17e Étage • RNT #268781",
@@ -1265,7 +1268,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			forbiddenNavAirbnb: "Prenota su Airbnb",
 			expected1707Href: "./Oceanview1707/it.html",
 			expected1606Href: "./Oceanview1606/it.html",
-			expectedHeroAlt: "Vista oceano dal balcone",
+			expectedHeroAlt:
+				"Vista panoramica al tramonto sul Mar dei Caraibi dal balcone fronte mare di OceanViewFlats a Playa Salguero, Santa Marta",
 			expected1707Title: "Appartamento Vista Mare 1707",
 			expected1606Title: "Appartamento Vista Mare 1606",
 			expected1707Badge: "17° Piano • RNT #268781",
@@ -1281,7 +1285,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			forbiddenNavAirbnb: "Auf Airbnb buchen",
 			expected1707Href: "./Oceanview1707/de.html",
 			expected1606Href: "./Oceanview1606/de.html",
-			expectedHeroAlt: "Meerblick vom Balkon",
+			expectedHeroAlt:
+				"Panoramablick bei Sonnenuntergang auf das Karibische Meer vom Strandbalkon der OceanViewFlats in Playa Salguero, Santa Marta",
 			expected1707Title: "Apartment mit Meerblick 1707",
 			expected1606Title: "Apartment mit Meerblick 1606",
 			expected1707Badge: "17. Etage • RNT #268781",
@@ -1297,7 +1302,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			forbiddenNavAirbnb: "Airbnbで予約",
 			expected1707Href: "./Oceanview1707/ja.html",
 			expected1606Href: "./Oceanview1606/ja.html",
-			expectedHeroAlt: "バルコニーからのオーシャンビュー",
+			expectedHeroAlt:
+				"サンタマルタ・プラヤサルゲロのOceanViewFlats海辺バルコニーから望むカリブ海の夕日パノラマビュー",
 			expected1707Title: "オーシャンビューフラット 1707",
 			expected1606Title: "オーシャンビューフラット 1606",
 			expected1707Badge: "17階 • RNT #268781",
