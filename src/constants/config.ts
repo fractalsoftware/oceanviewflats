@@ -19,10 +19,63 @@ export const getCanonicalUrl = (
 	return lang === "en" ? `${dirBase}/` : `${dirBase}/${lang}.html`;
 };
 
-export const AIRBNB_URLS = {
+export const AIRBNB_URLS: Readonly<Record<PropertyId, string>> = {
 	"1707": "https://www.airbnb.com/rooms/1500108514798091235",
 	"1606": "https://www.airbnb.com/rooms/1584825560087571592",
 };
+
+export interface ExternalEntityUrlsConfig {
+	readonly googleBusinessProfile: string;
+	readonly appleBusinessConnect: string;
+	readonly instagram: string;
+	readonly tripadvisor: string;
+}
+
+export const EXTERNAL_ENTITY_URLS: ExternalEntityUrlsConfig = {
+	googleBusinessProfile: "",
+	appleBusinessConnect: "",
+	instagram: "",
+	tripadvisor: "",
+} as const;
+
+const filterVerifiedHttpsUrls = (urls: readonly string[]): string[] => {
+	const seen = new Set<string>();
+	const valid: string[] = [];
+	for (const raw of urls) {
+		const trimmed = raw.trim();
+		if (!trimmed.startsWith("https://")) continue;
+		try {
+			const parsed = new URL(trimmed);
+			if (parsed.protocol !== "https:" || !parsed.hostname) continue;
+			if (!seen.has(trimmed)) {
+				seen.add(trimmed);
+				valid.push(trimmed);
+			}
+		} catch {
+			// Ignore malformed URLs
+		}
+	}
+	return valid;
+};
+
+export const getBusinessSameAsUrls = (
+	externalUrls: Partial<ExternalEntityUrlsConfig> = EXTERNAL_ENTITY_URLS,
+	airbnbUrls: Readonly<Record<PropertyId, string>> = AIRBNB_URLS,
+): string[] =>
+	filterVerifiedHttpsUrls([
+		airbnbUrls["1707"],
+		airbnbUrls["1606"],
+		externalUrls.googleBusinessProfile ?? "",
+		externalUrls.appleBusinessConnect ?? "",
+		externalUrls.instagram ?? "",
+		externalUrls.tripadvisor ?? "",
+	]);
+
+export const getPropertySameAsUrls = (
+	propertyId: PropertyId,
+	extraUrls: readonly string[] = [],
+	airbnbUrls: Readonly<Record<PropertyId, string>> = AIRBNB_URLS,
+): string[] => filterVerifiedHttpsUrls([airbnbUrls[propertyId], ...extraUrls]);
 
 export const MERCADOPAGO_PUBLIC_KEY =
 	process.env.MERCADOPAGO_PUBLIC_KEY ||

@@ -11,17 +11,28 @@ import {
 import {
 	AIRBNB_URLS,
 	BUILDING_LOCATION,
+	BUILDING_REGISTRATION_FEE_COP,
 	DATA_CONTROLLER,
+	EXTERNAL_ENTITY_URLS,
+	getBusinessSameAsUrls,
+	getPropertySameAsUrls,
 	HOME_FAQ_ITEMS,
 	IMAGES,
 	PLAYA_SALGUERO_LANDMARKS,
 	PRIVACY_POLICY_VERSION,
+	PROPERTY_CLEANING_FEES_COP,
 	PROPERTY_FAQ_ITEMS,
 	PROPERTY_REVIEWS,
 	type PropertyId,
 } from "../../src/constants/config";
+import {
+	buildGuidePricingTokens,
+	DESTINATION_GUIDES,
+	formatCopCurrencyForLocale,
+	interpolateGuideText,
+} from "../../src/i18n/destinationGuides";
 import { dict } from "../../src/i18n/dict";
-import type { Lang } from "../../src/types";
+import { buildLlmsFullTxt, buildLlmsTxt } from "../../src/utils/llms";
 import {
 	buildPricingSummary,
 	type SeasonalRateTierRow,
@@ -669,124 +680,409 @@ test("#303 Contact and Data Processing Policy JSON-LD @graph include BreadcrumbL
 	}
 });
 
-test("#303 public/llms.txt and dist/llms.txt synchronize canonical trailing-slash URLs, reconciled beds, COP rates, policies & Santa Marta landmarks", () => {
-	const publicLlms = fs.readFileSync(
-		path.join(PUBLIC_DIR, "llms.txt"),
-		"utf-8",
+test("#313 build-time dist/llms.txt and dist/llms-full.txt derive COP rates from prices.csv, include /santa-marta/ Destination Guides, omit disallowed routes, and obey CONTEXT.md", () => {
+	assert.equal(
+		fs.existsSync(path.join(PUBLIC_DIR, "llms.txt")),
+		false,
+		"Static public/llms.txt must be removed so dist/llms.txt has a single build-time source of truth",
 	);
-	const distLlms = fs.readFileSync(path.join(DIST_DIR, "llms.txt"), "utf-8");
+
+	const csvRows = readPricesCsvRows();
+	const csvSummary = buildPricingSummary(csvRows);
+	const distLlmsPath = path.join(DIST_DIR, "llms.txt");
+	const distLlmsFullPath = path.join(DIST_DIR, "llms-full.txt");
+
+	assert.ok(fs.existsSync(distLlmsPath), "Expected generated dist/llms.txt");
+	assert.ok(
+		fs.existsSync(distLlmsFullPath),
+		"Expected generated dist/llms-full.txt",
+	);
+
+	const distLlms = fs.readFileSync(distLlmsPath, "utf-8");
+	const distLlmsFull = fs.readFileSync(distLlmsFullPath, "utf-8");
+
 	assert.equal(
 		distLlms,
-		publicLlms,
-		"dist/llms.txt must match public/llms.txt",
+		buildLlmsTxt(BASE_URL, csvSummary),
+		"dist/llms.txt must match deterministic buildLlmsTxt(BASE_URL, csvSummary)",
+	);
+	assert.equal(
+		distLlmsFull,
+		buildLlmsFullTxt(BASE_URL, csvSummary),
+		"dist/llms-full.txt must match deterministic buildLlmsFullTxt(BASE_URL, csvSummary)",
+	);
+	assert.ok(
+		distLlms.includes(`${BASE_URL}/llms-full.txt`),
+		"dist/llms.txt must link to canonical llms-full.txt",
+	);
+	assert.ok(
+		distLlmsFull.length > distLlms.length,
+		"dist/llms-full.txt must extend dist/llms.txt with comprehensive reference content",
 	);
 
-	// Canonical trailing-slash public English URLs
 	const requiredCanonicalUrls = [
-		"https://www.oceanviewflats.com/",
-		"https://www.oceanviewflats.com/Oceanview1707/",
-		"https://www.oceanviewflats.com/Oceanview1606/",
-		"https://www.oceanviewflats.com/contact/",
-		"https://www.oceanviewflats.com/privacy/",
+		`${BASE_URL}/`,
+		`${BASE_URL}/Oceanview1707/`,
+		`${BASE_URL}/Oceanview1606/`,
+		`${BASE_URL}/santa-marta/`,
+		...DESTINATION_GUIDES.map((g) => `${BASE_URL}/santa-marta/${g.slug}/`),
+		`${BASE_URL}/contact/`,
+		`${BASE_URL}/privacy/`,
 	];
-	for (const url of requiredCanonicalUrls) {
-		assert.ok(
-			publicLlms.includes(url),
-			`llms.txt must contain canonical trailing-slash URL: ${url}`,
-		);
-	}
 
-	// Disallowed noindex/robots.txt transactional URLs (/registry/, /guide/) must NOT be advertised
-	for (const disallowedUrl of [
-		"https://www.oceanviewflats.com/registry/",
-		"https://www.oceanviewflats.com/guide/",
+	const disallowedRoutes = [
+		`${BASE_URL}/registry/`,
+		`${BASE_URL}/guide/`,
+		`${BASE_URL}/booking-success/`,
+		`${BASE_URL}/booking-failure/`,
+		`${BASE_URL}/booking-pending/`,
+		`${BASE_URL}/404.html`,
+		`${BASE_URL}/404/`,
 		"/registry/",
 		"/guide/",
-	]) {
-		assert.ok(
-			!publicLlms.includes(disallowedUrl),
-			`llms.txt must NOT advertise robots.txt-disallowed URL or path: ${disallowedUrl}`,
-		);
-	}
-	assert.ok(
-		publicLlms.includes("Guest Registry") && publicLlms.includes("Guest Guide"),
-		"llms.txt must still document the mandatory Guest Registry and Guest Guide onboarding workflow textually",
-	);
-	assert.ok(
-		publicLlms.includes("External OTA Channel (Optional)") &&
-			!publicLlms.includes("External OTA Listing"),
-		"llms.txt must use canonical domain term 'External OTA Channel (Optional)'",
-	);
+		"/booking-success/",
+		"/booking-failure/",
+		"/booking-pending/",
+		"/404.html",
+		"/404/",
+		"/api/",
+	];
 
-	// Zero non-trailing-slash English directory URLs
-	const nonCanonicalAbsMatches = publicLlms.match(
-		/https:\/\/www\.oceanviewflats\.com\/(?:Oceanview1707|Oceanview1606|contact|privacy|registry|guide)(?![/\w])/g,
-	);
-	assert.equal(
-		nonCanonicalAbsMatches,
-		null,
-		`llms.txt must not contain non-trailing-slash absolute English URLs: ${nonCanonicalAbsMatches?.join(", ")}`,
-	);
-	const nonCanonicalRelMatches = publicLlms.match(
-		/`\/(?:Oceanview1707|Oceanview1606|contact|privacy|registry|guide)`/g,
-	);
-	assert.equal(
-		nonCanonicalRelMatches,
-		null,
-		`llms.txt must not contain non-trailing-slash relative English paths: ${nonCanonicalRelMatches?.join(", ")}`,
-	);
+	const forbiddenContextSynonyms = [
+		/\bBuilding Fee\b/i,
+		/\bResort Fee\b/i,
+		/\bPrice Tier\b/i,
+		/\bDirect Booking\b/i,
+		/\bListing\b/i,
+		/\bWelcome Pack\b/i,
+		/\bHouse Manual\b/i,
+		/\bCheck-in Form\b/i,
+		/\bParking Spot\b/i,
+		/\bDaily Price\b/i,
+		/\bMaid Fee\b/i,
+		/\bDoor Password\b/i,
+		/\bGuest Cap\b/i,
+		/\bTerms Acceptance\b/i,
+	];
 
-	// Reconciled bed counts (and zero stale "2 Double Beds")
-	assert.ok(
-		!publicLlms.includes("2 Double Beds"),
-		"llms.txt must not contain stale '2 Double Beds' layout",
-	);
-	assert.ok(
-		publicLlms.includes("2 Bedrooms, 4 Beds") &&
-			publicLlms.includes("2 Twin/Single Beds") &&
-			publicLlms.includes("1 Pull-out Sofa Bed"),
-		"llms.txt must reflect Property 1707 reconciled 4-bed layout",
-	);
-	assert.ok(
-		publicLlms.includes("2 Bedrooms, 3 Beds") &&
-			publicLlms.includes("1 Double Bed"),
-		"llms.txt must reflect Property 1606 reconciled 3-bed layout",
-	);
+	const reviewAuthorsAndBodies = [
+		...PROPERTY_REVIEWS["1707"],
+		...PROPERTY_REVIEWS["1606"],
+	].flatMap((rev) => [dict.en[rev.authorKey], dict.en[rev.textKey]]);
 
-	// Authoritative COP rates, Cleaning Fees, Check-in/Check-out, Building Registration Fee & Tuesday pool maintenance
-	for (const fact of [
-		"450,000 COP",
-		"350,000 COP",
-		"550,000 COP",
-		"2-night",
-		"4-night",
-		"100,000 COP",
-		"80,000 COP",
+	const expectedDynamicFacts = [
+		formatCopCurrencyForLocale(csvSummary.properties["1707"].lowPrice, "en"),
+		formatCopCurrencyForLocale(csvSummary.properties["1606"].lowPrice, "en"),
+		formatCopCurrencyForLocale(csvSummary.properties["1606"].highPrice, "en"),
+		`${csvSummary.properties["1707"].minStay}-night`,
+		`${csvSummary.properties["1606"].minStay}-night`,
+		`${csvSummary.properties["1606"].maxMinStay}-night`,
+		formatCopCurrencyForLocale(PROPERTY_CLEANING_FEES_COP["1707"], "en"),
+		formatCopCurrencyForLocale(PROPERTY_CLEANING_FEES_COP["1606"], "en"),
+		formatCopCurrencyForLocale(BUILDING_REGISTRATION_FEE_COP, "en"),
 		"15:00",
 		"11:00",
-		"20,000 COP",
 		"Tuesday",
-		"RNT #268781",
-		"RNT #270413",
+		DATA_CONTROLLER.rnt1707,
+		DATA_CONTROLLER.rnt1606,
 		"Bay 95",
 		"Bay 87",
 		PRIVACY_POLICY_VERSION,
+	];
+
+	for (const [label, content] of [
+		["dist/llms.txt", distLlms],
+		["dist/llms-full.txt", distLlmsFull],
+	] as const) {
+		for (const url of requiredCanonicalUrls) {
+			assert.ok(
+				content.includes(url),
+				`${label} must contain canonical trailing-slash URL: ${url}`,
+			);
+		}
+
+		for (const lang of LANGUAGES) {
+			const expectedHubPath =
+				lang === "en" ? "`/santa-marta/`" : `\`/santa-marta/${lang}.html\``;
+			assert.ok(
+				content.includes(expectedHubPath),
+				`${label} must include localized hub path ${expectedHubPath}`,
+			);
+			for (const guide of DESTINATION_GUIDES) {
+				const expectedGuidePath =
+					lang === "en"
+						? `\`/santa-marta/${guide.slug}/\``
+						: `\`/santa-marta/${guide.slug}/${lang}.html\``;
+				assert.ok(
+					content.includes(expectedGuidePath),
+					`${label} must include localized Destination Guide path ${expectedGuidePath}`,
+				);
+			}
+		}
+
+		for (const disallowedUrl of disallowedRoutes) {
+			assert.ok(
+				!content.includes(disallowedUrl),
+				`${label} must NOT advertise disallowed URL or path: ${disallowedUrl}`,
+			);
+		}
+
+		assert.ok(
+			content.includes("Guest Registry") &&
+				content.includes("Guest Guide") &&
+				content.includes("Destination Guide"),
+			`${label} must document Guest Registry, Guest Guide, and Destination Guide textually`,
+		);
+		assert.ok(
+			content.includes("External OTA Channel (Optional)") &&
+				!content.includes("External OTA Listing"),
+			`${label} must use canonical domain term 'External OTA Channel (Optional)'`,
+		);
+
+		// Zero non-trailing-slash English directory URLs or paths
+		const nonCanonicalAbsMatches = content.match(
+			/https:\/\/www\.oceanviewflats\.com\/(?:Oceanview1707|Oceanview1606|contact|privacy|registry|guide|santa-marta(?:\/[a-z0-9-]+)?)(?![/\w.-])/g,
+		);
+		assert.equal(
+			nonCanonicalAbsMatches,
+			null,
+			`${label} must not contain non-trailing-slash absolute English URLs: ${nonCanonicalAbsMatches?.join(", ")}`,
+		);
+		const nonCanonicalRelMatches = content.match(
+			/`\/(?:Oceanview1707|Oceanview1606|contact|privacy|registry|guide|santa-marta(?:\/[a-z0-9-]+)?)`/g,
+		);
+		assert.equal(
+			nonCanonicalRelMatches,
+			null,
+			`${label} must not contain non-trailing-slash relative English paths: ${nonCanonicalRelMatches?.join(", ")}`,
+		);
+
+		// Reconciled bed counts (and zero stale "2 Double Beds")
+		assert.ok(
+			!content.includes("2 Double Beds"),
+			`${label} must not contain stale '2 Double Beds' layout`,
+		);
+		assert.ok(
+			content.includes("2 Bedrooms, 4 Beds") &&
+				content.includes("2 Twin/Single Beds") &&
+				content.includes("1 Pull-out Sofa Bed"),
+			`${label} must reflect Property 1707 reconciled 4-bed layout`,
+		);
+		assert.ok(
+			content.includes("2 Bedrooms, 3 Beds") &&
+				content.includes("1 Double Bed"),
+			`${label} must reflect Property 1606 reconciled 3-bed layout`,
+		);
+
+		for (const fact of expectedDynamicFacts) {
+			assert.ok(
+				content.includes(fact),
+				`${label} must include authoritative fact: ${fact}`,
+			);
+		}
+
+		for (const tier of csvRows) {
+			assert.ok(
+				content.includes(tier.start_date) && content.includes(tier.end_date),
+				`${label} must reflect CSV Seasonal Rate Tier window ${tier.start_date}..${tier.end_date}`,
+			);
+		}
+
+		for (const landmark of PLAYA_SALGUERO_LANDMARKS) {
+			assert.ok(
+				content.includes(landmark.distanceApprox),
+				`${label} must include landmark distance ${landmark.distanceApprox} for ${landmark.id}`,
+			);
+			assert.ok(
+				content.includes(landmark.travelTimeApprox),
+				`${label} must include landmark travel time ${landmark.travelTimeApprox} for ${landmark.id}`,
+			);
+		}
+
+		assert.doesNotMatch(
+			content,
+			/\bUSD\b/,
+			`${label} must never emit USD pricing`,
+		);
+
+		for (const pattern of forbiddenContextSynonyms) {
+			assert.doesNotMatch(
+				content,
+				pattern,
+				`${label} must not contain CONTEXT.md forbidden synonym (${pattern})`,
+			);
+		}
+
+		for (const reviewSnippet of reviewAuthorsAndBodies) {
+			assert.ok(
+				!content.includes(reviewSnippet),
+				`${label} must NOT duplicate Guest Review authors/bodies: ${reviewSnippet}`,
+			);
+		}
+	}
+
+	// Comprehensive dist/llms-full.txt checks: comparison matrix, 4 Destination Guides, FAQs, cancellation, Law 1581/2068/679
+	assert.ok(
+		distLlmsFull.includes(
+			"| Specification | OceanViewFlats 1707 | OceanViewFlats 1606 |",
+		),
+		"dist/llms-full.txt must include reconciled Property comparison matrix",
+	);
+
+	const enTokens = buildGuidePricingTokens(csvSummary, "en");
+	for (const guide of DESTINATION_GUIDES) {
+		const enLocale = guide.locales.en;
+		assert.ok(
+			distLlmsFull.includes(interpolateGuideText(enLocale.title, enTokens)),
+			`dist/llms-full.txt must include Destination Guide title for ${guide.slug}`,
+		);
+		for (const takeaway of enLocale.keyTakeaways) {
+			assert.ok(
+				distLlmsFull.includes(interpolateGuideText(takeaway, enTokens)),
+				`dist/llms-full.txt must include interpolated key takeaway from ${guide.slug}`,
+			);
+		}
+	}
+	assert.doesNotMatch(
+		distLlmsFull,
+		/\{(?:rate1707|rate1707Cop|rate1707HighCop|minStay1707|cleaning1707Cop|rate1606|rate1606Cop|rate1606HighCop|minStay1606|maxMinStay1606|cleaning1606Cop|portfolioLowCop|portfolioHighCop|buildingFeeCop)\}/,
+		"dist/llms-full.txt must not contain unresolved pricing interpolation tokens",
+	);
+
+	for (const fullBriefFact of [
+		"## Complete Property FAQs",
+		"### OceanViewFlats 1707 — Frequently Asked Questions",
+		"### OceanViewFlats 1606 — Frequently Asked Questions",
+		"100% refund",
+		"50% Policy Retention",
+		"Law 1581 of 2012",
+		"Law 2068 of 2020",
+		"Law 679 of 2001",
+		"Personal Data Authorization",
+		"Minor Guardian Attestation",
+		"XSalsa20-Poly1305",
+		`${DATA_CONTROLLER.consultaSlaBusinessDays} business days`,
+		`${DATA_CONTROLLER.reclamoSlaBusinessDays} business days`,
+		`${DATA_CONTROLLER.retentionDaysAfterCheckout} days`,
 	]) {
 		assert.ok(
-			publicLlms.includes(fact),
-			`llms.txt must include authoritative fact: ${fact}`,
+			distLlmsFull.includes(fullBriefFact),
+			`dist/llms-full.txt must include full brief section/fact: ${fullBriefFact}`,
+		);
+	}
+});
+
+test("#313 buildLlmsTxt and buildLlmsFullTxt react dynamically to custom Seasonal Rate Tiers without manual price duplication", () => {
+	const customSummary = buildPricingSummary([
+		{
+			property_id: "1707",
+			start_date: "2027-02-01",
+			end_date: "2027-11-30",
+			nightly_rate_cop: 495000,
+			minimum_stay: 3,
+		},
+		{
+			property_id: "1606",
+			start_date: "2027-02-01",
+			end_date: "2027-11-30",
+			nightly_rate_cop: 385000,
+			minimum_stay: 2,
+		},
+		{
+			property_id: "1606",
+			start_date: "2027-12-01",
+			end_date: "2028-01-15",
+			nightly_rate_cop: 620000,
+			minimum_stay: 5,
+		},
+	]);
+
+	for (const [label, output] of [
+		["buildLlmsTxt", buildLlmsTxt(BASE_URL, customSummary)],
+		["buildLlmsFullTxt", buildLlmsFullTxt(BASE_URL, customSummary)],
+	] as const) {
+		for (const expected of [
+			"495,000 COP",
+			"385,000 COP",
+			"620,000 COP",
+			"3-night",
+			"5-night",
+			"2027-02-01",
+			"2028-01-15",
+		]) {
+			assert.ok(
+				output.includes(expected),
+				`${label} must dynamically reflect updated tier value: ${expected}`,
+			);
+		}
+		for (const stale of ["450,000 COP", "350,000 COP", "550,000 COP"]) {
+			assert.ok(
+				!output.includes(stale),
+				`${label} must not retain hardcoded stale COP rate: ${stale}`,
+			);
+		}
+	}
+});
+
+test("#313 EXTERNAL_ENTITY_URLS, getBusinessSameAsUrls, and getPropertySameAsUrls filter blank/non-HTTPS values and emit valid https:// URLs in JSON-LD sameAs", () => {
+	assert.deepEqual(Object.keys(EXTERNAL_ENTITY_URLS).sort(), [
+		"appleBusinessConnect",
+		"googleBusinessProfile",
+		"instagram",
+		"tripadvisor",
+	]);
+
+	const defaultBusinessSameAs = getBusinessSameAsUrls();
+	assert.deepEqual(defaultBusinessSameAs, [
+		AIRBNB_URLS["1707"],
+		AIRBNB_URLS["1606"],
+	]);
+	for (const url of defaultBusinessSameAs) {
+		assert.ok(
+			url.startsWith("https://"),
+			`Business sameAs URL must use https://: ${url}`,
 		);
 	}
 
-	// Santa Marta landmark distances matching PLAYA_SALGUERO_LANDMARKS
-	for (const landmark of PLAYA_SALGUERO_LANDMARKS) {
-		assert.ok(
-			publicLlms.includes(landmark.distanceApprox),
-			`llms.txt must include landmark distance ${landmark.distanceApprox} for ${landmark.id}`,
-		);
-		assert.ok(
-			publicLlms.includes(landmark.travelTimeApprox),
-			`llms.txt must include landmark travel time ${landmark.travelTimeApprox} for ${landmark.id}`,
-		);
-	}
+	const customBusinessSameAs = getBusinessSameAsUrls({
+		googleBusinessProfile: "  https://maps.google.com/?cid=987654321  ",
+		appleBusinessConnect: "   ",
+		instagram: "http://instagram.com/insecure-ignored",
+		tripadvisor: "https://www.tripadvisor.com/Hotel_Review-oceanviewflats",
+	});
+	assert.deepEqual(customBusinessSameAs, [
+		AIRBNB_URLS["1707"],
+		AIRBNB_URLS["1606"],
+		"https://maps.google.com/?cid=987654321",
+		"https://www.tripadvisor.com/Hotel_Review-oceanviewflats",
+	]);
+
+	// Deduplicates identical entries and rejects invalid/non-https protocols
+	const dedupedBusinessSameAs = getBusinessSameAsUrls({
+		googleBusinessProfile: AIRBNB_URLS["1707"],
+		appleBusinessConnect: "javascript:alert(1)",
+		instagram: "not-a-url",
+		tripadvisor: "https://instagram.com/oceanviewflats",
+	});
+	assert.deepEqual(dedupedBusinessSameAs, [
+		AIRBNB_URLS["1707"],
+		AIRBNB_URLS["1606"],
+		"https://instagram.com/oceanviewflats",
+	]);
+
+	assert.deepEqual(getPropertySameAsUrls("1707"), [AIRBNB_URLS["1707"]]);
+	assert.deepEqual(getPropertySameAsUrls("1606"), [AIRBNB_URLS["1606"]]);
+	assert.deepEqual(
+		getPropertySameAsUrls("1707", [
+			"",
+			"   ",
+			"http://insecure.example.com/1707",
+			AIRBNB_URLS["1707"],
+			"https://www.tripadvisor.com/VacationRentalReview-1707",
+		]),
+		[
+			AIRBNB_URLS["1707"],
+			"https://www.tripadvisor.com/VacationRentalReview-1707",
+		],
+	);
 });
