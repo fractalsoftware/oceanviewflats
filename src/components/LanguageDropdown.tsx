@@ -9,7 +9,7 @@ interface LanguageDropdownProps {
 }
 
 const LANGUAGES: { code: Lang; label: string; link: string }[] = [
-	{ code: "en", label: "English", link: "index.html" },
+	{ code: "en", label: "English", link: "./" },
 	{ code: "es", label: "Español", link: "es.html" },
 	{ code: "fr", label: "Français", link: "fr.html" },
 	{ code: "it", label: "Italiano", link: "it.html" },

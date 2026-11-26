@@ -4,6 +4,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
 	BASE_URL,
+	getCanonicalUrl,
 	getClientDictionaryForPage,
 	getClientExtraConfigForPage,
 	getHrefLangTags,
@@ -14,6 +15,7 @@ import {
 import { IMAGES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
+import type { Lang } from "./src/types";
 
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
@@ -87,17 +89,26 @@ parsePricesCsv();
 const generateSitemap = (
 	pages: PageConfig[],
 	baseUrl: string,
-	languages: string[],
+	languages: Lang[],
 ) => {
 	const urls: string[] = [];
 	const now = new Date().toISOString().split("T")[0];
 
 	pages.forEach((page) => {
+		const defaultUrl = getCanonicalUrl(baseUrl, page.path, "en");
+		const alternateLinks = [
+			...languages.map(
+				(altLang) =>
+					`    <xhtml:link rel="alternate" hreflang="${altLang}" href="${getCanonicalUrl(baseUrl, page.path, altLang)}" />`,
+			),
+			`    <xhtml:link rel="alternate" hreflang="x-default" href="${defaultUrl}" />`,
+		].join("\n");
+
 		languages.forEach((lang) => {
-			const basePath = page.path ? `${baseUrl}/${page.path}` : baseUrl;
-			const url = lang === "en" ? basePath : `${basePath}/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, page.path, lang);
 			urls.push(`  <url>
     <loc>${url}</loc>
+${alternateLinks}
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${page.path === "" ? "1.0" : "0.8"}</priority>
@@ -106,13 +117,15 @@ const generateSitemap = (
 	});
 
 	return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.join("\n")}
 </urlset>`;
 };
 
 pages.forEach((page) => {
-	const hrefLangTags = getHrefLangTags(BASE_URL, page.path, LANGUAGES);
+	const hrefLangTags = page.noIndex
+		? ""
+		: getHrefLangTags(BASE_URL, page.path, LANGUAGES);
 
 	LANGUAGES.forEach((lang) => {
 		const t = dict[lang];
@@ -133,8 +146,7 @@ pages.forEach((page) => {
 			"",
 		);
 
-		const basePath = page.path ? `${BASE_URL}/${page.path}` : BASE_URL;
-		const url = lang === "en" ? basePath : `${basePath}/${lang}.html`;
+		const url = getCanonicalUrl(BASE_URL, page.path, lang);
 		const structuredData = page.getStructuredData(t, lang, BASE_URL);
 
 		const apiBase = page.id === "404" ? "/api/" : `${assetPrefix}api/`;
@@ -170,6 +182,7 @@ pages.forEach((page) => {
 			hrefLangTags,
 			structuredData,
 			assetPrefix,
+			noIndex: Boolean(page.noIndex),
 			customScripts: page.scripts,
 			pageConfig,
 		});
@@ -188,15 +201,7 @@ pages.forEach((page) => {
 
 // Generate and save sitemap
 const sitemap = generateSitemap(
-	pages.filter(
-		(p) =>
-			p.id !== "404" &&
-			p.id !== "registry" &&
-			p.id !== "guide" &&
-			p.id !== "booking-success" &&
-			p.id !== "booking-failure" &&
-			p.id !== "booking-pending",
-	),
+	pages.filter((p) => !p.noIndex),
 	BASE_URL,
 	LANGUAGES,
 );

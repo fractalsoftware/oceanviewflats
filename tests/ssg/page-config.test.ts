@@ -426,8 +426,8 @@ test("Contact and Direct Booking forms render unchecked-by-default required priv
 		"Contact #privacy-consent must be unchecked by default",
 	);
 	assert.ok(
-		contactEn.includes('href="../privacy/index.html"'),
-		"English Contact page must link to ../privacy/index.html",
+		contactEn.includes('href="../privacy/"'),
+		"English Contact page must link to ../privacy/",
 	);
 
 	const contactEs = fs.readFileSync(
@@ -455,8 +455,8 @@ test("Contact and Direct Booking forms render unchecked-by-default required priv
 			`${prop} #booking-privacy-consent must be unchecked by default`,
 		);
 		assert.ok(
-			propEn.includes('href="../privacy/index.html"'),
-			`${prop} English page must link to ../privacy/index.html`,
+			propEn.includes('href="../privacy/"'),
+			`${prop} English page must link to ../privacy/`,
 		);
 	}
 
@@ -474,7 +474,7 @@ test("Guest Registry pages render Personal Data Authorization and hidden disable
 		{
 			file: "registry/index.html",
 			lang: "en",
-			privacyHref: "../privacy/index.html",
+			privacyHref: "../privacy/",
 		},
 		{ file: "registry/es.html", lang: "es", privacyHref: "../privacy/es.html" },
 		{ file: "registry/fr.html", lang: "fr", privacyHref: "../privacy/fr.html" },
@@ -1215,8 +1215,8 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			file: "index.html",
 			expectedNavBookDirect: "Book Direct",
 			forbiddenNavAirbnb: "Book on Airbnb",
-			expected1707Href: "./Oceanview1707/index.html",
-			expected1606Href: "./Oceanview1606/index.html",
+			expected1707Href: "./Oceanview1707/",
+			expected1606Href: "./Oceanview1606/",
 			expectedHeroAlt: "Balcony Ocean View",
 			expected1707Title: "Oceanview Flat 1707",
 			expected1606Title: "Oceanview Flat 1606",
@@ -1430,7 +1430,7 @@ test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive
 		{
 			code: "en",
 			file: "index.html",
-			expectedContactHref: "./contact/index.html",
+			expectedContactHref: "./contact/",
 			expectedDirectTitle: "Why Book Direct?",
 		},
 		{
@@ -3845,13 +3845,13 @@ const runBookingPaymentRedirectHarness = async (options: {
 
 test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUCCESS_THEME & getRegistryPagePath, approved checkout redirect + sessionStorage persistence, and reservation code DOM hydration (#264)", async () => {
 	const { getRegistryPagePath } = await import("../../src/constants/config");
-	assert.equal(getRegistryPagePath("en", "../"), "../registry/index.html");
+	assert.equal(getRegistryPagePath("en", "../"), "../registry/");
 	assert.equal(getRegistryPagePath("es", "../"), "../registry/es.html");
 	assert.equal(getRegistryPagePath("fr", "../"), "../registry/fr.html");
 	assert.equal(getRegistryPagePath("it", "../"), "../registry/it.html");
 	assert.equal(getRegistryPagePath("de", "../"), "../registry/de.html");
 	assert.equal(getRegistryPagePath("ja", "../"), "../registry/ja.html");
-	assert.equal(getRegistryPagePath("en"), "./registry/index.html");
+	assert.equal(getRegistryPagePath("en"), "./registry/");
 
 	// 1. Verify BookingSuccess.tsx is 100% style-agnostic without inline class strings or React state/effect hooks
 	const bookingSuccessSource = fs.readFileSync(
@@ -3881,8 +3881,8 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 		{
 			code: "en",
 			file: "booking-success/index.html",
-			expectedRegistryHref: "../registry/index.html",
-			expectedGuideHref: "../guide/index.html",
+			expectedRegistryHref: "../registry/",
+			expectedGuideHref: "../guide/",
 			expectedHomeHref: "../",
 			expectedRegistryBtn: "Complete Guest Registry",
 			expectedRefLabel: "Reservation Reference Code",
@@ -4036,7 +4036,7 @@ test("BookingSuccess 6-locale zero-hydration SSG markup, centralized BOOKING_SUC
 
 		const expectedTarget =
 			langCode === "en"
-				? "../booking-success/index.html?id=mp_pay_777&code=ovf_res_264&status=approved"
+				? "../booking-success/?id=mp_pay_777&code=ovf_res_264&status=approved"
 				: `../booking-success/${langCode}.html?id=mp_pay_777&code=ovf_res_264&status=approved`;
 		assert.equal(redirectedHref, expectedTarget);
 		assert.equal(sessionStore.get("ovf_last_reservation_code"), "ovf_res_264");
@@ -4572,10 +4572,7 @@ test("registry.js pre-fills Primary Guest email, phone, and fallback name from s
 
 test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PENDING_THEME, Efecty Cash Voucher & pending checkout routing, and voucher + reference code DOM hydration (#265)", async () => {
 	const { getBookingPendingPath } = await import("../../src/constants/config");
-	assert.equal(
-		getBookingPendingPath("en", "../"),
-		"../booking-pending/index.html",
-	);
+	assert.equal(getBookingPendingPath("en", "../"), "../booking-pending/");
 	assert.equal(
 		getBookingPendingPath("es", "../"),
 		"../booking-pending/es.html",
@@ -4596,7 +4593,7 @@ test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PEN
 		getBookingPendingPath("ja", "../"),
 		"../booking-pending/ja.html",
 	);
-	assert.equal(getBookingPendingPath("en"), "./booking-pending/index.html");
+	assert.equal(getBookingPendingPath("en"), "./booking-pending/");
 
 	// 1. Verify BookingPending.tsx is 100% style-agnostic without inline class strings or React state/effect hooks
 	const bookingPendingSource = fs.readFileSync(
@@ -4758,7 +4755,7 @@ test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PEN
 
 		const basePage =
 			langCode === "en"
-				? "../booking-pending/index.html"
+				? "../booking-pending/"
 				: `../booking-pending/${langCode}.html`;
 		assert.ok(
 			redirectedHref.startsWith(`${basePage}?`),

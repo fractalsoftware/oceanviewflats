@@ -16,20 +16,37 @@ import type { Lang } from "../types";
 export const BASE_URL = "https://www.oceanviewflats.com";
 export const LANGUAGES: Lang[] = ["en", "es", "fr", "it", "de", "ja"];
 
+export const getCanonicalUrl = (
+	baseUrl: string,
+	pagePath: string,
+	lang: Lang,
+): string => {
+	const normalizedBase = baseUrl.replace(/\/+$/, "");
+	if (pagePath === "404") {
+		return lang === "en"
+			? `${normalizedBase}/404.html`
+			: `${normalizedBase}/404/${lang}.html`;
+	}
+	const dirBase = pagePath
+		? `${normalizedBase}/${pagePath.replace(/^\/+|\/+$/g, "")}`
+		: normalizedBase;
+	return lang === "en" ? `${dirBase}/` : `${dirBase}/${lang}.html`;
+};
+
 export const getHrefLangTags = (
 	baseUrl: string,
 	path: string,
 	languages: Lang[],
 ) => {
-	const basePath = path ? `${baseUrl}/${path}` : baseUrl;
+	const defaultUrl = getCanonicalUrl(baseUrl, path, "en");
 	return (
 		languages
 			.map((l) => {
-				const url = l === "en" ? basePath : `${basePath}/${l}.html`;
+				const url = getCanonicalUrl(baseUrl, path, l);
 				return `    <link rel="alternate" hreflang="${l}" href="${url}" />`;
 			})
 			.join("\n") +
-		`\n    <link rel="alternate" hreflang="x-default" href="${basePath}" />`
+		`\n    <link rel="alternate" hreflang="x-default" href="${defaultUrl}" />`
 	);
 };
 
@@ -47,6 +64,7 @@ export interface PageConfig {
 	ogImageHeight?: number;
 	ogImageAlt?: (t: TranslationDict) => string;
 	heroImage?: string;
+	noIndex?: boolean;
 	clientI18n?: (t: TranslationDict) => Record<string, string>;
 }
 
@@ -176,7 +194,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url = lang === "en" ? baseUrl : `${baseUrl}/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@graph": [
@@ -287,10 +305,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.og1707ImageAlt,
 		heroImage: IMAGES["1707"].hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/Oceanview1707`
-					: `${baseUrl}/Oceanview1707/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "Oceanview1707", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "VacationRental",
@@ -443,10 +458,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.og1606ImageAlt,
 		heroImage: IMAGES["1606"].hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/Oceanview1606`
-					: `${baseUrl}/Oceanview1606/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "Oceanview1606", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "VacationRental",
@@ -606,10 +618,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogContactImageAlt,
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/contact`
-					: `${baseUrl}/contact/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "contact", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "ContactPage",
@@ -623,6 +632,7 @@ export const pages: PageConfig[] = [
 	{
 		id: "registry",
 		path: "registry",
+		noIndex: true,
 		component: Registry,
 		filename: (lang: Lang) =>
 			lang === "en" ? "registry/index.html" : `registry/${lang}.html`,
@@ -634,10 +644,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/registry`
-					: `${baseUrl}/registry/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "registry", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",
@@ -651,6 +658,7 @@ export const pages: PageConfig[] = [
 	{
 		id: "guide",
 		path: "guide",
+		noIndex: true,
 		component: Guide,
 		filename: (lang: Lang) =>
 			lang === "en" ? "guide/index.html" : `guide/${lang}.html`,
@@ -662,8 +670,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en" ? `${baseUrl}/guide` : `${baseUrl}/guide/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "guide", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",
@@ -677,6 +684,7 @@ export const pages: PageConfig[] = [
 	{
 		id: "404",
 		path: "404",
+		noIndex: true,
 		component: NotFound,
 		filename: (lang: Lang) => (lang === "en" ? "404.html" : `404/${lang}.html`),
 		seoTitle: (t: any) => t.notFoundTitle,
@@ -687,8 +695,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en" ? `${baseUrl}/404.html` : `${baseUrl}/404/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "404", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",
@@ -702,6 +709,7 @@ export const pages: PageConfig[] = [
 	{
 		id: "booking-success",
 		path: "booking-success",
+		noIndex: true,
 		component: BookingSuccess,
 		filename: (lang: Lang) =>
 			lang === "en"
@@ -715,10 +723,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/booking-success`
-					: `${baseUrl}/booking-success/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "booking-success", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",
@@ -732,6 +737,7 @@ export const pages: PageConfig[] = [
 	{
 		id: "booking-failure",
 		path: "booking-failure",
+		noIndex: true,
 		component: BookingFailure,
 		filename: (lang: Lang) =>
 			lang === "en"
@@ -745,10 +751,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/booking-failure`
-					: `${baseUrl}/booking-failure/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "booking-failure", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",
@@ -762,6 +765,7 @@ export const pages: PageConfig[] = [
 	{
 		id: "booking-pending",
 		path: "booking-pending",
+		noIndex: true,
 		component: BookingPending,
 		filename: (lang: Lang) =>
 			lang === "en"
@@ -775,10 +779,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
 		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/booking-pending`
-					: `${baseUrl}/booking-pending/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "booking-pending", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",
@@ -803,10 +804,7 @@ export const pages: PageConfig[] = [
 		ogImageAlt: (t: TranslationDict) => t.ogPrivacyImageAlt,
 		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
-			const url =
-				lang === "en"
-					? `${baseUrl}/privacy`
-					: `${baseUrl}/privacy/${lang}.html`;
+			const url = getCanonicalUrl(baseUrl, "privacy", lang);
 			return JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebPage",

@@ -1436,7 +1436,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 
 				const BOOKING_SUCCESS_PAGES = {
-					en: "booking-success/index.html",
+					en: "booking-success/",
 					es: "booking-success/es.html",
 					fr: "booking-success/fr.html",
 					it: "booking-success/it.html",
@@ -1444,7 +1444,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					ja: "booking-success/ja.html",
 				};
 				const BOOKING_PENDING_PAGES = {
-					en: "booking-pending/index.html",
+					en: "booking-pending/",
 					es: "booking-pending/es.html",
 					fr: "booking-pending/fr.html",
 					it: "booking-pending/it.html",

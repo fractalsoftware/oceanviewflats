@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						btnSubmit.disabled = true;
 					}
 					if (btnUnlockedGuide) {
-						const pageName = lang === "en" ? "index.html" : `${lang}.html`;
+						const pageName = lang === "en" ? "" : `${lang}.html`;
 						const assetPrefix =
 							pageConfig.assetPrefix ||
 							(apiBase ? apiBase.replace(/api\/?$/, "") : "");
@@ -836,8 +836,11 @@ document.addEventListener("DOMContentLoaded", () => {
 						btnUnlockedGuide.href = sanitizedGuideUrl;
 					} else {
 						const effectiveCode = result.reservation_code || reservationCodeVal;
-						const pageName = lang === "en" ? "index.html" : `${lang}.html`;
-						const guideBase = `guide/${pageName}`;
+						const pageName = lang === "en" ? "" : `${lang}.html`;
+						const assetPrefix =
+							pageConfig.assetPrefix ||
+							(apiBase ? apiBase.replace(/api\/?$/, "") : "");
+						const guideBase = `${assetPrefix}guide/${pageName}`;
 						const query = effectiveCode
 							? `?code=${encodeURIComponent(effectiveCode)}`
 							: "";

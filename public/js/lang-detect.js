@@ -1,4 +1,13 @@
-(function () {
+(() => {
+	const nav = typeof navigator !== "undefined" ? navigator : null;
+	const userAgent = nav?.userAgent || "";
+	const isAutomatedCrawler =
+		Boolean(nav?.webdriver) ||
+		/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baiduspider|duckduckbot|applebot|facebookexternalhit|twitterbot|whatsapp|linkedinbot|slackbot|discordbot|telegrambot|gptbot|oai-searchbot|chatgpt-user|claudebot|claude-searchbot|claude-web|anthropic-ai|perplexitybot|ccbot|headlesschrome|lighthouse|pagespeed|gtmetrix/i.test(
+			userAgent,
+		);
+	if (isAutomatedCrawler) return;
+
 	const supportedLangs = ["es", "fr", "it", "de", "ja"];
 	const currentHref = window.location.href;
 	const pathName = window.location.pathname;
@@ -9,12 +18,20 @@
 		pathName.endsWith("index.html") ||
 		pathName.endsWith("/") ||
 		(!pathName.includes(".html") &&
-			!supportedLangs.some((l) => pathName.endsWith(l + ".html")));
+			!supportedLangs.some((l) => pathName.endsWith(`${l}.html`)));
 
 	if (!isEnglishPage && !is404Page) return;
 
 	// Check if user has a stored preference
-	const storedPref = localStorage.getItem("lang-pref");
+	let storedPref = null;
+	try {
+		storedPref =
+			typeof localStorage !== "undefined"
+				? localStorage.getItem("lang-pref")
+				: null;
+	} catch (_) {
+		storedPref = null;
+	}
 	if (storedPref === "en") return;
 
 	if (storedPref && supportedLangs.includes(storedPref)) {
@@ -23,27 +40,35 @@
 	}
 
 	// Detect browser language
-	const browserLang = (navigator.language || navigator.userLanguage).split(
-		"-",
-	)[0];
+	const rawBrowserLang = nav?.language || nav?.userLanguage || "";
+	const browserLang = rawBrowserLang.toLowerCase().split("-")[0];
 
 	if (supportedLangs.includes(browserLang)) {
-		localStorage.setItem("lang-pref", browserLang);
+		try {
+			if (typeof localStorage !== "undefined") {
+				localStorage.setItem("lang-pref", browserLang);
+			}
+		} catch (_) {
+			// Ignore storage failures in restricted contexts
+		}
 		redirectTo(browserLang);
 	}
 
 	function redirectTo(lang) {
+		const search = window.location.search || "";
+		const hash = window.location.hash || "";
+		const base = currentHref.split("?")[0].split("#")[0];
 		let newHref;
 		if (is404Page) {
-			newHref = window.location.origin + "/404/" + lang + ".html";
+			newHref = `${window.location.origin}/404/${lang}.html`;
 		} else if (pathName.endsWith("index.html")) {
-			newHref = currentHref.replace("index.html", lang + ".html");
+			newHref = `${base.replace(/index\.html$/, `${lang}.html`)}${search}${hash}`;
 		} else if (pathName.endsWith("/")) {
-			newHref = currentHref + lang + ".html";
+			newHref = `${base}${lang}.html${search}${hash}`;
 		} else {
 			// Handle cases where it's just the folder name like /Oceanview1707
-			const base = currentHref.split("?")[0].split("#")[0];
-			newHref = base + (base.endsWith("/") ? "" : "/") + lang + ".html";
+			const slash = base.endsWith("/") ? "" : "/";
+			newHref = `${base}${slash}${lang}.html${search}${hash}`;
 		}
 
 		if (newHref && newHref !== currentHref) {
