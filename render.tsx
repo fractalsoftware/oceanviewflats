@@ -17,6 +17,7 @@ import { getHeroImageSrcSet, HERO_IMAGE_SIZES } from "./src/constants/config";
 import { dict } from "./src/i18n/dict";
 import { baseTemplate } from "./src/templates/base";
 import type { Lang } from "./src/types";
+import { buildLlmsFullTxt, buildLlmsTxt } from "./src/utils/llms";
 import {
 	buildPricingSummary,
 	type SeasonalRateTierRow,
@@ -267,3 +268,16 @@ const sitemap = generateSitemap(
 );
 fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
 console.log("Generated sitemap.xml");
+
+// Generate and save llms.txt & llms-full.txt dynamically from build-time pricing & content
+fs.writeFileSync(
+	path.join(distDir, "llms.txt"),
+	buildLlmsTxt(BASE_URL, pricingSummary),
+);
+console.log("Generated llms.txt");
+
+fs.writeFileSync(
+	path.join(distDir, "llms-full.txt"),
+	buildLlmsFullTxt(BASE_URL, pricingSummary),
+);
+console.log("Generated llms-full.txt");

@@ -1,8 +1,9 @@
 import {
-	AIRBNB_URLS,
 	BUILDING_LOCATION,
 	DATA_CONTROLLER,
+	getBusinessSameAsUrls,
 	getCanonicalUrl,
+	getPropertySameAsUrls,
 	HOME_FAQ_ITEMS,
 	IMAGES,
 	LANGUAGES,
@@ -306,6 +307,7 @@ export const buildHomeStructuredData = (
 	const contactUrl = getCanonicalUrl(normalizedBase, "contact", lang);
 	const url1707 = getCanonicalUrl(normalizedBase, "Oceanview1707", lang);
 	const url1606 = getCanonicalUrl(normalizedBase, "Oceanview1606", lang);
+	const businessSameAsUrls = getBusinessSameAsUrls();
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
@@ -355,7 +357,9 @@ export const buildHomeStructuredData = (
 				knowsLanguage: [...LANGUAGES],
 				license: `Registro Nacional de Turismo ${DATA_CONTROLLER.rntCombined}`,
 				hasCredential: buildRntCredentials(),
-				sameAs: [AIRBNB_URLS["1707"], AIRBNB_URLS["1606"]],
+				...(businessSameAsUrls.length > 0
+					? { sameAs: businessSameAsUrls }
+					: {}),
 				founder: {
 					"@id": `${normalizedBase}/#host`,
 				},
@@ -547,6 +551,13 @@ export const buildPropertyStructuredData = (
 
 	const reviews = PROPERTY_REVIEWS[propertyId];
 	const faqItems = PROPERTY_FAQ_ITEMS[propertyId];
+	const propertySameAsUrls = getPropertySameAsUrls(propertyId);
+	const propertySameAs =
+		propertySameAsUrls.length === 1
+			? propertySameAsUrls[0]
+			: propertySameAsUrls.length > 1
+				? propertySameAsUrls
+				: undefined;
 
 	return JSON.stringify({
 		"@context": "https://schema.org",
@@ -600,7 +611,7 @@ export const buildPropertyStructuredData = (
 				floorLevel: spec.floorLevel,
 				checkinTime: CHECKIN_TIME,
 				checkoutTime: CHECKOUT_TIME,
-				sameAs: AIRBNB_URLS[propertyId],
+				...(propertySameAs ? { sameAs: propertySameAs } : {}),
 				provider: {
 					"@type": "LodgingBusiness",
 					"@id": `${normalizedBase}/#business`,
