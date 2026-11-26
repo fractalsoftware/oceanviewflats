@@ -17,10 +17,23 @@ interface TemplateProps {
 	hrefLangTags: string;
 	structuredData: string;
 	assetPrefix: string;
+	assetVersions?: Record<string, string>;
 	noIndex?: boolean;
 	customScripts?: string[];
 	pageConfig?: Record<string, any>;
 }
+
+const withAssetVersion = (
+	assetPath: string,
+	assetVersions?: Record<string, string>,
+): string => {
+	const normalized = assetPath.replace(/^\/+/, "");
+	const version = assetVersions?.[normalized];
+	if (!version || normalized.includes("?")) {
+		return assetPath;
+	}
+	return `${assetPath}?v=${version}`;
+};
 
 const escapeHtmlAttr = (value: string): string =>
 	value
@@ -50,6 +63,7 @@ export const baseTemplate = ({
 	hrefLangTags,
 	structuredData,
 	assetPrefix,
+	assetVersions,
 	noIndex = false,
 	customScripts = [],
 	pageConfig,
@@ -66,7 +80,9 @@ export const baseTemplate = ({
 		scripts.push(
 			`<script id="ovf-page-config" type="application/json">${JSON.stringify(pageConfig).replace(/</g, "\\u003c")}</script>`,
 		);
-		scripts.push(`<script src="${assetPrefix}js/page-config.js"></script>`);
+		scripts.push(
+			`<script src="${assetPrefix}${withAssetVersion("js/page-config.js", assetVersions)}"></script>`,
+		);
 	}
 	for (const src of customScripts) {
 		if (
@@ -75,7 +91,9 @@ export const baseTemplate = ({
 		) {
 			continue;
 		}
-		scripts.push(`<script src="${assetPrefix}${src}"></script>`);
+		scripts.push(
+			`<script src="${assetPrefix}${withAssetVersion(src, assetVersions)}"></script>`,
+		);
 	}
 	const scriptsMarkup =
 		scripts.length > 0 ? `\n    ${scripts.join("\n    ")}` : "";
@@ -151,7 +169,7 @@ export const baseTemplate = ({
     <meta name="twitter:description" content="${description}">
     <meta name="twitter:image" content="${escapedOgImageUrl}">${twitterImageAltMarkup}
 
-    <script src="${assetPrefix}js/lang-detect.js" defer></script>${hrefLangMarkup}
+    <script src="${assetPrefix}${withAssetVersion("js/lang-detect.js", assetVersions)}" defer></script>${hrefLangMarkup}
 
     <!-- Structured Data (JSON-LD) for Generative Engines & Rich Snippets -->
     <script type="application/ld+json">
@@ -159,7 +177,7 @@ export const baseTemplate = ({
     </script>${heroPreloadMarkup}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="${assetPrefix}css/style.css">
+    <link rel="stylesheet" href="${assetPrefix}${withAssetVersion("css/style.css", assetVersions)}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
