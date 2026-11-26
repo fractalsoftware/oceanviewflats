@@ -347,3 +347,214 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 		reviewAuthorKey: "review1Author",
 	},
 ];
+
+// #302 Homepage Property Comparison & Playa Salguero Proximity Configs
+export interface HomeComparisonRowConfig {
+	id: string;
+	labelKey:
+		| "homeCompareRowFloor"
+		| "homeCompareRowRnt"
+		| "homeCompareRowIdealFor"
+		| "homeCompareRowRate"
+		| "homeCompareRowMinStay"
+		| "homeCompareRowBeds"
+		| "homeCompareRowOccupancy"
+		| "homeCompareRowWifi"
+		| "homeCompareRowParking"
+		| "homeCompareRowCheckInOut"
+		| "homeCompareRowBuildingFee"
+		| "homeCompareRowPoolMaintenance";
+	val1707Key:
+		| "homeCompare1707Floor"
+		| "rnt1707"
+		| "homeCompare1707IdealFor"
+		| "homeCompare1707Rate"
+		| "homeCompare1707MinStay"
+		| "homeCompare1707Beds"
+		| "statsGuests"
+		| "homeCompareWifiValue"
+		| "homeCompare1707Parking"
+		| "homeCompareCheckInOutValue"
+		| "homeCompareBuildingFeeValue"
+		| "homeComparePoolMaintenanceValue";
+	val1606Key:
+		| "homeCompare1606Floor"
+		| "rnt1606"
+		| "homeCompare1606IdealFor"
+		| "homeCompare1606Rate"
+		| "homeCompare1606MinStay"
+		| "homeCompare1606Beds"
+		| "statsGuests"
+		| "homeCompareWifiValue"
+		| "homeCompare1606Parking"
+		| "homeCompareCheckInOutValue"
+		| "homeCompareBuildingFeeValue"
+		| "homeComparePoolMaintenanceValue";
+}
+
+export const HOME_PROPERTY_COMPARISON_ROWS: readonly HomeComparisonRowConfig[] =
+	[
+		{
+			id: "floor",
+			labelKey: "homeCompareRowFloor",
+			val1707Key: "homeCompare1707Floor",
+			val1606Key: "homeCompare1606Floor",
+		},
+		{
+			id: "rnt",
+			labelKey: "homeCompareRowRnt",
+			val1707Key: "rnt1707",
+			val1606Key: "rnt1606",
+		},
+		{
+			id: "ideal-for",
+			labelKey: "homeCompareRowIdealFor",
+			val1707Key: "homeCompare1707IdealFor",
+			val1606Key: "homeCompare1606IdealFor",
+		},
+		{
+			id: "nightly-rate",
+			labelKey: "homeCompareRowRate",
+			val1707Key: "homeCompare1707Rate",
+			val1606Key: "homeCompare1606Rate",
+		},
+		{
+			id: "min-stay",
+			labelKey: "homeCompareRowMinStay",
+			val1707Key: "homeCompare1707MinStay",
+			val1606Key: "homeCompare1606MinStay",
+		},
+		{
+			id: "beds",
+			labelKey: "homeCompareRowBeds",
+			val1707Key: "homeCompare1707Beds",
+			val1606Key: "homeCompare1606Beds",
+		},
+		{
+			id: "max-occupancy",
+			labelKey: "homeCompareRowOccupancy",
+			val1707Key: "statsGuests",
+			val1606Key: "statsGuests",
+		},
+		{
+			id: "wifi",
+			labelKey: "homeCompareRowWifi",
+			val1707Key: "homeCompareWifiValue",
+			val1606Key: "homeCompareWifiValue",
+		},
+		{
+			id: "parking",
+			labelKey: "homeCompareRowParking",
+			val1707Key: "homeCompare1707Parking",
+			val1606Key: "homeCompare1606Parking",
+		},
+		{
+			id: "check-in-out",
+			labelKey: "homeCompareRowCheckInOut",
+			val1707Key: "homeCompareCheckInOutValue",
+			val1606Key: "homeCompareCheckInOutValue",
+		},
+		{
+			id: "building-fee",
+			labelKey: "homeCompareRowBuildingFee",
+			val1707Key: "homeCompareBuildingFeeValue",
+			val1606Key: "homeCompareBuildingFeeValue",
+		},
+		{
+			id: "pool-maintenance",
+			labelKey: "homeCompareRowPoolMaintenance",
+			val1707Key: "homeComparePoolMaintenanceValue",
+			val1606Key: "homeComparePoolMaintenanceValue",
+		},
+	];
+
+export const BUILDING_LOCATION = {
+	name: "Edificio Salguero Sunset",
+	streetAddress: "Calle 26 # 2-80",
+	neighborhood: "Playa Salguero",
+	city: "Santa Marta",
+	region: "Magdalena",
+	postalCode: "470006",
+	country: "Colombia",
+	latitude: 11.1876481,
+	longitude: -74.2313921,
+} as const;
+
+export interface PlayaSalgueroLandmarkConfig {
+	id:
+		| "playa-salguero-beach"
+		| "el-rodadero"
+		| "smr-airport"
+		| "historic-center"
+		| "tayrona-park";
+	iconId: "waves" | "compass" | "plane" | "landmark" | "trees";
+	nameKey:
+		| "homeLocBeachName"
+		| "homeLocRodaderoName"
+		| "homeLocAirportName"
+		| "homeLocHistoricName"
+		| "homeLocTayronaName";
+	proximityKey:
+		| "homeLocBeachProximity"
+		| "homeLocRodaderoProximity"
+		| "homeLocAirportProximity"
+		| "homeLocHistoricProximity"
+		| "homeLocTayronaProximity";
+	descKey:
+		| "homeLocBeachDesc"
+		| "homeLocRodaderoDesc"
+		| "homeLocAirportDesc"
+		| "homeLocHistoricDesc"
+		| "homeLocTayronaDesc";
+	distanceApprox: string;
+	travelTimeApprox: string;
+}
+
+export const PLAYA_SALGUERO_LANDMARKS: readonly PlayaSalgueroLandmarkConfig[] =
+	[
+		{
+			id: "playa-salguero-beach",
+			iconId: "waves",
+			nameKey: "homeLocBeachName",
+			proximityKey: "homeLocBeachProximity",
+			descKey: "homeLocBeachDesc",
+			distanceApprox: "~150 m (1 block)",
+			travelTimeApprox: "~2 min walk",
+		},
+		{
+			id: "el-rodadero",
+			iconId: "compass",
+			nameKey: "homeLocRodaderoName",
+			proximityKey: "homeLocRodaderoProximity",
+			descKey: "homeLocRodaderoDesc",
+			distanceApprox: "~3 km",
+			travelTimeApprox: "~5–10 min by car",
+		},
+		{
+			id: "smr-airport",
+			iconId: "plane",
+			nameKey: "homeLocAirportName",
+			proximityKey: "homeLocAirportProximity",
+			descKey: "homeLocAirportDesc",
+			distanceApprox: "~10 km",
+			travelTimeApprox: "~15–20 min by car",
+		},
+		{
+			id: "historic-center",
+			iconId: "landmark",
+			nameKey: "homeLocHistoricName",
+			proximityKey: "homeLocHistoricProximity",
+			descKey: "homeLocHistoricDesc",
+			distanceApprox: "~8 km",
+			travelTimeApprox: "~20–25 min by car",
+		},
+		{
+			id: "tayrona-park",
+			iconId: "trees",
+			nameKey: "homeLocTayronaName",
+			proximityKey: "homeLocTayronaProximity",
+			descKey: "homeLocTayronaDesc",
+			distanceApprox: "~40 km",
+			travelTimeApprox: "~50–60 min by car",
+		},
+	];

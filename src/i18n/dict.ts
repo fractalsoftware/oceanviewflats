@@ -598,6 +598,69 @@ export const dict = {
 			"OceanViewFlats at Edificio Salguero Sunset in Playa Salguero, Santa Marta — Data Processing Policy",
 		ogEntranceImageAlt:
 			"Edificio Salguero Sunset main beachfront entrance in Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Compare Our Beachfront Properties",
+		homeCompareSubtitle:
+			"Compare Property 1707 and Property 1606 side by side across floor level, RNT registration, Settlement Currency (COP) Nightly Rates, sleeping layout, and building policies.",
+		homeCompareCaption:
+			"Side-by-side specification comparison of Oceanview Flat 1707 (17th Floor) and Oceanview Flat 1606 (16th Floor) at Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Specification",
+		homeCompareRowFloor: "Floor Level",
+		homeCompare1707Floor: "17th Floor",
+		homeCompare1606Floor: "16th Floor",
+		homeCompareRowRnt: "National Tourism Registry (RNT)",
+		homeCompareRowIdealFor: "Ideal Guest Profile",
+		homeCompare1707IdealFor: "Remote workers, groups & families",
+		homeCompare1606IdealFor: "Couples & families",
+		homeCompareRowRate: "Starting Nightly Rate (COP)",
+		homeCompare1707Rate: "From 450,000 COP / night",
+		homeCompare1606Rate: "From 350,000 COP / night (peak 550,000 COP)",
+		homeCompareRowMinStay: "Minimum Stay",
+		homeCompare1707MinStay: "2 nights",
+		homeCompare1606MinStay: "2 nights (4 nights peak: Dec 15 – Jan 15)",
+		homeCompareRowBeds: "Bedrooms & Beds",
+		homeCompare1707Beds:
+			"2 Bedrooms • 4 Beds (1 Queen, 2 Twins, 1 Pull-out Sofa Bed)",
+		homeCompare1606Beds:
+			"2 Bedrooms • 3 Beds (1 Queen, 1 Double, 1 Pull-out Sofa Bed)",
+		homeCompareRowOccupancy: "Maximum Occupancy",
+		homeCompareRowWifi: "Fiber Wi-Fi",
+		homeCompareWifiValue: "Up to 900 Mbps Fiber",
+		homeCompareRowParking: "Assigned Parking Space",
+		homeCompare1707Parking: "Included — Bay 95",
+		homeCompare1606Parking: "Included — Bay 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue: "15:00 / 11:00 (Smart-lock self check-in)",
+		homeCompareRowBuildingFee: "Building Registration Fee",
+		homeCompareBuildingFeeValue: "20,000 COP per person (payable at reception)",
+		homeCompareRowPoolMaintenance: "Pool Maintenance Schedule",
+		homeComparePoolMaintenanceValue: "Closed Tuesdays for maintenance",
+		homeLocationTitle: "Location & Getting Around Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Both beachfront Properties are located in Edificio Salguero Sunset (Calle 26 # 2-80) in quiet, residential Playa Salguero—one block from the Caribbean shoreline with direct road access to Santa Marta's airport, coastal promenade, historic center, and Tayrona National Park.",
+		homeLocBeachName: "Playa Salguero Beach",
+		homeLocBeachProximity: "1 block • ~2 min walk (~150 m)",
+		homeLocBeachDesc:
+			"Step outside Edificio Salguero Sunset for calm, less-crowded beachfront walks, swimming, and unobstructed Caribbean sunsets.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min by car (~3 km)",
+		homeLocRodaderoDesc:
+			"Quick coastal ride to El Rodadero's beachfront promenade, supermarkets, pharmacies, restaurants, and boat departures to Playa Blanca.",
+		homeLocAirportName: "Simón Bolívar International Airport (SMR)",
+		homeLocAirportProximity: "~15–20 min by car (~10 km)",
+		homeLocAirportDesc:
+			"Direct south-corridor airport transfers by taxi or ride-hailing without crossing downtown Santa Marta traffic.",
+		homeLocHistoricName:
+			"Santa Marta Historic Center (Centro Histórico & Marina)",
+		homeLocHistoricProximity: "~20–25 min by car (~8 km)",
+		homeLocHistoricDesc:
+			"Easy ride north to Parque de los Novios, Santa Marta International Marina, colonial plazas, cafés, and Caribbean dining.",
+		homeLocTayronaName: "Tayrona National Park (El Zaino Entrance)",
+		homeLocTayronaProximity: "~50–60 min by car (~40 km)",
+		homeLocTayronaDesc:
+			"Straightforward coastal highway route to the El Zaino main entrance for day hikes to Cabo San Juan and protected rainforest bays.",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -1215,6 +1278,71 @@ export const dict = {
 			"OceanViewFlats en el Edificio Salguero Sunset, Playa Salguero, Santa Marta — Política de Tratamiento de Datos",
 		ogEntranceImageAlt:
 			"Entrada principal frente a la playa del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Compara Nuestros Apartamentos Frente al Mar",
+		homeCompareSubtitle:
+			"Compara el Apartamento 1707 y el Apartamento 1606 lado a lado en piso, registro RNT, tarifas por noche en pesos colombianos (COP), distribución de camas y normas del edificio.",
+		homeCompareCaption:
+			"Comparación de especificaciones entre el Apartamento Vista al Mar 1707 (Piso 17) y el Apartamento Vista al Mar 1606 (Piso 16) en Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Especificación",
+		homeCompareRowFloor: "Piso",
+		homeCompare1707Floor: "Piso 17",
+		homeCompare1606Floor: "Piso 16",
+		homeCompareRowRnt: "Registro Nacional de Turismo (RNT)",
+		homeCompareRowIdealFor: "Perfil Ideal de Huésped",
+		homeCompare1707IdealFor: "Trabajadores remotos, grupos y familias",
+		homeCompare1606IdealFor: "Parejas y familias",
+		homeCompareRowRate: "Tarifa Base por Noche (COP)",
+		homeCompare1707Rate: "Desde 450.000 COP / noche",
+		homeCompare1606Rate:
+			"Desde 350.000 COP / noche (temporada alta 550.000 COP)",
+		homeCompareRowMinStay: "Estadía Mínima",
+		homeCompare1707MinStay: "2 noches",
+		homeCompare1606MinStay: "2 noches (4 noches en pico: 15 dic – 15 ene)",
+		homeCompareRowBeds: "Habitaciones y Camas",
+		homeCompare1707Beds:
+			"2 Habitaciones • 4 Camas (1 Queen, 2 Sencillas, 1 Sofá Cama)",
+		homeCompare1606Beds:
+			"2 Habitaciones • 3 Camas (1 Queen, 1 Doble, 1 Sofá Cama)",
+		homeCompareRowOccupancy: "Capacidad Máxima",
+		homeCompareRowWifi: "Wi-Fi Fibra Óptica",
+		homeCompareWifiValue: "Hasta 900 Mbps Fibra Óptica",
+		homeCompareRowParking: "Parqueadero Asignado",
+		homeCompare1707Parking: "Incluido — Bahía 95",
+		homeCompare1606Parking: "Incluido — Bahía 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Ingreso autónomo con cerradura inteligente)",
+		homeCompareRowBuildingFee: "Tarifa de Registro del Edificio",
+		homeCompareBuildingFeeValue:
+			"20.000 COP por persona (se paga en recepción)",
+		homeCompareRowPoolMaintenance: "Mantenimiento de Piscina",
+		homeComparePoolMaintenanceValue: "Cerrada los martes por mantenimiento",
+		homeLocationTitle: "Ubicación y Cómo Moverse en Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Ambos apartamentos frente al mar están ubicados en el Edificio Salguero Sunset (Calle 26 # 2-80), en la zona residencial y tranquila de Playa Salguero, a una cuadra de la playa y con fácil acceso por carretera al aeropuerto, El Rodadero, el Centro Histórico y el Parque Tayrona.",
+		homeLocBeachName: "Playa Salguero",
+		homeLocBeachProximity: "1 cuadra • ~2 min a pie (~150 m)",
+		homeLocBeachDesc:
+			"Acceso peatonal directo desde el Edificio Salguero Sunset a una playa tranquila, amplia y con atardeceres despejados sobre el mar Caribe.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min en carro (~3 km)",
+		homeLocRodaderoDesc:
+			"Trayecto corto por la costa hacia el malecón de El Rodadero, supermercados, farmacias, restaurantes y salidas en lancha hacia Playa Blanca.",
+		homeLocAirportName: "Aeropuerto Internacional Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 min en carro (~10 km)",
+		homeLocAirportDesc:
+			"Traslado ágil por el corredor sur en taxi o aplicación de transporte sin necesidad de cruzar el tráfico del centro de Santa Marta.",
+		homeLocHistoricName: "Centro Histórico de Santa Marta y Marina",
+		homeLocHistoricProximity: "~20–25 min en carro (~8 km)",
+		homeLocHistoricDesc:
+			"Recorrido sencillo hacia el norte hasta el Parque de los Novios, la Marina Internacional de Santa Marta, plazas coloniales, cafés y restaurantes.",
+		homeLocTayronaName: "Parque Nacional Natural Tayrona (Entrada El Zaino)",
+		homeLocTayronaProximity: "~50–60 min en carro (~40 km)",
+		homeLocTayronaDesc:
+			"Ruta directa por la Troncal del Caribe hasta la entrada principal de El Zaino para caminatas de día completo hacia Cabo San Juan y sus bahías protegidas.",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -1839,6 +1967,72 @@ export const dict = {
 			"OceanViewFlats à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta — Politique de traitement des données",
 		ogEntranceImageAlt:
 			"Entrée principale en bord de mer de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Comparez Nos Appartements en Bord de Mer",
+		homeCompareSubtitle:
+			"Comparez l'Appartement 1707 et l'Appartement 1606 côte à côte : étage, immatriculation RNT, tarifs par nuit en pesos colombiens (COP), couchages et règlement de l'immeuble.",
+		homeCompareCaption:
+			"Comparaison détaillée des caractéristiques de l'Appartement Vue Mer 1707 (17e étage) et de l'Appartement Vue Mer 1606 (16e étage) à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Caractéristique",
+		homeCompareRowFloor: "Étage",
+		homeCompare1707Floor: "17e Étage",
+		homeCompare1606Floor: "16e Étage",
+		homeCompareRowRnt: "Registre National du Tourisme (RNT)",
+		homeCompareRowIdealFor: "Profil de Voyageurs Idéal",
+		homeCompare1707IdealFor: "Télétravailleurs, groupes et familles",
+		homeCompare1606IdealFor: "Couples et familles",
+		homeCompareRowRate: "Tarif de Base par Nuit (COP)",
+		homeCompare1707Rate: "À partir de 450 000 COP / nuit",
+		homeCompare1606Rate:
+			"À partir de 350 000 COP / nuit (haute saison 550 000 COP)",
+		homeCompareRowMinStay: "Séjour Minimum",
+		homeCompare1707MinStay: "2 nuits",
+		homeCompare1606MinStay:
+			"2 nuits (4 nuits haute saison : 15 déc. – 15 janv.)",
+		homeCompareRowBeds: "Chambres et Lits",
+		homeCompare1707Beds:
+			"2 Chambres • 4 Lits (1 Queen, 2 Lits Simples, 1 Canapé-lit)",
+		homeCompare1606Beds:
+			"2 Chambres • 3 Lits (1 Queen, 1 Lit Double, 1 Canapé-lit)",
+		homeCompareRowOccupancy: "Capacité Maximale",
+		homeCompareRowWifi: "Wi-Fi Fibre Optique",
+		homeCompareWifiValue: "Fibre jusqu'à 900 Mbps",
+		homeCompareRowParking: "Place de Parking Attribuée",
+		homeCompare1707Parking: "Inclus — Place 95",
+		homeCompare1606Parking: "Inclus — Place 87",
+		homeCompareRowCheckInOut: "Arrivée / Départ",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Arrivée autonome par serrure connectée)",
+		homeCompareRowBuildingFee: "Frais d'Enregistrement de l'Immeuble",
+		homeCompareBuildingFeeValue:
+			"20 000 COP par personne (à régler à la réception)",
+		homeCompareRowPoolMaintenance: "Entretien de la Piscine",
+		homeComparePoolMaintenanceValue: "Fermée le mardi pour entretien",
+		homeLocationTitle: "Emplacement et Déplacements à Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Nos deux appartements en bord de mer se trouvent dans l'Edificio Salguero Sunset (Calle 26 # 2-80), dans le secteur résidentiel calme de Playa Salguero, à un pâté de maisons de la plage avec un accès routier direct à l'aéroport, El Rodadero, le Centre Historique et le Parc Tayrona.",
+		homeLocBeachName: "Plage de Playa Salguero",
+		homeLocBeachProximity: "1 pâté de maisons • ~2 min à pied (~150 m)",
+		homeLocBeachDesc:
+			"Accès direct à pied depuis l'Edificio Salguero Sunset à une plage paisible, peu fréquentée, idéale pour la baignade et les couchers de soleil sur la mer des Caraïbes.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min en voiture (~3 km)",
+		homeLocRodaderoDesc:
+			"Court trajet côtier vers la promenade d'El Rodadero, les supermarchés, pharmacies, restaurants et départs en bateau vers Playa Blanca.",
+		homeLocAirportName: "Aéroport International Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 min en voiture (~10 km)",
+		homeLocAirportDesc:
+			"Transfert direct par le corridor sud en taxi ou VTC sans avoir à traverser la circulation du centre-ville de Santa Marta.",
+		homeLocHistoricName: "Centre Historique de Santa Marta et Marina",
+		homeLocHistoricProximity: "~20–25 min en voiture (~8 km)",
+		homeLocHistoricDesc:
+			"Trajet simple vers le nord jusqu'au Parque de los Novios, la Marina Internationale de Santa Marta, les places coloniales, cafés et restaurants.",
+		homeLocTayronaName: "Parc National Naturel Tayrona (Entrée El Zaino)",
+		homeLocTayronaProximity: "~50–60 min en voiture (~40 km)",
+		homeLocTayronaDesc:
+			"Route côtière directe vers l'entrée principale d'El Zaino pour des randonnées à la journée vers Cabo San Juan et les baies préservées.",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -2454,6 +2648,69 @@ export const dict = {
 			"OceanViewFlats presso Edificio Salguero Sunset, Playa Salguero, Santa Marta — Informativa sul trattamento dei dati",
 		ogEntranceImageAlt:
 			"Ingresso principale fronte mare dell'Edificio Salguero Sunset a Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Confronta i Nostri Appartamenti Fronte Mare",
+		homeCompareSubtitle:
+			"Confronta l'Appartamento 1707 e l'Appartamento 1606 fianco a fianco per piano, registrazione RNT, tariffe per notte in pesos colombiani (COP), posti letto e regole dell'edificio.",
+		homeCompareCaption:
+			"Confronto dettagliato tra Appartamento Vista Mare 1707 (17° piano) e Appartamento Vista Mare 1606 (16° piano) presso Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Caratteristica",
+		homeCompareRowFloor: "Piano",
+		homeCompare1707Floor: "17° Piano",
+		homeCompare1606Floor: "16° Piano",
+		homeCompareRowRnt: "Registro Nazionale del Turismo (RNT)",
+		homeCompareRowIdealFor: "Profilo di Ospite Ideale",
+		homeCompare1707IdealFor: "Lavoratori da remoto, gruppi e famiglie",
+		homeCompare1606IdealFor: "Coppie e famiglie",
+		homeCompareRowRate: "Tariffa Base per Notte (COP)",
+		homeCompare1707Rate: "Da 450.000 COP / notte",
+		homeCompare1606Rate: "Da 350.000 COP / notte (alta stagione 550.000 COP)",
+		homeCompareRowMinStay: "Soggiorno Minimo",
+		homeCompare1707MinStay: "2 notti",
+		homeCompare1606MinStay: "2 notti (4 notti alta stagione: 15 dic – 15 gen)",
+		homeCompareRowBeds: "Camere e Letti",
+		homeCompare1707Beds:
+			"2 Camere • 4 Letti (1 Queen, 2 Singoli, 1 Divano Letto)",
+		homeCompare1606Beds:
+			"2 Camere • 3 Letti (1 Queen, 1 Matrimoniale, 1 Divano Letto)",
+		homeCompareRowOccupancy: "Capienza Massima",
+		homeCompareRowWifi: "Wi-Fi Fibra Ottica",
+		homeCompareWifiValue: "Fibra fino a 900 Mbps",
+		homeCompareRowParking: "Posto Auto Assegnato",
+		homeCompare1707Parking: "Incluso — Posto 95",
+		homeCompare1606Parking: "Incluso — Posto 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Check-in autonomo con serratura smart)",
+		homeCompareRowBuildingFee: "Quota di Registrazione dell'Edificio",
+		homeCompareBuildingFeeValue: "20.000 COP a persona (pagabile in reception)",
+		homeCompareRowPoolMaintenance: "Manutenzione della Piscina",
+		homeComparePoolMaintenanceValue: "Chiusa il martedì per manutenzione",
+		homeLocationTitle: "Posizione e Spostamenti a Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Entrambi gli appartamenti fronte mare si trovano nell'Edificio Salguero Sunset (Calle 26 # 2-80), nella tranquilla zona residenziale di Playa Salguero, a un isolato dalla spiaggia e con collegamenti diretti verso aeroporto, El Rodadero, Centro Storico e Parco Tayrona.",
+		homeLocBeachName: "Spiaggia di Playa Salguero",
+		homeLocBeachProximity: "1 isolato • ~2 min a piedi (~150 m)",
+		homeLocBeachDesc:
+			"Accesso pedonale immediato dall'Edificio Salguero Sunset a una spiaggia tranquilla e poco affollata con tramonti spettacolari sul Mar dei Caraibi.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 min in auto (~3 km)",
+		homeLocRodaderoDesc:
+			"Breve tragitto costiero fino al lungomare di El Rodadero, supermercati, farmacie, ristoranti e imbarchi per Playa Blanca.",
+		homeLocAirportName: "Aeroporto Internazionale Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 min in auto (~10 km)",
+		homeLocAirportDesc:
+			"Trasferimento diretto sul corridoio sud in taxi o app di trasporto senza attraversare il traffico del centro di Santa Marta.",
+		homeLocHistoricName: "Centro Storico di Santa Marta e Marina",
+		homeLocHistoricProximity: "~20–25 min in auto (~8 km)",
+		homeLocHistoricDesc:
+			"Comodo spostamento verso nord fino al Parque de los Novios, alla Marina Internazionale di Santa Marta, alle piazze coloniali e ai ristoranti.",
+		homeLocTayronaName: "Parco Nazionale Naturale Tayrona (Ingresso El Zaino)",
+		homeLocTayronaProximity: "~50–60 min in auto (~40 km)",
+		homeLocTayronaDesc:
+			"Collegamento diretto lungo la strada costiera fino all'ingresso principale di El Zaino per escursioni giornaliere a Cabo San Juan e nelle baie protette.",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3075,6 +3332,71 @@ export const dict = {
 			"OceanViewFlats im Edificio Salguero Sunset, Playa Salguero, Santa Marta — Datenschutzrichtlinie",
 		ogEntranceImageAlt:
 			"Haupteingang am Strand des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "Unsere Strand-Apartments im Vergleich",
+		homeCompareSubtitle:
+			"Vergleichen Sie Apartment 1707 und Apartment 1606 direkt nebeneinander nach Etage, RNT-Registrierung, Nachtpreisen in kolumbianischen Pesos (COP), Bettenaufteilung und Hausregeln.",
+		homeCompareCaption:
+			"Direkter Ausstattungsvergleich zwischen Apartment mit Meerblick 1707 (17. Etage) und Apartment mit Meerblick 1606 (16. Etage) im Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
+		homeCompareColFeature: "Merkmal",
+		homeCompareRowFloor: "Etage",
+		homeCompare1707Floor: "17. Etage",
+		homeCompare1606Floor: "16. Etage",
+		homeCompareRowRnt: "Nationales Tourismusregister (RNT)",
+		homeCompareRowIdealFor: "Ideales Gästeprofil",
+		homeCompare1707IdealFor: "Remote-Arbeitende, Gruppen & Familien",
+		homeCompare1606IdealFor: "Paare & Familien",
+		homeCompareRowRate: "Basis-Nachtpreis (COP)",
+		homeCompare1707Rate: "Ab 450.000 COP / Nacht",
+		homeCompare1606Rate: "Ab 350.000 COP / Nacht (Hochsaison 550.000 COP)",
+		homeCompareRowMinStay: "Mindestaufenthalt",
+		homeCompare1707MinStay: "2 Nächte",
+		homeCompare1606MinStay:
+			"2 Nächte (4 Nächte Hochsaison: 15. Dez. – 15. Jan.)",
+		homeCompareRowBeds: "Schlafzimmer & Betten",
+		homeCompare1707Beds:
+			"2 Schlafzimmer • 4 Betten (1 Queen, 2 Einzelbetten, 1 Schlafsofa)",
+		homeCompare1606Beds:
+			"2 Schlafzimmer • 3 Betten (1 Queen, 1 Doppelbett, 1 Schlafsofa)",
+		homeCompareRowOccupancy: "Maximale Belegung",
+		homeCompareRowWifi: "Glasfaser-WLAN",
+		homeCompareWifiValue: "Bis zu 900 Mbps Glasfaser",
+		homeCompareRowParking: "Zugewiesener Parkplatz",
+		homeCompare1707Parking: "Inklusive — Stellplatz 95",
+		homeCompare1606Parking: "Inklusive — Stellplatz 87",
+		homeCompareRowCheckInOut: "Check-in / Check-out",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00 (Selbst-Check-in mit Smart-Lock)",
+		homeCompareRowBuildingFee: "Gebäude-Registrierungsgebühr",
+		homeCompareBuildingFeeValue:
+			"20.000 COP pro Person (zahlbar an der Rezeption)",
+		homeCompareRowPoolMaintenance: "Pool-Wartungszeiten",
+		homeComparePoolMaintenanceValue: "Dienstags wegen Wartung geschlossen",
+		homeLocationTitle: "Lage & Mobilität in Playa Salguero",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"Beide Strand-Apartments befinden sich im Edificio Salguero Sunset (Calle 26 # 2-80) im ruhigen Wohnviertel Playa Salguero — nur einen Block vom Strand entfernt und mit direkter Straßenanbindung an Flughafen, El Rodadero, Altstadt und Tayrona-Nationalpark.",
+		homeLocBeachName: "Strand Playa Salguero",
+		homeLocBeachProximity: "1 Block • ~2 Min. zu Fuß (~150 m)",
+		homeLocBeachDesc:
+			"Direkter Fußweg vom Edificio Salguero Sunset zu einem ruhigen, weitläufigen Karibikstrand mit freiem Blick auf den Sonnenuntergang.",
+		homeLocRodaderoName: "El Rodadero",
+		homeLocRodaderoProximity: "~5–10 Min. mit dem Auto (~3 km)",
+		homeLocRodaderoDesc:
+			"Kurze Fahrt entlang der Küste zur Promenade von El Rodadero mit Supermärkten, Apotheken, Restaurants und Bootsabfahrten nach Playa Blanca.",
+		homeLocAirportName: "Internationaler Flughafen Simón Bolívar (SMR)",
+		homeLocAirportProximity: "~15–20 Min. mit dem Auto (~10 km)",
+		homeLocAirportDesc:
+			"Direkter Transfer über den Südkorridor per Taxi oder Fahrdienst-App, ohne den Stadtverkehr im Zentrum von Santa Marta zu durchqueren.",
+		homeLocHistoricName: "Historisches Zentrum von Santa Marta & Marina",
+		homeLocHistoricProximity: "~20–25 Min. mit dem Auto (~8 km)",
+		homeLocHistoricDesc:
+			"Bequeme Fahrt Richtung Norden zum Parque de los Novios, zur Marina Internacional de Santa Marta, zu kolonialen Plätzen, Cafés und Restaurants.",
+		homeLocTayronaName: "Tayrona-Nationalpark (Eingang El Zaino)",
+		homeLocTayronaProximity: "~50–60 Min. mit dem Auto (~40 km)",
+		homeLocTayronaDesc:
+			"Direkte Küstenstraße bis zum Haupteingang El Zaino für Tageswanderungen nach Cabo San Juan und zu den geschützten Karibikbuchten.",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -3686,6 +4008,69 @@ export const dict = {
 			"サンタマルタ・プラヤサルグエロのOceanViewFlats — 個人情報処理方針",
 		ogEntranceImageAlt:
 			"サンタマルタ・プラヤサルグエロのEdificio Salguero Sunsetビーチフロント正面入口",
+		// #302 homepage comparison table & Playa Salguero location
+		homeCompareTitle: "ビーチフロント物件の比較",
+		homeCompareSubtitle:
+			"1707号室と1606号室を、階数、RNT登録番号、コロンビア・ペソ（COP）の基本宿泊料金、ベッド構成、館内規定ごとに一覧で比較できます。",
+		homeCompareCaption:
+			"サンタマルタ・プラヤ・サルグエロのEdificio Salguero Sunsetにあるオーシャンビューフラット1707（17階）とオーシャンビューフラット1606（16階）の仕様比較。",
+		homeCompareColFeature: "項目",
+		homeCompareRowFloor: "階数",
+		homeCompare1707Floor: "17階",
+		homeCompare1606Floor: "16階",
+		homeCompareRowRnt: "コロンビア国家観光登録（RNT）",
+		homeCompareRowIdealFor: "おすすめの宿泊タイプ",
+		homeCompare1707IdealFor: "リモートワーカー・グループ・ご家族向け",
+		homeCompare1606IdealFor: "カップル・ご家族向け",
+		homeCompareRowRate: "基本宿泊料金（COP）",
+		homeCompare1707Rate: "1泊 450,000 COP〜",
+		homeCompare1606Rate: "1泊 350,000 COP〜（繁忙期 550,000 COP）",
+		homeCompareRowMinStay: "最低宿泊数",
+		homeCompare1707MinStay: "2泊〜",
+		homeCompare1606MinStay: "2泊〜（繁忙期 12月15日〜1月15日は4泊〜）",
+		homeCompareRowBeds: "寝室・ベッド構成",
+		homeCompare1707Beds:
+			"2 寝室 • 4 ベッド（クイーン1台、シングル2台、ソファベッド1台）",
+		homeCompare1606Beds:
+			"2 寝室 • 3 ベッド（クイーン1台、ダブル1台、ソファベッド1台）",
+		homeCompareRowOccupancy: "最大定員",
+		homeCompareRowWifi: "光ファイバーWi-Fi",
+		homeCompareWifiValue: "最大 900 Mbps 光ファイバー",
+		homeCompareRowParking: "専用駐車区画",
+		homeCompare1707Parking: "無料付属 — 駐車区画 95番",
+		homeCompare1606Parking: "無料付属 — 駐車区画 87番",
+		homeCompareRowCheckInOut: "チェックイン / チェックアウト",
+		homeCompareCheckInOutValue:
+			"15:00 / 11:00（スマートロックによるセルフチェックイン）",
+		homeCompareRowBuildingFee: "建物登録料",
+		homeCompareBuildingFeeValue: "お一人様 20,000 COP（フロントにて現地払い）",
+		homeCompareRowPoolMaintenance: "プールメンテナンス休業日",
+		homeComparePoolMaintenanceValue: "毎週火曜日はメンテナンスのため休業",
+		homeLocationTitle: "プラヤ・サルグエロの立地と周辺アクセス",
+		homeLocationAddress:
+			"Edificio Salguero Sunset • Calle 26 # 2-80, Playa Salguero, Santa Marta",
+		homeLocationSubtitle:
+			"両物件は静かな住宅エリアであるプラヤ・サルグエロのEdificio Salguero Sunset（Calle 26 # 2-80）に位置し、ビーチまで徒歩1ブロック。空港、エル・ロダデロ、旧市街、タイロナ国立公園へのアクセスもスムーズです。",
+		homeLocBeachName: "プラヤ・サルグエロ・ビーチ",
+		homeLocBeachProximity: "1ブロック • 徒歩約2分（約150 m）",
+		homeLocBeachDesc:
+			"Edificio Salguero Sunsetを出てすぐ。混雑が少なく穏やかなカリブ海の砂浜で散策やサンセットを楽しめます。",
+		homeLocRodaderoName: "エル・ロダデロ（El Rodadero）",
+		homeLocRodaderoProximity: "車で約5〜10分（約3 km）",
+		homeLocRodaderoDesc:
+			"海岸沿いに少し走るだけで、プロムナード、スーパーマーケット、薬局、レストラン、プラヤ・ブランカ行きボート乗り場にアクセスできます。",
+		homeLocAirportName: "シモン・ボリバル国際空港（SMR）",
+		homeLocAirportProximity: "車で約15〜20分（約10 km）",
+		homeLocAirportDesc:
+			"サンタマルタ中心部の渋滞を避け、南部ルートからタクシーや配車アプリでスムーズに空港へ移動できます。",
+		homeLocHistoricName: "サンタマルタ旧市街（Centro Histórico・マリーナ）",
+		homeLocHistoricProximity: "車で約20〜25分（約8 km）",
+		homeLocHistoricDesc:
+			"ノビオス公園、サンタマルタ国際マリーナ、コロニアル様式の広場、カフェ、シーフードレストランへ北上して気軽にアクセスできます。",
+		homeLocTayronaName: "タイロナ国立公園（El Zaino 入口）",
+		homeLocTayronaProximity: "車で約50〜60分（約40 km）",
+		homeLocTayronaDesc:
+			"沿岸の幹線道路からメインゲートEl Zainoへ直結しており、カボ・サン・フアン方面への日帰りハイキングの拠点に最適です。",
 	},
 };
 
