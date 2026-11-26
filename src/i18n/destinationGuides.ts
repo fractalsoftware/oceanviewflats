@@ -23,7 +23,6 @@ export type {
 	DestinationGuideLocaleContent,
 	DestinationGuideSection,
 	DestinationGuidesHubLocaleContent,
-	DestinationGuidesHubTopicPreview,
 } from "./destinationGuides/types";
 
 const LOCALE_THOUSANDS_SEPARATOR: Record<Lang, string> = {
@@ -74,7 +73,7 @@ export const buildGuidePricingTokens = (
 			pricingSummary.highPrice,
 			lang,
 		),
-		buildingFeeCop: formatCopCurrencyForLocale(
+		buildingRegistrationFeeCop: formatCopCurrencyForLocale(
 			BUILDING_REGISTRATION_FEE_COP,
 			lang,
 		),
@@ -118,51 +117,6 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		updatedLabel: "Updated",
 		authorByline:
 			"By Manuel Enrique Herrera • OceanViewFlats (RNT #268781 & #270413)",
-		topicPreviewsTitle: "Core Playa Salguero & Santa Marta Topics",
-		topicPreviewsSubtitle:
-			"Everything prospective Guests need before booking a Direct Reservation at Property 1707 or Property 1606.",
-		topicPreviews: [
-			{
-				id: "topic-neighborhood",
-				slug: "playa-salguero-vs-el-rodadero",
-				icon: "waves",
-				badge: "Neighborhood",
-				title: "Playa Salguero vs. El Rodadero",
-				description:
-					"Compare beach tranquility, walking access (~150 m to Playa Salguero), sunset views, dining options, and family safety between Santa Marta's two coastal districts.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-remote-work",
-				slug: "digital-nomad-remote-work",
-				icon: "wifi",
-				badge: "Remote Work",
-				title: "Remote Work & Digital Nomads in Santa Marta",
-				description:
-					"900 Mbps symmetrical fiber Wi-Fi, ergonomic workspaces, power stability, SMR airport transfers, and extended beachfront stays on the 17th floor.",
-				relatedProperty: "1707",
-			},
-			{
-				id: "topic-day-trips",
-				slug: "day-trips-from-playa-salguero",
-				icon: "compass",
-				badge: "Excursions",
-				title: "Day Trips from Playa Salguero",
-				description:
-					"Realistic travel times and logistics to Tayrona National Park (El Zaino, ~50–60 min), Santa Marta Historic Center (~20–25 min), Minca, and Taganga.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-direct-reservation",
-				slug: "direct-reservation-guide",
-				icon: "shield",
-				badge: "Direct Reservation",
-				title: "Direct Reservation Guide (COP, RNT & Guest Registry)",
-				description:
-					"How 0% OTA commission Quotes in COP work via Card, PSE, or Cash Voucher, plus statutory RNT compliance, Building Registration Fee ({buildingFeeCop}), and smart-lock check-in.",
-				relatedProperty: "1707",
-			},
-		],
 		propertiesCtaTitle: "Choose Your Playa Salguero Beachfront Property",
 		propertiesCtaSubtitle:
 			"Both Properties sit one floor apart at Edificio Salguero Sunset with 900 Mbps fiber Wi-Fi, swimming pool access, and Assigned Parking Spaces.",
@@ -173,8 +127,8 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		propertyRateLineTemplate: "From {rate} / night ({minStay}-night min)",
 		propertyCleaningLineTemplate: "Flat Cleaning Fee: {cleaningFee}",
 		propertyCtaButton: "Explore & Book Direct",
-		articlePropertyCtaEyebrow: "Recommended Beachfront Stay",
-		articlePropertyCtaButton: "Check Dates & COP Quote",
+		guidePropertyCtaEyebrow: "Recommended Beachfront Stay",
+		guidePropertyCtaButton: "Check Dates & COP Quote",
 		relatedGuidesTitle: "More Santa Marta Destination Guides",
 		backToHubLabel: "All Santa Marta Destination Guides",
 	},
@@ -203,51 +157,6 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		updatedLabel: "Actualizado",
 		authorByline:
 			"Por Manuel Enrique Herrera • OceanViewFlats (RNT #268781 y #270413)",
-		topicPreviewsTitle: "Temas Clave de Playa Salguero y Santa Marta",
-		topicPreviewsSubtitle:
-			"Todo lo que necesitas saber antes de hacer una Reserva Directa en la Propiedad 1707 o la Propiedad 1606.",
-		topicPreviews: [
-			{
-				id: "topic-neighborhood",
-				slug: "playa-salguero-vs-el-rodadero",
-				icon: "waves",
-				badge: "Zona",
-				title: "Playa Salguero vs. El Rodadero",
-				description:
-					"Compara tranquilidad en la playa (~150 m a Playa Salguero), atardeceres, gastronomía y ambiente familiar entre las dos zonas costeras de Santa Marta.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-remote-work",
-				slug: "digital-nomad-remote-work",
-				icon: "wifi",
-				badge: "Trabajo Remoto",
-				title: "Trabajo Remoto y Nómadas Digitales en Santa Marta",
-				description:
-					"Fibra óptica de 900 Mbps, espacio de trabajo ergonómico, traslados desde el aeropuerto SMR y estadías prolongadas frente al mar en el piso 17.",
-				relatedProperty: "1707",
-			},
-			{
-				id: "topic-day-trips",
-				slug: "day-trips-from-playa-salguero",
-				icon: "compass",
-				badge: "Excursiones",
-				title: "Excursiones de un Día desde Playa Salguero",
-				description:
-					"Tiempos reales y logística hacia el Parque Nacional Tayrona (El Zaino, ~50–60 min), Centro Histórico (~20–25 min), Minca y Taganga.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-direct-reservation",
-				slug: "direct-reservation-guide",
-				icon: "shield",
-				badge: "Reserva Directa",
-				title: "Guía de Reserva Directa (COP, RNT y Registro de Huéspedes)",
-				description:
-					"Cómo funcionan las cotizaciones en COP sin comisión OTA con Tarjeta, PSE o Efecty, cumplimiento RNT, Tarifa de Registro del Edificio ({buildingFeeCop}) y acceso con cerradura inteligente.",
-				relatedProperty: "1707",
-			},
-		],
 		propertiesCtaTitle: "Elige Tu Propiedad Frente al Mar en Playa Salguero",
 		propertiesCtaSubtitle:
 			"Ambas Propiedades están a un piso de distancia en Edificio Salguero Sunset con fibra óptica de 900 Mbps, piscina y Parqueadero Asignado.",
@@ -258,8 +167,8 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		propertyRateLineTemplate: "Desde {rate} / noche (mín. {minStay} noches)",
 		propertyCleaningLineTemplate: "Tarifa fija de Limpieza: {cleaningFee}",
 		propertyCtaButton: "Explorar y Reservar Directo",
-		articlePropertyCtaEyebrow: "Estadía Frente al Mar Recomendada",
-		articlePropertyCtaButton: "Ver Fechas y Cotización en COP",
+		guidePropertyCtaEyebrow: "Estadía Frente al Mar Recomendada",
+		guidePropertyCtaButton: "Ver Fechas y Cotización en COP",
 		relatedGuidesTitle: "Más Guías de Destino en Santa Marta",
 		backToHubLabel: "Todas las Guías de Santa Marta",
 	},
@@ -288,51 +197,6 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		updatedLabel: "Mis à jour",
 		authorByline:
 			"Par Manuel Enrique Herrera • OceanViewFlats (RNT #268781 & #270413)",
-		topicPreviewsTitle: "Thèmes Essentiels à Playa Salguero et Santa Marta",
-		topicPreviewsSubtitle:
-			"L'essentiel à connaître avant votre Réservation Directe dans la Propriété 1707 ou la Propriété 1606.",
-		topicPreviews: [
-			{
-				id: "topic-neighborhood",
-				slug: "playa-salguero-vs-el-rodadero",
-				icon: "waves",
-				badge: "Quartier",
-				title: "Playa Salguero vs. El Rodadero",
-				description:
-					"Comparez le calme de la plage (~150 m à pied), les couchers de soleil, la restauration et l'ambiance familiale entre les deux zones côtières.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-remote-work",
-				slug: "digital-nomad-remote-work",
-				icon: "wifi",
-				badge: "Télétravail",
-				title: "Télétravail et Nomades Digitaux à Santa Marta",
-				description:
-					"Fibre optique 900 Mbps, espace bureau dédié, transferts depuis l'aéroport SMR et longs séjours face à la mer au 17e étage.",
-				relatedProperty: "1707",
-			},
-			{
-				id: "topic-day-trips",
-				slug: "day-trips-from-playa-salguero",
-				icon: "compass",
-				badge: "Excursions",
-				title: "Excursions d'une Journée depuis Playa Salguero",
-				description:
-					"Temps de trajet réels et logistique vers le Parc National Tayrona (El Zaino, ~50–60 min), le Centre Historique (~20–25 min), Minca et Taganga.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-direct-reservation",
-				slug: "direct-reservation-guide",
-				icon: "shield",
-				badge: "Réservation Directe",
-				title: "Guide de Réservation Directe (COP, RNT & Registre)",
-				description:
-					"Comment fonctionnent les devis en COP sans commission OTA (Carte, PSE, Efecty), la conformité RNT, les frais d'enregistrement de l'immeuble ({buildingFeeCop}) et la serrure connectée.",
-				relatedProperty: "1707",
-			},
-		],
 		propertiesCtaTitle: "Choisissez Votre Propriété Face à la Mer",
 		propertiesCtaSubtitle:
 			"Nos deux Propriétés sont à un étage d'intervalle dans l'Edificio Salguero Sunset avec fibre 900 Mbps, piscine et Place de Parking Attribuée.",
@@ -343,8 +207,8 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		propertyRateLineTemplate: "Dès {rate} / nuit (min. {minStay} nuits)",
 		propertyCleaningLineTemplate: "Frais de Ménage fixes : {cleaningFee}",
 		propertyCtaButton: "Explorer et Réserver en Direct",
-		articlePropertyCtaEyebrow: "Séjour Face à la Mer Recommandé",
-		articlePropertyCtaButton: "Voir les Dates et le Devis COP",
+		guidePropertyCtaEyebrow: "Séjour Face à la Mer Recommandé",
+		guidePropertyCtaButton: "Voir les Dates et le Devis COP",
 		relatedGuidesTitle: "Autres Guides de Destination à Santa Marta",
 		backToHubLabel: "Tous les Guides Santa Marta",
 	},
@@ -373,51 +237,6 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		updatedLabel: "Aggiornato",
 		authorByline:
 			"Di Manuel Enrique Herrera • OceanViewFlats (RNT #268781 e #270413)",
-		topicPreviewsTitle: "Temi Principali su Playa Salguero e Santa Marta",
-		topicPreviewsSubtitle:
-			"Tutto ciò che serve sapere prima di una Prenotazione Diretta nella Proprietà 1707 o nella Proprietà 1606.",
-		topicPreviews: [
-			{
-				id: "topic-neighborhood",
-				slug: "playa-salguero-vs-el-rodadero",
-				icon: "waves",
-				badge: "Quartiere",
-				title: "Playa Salguero vs. El Rodadero",
-				description:
-					"Confronta tranquillità della spiaggia (~150 m a piedi), tramonti, ristoranti e atmosfera familiare tra le due zone costiere di Santa Marta.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-remote-work",
-				slug: "digital-nomad-remote-work",
-				icon: "wifi",
-				badge: "Lavoro da Remoto",
-				title: "Lavoro da Remoto e Nomadi Digitali a Santa Marta",
-				description:
-					"Fibra ottica da 900 Mbps, postazione dedicata, trasferimenti dall'aeroporto SMR e soggiorni prolungati fronte mare al 17° piano.",
-				relatedProperty: "1707",
-			},
-			{
-				id: "topic-day-trips",
-				slug: "day-trips-from-playa-salguero",
-				icon: "compass",
-				badge: "Escursioni",
-				title: "Gite in Giornata da Playa Salguero",
-				description:
-					"Tempi reali e logistica verso il Parco Nazionale Tayrona (El Zaino, ~50–60 min), Centro Storico (~20–25 min), Minca e Taganga.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-direct-reservation",
-				slug: "direct-reservation-guide",
-				icon: "shield",
-				badge: "Prenotazione Diretta",
-				title: "Guida alla Prenotazione Diretta (COP, RNT e Registro)",
-				description:
-					"Come funzionano i preventivi in COP con 0% commissioni OTA (Carta, PSE, Efecty), conformità RNT, Tassa di Registrazione dell'Edificio ({buildingFeeCop}) e check-in smart-lock.",
-				relatedProperty: "1707",
-			},
-		],
 		propertiesCtaTitle: "Scegli la Tua Proprietà Fronte Mare",
 		propertiesCtaSubtitle:
 			"Entrambe le Proprietà si trovano a un piano di distanza nell'Edificio Salguero Sunset con fibra 900 Mbps, piscina e Posto Auto Assegnato.",
@@ -428,8 +247,8 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		propertyRateLineTemplate: "Da {rate} / notte (min. {minStay} notti)",
 		propertyCleaningLineTemplate: "Tariffa fissa di Pulizia: {cleaningFee}",
 		propertyCtaButton: "Esplora e Prenota Direttamente",
-		articlePropertyCtaEyebrow: "Soggiorno Fronte Mare Consigliato",
-		articlePropertyCtaButton: "Verifica Date e Preventivo COP",
+		guidePropertyCtaEyebrow: "Soggiorno Fronte Mare Consigliato",
+		guidePropertyCtaButton: "Verifica Date e Preventivo COP",
 		relatedGuidesTitle: "Altre Guide di Destinazione a Santa Marta",
 		backToHubLabel: "Tutte le Guide di Santa Marta",
 	},
@@ -458,51 +277,6 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		updatedLabel: "Aktualisiert",
 		authorByline:
 			"Von Manuel Enrique Herrera • OceanViewFlats (RNT #268781 & #270413)",
-		topicPreviewsTitle: "Wichtige Themen für Playa Salguero & Santa Marta",
-		topicPreviewsSubtitle:
-			"Alle wichtigen Infos vor Ihrer Direktbuchung für Unterkunft 1707 oder Unterkunft 1606.",
-		topicPreviews: [
-			{
-				id: "topic-neighborhood",
-				slug: "playa-salguero-vs-el-rodadero",
-				icon: "waves",
-				badge: "Stadtteil",
-				title: "Playa Salguero vs. El Rodadero",
-				description:
-					"Vergleichen Sie Strandruhe (~150 m bis Playa Salguero), Sonnenuntergänge, Restaurants und Familienfreundlichkeit der beiden Küstenviertel.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-remote-work",
-				slug: "digital-nomad-remote-work",
-				icon: "wifi",
-				badge: "Remote Work",
-				title: "Remote Work & Digitale Nomaden in Santa Marta",
-				description:
-					"900 Mbit/s Glasfaser-WLAN, eigener Arbeitsplatz, Flughafentransfer (SMR) und längere Strandaufenthalte im 17. Stock.",
-				relatedProperty: "1707",
-			},
-			{
-				id: "topic-day-trips",
-				slug: "day-trips-from-playa-salguero",
-				icon: "compass",
-				badge: "Ausflüge",
-				title: "Tagesausflüge ab Playa Salguero",
-				description:
-					"Realistische Fahrtzeiten und Logistik zum Tayrona-Nationalpark (El Zaino, ~50–60 Min.), Historischen Zentrum (~20–25 Min.), Minca und Taganga.",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-direct-reservation",
-				slug: "direct-reservation-guide",
-				icon: "shield",
-				badge: "Direktbuchung",
-				title: "Leitfaden zur Direktbuchung (COP, RNT & Gästeregistrierung)",
-				description:
-					"Wie Angebote in COP mit 0% OTA-Gebühren (Karte, PSE, Bargeld-Gutschein), RNT-Nachweis, Gebäuderegistrierungsgebühr ({buildingFeeCop}) und Smart-Lock funktionieren.",
-				relatedProperty: "1707",
-			},
-		],
 		propertiesCtaTitle: "Wählen Sie Ihre Strandunterkunft in Playa Salguero",
 		propertiesCtaSubtitle:
 			"Beide Unterkünfte liegen nur eine Etage voneinander entfernt im Edificio Salguero Sunset mit 900 Mbit/s WLAN, Pool und festem Parkplatz.",
@@ -514,8 +288,8 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 			"Ab {rate} / Nacht (Mindestaufenthalt {minStay} Nächte)",
 		propertyCleaningLineTemplate: "Pauschale Reinigungsgebühr: {cleaningFee}",
 		propertyCtaButton: "Entdecken & Direkt Buchen",
-		articlePropertyCtaEyebrow: "Empfohlene Strandunterkunft",
-		articlePropertyCtaButton: "Termine & COP-Angebot prüfen",
+		guidePropertyCtaEyebrow: "Empfohlene Strandunterkunft",
+		guidePropertyCtaButton: "Termine & COP-Angebot prüfen",
 		relatedGuidesTitle: "Weitere Santa Marta Reiseführer",
 		backToHubLabel: "Alle Santa Marta Reiseführer",
 	},
@@ -544,51 +318,6 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		updatedLabel: "更新日",
 		authorByline:
 			"執筆：Manuel Enrique Herrera • OceanViewFlats（RNT #268781・#270413）",
-		topicPreviewsTitle: "プラヤ・サルグエロ＆サンタマルタ主要トピック",
-		topicPreviewsSubtitle:
-			"物件1707または物件1606の直接予約前に確認しておきたい4つのテーマ。",
-		topicPreviews: [
-			{
-				id: "topic-neighborhood",
-				slug: "playa-salguero-vs-el-rodadero",
-				icon: "waves",
-				badge: "エリア比較",
-				title: "プラヤ・サルグエロ vs エル・ロダデロ",
-				description:
-					"ビーチの静けさ（徒歩約150m）、サンセット眺望、周辺レストラン、ファミリー向けの過ごしやすさをサンタマルタの2大海岸エリアで比較します。",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-remote-work",
-				slug: "digital-nomad-remote-work",
-				icon: "wifi",
-				badge: "リモートワーク",
-				title: "サンタマルタでのリモートワーク＆ノマド滞在",
-				description:
-					"900 Mbps光回線Wi-Fi、専用ワークスペース、SMR空港アクセス、17階からの海辺長期滞在のポイントを解説します。",
-				relatedProperty: "1707",
-			},
-			{
-				id: "topic-day-trips",
-				slug: "day-trips-from-playa-salguero",
-				icon: "compass",
-				badge: "日帰り旅",
-				title: "プラヤ・サルグエロ発の日帰りモデルコース",
-				description:
-					"タイロナ国立公園（エル・サイノ入口まで約50〜60分）、サンタマルタ旧市街（約20〜25分）、ミンカ、タガンガへの移動時間と実践ガイド。",
-				relatedProperty: "1606",
-			},
-			{
-				id: "topic-direct-reservation",
-				slug: "direct-reservation-guide",
-				icon: "shield",
-				badge: "直接予約",
-				title: "COP直接予約・RNT登録・ゲスト登録ガイド",
-				description:
-					"OTA手数料0%のCOP公式見積もり（カード・PSE・現金バウチャー）、RNT法令遵守、建物登録料（{buildingFeeCop}）、スマートロック入室の流れ。",
-				relatedProperty: "1707",
-			},
-		],
 		propertiesCtaTitle: "プラヤ・サルグエロの海辺物件を選ぶ",
 		propertiesCtaSubtitle:
 			"両物件ともエディフィシオ・サルグエロ・サンセットの隣り合う階に位置し、900 Mbps光Wi-Fi・プール・専用駐車スペースを備えています。",
@@ -599,15 +328,15 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 		propertyRateLineTemplate: "{rate} / 泊〜（最低{minStay}泊）",
 		propertyCleaningLineTemplate: "清掃料金（一律）：{cleaningFee}",
 		propertyCtaButton: "詳細を見る・直接予約",
-		articlePropertyCtaEyebrow: "おすすめのビーチフロント滞在",
-		articlePropertyCtaButton: "空室とCOP見積もりを確認",
+		guidePropertyCtaEyebrow: "おすすめのビーチフロント滞在",
+		guidePropertyCtaButton: "空室とCOP見積もりを確認",
 		relatedGuidesTitle: "その他のサンタマルタ現地ガイド",
 		backToHubLabel: "サンタマルタ現地ガイド一覧へ",
 	},
 };
 
 /**
- * Registry of published Destination Guide articles rendered at `/santa-marta/<slug>/`.
+ * Registry of published Destination Guides rendered at `/santa-marta/<slug>/`.
  * `src/config/pages.ts`, `render.tsx`, `DestinationGuidesHub.tsx`, `Footer.tsx`, and
  * `PropertyDestinationGuides.tsx` consume this registry automatically.
  */

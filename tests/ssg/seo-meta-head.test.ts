@@ -296,67 +296,85 @@ test("baseTemplate escapes HTML attribute special characters in og:image:alt and
 	);
 });
 
-test("Compiled HTML self-hosts Inter Variable WOFF2 with zero Google Fonts requests and emits responsive hero preloads in <head> with zero preloads in <body> (#314)", () => {
-	// 1. Verify bundled WOFF2 font exists in public/ and dist/ with valid wOF2 magic header and reasonable size
-	for (const fontPath of [
-		path.join(process.cwd(), "public", "fonts", "inter-var.woff2"),
-		path.join(DIST_DIR, "fonts", "inter-var.woff2"),
-	]) {
-		assert.ok(fs.existsSync(fontPath), `Missing bundled font: ${fontPath}`);
-		const fontBytes = fs.readFileSync(fontPath);
-		assert.equal(
-			fontBytes.toString("ascii", 0, 4),
-			"wOF2",
-			`Font file ${fontPath} must have valid wOF2 magic header`,
-		);
-		assert.ok(
-			fontBytes.length >= 20_000 && fontBytes.length <= 150_000,
-			`Font file ${fontPath} size (${fontBytes.length} bytes) outside expected variable Latin subset bounds`,
-		);
+test("Compiled HTML self-hosts Inter Variable WOFF2 (latin + latin-ext) with zero Google Fonts requests and emits responsive hero preloads in <head> with zero preloads in <body> (#314)", () => {
+	// 1. Verify bundled latin and latin-ext WOFF2 fonts exist in public/ and dist/ with valid wOF2 magic headers and reasonable sizes
+	for (const fontFile of ["inter-var.woff2", "inter-var-latin-ext.woff2"]) {
+		for (const fontPath of [
+			path.join(process.cwd(), "public", "fonts", fontFile),
+			path.join(DIST_DIR, "fonts", fontFile),
+		]) {
+			assert.ok(fs.existsSync(fontPath), `Missing bundled font: ${fontPath}`);
+			const fontBytes = fs.readFileSync(fontPath);
+			assert.equal(
+				fontBytes.toString("ascii", 0, 4),
+				"wOF2",
+				`Font file ${fontPath} must have valid wOF2 magic header`,
+			);
+			assert.ok(
+				fontBytes.length >= 20_000 && fontBytes.length <= 150_000,
+				`Font file ${fontPath} size (${fontBytes.length} bytes) outside expected variable subset bounds`,
+			);
+		}
 	}
 
-	// 2. Verify compiled dist/css/style.css declares @font-face for Inter resolving cleanly to dist/fonts/inter-var.woff2
+	// 2. Verify compiled dist/css/style.css declares @font-face blocks for Inter (latin-ext + latin) with unicode-range
 	const compiledCssPath = path.join(DIST_DIR, "css", "style.css");
 	assert.ok(
 		fs.existsSync(compiledCssPath),
 		`Missing compiled CSS: ${compiledCssPath}`,
 	);
 	const compiledCss = fs.readFileSync(compiledCssPath, "utf-8");
-	const fontFaceMatch = compiledCss.match(/@font-face\s*\{[^}]*\}/);
-	assert.ok(
-		fontFaceMatch,
-		"Compiled dist/css/style.css must contain @font-face declaration",
-	);
-	const fontFaceBlock = fontFaceMatch[0];
-	assert.match(
-		fontFaceBlock,
-		/font-family:\s*["']?Inter["']?/i,
-		`@font-face must declare Inter family: ${fontFaceBlock}`,
-	);
-	const fontUrlMatch = fontFaceBlock.match(/url\(\s*["']?([^"')]+)["']?\s*\)/i);
-	assert.ok(
-		fontUrlMatch,
-		`@font-face must declare font src url(): ${fontFaceBlock}`,
-	);
+	const fontFaceBlocks = compiledCss.match(/@font-face\s*\{[^}]*\}/g) ?? [];
 	assert.equal(
-		fontUrlMatch[1],
+		fontFaceBlocks.length,
+		2,
+		"Compiled dist/css/style.css must declare exactly two @font-face blocks (latin-ext and latin)",
+	);
+	const expectedFontUrls = [
+		"../fonts/inter-var-latin-ext.woff2",
 		"../fonts/inter-var.woff2",
-		"@font-face src must use relative ../fonts/inter-var.woff2 path",
-	);
-	assert.ok(
-		fs.existsSync(path.resolve(path.dirname(compiledCssPath), fontUrlMatch[1])),
-		"Compiled @font-face relative path must resolve to an existing file in dist/",
-	);
-	assert.match(
-		fontFaceBlock,
-		/font-weight:\s*300\s+800/i,
-		`@font-face must declare variable weight range 300 800: ${fontFaceBlock}`,
-	);
-	assert.match(
-		fontFaceBlock,
-		/font-display:\s*swap/i,
-		`@font-face must declare font-display: swap: ${fontFaceBlock}`,
-	);
+	];
+	for (let i = 0; i < expectedFontUrls.length; i++) {
+		const fontFaceBlock = fontFaceBlocks[i];
+		assert.match(
+			fontFaceBlock,
+			/font-family:\s*["']?Inter["']?/i,
+			`@font-face must declare Inter family: ${fontFaceBlock}`,
+		);
+		const fontUrlMatch = fontFaceBlock.match(
+			/url\(\s*["']?([^"')]+)["']?\s*\)/i,
+		);
+		assert.ok(
+			fontUrlMatch,
+			`@font-face must declare font src url(): ${fontFaceBlock}`,
+		);
+		assert.equal(
+			fontUrlMatch[1],
+			expectedFontUrls[i],
+			`@font-face src must use relative ${expectedFontUrls[i]} path`,
+		);
+		assert.ok(
+			fs.existsSync(
+				path.resolve(path.dirname(compiledCssPath), fontUrlMatch[1]),
+			),
+			`Compiled @font-face relative path ${fontUrlMatch[1]} must resolve to an existing file in dist/`,
+		);
+		assert.match(
+			fontFaceBlock,
+			/font-weight:\s*300\s+800/i,
+			`@font-face must declare variable weight range 300 800: ${fontFaceBlock}`,
+		);
+		assert.match(
+			fontFaceBlock,
+			/font-display:\s*swap/i,
+			`@font-face must declare font-display: swap: ${fontFaceBlock}`,
+		);
+		assert.match(
+			fontFaceBlock,
+			/unicode-range:/i,
+			`@font-face must declare unicode-range for subsetting: ${fontFaceBlock}`,
+		);
+	}
 
 	// 3. Verify every compiled page across all 6 locales
 	for (const page of pages) {
@@ -387,6 +405,10 @@ test("Compiled HTML self-hosts Inter Variable WOFF2 with zero Google Fonts reque
 			assert.ok(
 				fontPreloadIdx !== -1,
 				`Missing local font preload "${expectedFontPreload}" in <head> of ${filename}`,
+			);
+			assert.ok(
+				!head.includes("inter-var-latin-ext.woff2"),
+				`Compiled ${filename} must not preload inter-var-latin-ext.woff2 in <head>`,
 			);
 			assert.ok(
 				styleCssIdx !== -1 && fontPreloadIdx < styleCssIdx,

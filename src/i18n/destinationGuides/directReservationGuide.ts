@@ -42,7 +42,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 				"0% OTA service fees: every Direct Reservation Quote settles strictly in Settlement Currency (COP)—itemized Nightly Rates plus one flat Cleaning Fee ({cleaning1707Cop} for Property 1707, {cleaning1606Cop} for Property 1606).",
 				"Pay securely via Mercado Pago using Credit/Debit Card (Instant Settlement, 30-min Standard Hold Window), PSE bank transfer (Asynchronous Settlement), or Cash Voucher via Efecty (72-hour Voucher Hold Window).",
 				"Both Properties hold active Colombian Ministry of Commerce tourism registrations: RNT #268781 (Property 1707) and RNT #270413 (Property 1606), operated by Data Controller OceanViewFlats — Manuel Enrique Herrera.",
-				"Check-in is 15:00, check-out is 11:00, Edificio Salguero Sunset collects a {buildingFeeCop} per-person Building Registration Fee at reception, and the swimming pool closes Tuesdays for maintenance.",
+				"Check-in is 15:00, check-out is 11:00, Edificio Salguero Sunset collects a {buildingRegistrationFeeCop} per-person Building Registration Fee at reception, and the swimming pool closes Tuesdays for maintenance.",
 			],
 			sections: [
 				{
@@ -119,7 +119,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 						},
 						{
 							label: "Building Registration Fee",
-							value: "{buildingFeeCop}",
+							value: "{buildingRegistrationFeeCop}",
 							detail: "Per person at reception on arrival",
 						},
 					],
@@ -135,7 +135,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Arrival & House Rules Summary",
-						text: "Check-in is 15:00 and check-out is 11:00. Maximum Occupancy is 6 Guests per Property, pets are not permitted, the building swimming pool closes Tuesdays for scheduled maintenance, and Edificio Salguero Sunset collects the statutory {buildingFeeCop} per-person Building Registration Fee directly at front-desk reception.",
+						text: "Check-in is 15:00 and check-out is 11:00. Maximum Occupancy is 6 Guests per Property, pets are not permitted, the building swimming pool closes Tuesdays for scheduled maintenance, and Edificio Salguero Sunset collects the statutory {buildingRegistrationFeeCop} per-person Building Registration Fee directly at front-desk reception.",
 					},
 				},
 			],
@@ -154,7 +154,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					question:
 						"What is included in a Direct Reservation Quote and what is paid at the building?",
 					answer:
-						"Your online Quote in Settlement Currency (COP) covers each Night's Nightly Rate (starting at {rate1707Cop} for 1707 and {rate1606Cop} for 1606) plus the flat Cleaning Fee ({cleaning1707Cop} for 1707, {cleaning1606Cop} for 1606) with 0% OTA fees. Separately, Edificio Salguero Sunset administration charges a mandatory {buildingFeeCop} per-person Building Registration Fee at reception upon check-in.",
+						"Your online Quote in Settlement Currency (COP) covers each Night's Nightly Rate (starting at {rate1707Cop} for 1707 and {rate1606Cop} for 1606) plus the flat Cleaning Fee ({cleaning1707Cop} for 1707, {cleaning1606Cop} for 1606) with 0% OTA fees. Separately, Edificio Salguero Sunset administration charges a mandatory {buildingRegistrationFeeCop} per-person Building Registration Fee at reception upon check-in.",
 				},
 				{
 					id: "faq-dr-3",
@@ -196,7 +196,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 				"0% comisión OTA: cada Cotización de Reserva Directa se liquida en COP sumando las Tarifas por Noche y una sola Tarifa de Limpieza fija ({cleaning1707Cop} en 1707, {cleaning1606Cop} en 1606).",
 				"Paga por Mercado Pago con Tarjeta Crédito/Débito (Liquidación Instantánea, ventana de retención de 30 min), PSE (Liquidación Asíncrona) o Efecty (ventana de 72 horas).",
 				"Ambas Propiedades cuentan con registro turístico oficial activo: RNT #268781 (Propiedad 1707) y RNT #270413 (Propiedad 1606), operadas por OceanViewFlats — Manuel Enrique Herrera.",
-				"Check-in 15:00, check-out 11:00, Tarifa de Registro del Edificio de {buildingFeeCop} por persona en recepción, y piscina cerrada los martes por mantenimiento.",
+				"Check-in 15:00, check-out 11:00, Tarifa de Registro del Edificio de {buildingRegistrationFeeCop} por persona en recepción, y piscina cerrada los martes por mantenimiento.",
 			],
 			sections: [
 				{
@@ -274,7 +274,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 						},
 						{
 							label: "Registro del Edificio",
-							value: "{buildingFeeCop}",
+							value: "{buildingRegistrationFeeCop}",
 							detail: "Por persona en recepción al llegar",
 						},
 					],
@@ -290,7 +290,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Resumen de Reglas de Llegada y Edificio",
-						text: "Check-in desde las 15:00 y check-out hasta las 11:00. Ocupación Máxima de 6 Huéspedes por Propiedad, no se permiten mascotas, la piscina cierra los martes por mantenimiento y la administración recauda la Tarifa de Registro del Edificio de {buildingFeeCop} por persona en recepción.",
+						text: "Check-in desde las 15:00 y check-out hasta las 11:00. Ocupación Máxima de 6 Huéspedes por Propiedad, no se permiten mascotas, la piscina cierra los martes por mantenimiento y la administración recauda la Tarifa de Registro del Edificio de {buildingRegistrationFeeCop} por persona en recepción.",
 					},
 				},
 			],
@@ -309,7 +309,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					question:
 						"¿Qué incluye la Cotización en línea y qué se paga directamente en el edificio?",
 					answer:
-						"La Cotización en COP incluye las Tarifas por Noche (desde {rate1707Cop} en 1707 y {rate1606Cop} en 1606) más la Tarifa de Limpieza fija ({cleaning1707Cop} en 1707, {cleaning1606Cop} en 1606), con 0% comisión OTA. Aparte, la administración del Edificio Salguero Sunset cobra la Tarifa de Registro del Edificio ({buildingFeeCop} por persona) en recepción al ingresar.",
+						"La Cotización en COP incluye las Tarifas por Noche (desde {rate1707Cop} en 1707 y {rate1606Cop} en 1606) más la Tarifa de Limpieza fija ({cleaning1707Cop} en 1707, {cleaning1606Cop} en 1606), con 0% comisión OTA. Aparte, la administración del Edificio Salguero Sunset cobra la Tarifa de Registro del Edificio ({buildingRegistrationFeeCop} por persona) en recepción al ingresar.",
 				},
 				{
 					id: "faq-dr-3",
@@ -351,7 +351,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 				"0 % de commission OTA : chaque Devis se règle en Pesos Colombiens (COP) avec les Tarifs par Nuit et un forfait unique de Frais de Ménage ({cleaning1707Cop} pour 1707, {cleaning1606Cop} pour 1606).",
 				"Paiement sécurisé via Mercado Pago : Carte bancaire (règlement instantané, retenue 30 min), virement colombien PSE ou Bon en espèces Efecty (fenêtre de 72 h).",
 				"Nos deux Propriétés disposent d'un RNT officiel actif : RNT #268781 (Propriété 1707) et RNT #270413 (Propriété 1606), sous le Responsable de Traitement OceanViewFlats — Manuel Enrique Herrera.",
-				"Arrivée 15h00, départ 11h00, Frais d'Enregistrement de l'Immeuble de {buildingFeeCop} par personne à la réception, et piscine fermée le mardi pour entretien.",
+				"Arrivée 15h00, départ 11h00, Frais d'Enregistrement de l'Immeuble de {buildingRegistrationFeeCop} par personne à la réception, et piscine fermée le mardi pour entretien.",
 			],
 			sections: [
 				{
@@ -428,7 +428,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 						},
 						{
 							label: "Frais d'Immeuble",
-							value: "{buildingFeeCop}",
+							value: "{buildingRegistrationFeeCop}",
 							detail: "Par personne à la réception à l'arrivée",
 						},
 					],
@@ -444,7 +444,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Rappel Arrivée & Règlement",
-						text: "Arrivée dès 15h00, départ avant 11h00. Capacité maximale de 6 Voyageurs par Propriété, animaux non admis, piscine fermée le mardi pour entretien, et Frais d'Enregistrement de l'Immeuble de {buildingFeeCop} par personne à régler à la réception.",
+						text: "Arrivée dès 15h00, départ avant 11h00. Capacité maximale de 6 Voyageurs par Propriété, animaux non admis, piscine fermée le mardi pour entretien, et Frais d'Enregistrement de l'Immeuble de {buildingRegistrationFeeCop} par personne à régler à la réception.",
 					},
 				},
 			],
@@ -463,7 +463,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					question:
 						"Que comprend le Devis en ligne et que paie-t-on à la réception ?",
 					answer:
-						"Le Devis en COP inclut les Tarifs par Nuit (dès {rate1707Cop} pour 1707 et {rate1606Cop} pour 1606) plus les Frais de Ménage fixes ({cleaning1707Cop} pour 1707, {cleaning1606Cop} pour 1606), sans commission OTA. À l'arrivée, la copropriété perçoit {buildingFeeCop} par personne pour les Frais d'Enregistrement de l'Immeuble.",
+						"Le Devis en COP inclut les Tarifs par Nuit (dès {rate1707Cop} pour 1707 et {rate1606Cop} pour 1606) plus les Frais de Ménage fixes ({cleaning1707Cop} pour 1707, {cleaning1606Cop} pour 1606), sans commission OTA. À l'arrivée, la copropriété perçoit {buildingRegistrationFeeCop} par personne pour les Frais d'Enregistrement de l'Immeuble.",
 				},
 				{
 					id: "faq-dr-3",
@@ -505,7 +505,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 				"0% commissioni OTA: ogni Preventivo si regola in Pesos Colombiani (COP) con Tariffe Notturne più una sola Tariffa di Pulizia fissa ({cleaning1707Cop} per 1707, {cleaning1606Cop} per 1606).",
 				"Pagamento sicuro tramite Mercado Pago: Carta di Credito/Debito (conferma immediata, blocco 30 min), bonifico PSE o Voucher Contanti Efecty (finestra 72 ore).",
 				"Entrambe le Proprietà hanno registrazione turistica RNT attiva: RNT #268781 (Proprietà 1707) e RNT #270413 (Proprietà 1606), gestite dal Titolare OceanViewFlats — Manuel Enrique Herrera.",
-				"Check-in alle 15:00, check-out alle 11:00, Tassa di Registrazione dell'Edificio di {buildingFeeCop} a persona in reception, piscina chiusa il martedì per manutenzione.",
+				"Check-in alle 15:00, check-out alle 11:00, Tassa di Registrazione dell'Edificio di {buildingRegistrationFeeCop} a persona in reception, piscina chiusa il martedì per manutenzione.",
 			],
 			sections: [
 				{
@@ -583,7 +583,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 						},
 						{
 							label: "Tassa Edificio",
-							value: "{buildingFeeCop}",
+							value: "{buildingRegistrationFeeCop}",
 							detail: "A persona in reception all'arrivo",
 						},
 					],
@@ -599,7 +599,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Riepilogo Arrivo e Regole",
-						text: "Check-in dalle 15:00 e check-out entro le 11:00. Occupazione Massima di 6 Ospiti per Proprietà, animali non ammessi, piscina chiusa il martedì per manutenzione e Tassa di Registrazione dell'Edificio di {buildingFeeCop} a persona pagabile in reception.",
+						text: "Check-in dalle 15:00 e check-out entro le 11:00. Occupazione Massima di 6 Ospiti per Proprietà, animali non ammessi, piscina chiusa il martedì per manutenzione e Tassa di Registrazione dell'Edificio di {buildingRegistrationFeeCop} a persona pagabile in reception.",
 					},
 				},
 			],
@@ -618,7 +618,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					question:
 						"Cosa include il Preventivo online e cosa si paga in reception?",
 					answer:
-						"Il Preventivo in COP include le Tariffe Notturne (da {rate1707Cop} per 1707 e {rate1606Cop} per 1606) più la Tariffa di Pulizia fissa ({cleaning1707Cop} per 1707, {cleaning1606Cop} per 1606), con 0% commissioni OTA. Separatamente, il condominio riscuote {buildingFeeCop} a persona come Tassa di Registrazione dell'Edificio all'arrivo.",
+						"Il Preventivo in COP include le Tariffe Notturne (da {rate1707Cop} per 1707 e {rate1606Cop} per 1606) più la Tariffa di Pulizia fissa ({cleaning1707Cop} per 1707, {cleaning1606Cop} per 1606), con 0% commissioni OTA. Separatamente, il condominio riscuote {buildingRegistrationFeeCop} a persona come Tassa di Registrazione dell'Edificio all'arrivo.",
 				},
 				{
 					id: "faq-dr-3",
@@ -660,7 +660,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 				"0% OTA-Provision: Jedes Angebot rechnet transparent in Kolumbianischen Pesos (COP) ab – Übernachtungsraten plus eine pauschale Reinigungsgebühr ({cleaning1707Cop} für 1707, {cleaning1606Cop} für 1606).",
 				"Sichere Zahlung über Mercado Pago: Kredit-/Debitkarte (Sofortbestätigung, 30 Min. Haltefenster), kolumbianische PSE-Überweisung oder Efecty Bargeld-Gutschein (72 Std. Haltefenster).",
 				"Beide Unterkünfte sind offiziell beim kolumbianischen Tourismusministerium registriert: RNT #268781 (Unterkunft 1707) und RNT #270413 (Unterkunft 1606) unter OceanViewFlats — Manuel Enrique Herrera.",
-				"Check-in 15:00, Check-out 11:00, einmalige Gebäude-Registrierungsgebühr von {buildingFeeCop} pro Person an der Rezeption, Pool dienstags wegen Wartung geschlossen.",
+				"Check-in 15:00, Check-out 11:00, einmalige Gebäude-Registrierungsgebühr von {buildingRegistrationFeeCop} pro Person an der Rezeption, Pool dienstags wegen Wartung geschlossen.",
 			],
 			sections: [
 				{
@@ -737,7 +737,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 						},
 						{
 							label: "Gebäudegebühr",
-							value: "{buildingFeeCop}",
+							value: "{buildingRegistrationFeeCop}",
 							detail: "Pro Person bei Ankunft an der Rezeption",
 						},
 					],
@@ -753,7 +753,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Anreise & Hausregeln kompakt",
-						text: "Check-in ab 15:00, Check-out bis 11:00. Maximalbelegung 6 Gäste pro Unterkunft, keine Haustiere, Pool dienstags wegen Wartung geschlossen, und einmalige Gebäude-Registrierungsgebühr von {buildingFeeCop} pro Person direkt an der Rezeption.",
+						text: "Check-in ab 15:00, Check-out bis 11:00. Maximalbelegung 6 Gäste pro Unterkunft, keine Haustiere, Pool dienstags wegen Wartung geschlossen, und einmalige Gebäude-Registrierungsgebühr von {buildingRegistrationFeeCop} pro Person direkt an der Rezeption.",
 					},
 				},
 			],
@@ -772,7 +772,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					question:
 						"Was ist im Online-Angebot enthalten und was wird vor Ort im Gebäude bezahlt?",
 					answer:
-						"Ihr COP-Angebot umfasst die Übernachtungsraten (ab {rate1707Cop} für 1707 bzw. {rate1606Cop} für 1606) plus die pauschale Reinigungsgebühr ({cleaning1707Cop} für 1707, {cleaning1606Cop} für 1606) bei 0% OTA-Provision. Separat erhebt die Hausverwaltung des Edificio Salguero Sunset {buildingFeeCop} pro Person als Gebäude-Registrierungsgebühr an der Rezeption.",
+						"Ihr COP-Angebot umfasst die Übernachtungsraten (ab {rate1707Cop} für 1707 bzw. {rate1606Cop} für 1606) plus die pauschale Reinigungsgebühr ({cleaning1707Cop} für 1707, {cleaning1606Cop} für 1606) bei 0% OTA-Provision. Separat erhebt die Hausverwaltung des Edificio Salguero Sunset {buildingRegistrationFeeCop} pro Person als Gebäude-Registrierungsgebühr an der Rezeption.",
 				},
 				{
 					id: "faq-dr-3",
@@ -814,7 +814,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 				"OTA手数料0%：公式見積もりはすべて決済通貨COPで算出し、宿泊料金＋一律清掃料金（物件1707：{cleaning1707Cop}、物件1606：{cleaning1606Cop}）のみで構成されます。",
 				"Mercado Pago決済に対応：クレジットカード／デビットカード（即時確定・30分仮押さえ）、コロンビアPSE銀行振込、Efecty現金バウチャー（72時間仮押さえ）を選択できます。",
 				"両物件ともコロンビア商工観光省の公式観光登録を取得済み：RNT #268781（物件1707）・RNT #270413（物件1606）、データ管理者OceanViewFlats — Manuel Enrique Herrera。",
-				"チェックイン15:00・チェックアウト11:00、到着時にフロントで建物登録料（{buildingFeeCop}／名）をお支払い。プールは毎週火曜メンテナンス休業です。",
+				"チェックイン15:00・チェックアウト11:00、到着時にフロントで建物登録料（{buildingRegistrationFeeCop}／名）をお支払い。プールは毎週火曜メンテナンス休業です。",
 			],
 			sections: [
 				{
@@ -886,7 +886,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 						},
 						{
 							label: "建物登録料",
-							value: "{buildingFeeCop}",
+							value: "{buildingRegistrationFeeCop}",
 							detail: "到着時フロント払い（1名あたり）",
 						},
 					],
@@ -902,7 +902,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "到着・ハウスルールまとめ",
-						text: "チェックイン15:00・チェックアウト11:00。最大定員は各物件6名様、ペット不可、プールは毎週火曜メンテナンス休業。到着時にエディフィシオ・サルグエロ・サンセットのフロントにて建物登録料（{buildingFeeCop}／名）のお支払いが必要です。",
+						text: "チェックイン15:00・チェックアウト11:00。最大定員は各物件6名様、ペット不可、プールは毎週火曜メンテナンス休業。到着時にエディフィシオ・サルグエロ・サンセットのフロントにて建物登録料（{buildingRegistrationFeeCop}／名）のお支払いが必要です。",
 					},
 				},
 			],
@@ -921,7 +921,7 @@ export const DIRECT_RESERVATION_GUIDE: DestinationGuideDefinition = {
 					question:
 						"オンライン見積もりに含まれる費用と現地フロント払いの費用は？",
 					answer:
-						"COPオンライン見積もりには宿泊料金（物件1707：{rate1707Cop}〜、物件1606：{rate1606Cop}〜）と一律清掃料金（1707：{cleaning1707Cop}、1606：{cleaning1606Cop}）のみが含まれ、OTA手数料は0%です。別途、チェックイン時に建物管理組合へ建物登録料（{buildingFeeCop}／名）をフロントでお支払いいただきます。",
+						"COPオンライン見積もりには宿泊料金（物件1707：{rate1707Cop}〜、物件1606：{rate1606Cop}〜）と一律清掃料金（1707：{cleaning1707Cop}、1606：{cleaning1606Cop}）のみが含まれ、OTA手数料は0%です。別途、チェックイン時に建物管理組合へ建物登録料（{buildingRegistrationFeeCop}／名）をフロントでお支払いいただきます。",
 				},
 				{
 					id: "faq-dr-3",

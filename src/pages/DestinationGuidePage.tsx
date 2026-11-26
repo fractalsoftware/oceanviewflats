@@ -1,29 +1,23 @@
 import {
 	ArrowLeft,
 	ArrowRight,
-	Building2,
 	Calendar,
 	CheckCircle2,
 	ChevronDown,
 	Clock,
-	Compass,
-	MapPin,
-	ShieldCheck,
-	Sparkles,
-	Waves,
-	Wifi,
 } from "lucide-react";
-import type React from "react";
 import { Breadcrumbs } from "../components/Breadcrumbs";
+import {
+	DestinationGuidePropertyCta,
+	GUIDE_ICONS,
+} from "../components/DestinationGuidePropertyCta";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import {
 	getDestinationGuidePath,
 	getDestinationGuidesHubPath,
 	getHeroImageSrcSet,
-	getPropertyPagePath,
 	HERO_IMAGE_SIZES,
-	type PropertyId,
 } from "../constants/config";
 import { DESTINATION_GUIDES_THEME } from "../constants/theme";
 import {
@@ -31,58 +25,21 @@ import {
 	DESTINATION_GUIDES,
 	DESTINATION_GUIDES_HUB_COPY,
 	type DestinationGuideDefinition,
-	type DestinationGuideIconId,
-	formatCopCurrencyForLocale,
 	interpolateGuideText,
 } from "../i18n/destinationGuides";
-import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 import { DEFAULT_PRICING_SUMMARY } from "../utils/schema";
 
-const GUIDE_ICONS: Record<
-	DestinationGuideIconId,
-	React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
-> = {
-	waves: Waves,
-	wifi: Wifi,
-	compass: Compass,
-	shield: ShieldCheck,
-	"map-pin": MapPin,
-	sparkles: Sparkles,
-	building: Building2,
-};
-
-const PROPERTY_CTA_SPECS: Record<
-	PropertyId,
-	{
-		titleKey: "heroTitle" | "hero1606Title";
-		badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
-		pitchKey: "property1707Pitch" | "property1606Pitch";
-	}
-> = {
-	"1707": {
-		titleKey: "heroTitle",
-		badgeKey: "homeCard1707Badge",
-		pitchKey: "property1707Pitch",
-	},
-	"1606": {
-		titleKey: "hero1606Title",
-		badgeKey: "homeCard1606Badge",
-		pitchKey: "property1606Pitch",
-	},
-};
-
-export interface DestinationGuideArticleProps extends AppProps {
+export interface DestinationGuidePageProps extends AppProps {
 	guide: DestinationGuideDefinition;
 }
 
-export default function DestinationGuideArticle({
+export default function DestinationGuidePage({
 	guide,
 	lang,
 	assetPrefix = "../../",
 	pricingSummary = DEFAULT_PRICING_SUMMARY,
-}: DestinationGuideArticleProps) {
-	const t = dict[lang];
+}: DestinationGuidePageProps) {
 	const hubCopy = DESTINATION_GUIDES_HUB_COPY[lang];
 	const content = guide.locales[lang];
 	const tokens = buildGuidePricingTokens(pricingSummary, lang);
@@ -199,7 +156,7 @@ export default function DestinationGuideArticle({
 					surface="inline"
 				/>
 
-				<article className={DESTINATION_GUIDES_THEME.articleWrapper}>
+				<article className={DESTINATION_GUIDES_THEME.guideWrapper}>
 					<p className={DESTINATION_GUIDES_THEME.sectionSubtitle}>
 						{hubCopy.authorByline}
 					</p>
@@ -238,11 +195,11 @@ export default function DestinationGuideArticle({
 							key={section.id}
 							id={section.id}
 							aria-labelledby={`${section.id}-heading`}
-							className={DESTINATION_GUIDES_THEME.articleSectionCard}
+							className={DESTINATION_GUIDES_THEME.sectionCard}
 						>
 							<h2
 								id={`${section.id}-heading`}
-								className={DESTINATION_GUIDES_THEME.articleSectionHeading}
+								className={DESTINATION_GUIDES_THEME.sectionHeading}
 							>
 								{interpolateGuideText(section.heading, tokens)}
 							</h2>
@@ -250,21 +207,21 @@ export default function DestinationGuideArticle({
 							{section.paragraphs.map((paragraph) => (
 								<p
 									key={paragraph}
-									className={DESTINATION_GUIDES_THEME.articleParagraph}
+									className={DESTINATION_GUIDES_THEME.sectionParagraph}
 								>
 									{interpolateGuideText(paragraph, tokens)}
 								</p>
 							))}
 
 							{section.bullets && section.bullets.length > 0 && (
-								<ul className={DESTINATION_GUIDES_THEME.articleBulletList}>
+								<ul className={DESTINATION_GUIDES_THEME.sectionBulletList}>
 									{section.bullets.map((bullet) => (
 										<li
 											key={bullet}
-											className={DESTINATION_GUIDES_THEME.articleBulletItem}
+											className={DESTINATION_GUIDES_THEME.sectionBulletItem}
 										>
 											<CheckCircle2
-												className={DESTINATION_GUIDES_THEME.articleBulletIcon}
+												className={DESTINATION_GUIDES_THEME.sectionBulletIcon}
 												aria-hidden="true"
 											/>
 											<span>{interpolateGuideText(bullet, tokens)}</span>
@@ -362,9 +319,9 @@ export default function DestinationGuideArticle({
 							)}
 
 							{section.callout && (
-								<div className={DESTINATION_GUIDES_THEME.articleCallout}>
+								<div className={DESTINATION_GUIDES_THEME.sectionCallout}>
 									<span
-										className={DESTINATION_GUIDES_THEME.articleCalloutLabel}
+										className={DESTINATION_GUIDES_THEME.sectionCalloutLabel}
 									>
 										{interpolateGuideText(section.callout.label, tokens)}
 									</span>
@@ -412,109 +369,19 @@ export default function DestinationGuideArticle({
 						</section>
 					)}
 
-					<section
-						id="guide-property-cta"
-						aria-labelledby="guide-property-cta-heading"
-						className={DESTINATION_GUIDES_THEME.propertyCtaSection}
-					>
-						<div className={DESTINATION_GUIDES_THEME.propertyCtaHeader}>
-							<p className={DESTINATION_GUIDES_THEME.propertyCtaEyebrow}>
-								{hubCopy.articlePropertyCtaEyebrow}
-							</p>
-							<h2
-								id="guide-property-cta-heading"
-								className={DESTINATION_GUIDES_THEME.propertyCtaTitle}
-							>
-								{resolvedCtaTitle}
-							</h2>
-							<p className={DESTINATION_GUIDES_THEME.propertyCtaSubtitle}>
-								{resolvedCtaSubtitle}
-							</p>
-						</div>
-						<div className={DESTINATION_GUIDES_THEME.propertyCtaGrid}>
-							{guide.relatedProperties.map((propertyId) => {
-								const spec = PROPERTY_CTA_SPECS[propertyId];
-								const propPricing = pricingSummary.properties[propertyId];
-								const rateLine = interpolateGuideText(
-									hubCopy.propertyRateLineTemplate,
-									{
-										rate: formatCopCurrencyForLocale(
-											propPricing.lowPrice,
-											lang,
-										),
-										minStay: String(propPricing.minStay),
-									},
-								);
-								const cleaningLine = interpolateGuideText(
-									hubCopy.propertyCleaningLineTemplate,
-									{
-										cleaningFee: formatCopCurrencyForLocale(
-											propPricing.cleaningFeeCop,
-											lang,
-										),
-									},
-								);
-								return (
-									<div
-										key={propertyId}
-										className={DESTINATION_GUIDES_THEME.propertyCtaCard}
-									>
-										<div>
-											<span
-												className={
-													DESTINATION_GUIDES_THEME.propertyCtaCardBadge
-												}
-											>
-												{t[spec.badgeKey]}
-											</span>
-											<h3
-												className={
-													DESTINATION_GUIDES_THEME.propertyCtaCardTitle
-												}
-											>
-												{t[spec.titleKey]}
-											</h3>
-											<p
-												className={DESTINATION_GUIDES_THEME.propertyCtaCardDesc}
-											>
-												{hubCopy[spec.pitchKey]}
-											</p>
-											<div
-												className={DESTINATION_GUIDES_THEME.propertyCtaPriceRow}
-											>
-												<p
-													className={
-														DESTINATION_GUIDES_THEME.propertyCtaRateLine
-													}
-												>
-													{rateLine}
-												</p>
-												<p
-													className={
-														DESTINATION_GUIDES_THEME.propertyCtaCleaningLine
-													}
-												>
-													{cleaningLine}
-												</p>
-											</div>
-										</div>
-										<a
-											href={getPropertyPagePath(propertyId, lang, assetPrefix)}
-											data-guide-cta-property={propertyId}
-											data-guide-slug={guide.slug}
-											className={DESTINATION_GUIDES_THEME.propertyCtaButton}
-										>
-											<span>{hubCopy.articlePropertyCtaButton}</span>
-											<ArrowRight
-												className={DESTINATION_GUIDES_THEME.iconSm}
-												aria-hidden="true"
-											/>
-										</a>
-									</div>
-								);
-							})}
-						</div>
-					</section>
+					<DestinationGuidePropertyCta
+						sectionId="guide-property-cta"
+						headingId="guide-property-cta-heading"
+						eyebrow={hubCopy.guidePropertyCtaEyebrow}
+						title={resolvedCtaTitle}
+						subtitle={resolvedCtaSubtitle}
+						buttonLabel={hubCopy.guidePropertyCtaButton}
+						guideSlug={guide.slug}
+						propertyIds={guide.relatedProperties}
+						lang={lang}
+						assetPrefix={assetPrefix}
+						pricingSummary={pricingSummary}
+					/>
 
 					<section
 						id="related-destination-guides"

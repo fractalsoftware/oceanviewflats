@@ -123,7 +123,7 @@ export const DIGITAL_NOMAD_REMOTE_WORK_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Workation Logistics Note",
-						text: "Remember that every staying Guest must complete the mandatory Guest Registry (TRA/SIRE) before arrival so reception issues building clearance and OceanViewFlats unlocks your private Guest Guide and temporal Access Credential. Reception collects the one-time {buildingFeeCop} per-person Building Registration Fee at check-in (15:00).",
+						text: "Remember that every staying Guest must complete the mandatory Guest Registry (TRA/SIRE) before arrival so reception issues building clearance and OceanViewFlats unlocks your private Guest Guide and temporal Access Credential. Reception collects the one-time {buildingRegistrationFeeCop} per-person Building Registration Fee at check-in (15:00).",
 					},
 				},
 			],
@@ -268,7 +268,7 @@ export const DIGITAL_NOMAD_REMOTE_WORK_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Nota para Estadías de Trabajo Remoto",
-						text: "Todos los Huéspedes deben diligenciar el Registro de Huéspedes obligatorio (TRA/SIRE) antes de llegar para habilitar el acceso del edificio y desbloquear la Guía de Huéspedes privada y tu Credencial de Acceso temporal. La administración cobra la Tarifa de Registro del Edificio ({buildingFeeCop} por persona) en recepción al hacer check-in (15:00).",
+						text: "Todos los Huéspedes deben diligenciar el Registro de Huéspedes obligatorio (TRA/SIRE) antes de llegar para habilitar el acceso del edificio y desbloquear la Guía de Huéspedes privada y tu Credencial de Acceso temporal. La administración cobra la Tarifa de Registro del Edificio ({buildingRegistrationFeeCop} por persona) en recepción al hacer check-in (15:00).",
 					},
 				},
 			],
@@ -409,7 +409,7 @@ export const DIGITAL_NOMAD_REMOTE_WORK_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Logistique Long Séjour",
-						text: "Chaque Voyageur doit compléter le Registre des Voyageurs légal (TRA/SIRE) avant l'arrivée afin de valider l'accès immeuble et débloquer le Guide Voyageur privé ainsi que votre Code d'Accès temporaire. Les Frais d'Enregistrement de l'Immeuble ({buildingFeeCop}/personne) se règlent à la réception lors du check-in (15h00).",
+						text: "Chaque Voyageur doit compléter le Registre des Voyageurs légal (TRA/SIRE) avant l'arrivée afin de valider l'accès immeuble et débloquer le Guide Voyageur privé ainsi que votre Code d'Accès temporaire. Les Frais d'Enregistrement de l'Immeuble ({buildingRegistrationFeeCop}/personne) se règlent à la réception lors du check-in (15h00).",
 					},
 				},
 			],
@@ -554,7 +554,7 @@ export const DIGITAL_NOMAD_REMOTE_WORK_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Promemoria per Soggiorni Lunghi",
-						text: "Ogni Ospite deve completare il Registro Ospiti obbligatorio (TRA/SIRE) prima dell'arrivo per l'autorizzazione condominiale e lo sblocco della Guida Ospiti privata e della Credenziale di Accesso temporanea. La Tassa di Registrazione dell'Edificio ({buildingFeeCop}/persona) si versa in reception al check-in (15:00).",
+						text: "Ogni Ospite deve completare il Registro Ospiti obbligatorio (TRA/SIRE) prima dell'arrivo per l'autorizzazione condominiale e lo sblocco della Guida Ospiti privata e della Credenziale di Accesso temporanea. La Tassa di Registrazione dell'Edificio ({buildingRegistrationFeeCop}/persona) si versa in reception al check-in (15:00).",
 					},
 				},
 			],
@@ -700,7 +700,7 @@ export const DIGITAL_NOMAD_REMOTE_WORK_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Hinweis für Workations",
-						text: "Alle Gäste müssen vor Anreise die gesetzliche Gästeregistrierung (TRA/SIRE) ausfüllen, damit die Hausverwaltung die Freigabe erteilt und Ihr privater Gästeleitfaden samt Zugangscode freigeschaltet wird. Die einmalige Gebäude-Registrierungsgebühr ({buildingFeeCop}/Person) zahlen Sie beim Check-in (15:00) an der Rezeption.",
+						text: "Alle Gäste müssen vor Anreise die gesetzliche Gästeregistrierung (TRA/SIRE) ausfüllen, damit die Hausverwaltung die Freigabe erteilt und Ihr privater Gästeleitfaden samt Zugangscode freigeschaltet wird. Die einmalige Gebäude-Registrierungsgebühr ({buildingRegistrationFeeCop}/Person) zahlen Sie beim Check-in (15:00) an der Rezeption.",
 					},
 				},
 			],
@@ -845,7 +845,7 @@ export const DIGITAL_NOMAD_REMOTE_WORK_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "ワーケーション到着前のご案内",
-						text: "ご到着前に全員分の法定ゲスト登録（TRA/SIRE）を完了いただくことで、建物入館承認および非公開ゲストガイド・スマートロック入室コードが発行されます。チェックイン（15:00）時にフロントで建物登録料（{buildingFeeCop}／名）のお支払いが必要です。",
+						text: "ご到着前に全員分の法定ゲスト登録（TRA/SIRE）を完了いただくことで、建物入館承認および非公開ゲストガイド・スマートロック入室コードが発行されます。チェックイン（15:00）時にフロントで建物登録料（{buildingRegistrationFeeCop}／名）のお支払いが必要です。",
 					},
 				},
 			],

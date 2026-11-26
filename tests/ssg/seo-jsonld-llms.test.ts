@@ -945,7 +945,7 @@ test("#313 build-time dist/llms.txt and dist/llms-full.txt derive COP rates from
 	}
 	assert.doesNotMatch(
 		distLlmsFull,
-		/\{(?:rate1707|rate1707Cop|rate1707HighCop|minStay1707|cleaning1707Cop|rate1606|rate1606Cop|rate1606HighCop|minStay1606|maxMinStay1606|cleaning1606Cop|portfolioLowCop|portfolioHighCop|buildingFeeCop)\}/,
+		/\{(?:rate1707|rate1707Cop|rate1707HighCop|minStay1707|cleaning1707Cop|rate1606|rate1606Cop|rate1606HighCop|minStay1606|maxMinStay1606|cleaning1606Cop|portfolioLowCop|portfolioHighCop|buildingRegistrationFeeCop)\}/,
 		"dist/llms-full.txt must not contain unresolved pricing interpolation tokens",
 	);
 

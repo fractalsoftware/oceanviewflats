@@ -26,13 +26,16 @@ import {
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
 
-if (!fs.existsSync(distDir)) {
+const preserveDist = process.argv.includes("--preserve-dist");
+const distExisted = fs.existsSync(distDir);
+
+if (!distExisted) {
 	fs.mkdirSync(distDir, { recursive: true });
-	// Standalone render fallback: copy public assets when vite build did not pre-populate dist/
-	if (fs.existsSync(publicDir)) {
-		fs.cpSync(publicDir, distDir, { recursive: true });
-		console.log("Copied public assets to dist/");
-	}
+}
+
+if ((!preserveDist || !distExisted) && fs.existsSync(publicDir)) {
+	fs.cpSync(publicDir, distDir, { recursive: true });
+	console.log("Copied public assets to dist/");
 }
 
 const computeFileHash = (filePath: string): string =>

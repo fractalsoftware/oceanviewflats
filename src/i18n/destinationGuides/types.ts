@@ -85,16 +85,6 @@ export interface DestinationGuideDefinition {
 	readonly locales: Record<Lang, DestinationGuideLocaleContent>;
 }
 
-export interface DestinationGuidesHubTopicPreview {
-	readonly id: string;
-	readonly slug: string;
-	readonly icon: DestinationGuideIconId;
-	readonly badge: string;
-	readonly title: string;
-	readonly description: string;
-	readonly relatedProperty: PropertyId;
-}
-
 export interface DestinationGuidesHubLocaleContent {
 	readonly seoTitle: string;
 	readonly seoDescription: string;
@@ -113,9 +103,6 @@ export interface DestinationGuidesHubLocaleContent {
 	readonly publishedLabel: string;
 	readonly updatedLabel: string;
 	readonly authorByline: string;
-	readonly topicPreviewsTitle: string;
-	readonly topicPreviewsSubtitle: string;
-	readonly topicPreviews: readonly DestinationGuidesHubTopicPreview[];
 	readonly propertiesCtaTitle: string;
 	readonly propertiesCtaSubtitle: string;
 	readonly property1707Pitch: string;
@@ -123,8 +110,8 @@ export interface DestinationGuidesHubLocaleContent {
 	readonly propertyRateLineTemplate: string;
 	readonly propertyCleaningLineTemplate: string;
 	readonly propertyCtaButton: string;
-	readonly articlePropertyCtaEyebrow: string;
-	readonly articlePropertyCtaButton: string;
+	readonly guidePropertyCtaEyebrow: string;
+	readonly guidePropertyCtaButton: string;
 	readonly relatedGuidesTitle: string;
 	readonly backToHubLabel: string;
 }

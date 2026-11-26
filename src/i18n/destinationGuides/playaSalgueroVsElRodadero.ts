@@ -127,7 +127,7 @@ export const PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Local Host Tip",
-						text: "Plan pool afternoons around Tuesday maintenance closures—Tuesdays are ideal for a Tayrona National Park or Minca excursion, or a quiet sunset walk along Playa Salguero beach. Check-in is 15:00, check-out is 11:00, and the condominium administration collects a {buildingFeeCop} per-person Building Registration Fee at reception.",
+						text: "Plan pool afternoons around Tuesday maintenance closures—Tuesdays are ideal for a Tayrona National Park or Minca excursion, or a quiet sunset walk along Playa Salguero beach. Check-in is 15:00, check-out is 11:00, and the condominium administration collects a {buildingRegistrationFeeCop} per-person Building Registration Fee at reception.",
 					},
 				},
 			],
@@ -272,7 +272,7 @@ export const PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Consejo de Anfitrión Local",
-						text: "Ten en cuenta que la piscina cierra los martes por mantenimiento: es el día perfecto para una excursión al Parque Tayrona o Minca. El check-in es a las 15:00, el check-out a las 11:00 y la administración cobra una Tarifa de Registro del Edificio de {buildingFeeCop} por persona en recepción.",
+						text: "Ten en cuenta que la piscina cierra los martes por mantenimiento: es el día perfecto para una excursión al Parque Tayrona o Minca. El check-in es a las 15:00, el check-out a las 11:00 y la administración cobra una Tarifa de Registro del Edificio de {buildingRegistrationFeeCop} por persona en recepción.",
 					},
 				},
 			],
@@ -417,7 +417,7 @@ export const PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Conseil d'Hôte Local",
-						text: "La piscine ferme chaque mardi pour entretien : profitez du mardi pour visiter le Parc Tayrona ou Minca. Arrivée à 15h00, départ à 11h00, et Frais d'Enregistrement de l'Immeuble de {buildingFeeCop} par personne à régler à la réception.",
+						text: "La piscine ferme chaque mardi pour entretien : profitez du mardi pour visiter le Parc Tayrona ou Minca. Arrivée à 15h00, départ à 11h00, et Frais d'Enregistrement de l'Immeuble de {buildingRegistrationFeeCop} par personne à régler à la réception.",
 					},
 				},
 			],
@@ -564,7 +564,7 @@ export const PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Consiglio dell'Host Locale",
-						text: "Poiché la piscina chiude il martedì per manutenzione, il martedì è perfetto per un'escursione al Parco Tayrona o a Minca. Check-in alle 15:00, check-out alle 11:00 e Tassa di Registrazione dell'Edificio di {buildingFeeCop} a persona pagabile in reception.",
+						text: "Poiché la piscina chiude il martedì per manutenzione, il martedì è perfetto per un'escursione al Parco Tayrona o a Minca. Check-in alle 15:00, check-out alle 11:00 e Tassa di Registrazione dell'Edificio di {buildingRegistrationFeeCop} a persona pagabile in reception.",
 					},
 				},
 			],
@@ -710,7 +710,7 @@ export const PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "Tipp vom Gastgeber",
-						text: "Da der Pool dienstags wegen Wartung geschlossen bleibt, eignet sich der Dienstag ideal für einen Ausflug in den Tayrona-Nationalpark oder nach Minca. Check-in ab 15:00, Check-out bis 11:00; die Gebäude-Registrierungsgebühr von {buildingFeeCop} pro Person wird direkt an der Rezeption bezahlt.",
+						text: "Da der Pool dienstags wegen Wartung geschlossen bleibt, eignet sich der Dienstag ideal für einen Ausflug in den Tayrona-Nationalpark oder nach Minca. Check-in ab 15:00, Check-out bis 11:00; die Gebäude-Registrierungsgebühr von {buildingRegistrationFeeCop} pro Person wird direkt an der Rezeption bezahlt.",
 					},
 				},
 			],
@@ -859,7 +859,7 @@ export const PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE: DestinationGuideDefinition = {
 					],
 					callout: {
 						label: "ホストからの現地アドバイス",
-						text: "プールは毎週火曜日にメンテナンス休業となるため、火曜日はタイロナ国立公園やミンカへの日帰り旅に充てるのがおすすめです。チェックイン15:00・チェックアウト11:00で、到着時にフロントにて建物登録料（{buildingFeeCop}／名）のお支払いが必要です。",
+						text: "プールは毎週火曜日にメンテナンス休業となるため、火曜日はタイロナ国立公園やミンカへの日帰り旅に充てるのがおすすめです。チェックイン15:00・チェックアウト11:00で、到着時にフロントにて建物登録料（{buildingRegistrationFeeCop}／名）のお支払いが必要です。",
 					},
 				},
 			],

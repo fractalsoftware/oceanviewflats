@@ -18,7 +18,7 @@ import BookingFailure from "../pages/BookingFailure";
 import BookingPending from "../pages/BookingPending";
 import BookingSuccess from "../pages/BookingSuccess";
 import Contact from "../pages/Contact";
-import DestinationGuideArticle from "../pages/DestinationGuideArticle";
+import DestinationGuidePage from "../pages/DestinationGuidePage";
 import DestinationGuidesHub from "../pages/DestinationGuidesHub";
 import Guide from "../pages/Guide";
 import Home from "../pages/Home";
@@ -30,7 +30,7 @@ import Registry from "../pages/Registry";
 import type { AppProps, Lang, PortfolioPricingSummary } from "../types";
 import {
 	buildContactStructuredData,
-	buildDestinationGuideArticleStructuredData,
+	buildDestinationGuideStructuredData,
 	buildDestinationGuidesHubStructuredData,
 	buildHomeStructuredData,
 	buildPrivacyStructuredData,
@@ -477,7 +477,7 @@ export const pages: PageConfig[] = [
 			id: `destination-guide-${guide.slug}`,
 			path: `santa-marta/${guide.slug}`,
 			component: (props: AppProps) =>
-				React.createElement(DestinationGuideArticle, { ...props, guide }),
+				React.createElement(DestinationGuidePage, { ...props, guide }),
 			filename: (lang: Lang) =>
 				lang === "en"
 					? `santa-marta/${guide.slug}/index.html`
@@ -507,7 +507,7 @@ export const pages: PageConfig[] = [
 			},
 			heroImage: guide.heroImage,
 			getStructuredData: (t, lang, baseUrl, pricingSummary) =>
-				buildDestinationGuideArticleStructuredData(
+				buildDestinationGuideStructuredData(
 					guide,
 					t,
 					lang,

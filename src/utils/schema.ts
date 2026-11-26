@@ -893,7 +893,7 @@ export const buildDestinationGuidesHubStructuredData = (
 	});
 };
 
-export const buildDestinationGuideArticleStructuredData = (
+export const buildDestinationGuideStructuredData = (
 	guide: DestinationGuideDefinition,
 	t: TranslationDict,
 	lang: Lang,

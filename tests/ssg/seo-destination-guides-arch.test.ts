@@ -26,10 +26,10 @@ import {
 	formatCopCurrencyForLocale,
 } from "../../src/i18n/destinationGuides";
 import { dict } from "../../src/i18n/dict";
-import DestinationGuideArticle from "../../src/pages/DestinationGuideArticle";
+import DestinationGuidePage from "../../src/pages/DestinationGuidePage";
 import type { Lang, SeasonalRateTierRow } from "../../src/types";
 import {
-	buildDestinationGuideArticleStructuredData,
+	buildDestinationGuideStructuredData,
 	buildPricingSummary,
 } from "../../src/utils/schema";
 
@@ -133,7 +133,7 @@ const createFixtureGuide = (): DestinationGuideDefinition => {
 		breadcrumbLabel: `Fixture Guide (${lang})`,
 		badge: `Fixture Badge (${lang})`,
 		title: `Playa Salguero Fixture Title (${lang})`,
-		subtitle: `Nightly Rates from {rate1606Cop} with Building Registration Fee {buildingFeeCop}.`,
+		subtitle: `Nightly Rates from {rate1606Cop} with Building Registration Fee {buildingRegistrationFeeCop}.`,
 		cardSummary: `Summary for fixture guide (${lang}).`,
 		keyTakeawaysTitle: `Key Takeaways (${lang})`,
 		keyTakeaways: [
@@ -145,7 +145,7 @@ const createFixtureGuide = (): DestinationGuideDefinition => {
 				id: "pricing-overview",
 				heading: `Pricing & Logistics (${lang})`,
 				paragraphs: [
-					`Direct Reservations settle in COP with Building Registration Fee {buildingFeeCop} payable at reception.`,
+					`Direct Reservations settle in COP with Building Registration Fee {buildingRegistrationFeeCop} payable at reception.`,
 				],
 				bullets: [
 					`1707 baseline: {rate1707Cop} / Cleaning Fee: {cleaning1707Cop}`,
@@ -168,7 +168,7 @@ const createFixtureGuide = (): DestinationGuideDefinition => {
 				},
 				callout: {
 					label: `Host Note (${lang})`,
-					text: "Pools close Tuesdays; Building Registration Fee is {buildingFeeCop}.",
+					text: "Pools close Tuesdays; Building Registration Fee is {buildingRegistrationFeeCop}.",
 				},
 			},
 		],
@@ -393,7 +393,7 @@ test("#311 compiled /santa-marta/ hub compiles cleanly across all 6 locales with
 	);
 });
 
-test("#311 DestinationGuideArticle & buildDestinationGuideArticleStructuredData render depth-2 articles with COP interpolation, 3-level breadcrumbs, and linked Article + FAQPage @graph across all 6 locales", () => {
+test("#311 DestinationGuidePage & buildDestinationGuideStructuredData render depth-2 Destination Guides with COP interpolation, 3-level breadcrumbs, and linked Article + FAQPage @graph across all 6 locales", () => {
 	const fixtureGuide = createFixtureGuide();
 	const summary = buildPricingSummary(readPricesCsvRows());
 
@@ -402,7 +402,7 @@ test("#311 DestinationGuideArticle & buildDestinationGuideArticleStructuredData 
 		const hubCopy = DESTINATION_GUIDES_HUB_COPY[lang];
 		const localeContent = fixtureGuide.locales[lang];
 		const html = renderToStaticMarkup(
-			React.createElement(DestinationGuideArticle, {
+			React.createElement(DestinationGuidePage, {
 				guide: fixtureGuide,
 				lang,
 				assetPrefix: "../../",
@@ -478,11 +478,11 @@ test("#311 DestinationGuideArticle & buildDestinationGuideArticleStructuredData 
 		assert.ok(decodedHtml.includes(expectedCleaning1707));
 		assert.doesNotMatch(
 			decodedHtml,
-			/\{rate1707Cop\}|\{cleaning1707Cop\}|\{buildingFeeCop\}/,
+			/\{rate1707Cop\}|\{cleaning1707Cop\}|\{buildingRegistrationFeeCop\}/,
 		);
 
 		// Structured data @graph verification & 3-level Breadcrumbs 1:1 match
-		const rawSchema = buildDestinationGuideArticleStructuredData(
+		const rawSchema = buildDestinationGuideStructuredData(
 			fixtureGuide,
 			t,
 			lang,
@@ -606,12 +606,13 @@ test("#311 Navigation, Footer, Home, and Property pages provide 1-click relative
 	// AGENTS.md Rule 1: Zero hardcoded inline className="..." and zero propertyId ternaries
 	const themeGuardedFiles = [
 		"src/components/Breadcrumbs.tsx",
+		"src/components/DestinationGuidePropertyCta.tsx",
 		"src/components/Navigation.tsx",
 		"src/components/Footer.tsx",
 		"src/components/PropertyDestinationGuides.tsx",
 		"src/pages/Home.tsx",
 		"src/pages/DestinationGuidesHub.tsx",
-		"src/pages/DestinationGuideArticle.tsx",
+		"src/pages/DestinationGuidePage.tsx",
 	];
 	for (const relPath of themeGuardedFiles) {
 		const source = fs.readFileSync(path.join(process.cwd(), relPath), "utf-8");

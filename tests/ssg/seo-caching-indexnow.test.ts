@@ -232,8 +232,8 @@ test("Apache .htaccess enables mod_deflate, mod_expires, tiered Cache-Control in
 	);
 	assert.match(
 		headersBlock,
-		/<FilesMatch\s+"\\\.php\$">[\s\S]*?Header\s+set\s+Cache-Control\s+"no-store,\s*no-cache,\s*must-revalidate"[\s\S]*?<\/FilesMatch>/i,
-		"PHP responses must explicitly enforce no-store, no-cache, must-revalidate",
+		/<FilesMatch\s+"\\\.php\$">[\s\S]*?Header\s+always\s+set\s+Cache-Control\s+"no-store,\s*no-cache,\s*must-revalidate"[\s\S]*?<\/FilesMatch>/i,
+		"PHP responses must explicitly enforce Header always set Cache-Control no-store, no-cache, must-revalidate (same table as public/api/.htaccess)",
 	);
 
 	// 2. <IfModule mod_deflate.c> compresses all required MIME types

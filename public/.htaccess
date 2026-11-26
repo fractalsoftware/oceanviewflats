@@ -50,7 +50,7 @@ Options -Indexes
         Header set Cache-Control "public, max-age=300, must-revalidate"
     </FilesMatch>
     <FilesMatch "\.php$">
-        Header set Cache-Control "no-store, no-cache, must-revalidate"
+        Header always set Cache-Control "no-store, no-cache, must-revalidate"
     </FilesMatch>
 </IfModule>
 

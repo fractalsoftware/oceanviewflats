@@ -998,35 +998,26 @@ export const DESTINATION_GUIDES_THEME = {
 	guideCardSummary: "text-sm md:text-base text-slate-700 leading-relaxed mb-6",
 	guideCardCtaRow:
 		"pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-rose-700 group-hover:text-slate-900 transition-colors",
-	topicCard:
-		"flex flex-col justify-between bg-white rounded-3xl p-7 border border-slate-200 shadow-sm",
-	topicCardTop: "flex items-center justify-between gap-3 mb-4",
-	topicIconBox:
-		"w-11 h-11 shrink-0 bg-slate-100 border border-slate-200 text-rose-700 rounded-2xl flex items-center justify-center",
-	topicBadge:
-		"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white",
-	topicTitle: "text-lg md:text-xl font-bold text-slate-900 mb-2",
-	topicDesc: "text-sm text-slate-700 leading-relaxed",
-	articleWrapper: "space-y-10",
+	guideWrapper: "space-y-10",
 	takeawaysCard:
 		"bg-slate-900 text-white rounded-3xl p-8 md:p-10 border border-slate-800 shadow-md",
 	takeawaysTitle: "text-xl md:text-2xl font-extrabold text-white mb-5",
 	takeawaysList: "space-y-3",
 	takeawaysItem:
 		"flex items-start gap-3 text-sm md:text-base text-slate-200 leading-relaxed",
-	takeawaysIcon: "w-5 h-5 text-emerald-400 shrink-0 mt-0.5",
-	articleSectionCard:
+	takeawaysIcon: "w-5 h-5 text-[#FF5A5F] shrink-0 mt-0.5",
+	sectionCard:
 		"bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-200 space-y-5",
-	articleSectionHeading:
+	sectionHeading:
 		"text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900",
-	articleParagraph: "text-base text-slate-700 leading-relaxed",
-	articleBulletList: "space-y-3 pt-1",
-	articleBulletItem:
+	sectionParagraph: "text-base text-slate-700 leading-relaxed",
+	sectionBulletList: "space-y-3 pt-1",
+	sectionBulletItem:
 		"flex items-start gap-3 text-sm md:text-base text-slate-700 leading-relaxed",
-	articleBulletIcon: "w-5 h-5 text-rose-700 shrink-0 mt-0.5",
-	articleCallout:
+	sectionBulletIcon: "w-5 h-5 text-rose-700 shrink-0 mt-0.5",
+	sectionCallout:
 		"p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 text-sm md:text-base leading-relaxed",
-	articleCalloutLabel:
+	sectionCalloutLabel:
 		"block text-xs font-bold uppercase tracking-wider text-rose-700 mb-1",
 	factGrid: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2",
 	factCard: "p-5 rounded-2xl bg-slate-50 border border-slate-200",
@@ -1063,7 +1054,7 @@ export const DESTINATION_GUIDES_THEME = {
 		"bg-slate-900 text-white rounded-3xl p-8 md:p-10 border border-slate-800 shadow-xl space-y-6",
 	propertyCtaHeader: "max-w-3xl",
 	propertyCtaEyebrow:
-		"text-xs font-bold uppercase tracking-wider text-emerald-300 mb-2",
+		"text-xs font-bold uppercase tracking-wider text-rose-300 mb-2",
 	propertyCtaTitle:
 		"text-2xl md:text-3xl font-extrabold tracking-tight text-white mb-2",
 	propertyCtaSubtitle: "text-sm md:text-base text-slate-200 leading-relaxed",

@@ -316,7 +316,7 @@ test("#312 all 30 /santa-marta/ pages (hub + 4 pillars × 6 locales) compile wit
 				`dist/sitemap.xml must include x-default alternate for ${page.path}`,
 			);
 
-			// 3. Depth-accurate relative assetPrefix (../ at hub, ../../ at articles) & zero broken relative assets/links
+			// 3. Depth-accurate relative assetPrefix (../ at hub, ../../ at Destination Guides) & zero broken relative assets/links
 			const expectedPrefix = isHub ? "../" : "../../";
 			assert.ok(
 				html.includes(`href="${expectedPrefix}css/style.css?v=`),
@@ -388,7 +388,7 @@ test("#312 all 30 /santa-marta/ pages (hub + 4 pillars × 6 locales) compile wit
 			const decodedHtml = decodeHtmlEntities(html);
 			assert.doesNotMatch(
 				decodedHtml,
-				/\{(?:rate1707|rate1707Cop|rate1707HighCop|minStay1707|cleaning1707Cop|rate1606|rate1606Cop|rate1606HighCop|minStay1606|maxMinStay1606|cleaning1606Cop|portfolioLowCop|portfolioHighCop|buildingFeeCop)\}/,
+				/\{(?:rate1707|rate1707Cop|rate1707HighCop|minStay1707|cleaning1707Cop|rate1606|rate1606Cop|rate1606HighCop|minStay1606|maxMinStay1606|cleaning1606Cop|portfolioLowCop|portfolioHighCop|buildingRegistrationFeeCop)\}/,
 				`${relPath} must not contain unresolved pricing interpolation tokens`,
 			);
 			assert.doesNotMatch(

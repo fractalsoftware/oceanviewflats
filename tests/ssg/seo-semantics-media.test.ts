@@ -661,7 +661,7 @@ test("Committed 640w and 1024w hero WebP variants match dimensions/size constrai
 		"src/pages/Home.tsx",
 		"src/components/Hero.tsx",
 		"src/pages/DestinationGuidesHub.tsx",
-		"src/pages/DestinationGuideArticle.tsx",
+		"src/pages/DestinationGuidePage.tsx",
 	]) {
 		const source = fs.readFileSync(
 			path.join(process.cwd(), relComponent),
