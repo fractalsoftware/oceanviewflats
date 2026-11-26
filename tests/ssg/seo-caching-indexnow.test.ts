@@ -457,6 +457,41 @@ test("IndexNow helper extracts sitemap <loc> URLs, validates keys, builds JSON p
 	assert.equal(networkErrResult.error, "socket hang up");
 });
 
+test("Static IndexNow verification file is preserved in public/ and copied verbatim to dist/", () => {
+	const verificationFile = "f824818ad96640bf8f7a16aad4f7bb47.txt";
+	const expectedValue = verificationFile.slice(0, -".txt".length);
+	const publicPath = path.join(PUBLIC_DIR, verificationFile);
+	const distPath = path.join(DIST_DIR, verificationFile);
+
+	assert.ok(
+		fs.existsSync(publicPath),
+		`IndexNow verification file must exist at public/${verificationFile}`,
+	);
+	assert.ok(
+		fs.existsSync(distPath),
+		`Build must copy IndexNow verification file to dist/${verificationFile}`,
+	);
+
+	const publicContent = fs.readFileSync(publicPath, "utf-8");
+	const distContent = fs.readFileSync(distPath, "utf-8");
+
+	assert.equal(
+		isValidIndexNowKey(publicContent),
+		true,
+		"IndexNow verification file content must be a valid IndexNow key",
+	);
+	assert.equal(
+		publicContent,
+		expectedValue,
+		"IndexNow verification file content must match its filename without .txt",
+	);
+	assert.equal(
+		distContent,
+		publicContent,
+		`dist/${verificationFile} must match public/${verificationFile}`,
+	);
+});
+
 test("deploy.yml safely emits dist/<INDEXNOW_KEY>.txt before SFTP and triggers non-blocking IndexNow ping after deploy (#315)", () => {
 	const deployYml = fs.readFileSync(
 		path.join(process.cwd(), ".github", "workflows", "deploy.yml"),
