@@ -11,10 +11,11 @@ import {
 	PROPERTY_GALLERY_IMAGES,
 	PROPERTY_REVIEWS,
 	type PropertyId,
+	type PropertyReviewMeta,
 } from "../constants/config";
 import type { TranslationDict } from "../i18n/dict";
 import type { Lang } from "../types";
-import { calculateAggregateRatingValue } from "./reviews";
+import { calculateAggregateRatingValue, clampReviewRating } from "./reviews";
 
 export interface SeasonalRateTierRow {
 	property_id: string;
@@ -410,6 +411,7 @@ export const buildPropertyStructuredData = (
 	lang: Lang,
 	baseUrl: string,
 	pricingSummary: PortfolioPricingSummary = DEFAULT_PRICING_SUMMARY,
+	reviews: readonly PropertyReviewMeta[] = PROPERTY_REVIEWS[propertyId],
 ): string => {
 	const normalizedBase = normalizeBaseUrl(baseUrl);
 	const spec = PROPERTY_SCHEMA_SPECS[propertyId];
@@ -552,8 +554,13 @@ export const buildPropertyStructuredData = (
 		},
 	}));
 
-	const reviews = PROPERTY_REVIEWS[propertyId];
-	const aggregateRatingValue = calculateAggregateRatingValue(reviews);
+	const validReviews = reviews
+		.filter((rev) => Number.isFinite(rev.ratingValue))
+		.map((rev) => ({
+			...rev,
+			ratingValue: clampReviewRating(rev.ratingValue),
+		}));
+	const aggregateRatingValue = calculateAggregateRatingValue(validReviews);
 	const faqItems = PROPERTY_FAQ_ITEMS[propertyId];
 
 	return JSON.stringify({
@@ -656,11 +663,11 @@ export const buildPropertyStructuredData = (
 								ratingValue: aggregateRatingValue,
 								bestRating: "5",
 								worstRating: "1",
-								reviewCount: String(reviews.length),
+								reviewCount: String(validReviews.length),
 							},
 						}
 					: {}),
-				review: reviews.map((rev) => ({
+				review: validReviews.map((rev) => ({
 					"@type": "Review",
 					author: { "@type": "Person", name: t[rev.authorKey] },
 					datePublished: rev.datePublished,

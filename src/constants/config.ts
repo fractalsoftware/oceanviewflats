@@ -340,8 +340,8 @@ export interface HomeExperienceCardConfig {
 	titleKey: "heroTitle" | "hero1606Title";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
 	features: readonly HomeExperienceFeatureConfig[];
-	reviewTextKey: "review1707_2Text" | "review1Text";
-	reviewAuthorKey: "review1707_2Author" | "review1Author";
+	reviewTextKey: PropertyReviewMeta["textKey"];
+	reviewAuthorKey: PropertyReviewMeta["authorKey"];
 }
 
 export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [

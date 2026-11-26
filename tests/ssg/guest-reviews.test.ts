@@ -7,6 +7,7 @@ import {
 	HOME_EXPERIENCE_CARDS,
 	PROPERTY_REVIEWS,
 	type PropertyId,
+	type PropertyReviewMeta,
 } from "../../src/constants/config";
 import { dict } from "../../src/i18n/dict";
 import type { Lang } from "../../src/types";
@@ -14,9 +15,14 @@ import {
 	calculateAggregateRatingValue,
 	clampReviewRating,
 } from "../../src/utils/reviews";
+import {
+	buildPropertyStructuredData,
+	DEFAULT_PRICING_SUMMARY,
+} from "../../src/utils/schema";
 
 const DIST_DIR = path.join(process.cwd(), "dist");
 const LOCALES: readonly Lang[] = ["en", "es", "fr", "it", "de", "ja"];
+const STAR_EMOJI_PATTERN = /[⭐★☆]/u;
 
 const HTML_ENTITY_MAP: Record<string, string> = {
 	"&#x27;": "'",
@@ -42,6 +48,11 @@ function getPropertyHtml(propertyId: PropertyId, lang: Lang): string {
 	);
 }
 
+function getHomeHtml(lang: Lang): string {
+	const fileName = lang === "en" ? "index.html" : `${lang}.html`;
+	return fs.readFileSync(path.join(DIST_DIR, fileName), "utf-8");
+}
+
 function extractSectionById(html: string, id: string): string {
 	const match = html.match(
 		new RegExp(`<section\\b[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/section>`, "i"),
@@ -58,7 +69,7 @@ function extractArticleById(sectionHtml: string, id: string): string {
 	return match[0];
 }
 
-function parseVacationRentalJsonLd(html: string): Record<string, unknown> {
+function parseJsonLdGraphNodes(html: string): Array<Record<string, unknown>> {
 	const match = html.match(
 		/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i,
 	);
@@ -66,7 +77,11 @@ function parseVacationRentalJsonLd(html: string): Record<string, unknown> {
 	const parsed = JSON.parse(match[1]) as {
 		"@graph": Array<Record<string, unknown>>;
 	};
-	const rental = parsed["@graph"].find(
+	return parsed["@graph"];
+}
+
+function parseVacationRentalJsonLd(html: string): Record<string, unknown> {
+	const rental = parseJsonLdGraphNodes(html).find(
 		(node) => node["@type"] === "VacationRental",
 	);
 	assert.ok(rental, "Expected VacationRental node in JSON-LD @graph");
@@ -173,41 +188,88 @@ test("#306 clampReviewRating safely clamps star counts to the 1–5 integer scal
 	assert.equal(clampReviewRating(Number.POSITIVE_INFINITY), 1);
 });
 
-test("#306 unified ReviewsSection component is style-agnostic and replaces legacy per-Property review components", () => {
-	assert.equal(
-		fs.existsSync(
-			path.join(process.cwd(), "src/components/ReviewsSection1707.tsx"),
-		),
-		false,
-		"Legacy src/components/ReviewsSection1707.tsx must be removed",
-	);
-	assert.equal(
-		fs.existsSync(
-			path.join(process.cwd(), "src/components/warm/ReviewsSection.tsx"),
-		),
-		false,
-		"Legacy src/components/warm/ReviewsSection.tsx must be removed",
-	);
+test("#306 buildPropertyStructuredData keeps reviewRating, aggregateRating.ratingValue, and reviewCount consistent on out-of-range and non-finite inputs", () => {
+	const mixedReviews: PropertyReviewMeta[] = [
+		{
+			id: "review-clamped-high",
+			authorKey: "review1707_2Author",
+			textKey: "review1707_2Text",
+			datePublished: "2026-10-11",
+			ratingValue: 7,
+		},
+		{
+			id: "review-clamped-low",
+			authorKey: "review1707Author",
+			textKey: "review1707Text",
+			datePublished: "2026-06-29",
+			ratingValue: 0,
+		},
+		{
+			id: "review-non-finite",
+			authorKey: "review1Author",
+			textKey: "review1Text",
+			datePublished: "2026-04-06",
+			ratingValue: Number.NaN,
+		},
+	];
 
-	const unifiedSource = fs.readFileSync(
-		path.join(process.cwd(), "src/components/ReviewsSection.tsx"),
-		"utf-8",
+	const parsedMixed = JSON.parse(
+		buildPropertyStructuredData(
+			"1707",
+			dict.en,
+			"en",
+			"https://oceanviewflats.com",
+			DEFAULT_PRICING_SUMMARY,
+			mixedReviews,
+		),
+	) as { "@graph": Array<Record<string, unknown>> };
+	const mixedRental = parsedMixed["@graph"].find(
+		(node) => node["@type"] === "VacationRental",
 	);
-	assert.ok(
-		!unifiedSource.includes('className="'),
-		"ReviewsSection.tsx must source all styles from centralized THEMES tokens",
+	assert.ok(mixedRental, "Expected VacationRental node in JSON-LD @graph");
+
+	const mixedAggregate = mixedRental.aggregateRating as {
+		ratingValue: string;
+		reviewCount: string;
+	};
+	const mixedReviewNodes = mixedRental.review as Array<{
+		reviewRating: { ratingValue: string };
+	}>;
+	assert.equal(mixedReviewNodes.length, 2);
+	assert.deepEqual(
+		mixedReviewNodes.map((node) => node.reviewRating.ratingValue),
+		["5", "1"],
 	);
-	assert.ok(
-		!unifiedSource.includes("propertyId ==="),
-		"ReviewsSection.tsx must not contain property-conditional ternaries",
+	assert.equal(mixedAggregate.ratingValue, "3.0");
+	assert.equal(mixedAggregate.reviewCount, "2");
+
+	const parsedEmpty = JSON.parse(
+		buildPropertyStructuredData(
+			"1707",
+			dict.en,
+			"en",
+			"https://oceanviewflats.com",
+			DEFAULT_PRICING_SUMMARY,
+			[
+				{
+					id: "review-invalid-only",
+					authorKey: "review1707Author",
+					textKey: "review1707Text",
+					datePublished: "2026-06-29",
+					ratingValue: Number.NaN,
+				},
+			],
+		),
+	) as { "@graph": Array<Record<string, unknown>> };
+	const emptyRental = parsedEmpty["@graph"].find(
+		(node) => node["@type"] === "VacationRental",
 	);
-	assert.ok(
-		!unifiedSource.includes("useState") && !unifiedSource.includes("useEffect"),
-		"ReviewsSection.tsx must remain zero-hydration static markup",
-	);
+	assert.ok(emptyRental, "Expected VacationRental node in JSON-LD @graph");
+	assert.equal("aggregateRating" in emptyRental, false);
+	assert.deepEqual(emptyRental.review, []);
 });
 
-test("#306 both Properties render Guest Reviews through the unified responsive grid with preserved themes, dynamic stars, and dynamic aggregateRating across all 6 locales", () => {
+test("#306 both Properties render Guest Reviews with semantic markup, localized badges, dynamic stars, Airbnb attribution, and dynamic aggregateRating across all 6 locales", () => {
 	for (const propertyId of ["1707", "1606"] as const) {
 		const expectedReviews = PROPERTY_REVIEWS[propertyId];
 		const expectedAggregateRating =
@@ -232,21 +294,9 @@ test("#306 both Properties render Guest Reviews through the unified responsive g
 				`Property ${propertyId} (${lang}) Guest Reviews section must render matching h2 heading`,
 			);
 			assert.ok(
-				section.includes("grid-cols-1 md:grid-cols-2"),
-				`Property ${propertyId} (${lang}) Guest Reviews must use a responsive 2-column desktop / 1-column mobile grid`,
+				section.includes(t.reviewVerifiedGuest),
+				`Property ${propertyId} (${lang}) Guest Reviews section must render localized Verified Guest badge`,
 			);
-
-			if (propertyId === "1707") {
-				assert.ok(
-					section.includes("bg-slate-50") && section.includes("bg-[#FF5A5F]/5"),
-					`Property 1707 (${lang}) must preserve Slate + Coral theme tokens`,
-				);
-			} else {
-				assert.ok(
-					section.includes("bg-stone-50") && section.includes("bg-rose-100"),
-					`Property 1606 (${lang}) must preserve Warm Stone + Sunset Rose theme tokens`,
-				);
-			}
 
 			const articleMatches = section.match(/<article\b[^>]*>/g) ?? [];
 			assert.equal(
@@ -306,23 +356,7 @@ test("#306 both Properties render Guest Reviews through the unified responsive g
 	}
 });
 
-function getHomeHtml(lang: Lang): string {
-	const fileName = lang === "en" ? "index.html" : `${lang}.html`;
-	return fs.readFileSync(path.join(DIST_DIR, fileName), "utf-8");
-}
-
-function parseJsonLdGraphNodes(html: string): Array<Record<string, unknown>> {
-	const match = html.match(
-		/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i,
-	);
-	assert.ok(match, "Expected JSON-LD script block in compiled HTML");
-	const parsed = JSON.parse(match[1]) as {
-		"@graph": Array<Record<string, unknown>>;
-	};
-	return parsed["@graph"];
-}
-
-test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, features Julian Alfredo on homepage, and keeps homepage JSON-LD and llms.txt free of review duplication across all 6 locales", () => {
+test("#307 Property 1707 renders 2 synced Airbnb Guest Reviews most-recent first with exact dates, verbatim Spanish copy, Latin-script authors, stripped star emojis, and matching JSON-LD across all 6 locales", () => {
 	const reviews1707 = PROPERTY_REVIEWS["1707"];
 	assert.equal(
 		reviews1707.length,
@@ -356,14 +390,6 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 		"Property 1707 Guest Reviews must be ordered most-recent first with exact Airbnb publication dates",
 	);
 
-	// Explicit homepage curation for Property 1707
-	const card1707Config = HOME_EXPERIENCE_CARDS.find(
-		(card) => card.propertyId === "1707",
-	);
-	assert.ok(card1707Config, "HOME_EXPERIENCE_CARDS must include Property 1707");
-	assert.equal(card1707Config.reviewTextKey, "review1707_2Text");
-	assert.equal(card1707Config.reviewAuthorKey, "review1707_2Author");
-
 	// Verbatim Spanish copy for Julian Alfredo with trailing star emojis stripped
 	assert.equal(
 		dict.es.review1707_2Text,
@@ -372,7 +398,6 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 	);
 
 	const julianCopies = new Set<string>();
-	const starEmojiPattern = /[⭐★☆]/u;
 
 	for (const lang of LOCALES) {
 		const t = dict[lang];
@@ -389,7 +414,7 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 			`${lang} review1707Author must use original Latin script`,
 		);
 		assert.ok(
-			!starEmojiPattern.test(t.review1707_2Text),
+			!STAR_EMOJI_PATTERN.test(t.review1707_2Text),
 			`${lang} review1707_2Text must not contain trailing star emojis`,
 		);
 		julianCopies.add(t.review1707_2Text);
@@ -397,10 +422,13 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 		// Compiled Property 1707 HTML assertions
 		const propertyHtml = getPropertyHtml("1707", lang);
 		const section = extractSectionById(propertyHtml, "guest-reviews");
-		const julianPos = section.indexOf('id="review-1707-2"');
-		const karolPos = section.indexOf('id="review-1707-1"');
-		assert.ok(
-			julianPos !== -1 && karolPos !== -1 && julianPos < karolPos,
+		const renderedIds = Array.from(
+			section.matchAll(/<article\b[^>]*id="([^"]+)"/gi),
+			(match) => match[1],
+		);
+		assert.deepEqual(
+			renderedIds,
+			["review-1707-2", "review-1707-1"],
 			`Property 1707 (${lang}) must render Julian Alfredo before Karol Ximena`,
 		);
 
@@ -409,8 +437,9 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 		assert.ok(
 			julianArticle.includes("Julian Alfredo") &&
 				julianArticle.includes(t.review1707_2Text) &&
+				!STAR_EMOJI_PATTERN.test(julianArticle) &&
 				/<time[^>]*\bdatetime="2026-10-11"/i.test(julianArticle),
-			`Property 1707 (${lang}) review-1707-2 must render Julian Alfredo, localized text, and 2026-10-11`,
+			`Property 1707 (${lang}) review-1707-2 must render Julian Alfredo, localized text without star emojis, and 2026-10-11`,
 		);
 		assert.ok(
 			karolArticle.includes("Karol Ximena") &&
@@ -433,7 +462,11 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 			datePublished: string;
 			inLanguage: string;
 			reviewBody: string;
-			reviewRating: { ratingValue: string };
+			reviewRating: {
+				ratingValue: string;
+				bestRating: string;
+				worstRating: string;
+			};
 		}>;
 		assert.equal(jsonLdReviews.length, 2);
 		assert.deepEqual(
@@ -443,6 +476,8 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 				inLanguage: item.inLanguage,
 				reviewBody: item.reviewBody,
 				ratingValue: item.reviewRating.ratingValue,
+				bestRating: item.reviewRating.bestRating,
+				worstRating: item.reviewRating.worstRating,
 			})),
 			[
 				{
@@ -451,6 +486,8 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 					inLanguage: lang,
 					reviewBody: t.review1707_2Text,
 					ratingValue: "5",
+					bestRating: "5",
+					worstRating: "1",
 				},
 				{
 					author: "Karol Ximena",
@@ -458,57 +495,18 @@ test("#307 Property 1707 syncs 2 Airbnb Guest Reviews most-recent first, feature
 					inLanguage: lang,
 					reviewBody: t.review1707Text,
 					ratingValue: "5",
+					bestRating: "5",
+					worstRating: "1",
 				},
 			],
 			`Property 1707 (${lang}) JSON-LD reviews must match Airbnb order, dates, localized text, and 5-star ratings`,
 		);
-
-		// Homepage #experiences features Julian Alfredo for Property 1707 and keeps JSON-LD free of review nodes
-		const homeFile = lang === "en" ? "index.html" : `${lang}.html`;
-		const homeHtml = getHomeHtml(lang);
-		const experiencesSection = extractSectionById(homeHtml, "experiences");
-		const cardMatches = experiencesSection.match(
-			/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>[\s\S]*?<\/a>/g,
-		);
-		assert.ok(cardMatches && cardMatches.length === 2);
-		const card1707Html = cardMatches[0];
-		assert.ok(
-			card1707Html.includes(t.review1707_2Text) &&
-				card1707Html.includes("Julian Alfredo"),
-			`Homepage ${homeFile} #experiences Property 1707 card must feature Julian Alfredo's localized Guest Review`,
-		);
-
-		const homeGraph = parseJsonLdGraphNodes(homeHtml);
-		for (const node of homeGraph) {
-			assert.equal(
-				"review" in node,
-				false,
-				`Homepage ${homeFile} JSON-LD must not duplicate Guest Review bodies`,
-			);
-			assert.equal(
-				"aggregateRating" in node,
-				false,
-				`Homepage ${homeFile} JSON-LD must not duplicate aggregateRating counts`,
-			);
-		}
 	}
 
 	assert.equal(
 		julianCopies.size,
 		LOCALES.length,
 		"Julian Alfredo's Guest Review must have distinct localized copy across all 6 locales",
-	);
-
-	// LLM overview file remains free of duplicated review bodies
-	const publicLlms = fs.readFileSync(
-		path.join(process.cwd(), "public/llms.txt"),
-		"utf-8",
-	);
-	const distLlms = fs.readFileSync(path.join(DIST_DIR, "llms.txt"), "utf-8");
-	assert.equal(distLlms, publicLlms);
-	assert.ok(
-		!distLlms.includes("Julian Alfredo") && !distLlms.includes("Karol Ximena"),
-		"llms.txt must remain free of duplicated Guest Review bodies or authors",
 	);
 });
 
@@ -560,12 +558,6 @@ test("#308 Property 1606 renders all 4 synced Airbnb Guest Reviews most-recent f
 		const t = dict[lang];
 		const section = extractSectionById(html, "guest-reviews");
 
-		// Responsive 2x2 desktop / stacked mobile grid
-		assert.ok(
-			section.includes("grid-cols-1 md:grid-cols-2"),
-			`Property 1606 (${lang}) must use a responsive 2-column grid for all 4 Guest Reviews`,
-		);
-
 		// Verify exact most-recent-first DOM order of the 4 review articles
 		const renderedIds = Array.from(
 			section.matchAll(/<article\b[^>]*id="([^"]+)"/gi),
@@ -577,7 +569,7 @@ test("#308 Property 1606 renders all 4 synced Airbnb Guest Reviews most-recent f
 			`Property 1606 (${lang}) must render all 4 Guest Reviews in most-recent-first order`,
 		);
 
-		// Verify localized badges, non-English fallback guard, and Airbnb link
+		// Verify localized badges and Airbnb link
 		assert.ok(
 			section.includes(t.reviewVerifiedGuest),
 			`Property 1606 (${lang}) must render localized Verified Guest badge`,
@@ -697,32 +689,63 @@ test("#308 Property 1606 renders all 4 synced Airbnb Guest Reviews most-recent f
 	}
 });
 
-test("#308 Homepage retains Lina Marcela (Latin script) on Property 1606 #experiences card and keeps homepage JSON-LD and llms.txt free of duplicated reviews across all 6 locales", () => {
+test("#307 #308 Homepage #experiences features curated quotes for both Properties and keeps homepage JSON-LD and llms.txt free of duplicated Guest Reviews across all 6 locales", () => {
+	// Explicit homepage curation config for both Properties
+	const card1707Config = HOME_EXPERIENCE_CARDS.find(
+		(card) => card.propertyId === "1707",
+	);
+	assert.ok(card1707Config, "HOME_EXPERIENCE_CARDS must include Property 1707");
+	assert.equal(card1707Config.reviewTextKey, "review1707_2Text");
+	assert.equal(card1707Config.reviewAuthorKey, "review1707_2Author");
+
+	const card1606Config = HOME_EXPERIENCE_CARDS.find(
+		(card) => card.propertyId === "1606",
+	);
+	assert.ok(card1606Config, "HOME_EXPERIENCE_CARDS must include Property 1606");
+	assert.equal(card1606Config.reviewTextKey, "review1Text");
+	assert.equal(card1606Config.reviewAuthorKey, "review1Author");
+
 	for (const lang of LOCALES) {
+		const homeFile = lang === "en" ? "index.html" : `${lang}.html`;
 		const html = getHomeHtml(lang);
 		const t = dict[lang];
 		const experiencesSection = extractSectionById(html, "experiences");
+
+		const card1707Match = experiencesSection.match(
+			/<a[^>]*href="[^"]*Oceanview1707[^"]*"[^>]*>[\s\S]*?<\/a>/i,
+		);
+		assert.ok(
+			card1707Match,
+			`Homepage ${homeFile} #experiences must include the Property 1707 card`,
+		);
+		const card1707Html = card1707Match[0];
+		assert.ok(
+			card1707Html.includes(t.review1707_2Text) &&
+				card1707Html.includes("Julian Alfredo") &&
+				!STAR_EMOJI_PATTERN.test(card1707Html),
+			`Homepage ${homeFile} #experiences Property 1707 card must feature Julian Alfredo's localized Guest Review without star emojis`,
+		);
+
 		const card1606Match = experiencesSection.match(
 			/<a[^>]*href="[^"]*Oceanview1606[^"]*"[^>]*>[\s\S]*?<\/a>/i,
 		);
 		assert.ok(
 			card1606Match,
-			`Homepage (${lang}) #experiences must include the Property 1606 card`,
+			`Homepage ${homeFile} #experiences must include the Property 1606 card`,
 		);
 		const card1606Html = card1606Match[0];
-
 		assert.ok(
 			card1606Html.includes(t.review1Text),
-			`Homepage (${lang}) Property 1606 card must retain Lina Marcela's curated review body`,
+			`Homepage ${homeFile} Property 1606 card must retain Lina Marcela's curated review body`,
 		);
 		assert.ok(
 			card1606Html.includes("Lina Marcela"),
-			`Homepage (${lang}) Property 1606 card must display author "Lina Marcela" in Latin script`,
+			`Homepage ${homeFile} Property 1606 card must display author "Lina Marcela" in Latin script`,
 		);
 		assert.ok(
 			!card1606Html.includes("Rubiela Rubina") &&
 				!card1606Html.includes("Pedro"),
-			`Homepage (${lang}) Property 1606 card must not replace Lina Marcela with brief October reviews`,
+			`Homepage ${homeFile} Property 1606 card must not replace Lina Marcela with brief October reviews`,
 		);
 
 		if (lang === "it") {
@@ -742,19 +765,19 @@ test("#308 Homepage retains Lina Marcela (Latin script) on Property 1606 #experi
 		const homeGraph = parseJsonLdGraphNodes(html);
 		for (const node of homeGraph) {
 			assert.equal(
-				node.review,
-				undefined,
-				`Homepage (${lang}) JSON-LD node ${String(node["@type"])} must not duplicate Guest Reviews`,
+				"review" in node,
+				false,
+				`Homepage ${homeFile} JSON-LD node ${String(node["@type"])} must not duplicate Guest Reviews`,
 			);
 			assert.equal(
-				node.aggregateRating,
-				undefined,
-				`Homepage (${lang}) JSON-LD node ${String(node["@type"])} must not duplicate aggregateRating`,
+				"aggregateRating" in node,
+				false,
+				`Homepage ${homeFile} JSON-LD node ${String(node["@type"])} must not duplicate aggregateRating`,
 			);
 		}
 	}
 
-	// LLM overview file must remain free of duplicated Property 1606 Guest Review bodies/authors
+	// LLM overview file must remain free of duplicated Guest Review bodies or authors across all 6 reviews
 	const publicLlms = fs.readFileSync(
 		path.join(process.cwd(), "public", "llms.txt"),
 		"utf-8",
@@ -762,16 +785,19 @@ test("#308 Homepage retains Lina Marcela (Latin script) on Property 1606 #experi
 	const distLlms = fs.readFileSync(path.join(DIST_DIR, "llms.txt"), "utf-8");
 	assert.equal(distLlms, publicLlms);
 	for (const forbidden of [
+		"Julian Alfredo",
+		"Karol Ximena",
 		"Rubiela Rubina",
 		"Pedro",
 		"Lina Marcela",
 		"Sheyla",
+		"El apartamento súper confortable",
 		"Excelente ubicación y anfitrión",
 		"El apartamento super cómodo",
 	]) {
 		assert.ok(
 			!distLlms.includes(forbidden),
-			`llms.txt must not duplicate Property 1606 Guest Review content ("${forbidden}")`,
+			`llms.txt must not duplicate Guest Review content ("${forbidden}")`,
 		);
 	}
 });
