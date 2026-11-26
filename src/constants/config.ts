@@ -30,7 +30,7 @@ export const DATA_CONTROLLER = {
 } as const;
 
 export const PRIVACY_POLICY_PATHS: Record<string, string> = {
-	en: "privacy/index.html",
+	en: "privacy/",
 	es: "privacy/es.html",
 	fr: "privacy/fr.html",
 	it: "privacy/it.html",
@@ -39,7 +39,7 @@ export const PRIVACY_POLICY_PATHS: Record<string, string> = {
 };
 
 export const CONTACT_PAGE_PATHS: Record<string, string> = {
-	en: "contact/index.html",
+	en: "contact/",
 	es: "contact/es.html",
 	fr: "contact/fr.html",
 	it: "contact/it.html",
@@ -48,7 +48,7 @@ export const CONTACT_PAGE_PATHS: Record<string, string> = {
 };
 
 export const GUIDE_PAGE_PATHS: Record<string, string> = {
-	en: "guide/index.html",
+	en: "guide/",
 	es: "guide/es.html",
 	fr: "guide/fr.html",
 	it: "guide/it.html",
@@ -57,7 +57,7 @@ export const GUIDE_PAGE_PATHS: Record<string, string> = {
 };
 
 export const REGISTRY_PAGE_PATHS: Record<string, string> = {
-	en: "registry/index.html",
+	en: "registry/",
 	es: "registry/es.html",
 	fr: "registry/fr.html",
 	it: "registry/it.html",
@@ -66,7 +66,7 @@ export const REGISTRY_PAGE_PATHS: Record<string, string> = {
 };
 
 export const BOOKING_SUCCESS_PATHS: Record<string, string> = {
-	en: "booking-success/index.html",
+	en: "booking-success/",
 	es: "booking-success/es.html",
 	fr: "booking-success/fr.html",
 	it: "booking-success/it.html",
@@ -75,7 +75,7 @@ export const BOOKING_SUCCESS_PATHS: Record<string, string> = {
 };
 
 export const BOOKING_PENDING_PATHS: Record<string, string> = {
-	en: "booking-pending/index.html",
+	en: "booking-pending/",
 	es: "booking-pending/es.html",
 	fr: "booking-pending/fr.html",
 	it: "booking-pending/it.html",
@@ -93,7 +93,7 @@ export const HOME_PAGE_PATHS: Record<string, string> = {
 };
 
 export const OCEANVIEW_1707_PATHS: Record<string, string> = {
-	en: "Oceanview1707/index.html",
+	en: "Oceanview1707/",
 	es: "Oceanview1707/es.html",
 	fr: "Oceanview1707/fr.html",
 	it: "Oceanview1707/it.html",
@@ -102,7 +102,7 @@ export const OCEANVIEW_1707_PATHS: Record<string, string> = {
 };
 
 export const OCEANVIEW_1606_PATHS: Record<string, string> = {
-	en: "Oceanview1606/index.html",
+	en: "Oceanview1606/",
 	es: "Oceanview1606/es.html",
 	fr: "Oceanview1606/fr.html",
 	it: "Oceanview1606/it.html",

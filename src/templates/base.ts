@@ -9,6 +9,7 @@ interface TemplateProps {
 	hrefLangTags: string;
 	structuredData: string;
 	assetPrefix: string;
+	noIndex?: boolean;
 	customScripts?: string[];
 	pageConfig?: Record<string, any>;
 }
@@ -33,9 +34,17 @@ export const baseTemplate = ({
 	hrefLangTags,
 	structuredData,
 	assetPrefix,
+	noIndex = false,
 	customScripts = [],
 	pageConfig,
 }: TemplateProps) => {
+	const robotsMetaTag = noIndex
+		? `\n    <meta name="robots" content="noindex, nofollow" />`
+		: "";
+	const hrefLangMarkup =
+		!noIndex && hrefLangTags
+			? `\n\n    <!-- Multilingual SEO -->\n${hrefLangTags}`
+			: "";
 	const scripts: string[] = [];
 	if (pageConfig) {
 		scripts.push(
@@ -61,7 +70,7 @@ export const baseTemplate = ({
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${title}</title>
-    <meta name="description" content="${description}">
+    <meta name="description" content="${description}">${robotsMetaTag}
 
     <!-- favicons -->
     <link rel="icon" type="image/svg+xml" href="${assetPrefix}favicon.svg?v=20260614">
@@ -94,10 +103,7 @@ export const baseTemplate = ({
     <meta name="twitter:description" content="${description}">
     <meta name="twitter:image" content="${ogImage}">
 
-    <script src="${assetPrefix}js/lang-detect.js"></script>
-
-    <!-- Multilingual SEO -->
-${hrefLangTags}
+    <script src="${assetPrefix}js/lang-detect.js" defer></script>${hrefLangMarkup}
 
     <!-- Structured Data (JSON-LD) for Generative Engines & Rich Snippets -->
     <script type="application/ld+json">
