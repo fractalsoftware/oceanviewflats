@@ -164,7 +164,7 @@ jobs:
           if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_BASE_SHA" ] && [ -n "$PR_HEAD_SHA" ]; then
             gitleaks detect --source . --log-opts="${PR_BASE_SHA}..${PR_HEAD_SHA}" --redact --verbose
           else
-            gitleaks detect --source . --redact --verbose
+            gitleaks detect --source . --log-opts="HEAD" --redact --verbose
           fi
 
       - name: Run actionlint & zizmor on GitHub Workflows

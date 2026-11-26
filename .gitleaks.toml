@@ -13,7 +13,7 @@ paths = [
 id = "generic-api-key"
 
     [[rules.allowlists]]
-    description = "Ignore TypeScript union type aliases whose identifier ends in Key"
+    description = "Ignore TypeScript union type aliases and UI/i18n dictionary key properties"
     condition = "AND"
     paths = [
         '''^src/.*\.tsx?$''',
@@ -21,4 +21,5 @@ id = "generic-api-key"
     regexTarget = "line"
     regexes = [
         '''^\s*(?:export\s+)?type\s+[A-Za-z0-9_]+Key\s*=\s*[A-Za-z0-9_| ]+;\s*$''',
+        '''^\s*(?:pitch|title|subtitle|badge|text|author|alt|label|question|answer|desc|description|heading|cta|name|caption|summary|excerpt|eyebrow|review[A-Za-z]*)Key\s*:\s*"[a-z][A-Za-z0-9_]*"(?:\s*\|\s*"[a-z][A-Za-z0-9_]*")*[,;]?\s*$''',
     ]
