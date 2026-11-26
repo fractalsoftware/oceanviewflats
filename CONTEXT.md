@@ -228,12 +228,18 @@ The mandatory record of legal identification, ages, Primary Guest contact email,
 _Avoid_: Check-in Form, Registration Card, Guest List
 
 **Guest Guide**:
-The digital handbook providing access credentials, arrival instructions, and house rules, unlocked only after the Guest Registry is completed.
+The digital handbook providing access credentials, arrival instructions, and house rules, unlocked only after the Guest Registry is completed. Distinct from a *Destination Guide*, which is public pre-booking editorial content about Santa Marta and Playa Salguero.
 _Avoid_: Welcome Pack, House Manual, Instructions Page
 
 **Access Credential**:
 The temporal, cryptographically random PIN (`0XXXXXX#`) or smart-lock entry code that grants physical entry to the Property during the reserved dates.
 _Avoid_: Door Password, Key Code, Room Key
+
+### Editorial & Discovery
+
+**Destination Guide**:
+A public, multilingual editorial resource published by OceanViewFlats providing prospective travelers with authoritative local guidance on Playa Salguero, Santa Marta, remote work, day trips, and Direct Reservation procedures, connecting discovery queries to specific Properties. Distinct from the *Guest Guide*, which is private post-registration fulfillment documentation.
+_Avoid_: Blog Post, Travel Manual, Guest Guide, Article, Guide Page
 
 ### Communications & Inquiries
 
