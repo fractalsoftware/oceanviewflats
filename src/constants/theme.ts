@@ -222,6 +222,52 @@ export const HOME_THEME = {
 	multiPropertyText: "text-sm md:text-base text-slate-700 leading-relaxed",
 	multiPropertyCta:
 		"shrink-0 inline-flex items-center justify-center space-x-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	// #302 Homepage Property Comparison Table
+	compareSection: "py-20 px-6 bg-white border-t border-slate-200 scroll-mt-20",
+	compareContainer: "max-w-6xl mx-auto",
+	compareHeader: "text-center max-w-3xl mx-auto mb-12",
+	compareTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4",
+	compareSubtitle:
+		"text-base md:text-lg text-slate-700 font-light leading-relaxed",
+	compareTableWrapper:
+		"overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+	compareTable:
+		"w-full min-w-[640px] border-separate border-spacing-0 text-left text-sm md:text-base",
+	compareCaption:
+		"px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-600 bg-slate-50 border-b border-slate-200",
+	compareThead: "sticky top-0 z-20 bg-slate-900 text-white",
+	compareColHeaderFirst:
+		"sticky left-0 z-30 bg-slate-900 py-4 px-5 md:px-6 text-xs md:text-sm font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 w-1/4",
+	compareColHeader:
+		"py-4 px-5 md:px-6 text-sm md:text-base font-bold text-white border-b border-slate-800 w-[37.5%]",
+	compareTbody: "bg-white",
+	compareRow:
+		"group odd:bg-white even:bg-slate-50 hover:bg-slate-100 transition-colors",
+	compareRowHeader:
+		"sticky left-0 z-10 py-4 px-5 md:px-6 font-semibold text-slate-900 align-top border-b border-slate-200 group-odd:bg-white group-even:bg-slate-50 group-hover:bg-slate-100 transition-colors",
+	compareCell:
+		"py-4 px-5 md:px-6 text-slate-700 align-top border-b border-slate-200 leading-relaxed",
+	// #302 Homepage Playa Salguero Location & Proximity
+	locationSection: "py-20 px-6 bg-white scroll-mt-20",
+	locationContainer: "max-w-6xl mx-auto",
+	locationHeader: "text-center max-w-3xl mx-auto mb-14",
+	locationAddressBadge:
+		"inline-flex items-center justify-center gap-2 bg-slate-100 border border-slate-200 px-4 py-1.5 rounded-full text-slate-700 text-xs md:text-sm font-semibold mb-5",
+	locationTitle:
+		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4",
+	locationSubtitle:
+		"text-base md:text-lg text-slate-700 font-light leading-relaxed",
+	locationGrid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+	locationCard:
+		"flex flex-col bg-slate-50 rounded-3xl p-7 border border-slate-200 shadow-sm hover:bg-white hover:shadow-md transition-all duration-300",
+	locationCardTop: "flex items-center justify-between gap-3 mb-5",
+	locationIconBox:
+		"w-11 h-11 shrink-0 bg-white border border-slate-200 text-[#B91C1C] rounded-2xl flex items-center justify-center shadow-xs",
+	locationProximityBadge:
+		"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white",
+	locationCardTitle: "text-lg md:text-xl font-bold text-slate-900 mb-2",
+	locationCardDesc: "text-sm text-slate-700 leading-relaxed",
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
