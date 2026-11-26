@@ -200,11 +200,11 @@ test("Public pages emit canonical trailing-slash URLs, og:url, reciprocal hrefla
 				);
 			}
 
-			// lang-detect.js must load with defer
+			// lang-detect.js must load with defer and cache-busting ?v= hash
 			assert.match(
 				html,
-				/<script\s+src="[^"]*js\/lang-detect\.js"\s+defer><\/script>/,
-				`${page.filename(lang)} must load lang-detect.js with defer`,
+				/<script\s+src="[^"]*js\/lang-detect\.js\?v=[0-9a-f]{8}"\s+defer><\/script>/,
+				`${page.filename(lang)} must load versioned lang-detect.js with defer`,
 			);
 		}
 	}
@@ -243,8 +243,8 @@ test("Non-public transactional and error pages emit noindex, nofollow, omit href
 			);
 			assert.match(
 				html,
-				/<script\s+src="[^"]*js\/lang-detect\.js"\s+defer><\/script>/,
-				`${page.filename(lang)} must load lang-detect.js with defer`,
+				/<script\s+src="[^"]*js\/lang-detect\.js\?v=[0-9a-f]{8}"\s+defer><\/script>/,
+				`${page.filename(lang)} must load versioned lang-detect.js with defer`,
 			);
 
 			const canonicalUrl = getCanonicalUrl(BASE_URL, page.path, lang);

@@ -92,6 +92,22 @@ jobs:
           rm -f dist/api/openapi.json dist/api/openapi.yaml
           rm -rf dist/api/docs
 
+      - name: Emit IndexNow Verification Key File
+        env:
+          INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${INDEXNOW_KEY}" ]; then
+            echo "INDEXNOW_KEY repository variable is not set; skipping IndexNow verification file."
+            exit 0
+          fi
+          if [[ ! "${INDEXNOW_KEY}" =~ ^[A-Za-z0-9-]{8,128}$ ]]; then
+            echo "::warning::INDEXNOW_KEY does not match ^[A-Za-z0-9-]{8,128}$; skipping IndexNow verification file."
+            exit 0
+          fi
+          printf '%s' "${INDEXNOW_KEY}" > "dist/${INDEXNOW_KEY}.txt"
+          echo "Generated IndexNow verification file in dist/."
+
       - name: Deploy to SFTP
         uses: wlixcc/SFTP-Deploy-Action@a5ccb9c6211a94cc59404f0fdb2a9936a6dfee64 # v1.2.6
         with:
@@ -102,3 +118,9 @@ jobs:
           local_path: './dist/.'
           remote_path: ${{ secrets.FTP_REMOTE_PATH }}
           sftpArgs: '-o ConnectTimeout=5'
+
+      - name: Notify IndexNow Search Engines
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+        run: node scripts/submit-indexnow.mjs

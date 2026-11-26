@@ -1,5 +1,6 @@
-import fs from "fs";
-import path from "path";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -23,17 +24,54 @@ import {
 const distDir = path.join(process.cwd(), "dist");
 const publicDir = path.join(process.cwd(), "public");
 
-if (fs.existsSync(distDir)) {
-	fs.rmSync(distDir, { recursive: true, force: true });
-	console.log("Cleaned dist/ directory");
+if (!fs.existsSync(distDir)) {
+	fs.mkdirSync(distDir, { recursive: true });
+	// Standalone render fallback: copy public assets when vite build did not pre-populate dist/
+	if (fs.existsSync(publicDir)) {
+		fs.cpSync(publicDir, distDir, { recursive: true });
+		console.log("Copied public assets to dist/");
+	}
 }
-fs.mkdirSync(distDir, { recursive: true });
 
-// Copy public assets to dist
-if (fs.existsSync(publicDir)) {
-	fs.cpSync(publicDir, distDir, { recursive: true });
-	console.log("Copied public assets to dist/");
-}
+const computeFileHash = (filePath: string): string =>
+	crypto
+		.createHash("sha256")
+		.update(fs.readFileSync(filePath))
+		.digest("hex")
+		.slice(0, 8);
+
+const buildAssetVersions = (): Record<string, string> => {
+	const assetPaths = new Set<string>([
+		"css/style.css",
+		"js/lang-detect.js",
+		"js/page-config.js",
+	]);
+	for (const page of pages) {
+		for (const script of page.scripts) {
+			assetPaths.add(script);
+		}
+	}
+
+	const versions: Record<string, string> = {};
+	for (const assetPath of assetPaths) {
+		const distAssetPath = path.join(distDir, assetPath);
+		if (fs.existsSync(distAssetPath)) {
+			versions[assetPath] = computeFileHash(distAssetPath);
+			continue;
+		}
+		const fallbackPath =
+			assetPath === "css/style.css"
+				? path.join(process.cwd(), "src", "style.css")
+				: path.join(publicDir, assetPath);
+		if (fs.existsSync(fallbackPath)) {
+			versions[assetPath] = computeFileHash(fallbackPath);
+		}
+	}
+
+	return versions;
+};
+
+const assetVersions = buildAssetVersions();
 
 // Parse public/data/prices.csv to generate build-time prices.json caches for client usage
 // and return parsed tiers for build-time JSON-LD structured data injection.
@@ -190,6 +228,7 @@ pages.forEach((page) => {
 			hrefLangTags,
 			structuredData,
 			assetPrefix,
+			assetVersions,
 			noIndex: Boolean(page.noIndex),
 			customScripts: page.scripts,
 			pageConfig,
