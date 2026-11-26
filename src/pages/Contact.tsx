@@ -7,10 +7,14 @@ import {
 	ShieldCheck,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import {
+	getContactPagePath,
 	getPrivacyPolicyPath,
+	IMAGE_DIMENSIONS,
+	IMAGES,
 	PRIVACY_POLICY_VERSION,
 } from "../constants/config";
 import { dict } from "../i18n/dict";
@@ -41,8 +45,12 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 			<header className="relative pt-32 pb-16 px-6 text-center overflow-hidden">
 				<div className="absolute inset-0 w-full h-full">
 					<img
-						src={`${assetPrefix}images/main-entrance.webp`}
-						alt="OceanViewFlats Main Entrance"
+						src={`${assetPrefix}${IMAGES.mainEntrance}`}
+						alt={t.mainEntranceImgAlt}
+						width={IMAGE_DIMENSIONS.mainEntrance.width}
+						height={IMAGE_DIMENSIONS.mainEntrance.height}
+						fetchPriority="high"
+						loading="eager"
 						className="w-full h-full object-cover"
 					/>
 					<div className="absolute inset-0 bg-slate-900/50"></div>
@@ -58,6 +66,13 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 			</header>
 
 			<main className="flex-grow w-full py-12 px-6 max-w-6xl mx-auto">
+				<Breadcrumbs
+					lang={lang}
+					assetPrefix={assetPrefix}
+					currentLabel={t.contactTitle}
+					currentHref={getContactPagePath(lang, assetPrefix)}
+					surface="inline"
+				/>
 				<div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 					{/* Contact Details Panel */}
 					<div className="lg:col-span-5 space-y-8">

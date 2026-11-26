@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AboutAmenities } from "../components/AboutAmenities";
 import { BookingSection } from "../components/BookingSection";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Footer } from "../components/Footer";
 import { Hero } from "../components/Hero";
 import { ImageGallery } from "../components/ImageGallery";
@@ -8,9 +9,12 @@ import { Navigation } from "../components/Navigation";
 import { NomadSection } from "../components/NomadSection";
 import { QuickStats } from "../components/QuickStats";
 import { ReviewsSection1707 } from "../components/ReviewsSection1707";
+import { getOceanview1707Path } from "../constants/config";
+import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
 export default function Oceanview1707({ lang, assetPrefix = "./" }: AppProps) {
+	const t = dict[lang];
 	const [isScrolled, setIsScrolled] = useState(false);
 
 	// We'll keep the scroll effect but in static HTML it will only work if we include this script
@@ -28,8 +32,15 @@ export default function Oceanview1707({ lang, assetPrefix = "./" }: AppProps) {
 				lang={lang}
 				assetPrefix={assetPrefix}
 			/>
+			<Hero lang={lang} propertyId="1707" assetPrefix={assetPrefix} />
 			<main>
-				<Hero lang={lang} propertyId="1707" assetPrefix={assetPrefix} />
+				<Breadcrumbs
+					lang={lang}
+					assetPrefix={assetPrefix}
+					currentLabel={t.heroTitle}
+					currentHref={getOceanview1707Path(lang, assetPrefix)}
+					surface="coolBar"
+				/>
 				<QuickStats lang={lang} propertyId="1707" />
 				<ImageGallery lang={lang} property="1707" assetPrefix={assetPrefix} />
 				<NomadSection lang={lang} assetPrefix={assetPrefix} />

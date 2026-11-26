@@ -20,6 +20,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
+import { IMAGE_DIMENSIONS, IMAGES } from "../constants/config";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
 
@@ -47,8 +48,12 @@ export default function Guide({ lang, assetPrefix = "../" }: AppProps) {
 			<header className="relative pt-32 pb-16 px-6 text-center overflow-hidden">
 				<div className="absolute inset-0 w-full h-full">
 					<img
-						src={`${assetPrefix}images/main-entrance.webp`}
-						alt="OceanViewFlats Beachfront Entrance"
+						src={`${assetPrefix}${IMAGES.mainEntrance}`}
+						alt={t.mainEntranceImgAlt}
+						width={IMAGE_DIMENSIONS.mainEntrance.width}
+						height={IMAGE_DIMENSIONS.mainEntrance.height}
+						fetchPriority="high"
+						loading="eager"
 						className="w-full h-full object-cover"
 					/>
 					<div className="absolute inset-0 bg-slate-900/65 backdrop-blur-[2px]"></div>

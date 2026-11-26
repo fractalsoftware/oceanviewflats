@@ -174,6 +174,7 @@ export interface HomePropertyCardConfig {
 	cardDomId: string;
 	rateBadgeDomId: string;
 	imageKey: "1707" | "1606";
+	imageAltKey: "hero1707ImgAlt" | "hero1606ImgAlt";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
 	rateKey: "homeCard1707Rate" | "homeCard1606Rate";
 	titleKey: "heroTitle" | "hero1606Title";
@@ -189,6 +190,7 @@ export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
 		cardDomId: "home-card-1707",
 		rateBadgeDomId: "home-rate-badge-1707",
 		imageKey: "1707",
+		imageAltKey: "hero1707ImgAlt",
 		badgeKey: "homeCard1707Badge",
 		rateKey: "homeCard1707Rate",
 		titleKey: "heroTitle",
@@ -202,6 +204,7 @@ export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
 		cardDomId: "home-card-1606",
 		rateBadgeDomId: "home-rate-badge-1606",
 		imageKey: "1606",
+		imageAltKey: "hero1606ImgAlt",
 		badgeKey: "homeCard1606Badge",
 		rateKey: "homeCard1606Rate",
 		titleKey: "hero1606Title",
@@ -273,6 +276,24 @@ export const IMAGES = {
 	},
 };
 
+export const IMAGE_DIMENSIONS = {
+	mainEntrance: { width: 1280, height: 677 },
+	homeHero: { width: 1600, height: 1355 },
+	host: { width: 600, height: 600 },
+	"1707": {
+		hero: { width: 1980, height: 1280 },
+		nomad: { width: 800, height: 450 },
+		bedroom: { width: 500, height: 333 },
+		pool: { width: 500, height: 333 },
+	},
+	"1606": {
+		hero: { width: 1980, height: 1280 },
+		romantic: { width: 800, height: 450 },
+		bedroom: { width: 500, height: 333 },
+		pool: { width: 501, height: 333 },
+	},
+} as const;
+
 export interface HomeExperienceFeatureConfig {
 	iconId: "wifi" | "users" | "heart";
 	iconThemeKey: "editorialFeatureIconSky" | "editorialFeatureIconRose";
@@ -291,6 +312,8 @@ export interface HomeExperienceFeatureConfig {
 export interface HomeExperienceCardConfig {
 	propertyId: "1707" | "1606";
 	imageSrc: string;
+	imageWidth: number;
+	imageHeight: number;
 	imageAltKey: "nomadImgAlt" | "romanticImgAlt";
 	titleKey: "heroTitle" | "hero1606Title";
 	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
@@ -303,6 +326,8 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 	{
 		propertyId: "1707",
 		imageSrc: IMAGES["1707"].nomad,
+		imageWidth: IMAGE_DIMENSIONS["1707"].nomad.width,
+		imageHeight: IMAGE_DIMENSIONS["1707"].nomad.height,
 		imageAltKey: "nomadImgAlt",
 		titleKey: "heroTitle",
 		badgeKey: "homeCard1707Badge",
@@ -326,6 +351,8 @@ export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
 	{
 		propertyId: "1606",
 		imageSrc: IMAGES["1606"].romantic,
+		imageWidth: IMAGE_DIMENSIONS["1606"].romantic.width,
+		imageHeight: IMAGE_DIMENSIONS["1606"].romantic.height,
 		imageAltKey: "romanticImgAlt",
 		titleKey: "hero1606Title",
 		badgeKey: "homeCard1606Badge",

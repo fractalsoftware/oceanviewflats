@@ -1,4 +1,4 @@
-import { AIRBNB_URLS, IMAGES } from "./config";
+import { AIRBNB_URLS, IMAGE_DIMENSIONS, IMAGES } from "./config";
 
 export interface PropertyTheme {
 	accentColor: string;
@@ -18,11 +18,23 @@ export interface PropertyTheme {
 		pool: string;
 	};
 
+	// Exact on-disk image dimensions for CLS prevention
+	imageDimensions: {
+		hero: { readonly width: number; readonly height: number };
+		bedroom: { readonly width: number; readonly height: number };
+		pool: { readonly width: number; readonly height: number };
+	};
+
 	// Airbnb target URL
 	airbnbUrl: string;
 
-	// Centralized key for bed capacity localization
+	// Centralized keys for property-specific copy & localized image alts
 	bedTextKey: "statsBeds" | "stats1606Beds";
+	heroTitleKey: "heroTitle" | "hero1606Title";
+	heroSubKey: "heroSub" | "hero1606Sub";
+	heroImgAltKey: "hero1707ImgAlt" | "hero1606ImgAlt";
+	aboutBedroomAltKey: "about1707LivingAlt" | "about1606LivingAlt";
+	aboutPoolAltKey: "about1707PoolAlt" | "about1606PoolAlt";
 
 	// AboutAmenities centralized styles
 	aboutThemeAccent: string;
@@ -145,6 +157,41 @@ export const CHROME_THEME = {
 	footerBadgeLogo:
 		"w-3.5 h-3.5 fill-current text-slate-300 transition-transform duration-300 group-hover:scale-110",
 	footerBadgeBrand: "text-white font-bold tracking-wide",
+} as const;
+
+export type BreadcrumbSurface = "coolBar" | "warmBar" | "inline";
+
+export const BREADCRUMB_THEME = {
+	coolBar: {
+		nav: "bg-slate-50 border-b border-slate-200/80",
+		container: "max-w-6xl mx-auto px-6 py-3",
+		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
+		item: "inline-flex items-center gap-1.5",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+		separator: "w-4 h-4 text-slate-400 shrink-0",
+		current:
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+	},
+	warmBar: {
+		nav: "bg-stone-50 border-b border-stone-200/80",
+		container: "max-w-6xl mx-auto px-6 py-3",
+		list: "flex flex-wrap items-center gap-1.5 text-sm text-stone-600 list-none m-0 p-0",
+		item: "inline-flex items-center gap-1.5",
+		link: "text-stone-700 hover:text-stone-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600",
+		separator: "w-4 h-4 text-stone-400 shrink-0",
+		current:
+			"font-semibold text-stone-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600",
+	},
+	inline: {
+		nav: "mb-6",
+		container: "w-full",
+		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
+		item: "inline-flex items-center gap-1.5",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+		separator: "w-4 h-4 text-slate-400 shrink-0",
+		current:
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+	},
 } as const;
 
 const SHARED_HOME_CARD_THEME = {
@@ -439,12 +486,22 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			bedroom: IMAGES["1707"].bedroom,
 			pool: IMAGES["1707"].pool,
 		},
+		imageDimensions: {
+			hero: IMAGE_DIMENSIONS["1707"].hero,
+			bedroom: IMAGE_DIMENSIONS["1707"].bedroom,
+			pool: IMAGE_DIMENSIONS["1707"].pool,
+		},
 
 		// Airbnb target URL
 		airbnbUrl: AIRBNB_URLS["1707"],
 
-		// Stats bed capacity key
+		// Centralized keys for property-specific copy & localized image alts
 		bedTextKey: "statsBeds",
+		heroTitleKey: "heroTitle",
+		heroSubKey: "heroSub",
+		heroImgAltKey: "hero1707ImgAlt",
+		aboutBedroomAltKey: "about1707LivingAlt",
+		aboutPoolAltKey: "about1707PoolAlt",
 
 		// AboutAmenities
 		aboutThemeAccent: "text-[#FF5A5F] bg-red-50",
@@ -502,12 +559,22 @@ export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
 			bedroom: IMAGES["1606"].bedroom,
 			pool: IMAGES["1606"].pool,
 		},
+		imageDimensions: {
+			hero: IMAGE_DIMENSIONS["1606"].hero,
+			bedroom: IMAGE_DIMENSIONS["1606"].bedroom,
+			pool: IMAGE_DIMENSIONS["1606"].pool,
+		},
 
 		// Airbnb target URL
 		airbnbUrl: AIRBNB_URLS["1606"],
 
-		// Stats bed capacity key
+		// Centralized keys for property-specific copy & localized image alts
 		bedTextKey: "stats1606Beds",
+		heroTitleKey: "hero1606Title",
+		heroSubKey: "hero1606Sub",
+		heroImgAltKey: "hero1606ImgAlt",
+		aboutBedroomAltKey: "about1606LivingAlt",
+		aboutPoolAltKey: "about1606PoolAlt",
 
 		// AboutAmenities
 		aboutThemeAccent: "text-rose-600 bg-rose-50",
