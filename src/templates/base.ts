@@ -14,6 +14,8 @@ interface TemplateProps {
 	baseUrl: string;
 	ogImage: OgImageMeta | string;
 	heroPreloadHref?: string;
+	heroPreloadSrcSet?: string;
+	heroPreloadSizes?: string;
 	hrefLangTags: string;
 	structuredData: string;
 	assetPrefix: string;
@@ -47,6 +49,8 @@ export const baseTemplate = ({
 	baseUrl,
 	ogImage,
 	heroPreloadHref,
+	heroPreloadSrcSet,
+	heroPreloadSizes,
 	hrefLangTags,
 	structuredData,
 	assetPrefix,
@@ -109,7 +113,21 @@ export const baseTemplate = ({
 		? `\n    <meta name="twitter:image:alt" content="${escapedOgImageAlt}">`
 		: "";
 	const heroPreloadMarkup = heroPreloadHref
-		? `\n    <link rel="preload" as="image" href="${escapeHtmlAttr(heroPreloadHref)}" fetchpriority="high" />`
+		? (() => {
+				const attrs = [
+					'rel="preload"',
+					'as="image"',
+					`href="${escapeHtmlAttr(heroPreloadHref)}"`,
+				];
+				if (heroPreloadSrcSet) {
+					attrs.push(`imagesrcset="${escapeHtmlAttr(heroPreloadSrcSet)}"`);
+					if (heroPreloadSizes) {
+						attrs.push(`imagesizes="${escapeHtmlAttr(heroPreloadSizes)}"`);
+					}
+				}
+				attrs.push('fetchpriority="high"');
+				return `\n    <link ${attrs.join(" ")} />`;
+			})()
 		: "";
 
 	return `<!DOCTYPE html>
@@ -157,10 +175,8 @@ export const baseTemplate = ({
     <script type="application/ld+json">
         ${structuredData}
     </script>${heroPreloadMarkup}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="${assetPrefix}fonts/inter-var.woff2" crossorigin />
     <link rel="stylesheet" href="${assetPrefix}css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .scroll-smooth { scroll-behavior: smooth; }

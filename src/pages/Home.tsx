@@ -24,7 +24,9 @@ import { Navigation } from "../components/Navigation";
 import {
 	DATA_CONTROLLER,
 	getContactPagePath,
+	getHeroImageSrcSet,
 	getPropertyPagePath,
+	HERO_IMAGE_SIZES,
 	HOME_EXPERIENCE_CARDS,
 	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
@@ -71,6 +73,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				<div className={HOME_THEME.heroMediaWrapper}>
 					<img
 						src={`${assetPrefix}${IMAGES.home.hero}`}
+						srcSet={getHeroImageSrcSet(IMAGES.home.hero, assetPrefix)}
+						sizes={HERO_IMAGE_SIZES}
 						alt={t.heroImgAlt}
 						width={IMAGE_DIMENSIONS.homeHero.width}
 						height={IMAGE_DIMENSIONS.homeHero.height}

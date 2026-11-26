@@ -1,5 +1,6 @@
 import { Calendar as CalendarIcon, MapPin } from "lucide-react";
 import React from "react";
+import { getHeroImageSrcSet, HERO_IMAGE_SIZES } from "../constants/config";
 import { THEMES } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
@@ -21,6 +22,8 @@ export const Hero = ({
 			<div className="absolute inset-0 w-full h-full">
 				<img
 					src={`${assetPrefix}${theme.images.hero}`}
+					srcSet={getHeroImageSrcSet(theme.images.hero, assetPrefix)}
+					sizes={HERO_IMAGE_SIZES}
 					alt={t[theme.heroImgAltKey]}
 					width={theme.imageDimensions.hero.width}
 					height={theme.imageDimensions.hero.height}

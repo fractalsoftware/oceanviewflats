@@ -316,6 +316,45 @@ export const IMAGE_DIMENSIONS = {
 	},
 } as const;
 
+export const HERO_IMAGE_SIZES = "100vw";
+
+export interface HeroResponsiveVariant {
+	readonly src: string;
+	readonly width: number;
+}
+
+export const HERO_RESPONSIVE_VARIANTS: Readonly<
+	Record<string, readonly HeroResponsiveVariant[]>
+> = {
+	[IMAGES.home.hero]: [
+		{ src: "images/home-hero-640w.webp", width: 640 },
+		{ src: "images/home-hero-1024w.webp", width: 1024 },
+		{ src: IMAGES.home.hero, width: IMAGE_DIMENSIONS.homeHero.width },
+	],
+	[IMAGES["1707"].hero]: [
+		{ src: "images/1707-main-room-seaside-640w.webp", width: 640 },
+		{ src: "images/1707-main-room-seaside-1024w.webp", width: 1024 },
+		{ src: IMAGES["1707"].hero, width: IMAGE_DIMENSIONS["1707"].hero.width },
+	],
+	[IMAGES["1606"].hero]: [
+		{ src: "images/1606-main-room-seaside-640w.webp", width: 640 },
+		{ src: "images/1606-main-room-seaside-1024w.webp", width: 1024 },
+		{ src: IMAGES["1606"].hero, width: IMAGE_DIMENSIONS["1606"].hero.width },
+	],
+};
+
+export const getHeroImageSrcSet = (
+	heroImagePath: string,
+	assetPrefix = "./",
+): string | undefined => {
+	if (!Object.hasOwn(HERO_RESPONSIVE_VARIANTS, heroImagePath)) {
+		return undefined;
+	}
+	return HERO_RESPONSIVE_VARIANTS[heroImagePath]
+		.map((variant) => `${assetPrefix}${variant.src} ${variant.width}w`)
+		.join(", ");
+};
+
 export interface HomeExperienceFeatureConfig {
 	iconId: "wifi" | "users" | "heart";
 	iconThemeKey: "editorialFeatureIconSky" | "editorialFeatureIconRose";
