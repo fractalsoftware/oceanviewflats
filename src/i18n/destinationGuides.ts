@@ -2,137 +2,29 @@ import {
 	BUILDING_REGISTRATION_FEE_COP,
 	getDestinationGuidePath,
 	getDestinationGuidesHubPath,
-	type PropertyId,
 } from "../constants/config";
 import type { Lang, PortfolioPricingSummary } from "../types";
+import { DAY_TRIPS_FROM_PLAYA_SALGUERO_GUIDE } from "./destinationGuides/dayTripsFromPlayaSalguero";
+import { DIGITAL_NOMAD_REMOTE_WORK_GUIDE } from "./destinationGuides/digitalNomadRemoteWork";
+import { DIRECT_RESERVATION_GUIDE } from "./destinationGuides/directReservationGuide";
+import { PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE } from "./destinationGuides/playaSalgueroVsElRodadero";
+import type {
+	DestinationGuideDefinition,
+	DestinationGuidesHubLocaleContent,
+} from "./destinationGuides/types";
 
-export type DestinationGuideIconId =
-	| "waves"
-	| "wifi"
-	| "compass"
-	| "shield"
-	| "map-pin"
-	| "sparkles"
-	| "building";
-
-export interface DestinationGuideComparisonTable {
-	readonly caption: string;
-	readonly headers: readonly string[];
-	readonly rows: readonly (readonly string[])[];
-}
-
-export interface DestinationGuideFactCard {
-	readonly label: string;
-	readonly value: string;
-	readonly detail?: string;
-}
-
-export interface DestinationGuideCallout {
-	readonly label: string;
-	readonly text: string;
-}
-
-export interface DestinationGuideSection {
-	readonly id: string;
-	readonly heading: string;
-	readonly paragraphs: readonly string[];
-	readonly bullets?: readonly string[];
-	readonly callout?: DestinationGuideCallout;
-	readonly comparisonTable?: DestinationGuideComparisonTable;
-	readonly factCards?: readonly DestinationGuideFactCard[];
-}
-
-export interface DestinationGuideFaqItem {
-	readonly id: string;
-	readonly question: string;
-	readonly answer: string;
-	readonly defaultOpen?: boolean;
-}
-
-export interface DestinationGuideLocaleContent {
-	readonly seoTitle: string;
-	readonly seoDescription: string;
-	readonly ogImageAlt: string;
-	readonly heroImageAlt: string;
-	readonly breadcrumbLabel: string;
-	readonly badge: string;
-	readonly title: string;
-	readonly subtitle: string;
-	readonly cardSummary: string;
-	readonly keyTakeawaysTitle: string;
-	readonly keyTakeaways: readonly string[];
-	readonly sections: readonly DestinationGuideSection[];
-	readonly faqsTitle: string;
-	readonly faqs: readonly DestinationGuideFaqItem[];
-	readonly ctaTitle: string;
-	readonly ctaSubtitle: string;
-}
-
-export interface DestinationGuideDefinition {
-	readonly slug: string;
-	readonly id: string;
-	readonly categoryIcon: DestinationGuideIconId;
-	readonly heroImage: string;
-	readonly heroImageDimensions: {
-		readonly width: number;
-		readonly height: number;
-	};
-	readonly ogImage: {
-		readonly path: string;
-		readonly width: number;
-		readonly height: number;
-	};
-	readonly datePublished: string;
-	readonly dateModified: string;
-	readonly readingTimeMinutes: number;
-	readonly relatedProperties: readonly PropertyId[];
-	readonly relatedGuideSlugs?: readonly string[];
-	readonly locales: Record<Lang, DestinationGuideLocaleContent>;
-}
-
-export interface DestinationGuidesHubTopicPreview {
-	readonly id: string;
-	readonly slug: string;
-	readonly icon: DestinationGuideIconId;
-	readonly badge: string;
-	readonly title: string;
-	readonly description: string;
-	readonly relatedProperty: PropertyId;
-}
-
-export interface DestinationGuidesHubLocaleContent {
-	readonly seoTitle: string;
-	readonly seoDescription: string;
-	readonly ogImageAlt: string;
-	readonly heroImageAlt: string;
-	readonly breadcrumbLabel: string;
-	readonly badge: string;
-	readonly heroTitle: string;
-	readonly heroSubtitle: string;
-	readonly introTitle: string;
-	readonly introBody: string;
-	readonly guidesSectionTitle: string;
-	readonly guidesSectionSubtitle: string;
-	readonly readGuideCta: string;
-	readonly readingTimeFormat: string;
-	readonly publishedLabel: string;
-	readonly updatedLabel: string;
-	readonly authorByline: string;
-	readonly topicPreviewsTitle: string;
-	readonly topicPreviewsSubtitle: string;
-	readonly topicPreviews: readonly DestinationGuidesHubTopicPreview[];
-	readonly propertiesCtaTitle: string;
-	readonly propertiesCtaSubtitle: string;
-	readonly property1707Pitch: string;
-	readonly property1606Pitch: string;
-	readonly propertyRateLineTemplate: string;
-	readonly propertyCleaningLineTemplate: string;
-	readonly propertyCtaButton: string;
-	readonly articlePropertyCtaEyebrow: string;
-	readonly articlePropertyCtaButton: string;
-	readonly relatedGuidesTitle: string;
-	readonly backToHubLabel: string;
-}
+export type {
+	DestinationGuideCallout,
+	DestinationGuideComparisonTable,
+	DestinationGuideDefinition,
+	DestinationGuideFactCard,
+	DestinationGuideFaqItem,
+	DestinationGuideIconId,
+	DestinationGuideLocaleContent,
+	DestinationGuideSection,
+	DestinationGuidesHubLocaleContent,
+	DestinationGuidesHubTopicPreview,
+} from "./destinationGuides/types";
 
 const LOCALE_THOUSANDS_SEPARATOR: Record<Lang, string> = {
 	en: ",",
@@ -264,7 +156,7 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 				id: "topic-direct-reservation",
 				slug: "direct-reservation-guide",
 				icon: "shield",
-				badge: "Direct Booking",
+				badge: "Direct Reservation",
 				title: "Direct Reservation Guide (COP, RNT & Guest Registry)",
 				description:
 					"How 0% OTA commission Quotes in COP work via Card, PSE, or Cash Voucher, plus statutory RNT compliance, Building Registration Fee ({buildingFeeCop}), and smart-lock check-in.",
@@ -716,11 +608,15 @@ export const DESTINATION_GUIDES_HUB_COPY: Record<
 
 /**
  * Registry of published Destination Guide articles rendered at `/santa-marta/<slug>/`.
- * Ticket #312 appends the 4 multilingual pillar Destination Guides here; `src/config/pages.ts`,
- * `render.tsx`, `DestinationGuidesHub.tsx`, `Footer.tsx`, and `PropertyDestinationGuides.tsx`
- * pick them up automatically.
+ * `src/config/pages.ts`, `render.tsx`, `DestinationGuidesHub.tsx`, `Footer.tsx`, and
+ * `PropertyDestinationGuides.tsx` consume this registry automatically.
  */
-export const DESTINATION_GUIDES: readonly DestinationGuideDefinition[] = [];
+export const DESTINATION_GUIDES: readonly DestinationGuideDefinition[] = [
+	PLAYA_SALGUERO_VS_EL_RODADERO_GUIDE,
+	DIGITAL_NOMAD_REMOTE_WORK_GUIDE,
+	DAY_TRIPS_FROM_PLAYA_SALGUERO_GUIDE,
+	DIRECT_RESERVATION_GUIDE,
+];
 
 export const getDestinationGuideBySlug = (
 	slug: string,
