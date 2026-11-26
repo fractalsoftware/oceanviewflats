@@ -1,13 +1,11 @@
 export const dict = {
 	en: {
-		seoHomeTitle:
-			"Vacation Rentals Santa Marta | Book Direct & Save | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Stays | OceanViewFlats",
 		seoHomeDescription:
-			"Book direct beachfront vacation rentals in Playa Salguero, Santa Marta. Save up to 20% on booking fees. Enjoy 900 Mbps Wi-Fi, pool, and stunning sunsets.",
-		seoTitle:
-			"Oceanview Flat 1707 | Playa Salguero, Santa Marta Vacation Rental",
+			"Direct Reservations at beachfront Properties in Playa Salguero, Santa Marta. Save up to 20% with 0% OTA fees, 900 Mbps Wi-Fi, pool, and Caribbean sunsets.",
+		seoTitle: "Playa Salguero, Santa Marta | OceanViewFlats 1707",
 		seoDescription:
-			"Book your beachfront stay at Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfect for digital nomads, featuring high-speed Wi-Fi, pool, and stunning Caribbean sea sunsets. Book your direct stay now.",
+			"Reserve Property 1707 in Playa Salguero, Santa Marta. 17th-floor oceanfront stay for remote work and families with 900 Mbps Wi-Fi, pool, and direct rates.",
 		navBook: "Book with us",
 		navBookDirect: "Book Direct",
 		heroTitle: "Oceanview Flat 1707",
@@ -87,9 +85,9 @@ export const dict = {
 		review1707Text:
 			'"A very nice apartment with an excellent view, beautiful sunsets, highly complete building facilities, and very good service from everyone. Recommended."',
 		review1707Author: "Karol Ximena",
-		seo1606Title: "Oceanview Flat 1606 | Romantic & Family Beachfront Rental",
+		seo1606Title: "Playa Salguero, Santa Marta | OceanViewFlats 1606",
 		seo1606Description:
-			"Book your serene beachfront stay at Oceanview Flat 1606 in Playa Salguero. Perfect for couples and families, featuring stunning Caribbean sea sunsets and modern luxury. Book your direct stay now.",
+			"Reserve Property 1606 in Playa Salguero, Santa Marta. 16th-floor beachfront stay for couples and families with Caribbean sunsets, pool, and 900 Mbps Wi-Fi.",
 		homeWelcome: "Welcome to OceanViewFlats",
 		homeSubtitle: "Discover your perfect beachfront stay in Santa Marta.",
 		homeHeroValueProp:
@@ -188,9 +186,9 @@ export const dict = {
 		contactDateError: "Check-out date must be after check-in date.",
 		contactOptional: "Optional",
 		contactRequired: "Required",
-		seoContactTitle: "Contact Us | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contact OceanViewFlats | Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Get in touch with us for inquiries, bookings, or questions about Oceanview Flats 1707 and 1606 in Playa Salguero, Santa Marta.",
+			"Send an Inquiry to OceanViewFlats in Playa Salguero, Santa Marta for Direct Reservations or questions about Properties 1707 and 1606.",
 		contactAddressLabel: "Address",
 		contactEmailLabel: "Email",
 		contactPhoneLabel: "Phone Support",
@@ -500,10 +498,9 @@ export const dict = {
 			"I declare under penalty of perjury that I hold parental authority (patria potestad) or express written legal guardianship for every minor under 18 registered in this stay, in compliance with Colombian Law 1581 of 2012 (Art. 7) and Law 679 of 2001 / Law 1336 of 2009 (ESCNNA prevention).",
 		registryErrMinorConsent:
 			"Parental authority or legal guardian attestation is required when registering minors under 18.",
-		privacySeoTitle:
-			"Personal Data Processing Policy (Ley 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Data Processing Policy (Law 1581) | OceanViewFlats",
 		privacySeoDescription:
-			"Official Personal Data Processing Policy (Política de Tratamiento de Datos Personales - PTDP) of OceanViewFlats under Colombian Statutory Law 1581 of 2012 and Decree 1377 of 2013.",
+			"Official Data Processing Policy (PTDP) of OceanViewFlats in Playa Salguero, Santa Marta under Colombian Law 1581 of 2012 and Decree 1377 of 2013.",
 		privacyBadge: "Colombian Statutory Law 1581 of 2012 • Habeas Data",
 		privacyTitle: "Personal Data Processing Policy",
 		privacySubtitle:
@@ -588,16 +585,27 @@ export const dict = {
 			"Smart-lock door codes are generated using cryptographically random digits and never encode personal identification numbers.",
 		privacyRetentionDesc:
 			"In accordance with the Principle of Temporality (Decree 1377 Art. 11), personal identification and guest registry records of concluded stays are automatically redacted 90 days after check-out (or immediately upon an approved ARCO suppression claim), while preserving anonymized financial and occupancy aggregates required for tax compliance.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"OceanViewFlats beachfront sunset view in Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 17th-floor beachfront room overlooking the Caribbean Sea in Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 16th-floor beachfront room overlooking the Caribbean Sea in Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Edificio Salguero Sunset beachfront entrance for OceanViewFlats in Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats at Edificio Salguero Sunset in Playa Salguero, Santa Marta — Data Processing Policy",
+		ogEntranceImageAlt:
+			"Edificio Salguero Sunset main beachfront entrance in Playa Salguero, Santa Marta",
 	},
 	es: {
-		seoHomeTitle:
-			"Alquileres Vacacionales Santa Marta | Reserva Directa | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
 		seoHomeDescription:
-			"Alquila apartamentos frente a la playa en Playa Salguero, Santa Marta sin comisiones de intermediarios. Ahorra hasta un 20%. Wi-Fi de 900 Mbps, piscina y atardeceres.",
-		seoTitle:
-			"Apartamento Vista al Mar 1707 | Alquiler Vacacional en Playa Salguero",
+			"Reserva directa frente al mar en Playa Salguero, Santa Marta sin comisiones OTA. Ahorra hasta 20% con Wi-Fi 900 Mbps, piscina y atardeceres del Caribe.",
+		seoTitle: "Vista al Mar 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Reserva tu estadía frente a la playa en Oceanview Flat 1707 en Playa Salguero, Santa Marta. Ideal para nómadas digitales, con Wi-Fi de alta velocidad, piscina e increíbles atardeceres del Caribe. Reserva tu estancia directa ahora.",
+			"Reserva directa en OceanViewFlats 1707, Playa Salguero, Santa Marta. Piso 17 frente al mar ideal para trabajo remoto y familias: Wi-Fi 900 Mbps y piscina.",
 		navBook: "Reservar con nosotros",
 		navBookDirect: "Reservar Directo",
 		heroTitle: "Apartamento Vista al Mar 1707",
@@ -677,10 +685,9 @@ export const dict = {
 		review1707Text:
 			'"Un apartamento muy lindo con una excelente vista, atardeceres hermosos, el edificio muy completo y la atención de todos muy buena. Recomendado."',
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Apartamento Vista al Mar 1606 | Alquiler de Playa Romántico y Familiar",
+		seo1606Title: "Vista al Mar 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Reserva tu estancia serena frente al mar en Oceanview Flat 1606 en Playa Salguero. Perfecto para parejas y familias, con impresionantes atardeceres caribeños y lujo moderno. Reserva tu estancia directa ahora.",
+			"Reserva directa en OceanViewFlats 1606, Playa Salguero, Santa Marta. Piso 16 frente al mar para parejas y familias con Wi-Fi 900 Mbps, piscina y atardeceres.",
 		homeWelcome: "Bienvenido a OceanViewFlats",
 		homeSubtitle: "Descubre tu estancia perfecta frente al mar en Santa Marta.",
 		homeHeroValueProp:
@@ -781,9 +788,9 @@ export const dict = {
 		contactDateError: "La fecha de salida debe ser posterior a la de entrada.",
 		contactOptional: "Opcional",
 		contactRequired: "Requerido",
-		seoContactTitle: "Contáctenos | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contacto | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Póngase en contacto con nosotros para consultas, reservas o preguntas sobre los apartamentos Oceanview 1707 y 1606 en Playa Salguero, Santa Marta.",
+			"Contáctenos en Playa Salguero, Santa Marta para consultas o reservas directas en nuestras propiedades OceanViewFlats 1707 y 1606 frente al mar.",
 		contactAddressLabel: "Dirección",
 		contactEmailLabel: "Correo Electrónico",
 		contactPhoneLabel: "Soporte Telefónico",
@@ -1109,9 +1116,9 @@ export const dict = {
 		registryErrMinorConsent:
 			"Se requiere la declaración de patria potestad o representación legal cuando se registran menores de 18 años.",
 		privacySeoTitle:
-			"Política de Tratamiento de Datos Personales (Ley 1581) | OceanViewFlats Santa Marta",
+			"Política de Datos (Ley 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Política oficial de Tratamiento de Datos Personales (PTDP) de OceanViewFlats en cumplimiento de la Ley Estatutaria 1581 de 2012 y el Decreto 1377 de 2013 en Colombia.",
+			"Política oficial de Tratamiento de Datos Personales (PTDP) de OceanViewFlats en Santa Marta bajo la Ley 1581 de 2012 y el Decreto 1377 de 2013.",
 		privacyBadge: "Ley Estatutaria 1581 de 2012 • Habeas Data Colombia",
 		privacyTitle: "Política de Tratamiento de Datos Personales",
 		privacySubtitle:
@@ -1195,16 +1202,27 @@ export const dict = {
 			"Los códigos PIN de cerraduras inteligentes se generan de forma criptográficamente aleatoria y nunca contienen dígitos del documento de identidad del huésped.",
 		privacyRetentionDesc:
 			"En cumplimiento del Principio de Temporalidad (Decreto 1377 Art. 11), los datos de identificación personal de las reservas concluidas son objeto de supresión y anonimización automática a los 90 días posteriores a la fecha de check-out (o de inmediato ante un reclamo de supresión procedente), conservando únicamente los registros contables y financieros agregados exigidos por la ley.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Vista al atardecer frente al mar de OceanViewFlats en Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 en el piso 17 con vista al mar Caribe en Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 en el piso 16 con vista al mar Caribe en Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Entrada frente al mar del Edificio Salguero Sunset para OceanViewFlats en Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats en el Edificio Salguero Sunset, Playa Salguero, Santa Marta — Política de Tratamiento de Datos",
+		ogEntranceImageAlt:
+			"Entrada principal frente a la playa del Edificio Salguero Sunset en Playa Salguero, Santa Marta",
 	},
 	fr: {
-		seoHomeTitle:
-			"Location Vacances Santa Marta | Réservation Directe | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
 		seoHomeDescription:
-			"Réservez vos locations de vacances en bord de mer à Playa Salguero, Santa Marta. Économisez jusqu'à 20% sur les frais de plateforme. Wi-Fi 900 Mbps, piscine.",
-		seoTitle:
-			"Appartement Vue Mer 1707 | Location de Vacances à Playa Salguero",
+			"Réservation directe en bord de mer à Playa Salguero, Santa Marta sans frais OTA. Économisez jusqu'à 20 % avec Wi-Fi 900 Mbps, piscine et vue Caraïbes.",
+		seoTitle: "Séjour Vue Mer 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Réservez votre séjour en bord de mer au Oceanview Flat 1707 à Playa Salguero, Santa Marta. Idéal pour les nomades digitaux, avec Wi-Fi haut débit, piscine et superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
+			"Réservez en direct OceanViewFlats 1707 à Playa Salguero, Santa Marta. 17e étage face à la mer pour télétravail et familles : Wi-Fi 900 Mbps et piscine.",
 		navBook: "Réserver avec nous",
 		navBookDirect: "Réserver en Direct",
 		heroTitle: "Appartement Vue Mer 1707",
@@ -1284,10 +1302,9 @@ export const dict = {
 		review1707Text:
 			'"Un très bel appartement avec une excellente vue, de magnifiques couchers de soleil, un bâtiment très complet et une très bonne attention de la part de tous. Recommandé."',
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Appartement Vue Mer 1606 | Location Bord de Mer Romantique & Familiale",
+		seo1606Title: "Séjour Vue Mer 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Réservez votre séjour serein en bord de mer au Oceanview Flat 1606 à Playa Salguero. Parfait pour les couples et les familles, avec de superbes couchers de soleil sur les Caraïbes. Réservez votre séjour direct dès maintenant.",
+			"Réservez en direct OceanViewFlats 1606 à Playa Salguero, Santa Marta. 16e étage face à la mer pour couples et familles : Wi-Fi 900 Mbps et piscine.",
 		homeWelcome: "Bienvenue chez OceanViewFlats",
 		homeSubtitle:
 			"Découvrez votre séjour parfait en bord de mer à Santa Marta.",
@@ -1390,9 +1407,9 @@ export const dict = {
 		contactDateError: "La date de départ doit être après la date d'arrivée.",
 		contactOptional: "Optionnel",
 		contactRequired: "Requis",
-		seoContactTitle: "Contactez-nous | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contact | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Contactez-nous pour toute demande, réservation ou question sur les appartements Oceanview 1707 et 1606 à Playa Salguero, Santa Marta.",
+			"Contactez OceanViewFlats à Playa Salguero, Santa Marta pour toute demande ou réservation directe de nos propriétés vue mer 1707 et 1606.",
 		contactAddressLabel: "Adresse",
 		contactEmailLabel: "Email",
 		contactPhoneLabel: "Assistance Téléphonique",
@@ -1720,10 +1737,9 @@ export const dict = {
 			"Je déclare sur l'honneur détenir l'autorité parentale (patria potestad) ou une autorisation écrite de représentation légale pour chaque mineur de moins de 18 ans enregistré pour ce séjour, conformément à la Loi colombienne 1581 de 2012 (Art. 7) et à la Loi 679 de 2001 / Loi 1336 de 2009 (prévention ESCNNA).",
 		registryErrMinorConsent:
 			"L'attestation d'autorité parentale ou de tutelle légale est requise lors de l'enregistrement de mineurs de moins de 18 ans.",
-		privacySeoTitle:
-			"Politique de Traitement des Données Personnelles (Loi 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Politique de Données (Loi 1581) | OceanViewFlats",
 		privacySeoDescription:
-			"Politique officielle de Traitement des Données Personnelles (PTDP) d'OceanViewFlats conformément à la Loi colombienne 1581 de 2012 et au Décret 1377 de 2013.",
+			"Politique officielle de Traitement des Données Personnelles (PTDP) d'OceanViewFlats à Santa Marta selon la Loi 1581 de 2012 et le Décret 1377 de 2013.",
 		privacyBadge: "Loi Statutaire Colombienne 1581 de 2012 • Habeas Data",
 		privacyTitle: "Politique de Traitement des Données Personnelles",
 		privacySubtitle:
@@ -1810,15 +1826,27 @@ export const dict = {
 			"Les codes PIN de serrure connectée sont générés de manière aléatoire et ne contiennent jamais de chiffres issus des pièces d'identité.",
 		privacyRetentionDesc:
 			"Conformément au Principe de Temporalité (Décret 1377 Art. 11), les données d'identification personnelle des séjours terminés sont automatiquement anonymisées et purgées 90 jours après la date de départ (ou immédiatement sur demande ARCO de suppression), tout en conservant les données comptables et financières agrégées requises par la loi.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Coucher de soleil en bord de mer depuis OceanViewFlats à Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 au 17e étage avec vue sur la mer des Caraïbes à Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 au 16e étage avec vue sur la mer des Caraïbes à Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Entrée en bord de mer de l'Edificio Salguero Sunset pour OceanViewFlats à Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta — Politique de traitement des données",
+		ogEntranceImageAlt:
+			"Entrée principale en bord de mer de l'Edificio Salguero Sunset à Playa Salguero, Santa Marta",
 	},
 	it: {
-		seoHomeTitle:
-			"Case Vacanze Santa Marta | Prenotazione Diretta | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
 		seoHomeDescription:
-			"Prenota case vacanze fronte mare a Playa Salguero, Santa Marta direttamente dal proprietario. Risparmia fino al 20% sulle commissioni. Wi-Fi da 900 Mbps, piscina.",
-		seoTitle: "Appartamento Vista Mare 1707 | Casa Vacanze a Playa Salguero",
+			"Prenotazione diretta fronte mare a Playa Salguero, Santa Marta senza commissioni OTA. Risparmia fino al 20% con Wi-Fi 900 Mbps, piscina e tramonti.",
+		seoTitle: "Fronte Mare 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Prenota il tuo soggiorno di fronte al mare all'Oceanview Flat 1707 a Playa Salguero, Santa Marta. Perfetto per i nomadi digitali, con Wi-Fi ad alta velocità, piscina e splendidi tramonti sui Caraibi. Prenota ora il tuo soggiorno diretto.",
+			"Prenota diretto OceanViewFlats 1707 a Playa Salguero, Santa Marta. 17° piano fronte mare ideale per smart working e famiglie: Wi-Fi 900 Mbps e piscina.",
 		navBook: "Prenota con noi",
 		navBookDirect: "Prenota Diretto",
 		heroTitle: "Appartamento Vista Mare 1707",
@@ -1898,10 +1926,9 @@ export const dict = {
 		review1707Text:
 			"\"Un appartamento molto carino con un'ottima vista, tramonti bellissimi, l'edificio molto completo e l'attenzione di tutti molto buona. Raccomandato.\"",
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Appartamento Vista Mare 1606 | Affitto Fronte Mare Romantico e Familiare",
+		seo1606Title: "Fronte Mare 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Prenota il tuo sereno soggiorno fronte mare all'Oceanview Flat 1606 a Playa Salguero. Perfetto per coppie e famiglie, con splendidi tramonti sul Mar dei Caraibi e lusso moderno. Prenota ora il tuo soggiorno diretto.",
+			"Prenota diretto OceanViewFlats 1606 a Playa Salguero, Santa Marta. 16° piano fronte mare per coppie e famiglie con Wi-Fi 900 Mbps, piscina e tramonti.",
 		homeWelcome: "Benvenuti a OceanViewFlats",
 		homeSubtitle: "Scopri il tuo soggiorno perfetto fronte mare a Santa Marta.",
 		homeHeroValueProp:
@@ -2003,9 +2030,9 @@ export const dict = {
 			"La data di check-out deve essere successiva alla data di check-in.",
 		contactOptional: "Opzionale",
 		contactRequired: "Richiesto",
-		seoContactTitle: "Contattaci | OceanViewFlats Santa Marta",
+		seoContactTitle: "Contatti | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Mettiti in contatto con noi per richieste, prenotazioni o domande sugli appartamenti Oceanview 1707 e 1606 a Playa Salguero, Santa Marta.",
+			"Contatta OceanViewFlats a Playa Salguero, Santa Marta per richieste o prenotazioni dirette nelle nostre proprietà fronte mare 1707 e 1606.",
 		contactAddressLabel: "Indirizzo",
 		contactEmailLabel: "Email",
 		contactPhoneLabel: "Supporto Telefonico",
@@ -2327,10 +2354,9 @@ export const dict = {
 			"Dichiaro sotto la mia responsabilità di esercitare la responsabilità genitoriale (patria potestad) o di disporre di autorizzazione scritta di rappresentanza legale per ogni minore di 18 anni registrato in questo soggiorno, in conformità con la Legge colombiana 1581 del 2012 (Art. 7) e la Legge 679 del 2001 / Legge 1336 del 2009 (prevenzione ESCNNA).",
 		registryErrMinorConsent:
 			"L'attestazione di responsabilità genitoriale o tutela legale è obbligatoria quando si registrano minori di 18 anni.",
-		privacySeoTitle:
-			"Informativa sul Trattamento dei Dati Personali (Legge 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Informativa Dati (Legge 1581) | OceanViewFlats",
 		privacySeoDescription:
-			"Politica ufficiale sul Trattamento dei Dati Personali (PTDP) di OceanViewFlats ai sensi della Legge Statutaria colombiana 1581 del 2012 e del Decreto 1377 del 2013.",
+			"Politica ufficiale sul Trattamento dei Dati Personali (PTDP) di OceanViewFlats a Santa Marta ai sensi della Legge 1581 del 2012 e Decreto 1377 del 2013.",
 		privacyBadge: "Legge Statutaria Colombiana 1581 del 2012 • Habeas Data",
 		privacyTitle: "Politica sul Trattamento dei Dati Personali",
 		privacySubtitle:
@@ -2415,15 +2441,27 @@ export const dict = {
 			"I codici PIN della serratura smart sono generati in modo crittograficamente casuale e non contengono mai cifre del documento d'identità.",
 		privacyRetentionDesc:
 			"In conformità al Principio di Temporalità (Decreto 1377 Art. 11), i dati identificativi personali dei soggiorni conclusi vengono automaticamente oscurati e cancellati 90 giorni dopo la data di check-out (o immediatamente su richiesta ARCO di cancellazione), conservando solo i dati contabili e finanziari aggregati richiesti dalla legge.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Tramonto fronte mare da OceanViewFlats a Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 al 17° piano con vista sul Mar dei Caraibi a Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 al 16° piano con vista sul Mar dei Caraibi a Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Ingresso fronte mare dell'Edificio Salguero Sunset per OceanViewFlats a Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats presso Edificio Salguero Sunset, Playa Salguero, Santa Marta — Informativa sul trattamento dei dati",
+		ogEntranceImageAlt:
+			"Ingresso principale fronte mare dell'Edificio Salguero Sunset a Playa Salguero, Santa Marta",
 	},
 	de: {
-		seoHomeTitle:
-			"Ferienwohnungen Santa Marta | Direkt Buchen & Sparen | OceanViewFlats",
+		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
 		seoHomeDescription:
-			"Buchen Sie Strand-Ferienwohnungen in Playa Salguero, Santa Marta direkt beim Eigentümer. Sparen Sie bis zu 20 % Gebühren. 900 Mbps WLAN, Pool, Meerblick.",
-		seoTitle: "Apartment mit Meerblick 1707 | Ferienwohnung in Playa Salguero",
+			"Direktbuchung am Strand in Playa Salguero, Santa Marta ohne OTA-Gebühren. Bis zu 20 % sparen mit 900-Mbps-WLAN, Pool und karibischem Meerblick.",
+		seoTitle: "Meerblick-Apartment 1707 | Playa Salguero, Santa Marta",
 		seoDescription:
-			"Buchen Sie Ihren Strandurlaub im Oceanview Flat 1707 in Playa Salguero, Santa Marta. Perfekt für digitale Nomaden, mit Highspeed-WLAN, Pool und atemberaubenden Sonnenuntergängen in der Karibik. Buchen Sie jetzt Ihren Aufenthalt direkt.",
+			"Buchen Sie OceanViewFlats 1707 direkt in Playa Salguero, Santa Marta. 17. Etage am Strand für Remote-Arbeit und Familien mit 900-Mbps-WLAN und Pool.",
 		navBook: "Bei uns buchen",
 		navBookDirect: "Direkt Buchen",
 		heroTitle: "Apartment mit Meerblick 1707",
@@ -2503,10 +2541,9 @@ export const dict = {
 		review1707Text:
 			'"Eine sehr schöne Wohnung mit einer hervorragenden Aussicht, wunderschönen Sonnenuntergängen, einem sehr gut ausgestatteten Gebäude und einem sehr guten Service von allen. Empfehlenswert."',
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"Apartment mit Meerblick 1606 | Romantische & Familien-Strandunterkunft",
+		seo1606Title: "Meerblick-Apartment 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
-			"Buchen Sie Ihren ruhigen Aufenthalt am Strand im Oceanview Flat 1606 in Playa Salguero. Perfekt für Paare und Familien, mit atemberaubenden Sonnenuntergängen über dem Karibischen Meer. Buchen Sie jetzt Ihren Aufenthalt direkt.",
+			"Buchen Sie OceanViewFlats 1606 direkt in Playa Salguero, Santa Marta. 16. Etage am Strand für Paare und Familien mit 900-Mbps-WLAN, Pool und Meerblick.",
 		homeWelcome: "Willkommen bei OceanViewFlats",
 		homeSubtitle:
 			"Entdecken Sie Ihren perfekten Aufenthalt direkt am Strand in Santa Marta.",
@@ -2610,9 +2647,9 @@ export const dict = {
 			"Das Check-out-Datum muss nach dem Check-in-Datum liegen.",
 		contactOptional: "Optional",
 		contactRequired: "Erforderlich",
-		seoContactTitle: "Kontaktieren Sie uns | OceanViewFlats Santa Marta",
+		seoContactTitle: "Kontakt | OceanViewFlats Playa Salguero, Santa Marta",
 		seoContactDescription:
-			"Kontaktieren Sie uns für Anfragen, Buchungen oder Fragen zu den Ferienwohnungen Oceanview 1707 und 1606 in Playa Salguero, Santa Marta.",
+			"Kontaktieren Sie OceanViewFlats in Playa Salguero, Santa Marta für Anfragen oder Direktbuchungen unserer Strandunterkünfte 1707 und 1606.",
 		contactAddressLabel: "Adresse",
 		contactEmailLabel: "E-Mail",
 		contactPhoneLabel: "Telefonischer Support",
@@ -2937,10 +2974,9 @@ export const dict = {
 			"Ich erkläre an Eides statt, dass ich für alle in diesem Aufenthalt registrierten Minderjährigen unter 18 Jahren die elterliche Sorge (patria potestad) oder eine schriftliche gesetzliche Vertretungsvollmacht besitze, gemäß dem kolumbianischen Gesetz 1581 von 2012 (Art. 7) und Gesetz 679 von 2001 / Gesetz 1336 von 2009 (ESCNNA-Prävention).",
 		registryErrMinorConsent:
 			"Bei der Registrierung von Minderjährigen unter 18 Jahren ist die Bestätigung der elterlichen Sorge oder gesetzlichen Vertretung erforderlich.",
-		privacySeoTitle:
-			"Richtlinie zur Verarbeitung personenbezogener Daten (Gesetz 1581) | OceanViewFlats Santa Marta",
+		privacySeoTitle: "Datenschutz (Gesetz 1581) | OceanViewFlats Santa Marta",
 		privacySeoDescription:
-			"Offizielle Richtlinie zur Verarbeitung personenbezogener Daten (PTDP) von OceanViewFlats gemäß dem kolumbianischen Gesetz 1581 von 2012 und Dekret 1377 von 2013.",
+			"Offizielle Datenschutzrichtlinie (PTDP) von OceanViewFlats in Santa Marta gemäß dem kolumbianischen Gesetz 1581 von 2012 und Dekret 1377 von 2013.",
 		privacyBadge: "Kolumbianisches Gesetz 1581 von 2012 • Habeas Data",
 		privacyTitle: "Richtlinie zur Verarbeitung personenbezogener Daten",
 		privacySubtitle:
@@ -3026,16 +3062,27 @@ export const dict = {
 			"Smart-Lock-Türcodes werden kryptografisch zufällig generiert und enthalten niemals Ziffern Ihrer Ausweisnummer.",
 		privacyRetentionDesc:
 			"Gemäß dem Grundsatz der zeitlichen Begrenzung (Dekret 1377 Art. 11) werden personenbezogene Identifikationsdaten abgeschlossener Aufenthalte 90 Tage nach dem Check-out automatisch anonymisiert und gelöscht (oder sofort nach einem berechtigten ARCO-Löschungsantrag), wobei die gesetzlich vorgeschriebenen Finanz- und Buchhaltungsdaten erhalten bleiben.",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"Sonnenuntergang am Strand bei OceanViewFlats in Playa Salguero, Santa Marta",
+		og1707ImageAlt:
+			"OceanViewFlats 1707 in der 17. Etage mit Blick auf das Karibische Meer in Playa Salguero, Santa Marta",
+		og1606ImageAlt:
+			"OceanViewFlats 1606 in der 16. Etage mit Blick auf das Karibische Meer in Playa Salguero, Santa Marta",
+		ogContactImageAlt:
+			"Strandeingang des Edificio Salguero Sunset für OceanViewFlats in Playa Salguero, Santa Marta",
+		ogPrivacyImageAlt:
+			"OceanViewFlats im Edificio Salguero Sunset, Playa Salguero, Santa Marta — Datenschutzrichtlinie",
+		ogEntranceImageAlt:
+			"Haupteingang am Strand des Edificio Salguero Sunset in Playa Salguero, Santa Marta",
 	},
 	ja: {
-		seoHomeTitle:
-			"サンタマルタ バケーションレンタル | 直接予約で最安値 | OceanViewFlats",
+		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
 		seoHomeDescription:
-			"サンタマルタ、プラヤ・サルグエロのビーチフロント貸別荘を直接予約。仲介手数料最大20%オフ。900 Mbps高速Wi-Fi、プール、美しい夕日を完備。",
-		seoTitle:
-			"オーシャンビューフラット 1707 | サンタマルタ、プラヤ・サルグエロのバケーションレンタル",
+			"サンタマルタ・プラヤサルグエロのビーチフロント宿泊施設を直接予約。OTA手数料0%で最大20%お得。900Mbps高速Wi-Fi、プール、カリブ海の夕日。",
+		seoTitle: "サンタマルタ・プラヤサルグエロ 1707 | OceanViewFlats",
 		seoDescription:
-			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707で、ビーチフロントの滞在をご予約ください。デジタルノマドに最適で、高速Wi-Fi、プール、カリブ海の美しい夕日をお楽しみいただけます。今すぐ直接予約しましょう。",
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1707を直接予約。17階オーシャンフロントでリモートワークや家族滞在に最適。900Mbps Wi-Fi・プール完備。",
 		navBook: "当サイトで予約",
 		navBookDirect: "直接予約",
 		heroTitle: "オーシャンビューフラット 1707",
@@ -3117,10 +3164,9 @@ export const dict = {
 		review1707Text:
 			"「素晴らしい景色と美しい夕日を楽しめる、とても素敵で可愛いアパートメントです。建物の設備も非常に充実しており、スタッフ全員の対応もとても親切でした。おすすめです。」",
 		review1707Author: "Karol Ximena",
-		seo1606Title:
-			"オーシャンビューフラット 1606 | ロマンチック＆ファミリー ビーチフロントレンタル",
+		seo1606Title: "サンタマルタ・プラヤサルグエロ 1606 | OceanViewFlats",
 		seo1606Description:
-			"プラヤ・サルグエロのオーシャンビューフラット 1606で、穏やかなビーチフロントの滞在を予約しましょう。カップルや家族に最適で、カリブ海の美しい夕日とモダンな贅沢を楽しめます。今すぐ直接予約しましょう。",
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1606を直接予約。16階ビーチフロントでカップルや家族に最適。900Mbps Wi-Fi、プール、美しい夕日。",
 		homeWelcome: "OceanViewFlatsへようこそ",
 		homeSubtitle: "サンタマルタで最高のビーチフロント滞在を見つけましょう。",
 		homeHeroValueProp:
@@ -3223,9 +3269,10 @@ export const dict = {
 			"チェックアウト日はチェックイン日より後の日付にしてください。",
 		contactOptional: "任意",
 		contactRequired: "必須",
-		seoContactTitle: "お問い合わせ | OceanViewFlats サンタマルタ",
+		seoContactTitle:
+			"お問い合わせ | OceanViewFlats サンタマルタ・プラヤサルグエロ",
 		seoContactDescription:
-			"サンタマルタのプラヤ・サルグエロにあるオーシャンビューフラット 1707および1606についてのお問い合わせ、ご予約、ご質問はこちらからお気軽にご連絡ください。",
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1707・1606に関するお問い合わせや直接予約のご相談はこちらからご連絡ください。",
 		contactAddressLabel: "住所",
 		contactEmailLabel: "メールアドレス",
 		contactPhoneLabel: "電話サポート",
@@ -3544,7 +3591,7 @@ export const dict = {
 		privacySeoTitle:
 			"個人情報処理方針（法第1581号） | OceanViewFlats サンタマルタ",
 		privacySeoDescription:
-			"2012年コロンビア法定法第1581号および2013年政令第1377号に基づくOceanViewFlatsの公式個人情報処理方針（PTDP）。",
+			"サンタマルタのOceanViewFlatsによる2012年コロンビア法定法第1581号・2013年政令第1377号に基づく公式個人情報処理方針（PTDP）。",
 		privacyBadge: "2012年コロンビア法定法第1581号 • Habeas Data",
 		privacyTitle: "個人情報処理方針（プライバシーポリシー）",
 		privacySubtitle:
@@ -3626,6 +3673,19 @@ export const dict = {
 			"スマートロックの暗証番号は暗号論的乱数により生成され、身分証明書番号の数字が含まれることはありません。",
 		privacyRetentionDesc:
 			"一時性の原則（政令第1377号第11条）に従い、終了した宿泊の個人識別データはチェックアウト日から90日後に自動的に匿名化・消去されます（またはARCO削除請求の承認時に即時消去されます）。なお、税務・会計法規で求められる集計財務記録は保持されます。",
+		// #299 OG image alt
+		ogHomeImageAlt:
+			"サンタマルタ・プラヤサルグエロのOceanViewFlatsから望むビーチフロントの夕日",
+		og1707ImageAlt:
+			"サンタマルタ・プラヤサルグエロのカリブ海を望む17階オーシャンフロント OceanViewFlats 1707",
+		og1606ImageAlt:
+			"サンタマルタ・プラヤサルグエロのカリブ海を望む16階ビーチフロント OceanViewFlats 1606",
+		ogContactImageAlt:
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats（Edificio Salguero Sunset）ビーチフロント入口",
+		ogPrivacyImageAlt:
+			"サンタマルタ・プラヤサルグエロのOceanViewFlats — 個人情報処理方針",
+		ogEntranceImageAlt:
+			"サンタマルタ・プラヤサルグエロのEdificio Salguero Sunsetビーチフロント正面入口",
 	},
 };
 

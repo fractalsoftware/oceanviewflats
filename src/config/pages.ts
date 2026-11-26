@@ -43,8 +43,18 @@ export interface PageConfig {
 	seoTitle?: (t: any) => string;
 	seoDescription?: (t: any) => string;
 	ogImage?: string;
+	ogImageWidth?: number;
+	ogImageHeight?: number;
+	ogImageAlt?: (t: TranslationDict) => string;
+	heroImage?: string;
 	clientI18n?: (t: TranslationDict) => Record<string, string>;
 }
+
+const HERO_IMAGE_DIMENSIONS = {
+	homeHero: { width: 1600, height: 1355 },
+	propertyHero: { width: 1980, height: 1280 },
+	mainEntrance: { width: 1280, height: 677 },
+} as const;
 
 export const getClientDictionaryForPage = (
 	pageId: string,
@@ -160,7 +170,11 @@ export const pages: PageConfig[] = [
 		filename: (lang: Lang) => (lang === "en" ? "index.html" : `${lang}.html`),
 		seoTitle: (t: any) => t.seoHomeTitle,
 		seoDescription: (t: any) => t.seoHomeDescription,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.home.hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
+		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url = lang === "en" ? baseUrl : `${baseUrl}/${lang}.html`;
 			return JSON.stringify({
@@ -268,6 +282,10 @@ export const pages: PageConfig[] = [
 		seoTitle: (t: any) => t.seoTitle,
 		seoDescription: (t: any) => t.seoDescription,
 		ogImage: IMAGES["1707"].hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.propertyHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.propertyHero.height,
+		ogImageAlt: (t: TranslationDict) => t.og1707ImageAlt,
+		heroImage: IMAGES["1707"].hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -420,6 +438,10 @@ export const pages: PageConfig[] = [
 		seoTitle: (t: any) => t.seo1606Title,
 		seoDescription: (t: any) => t.seo1606Description,
 		ogImage: IMAGES["1606"].hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.propertyHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.propertyHero.height,
+		ogImageAlt: (t: TranslationDict) => t.og1606ImageAlt,
+		heroImage: IMAGES["1606"].hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -578,7 +600,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "contact/index.html" : `contact/${lang}.html`,
 		seoTitle: (t: any) => t.seoContactTitle,
 		seoDescription: (t: any) => t.seoContactDescription,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.mainEntrance,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
+		ogImageAlt: (t: TranslationDict) => t.ogContactImageAlt,
+		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -602,7 +628,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "registry/index.html" : `registry/${lang}.html`,
 		seoTitle: (t: any) => t.registryTitle,
 		seoDescription: (t: any) => t.registrySubtitle,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.mainEntrance,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
+		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
+		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -626,7 +656,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "guide/index.html" : `guide/${lang}.html`,
 		seoTitle: (t: any) => t.guideTitle,
 		seoDescription: (t: any) => t.guideHeader,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.mainEntrance,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
+		ogImageAlt: (t: TranslationDict) => t.ogEntranceImageAlt,
+		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en" ? `${baseUrl}/guide` : `${baseUrl}/guide/${lang}.html`;
@@ -647,7 +681,11 @@ export const pages: PageConfig[] = [
 		filename: (lang: Lang) => (lang === "en" ? "404.html" : `404/${lang}.html`),
 		seoTitle: (t: any) => t.notFoundTitle,
 		seoDescription: (t: any) => t.notFoundSubtitle,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.home.hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
+		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en" ? `${baseUrl}/404.html` : `${baseUrl}/404/${lang}.html`;
@@ -671,7 +709,11 @@ export const pages: PageConfig[] = [
 				: `booking-success/${lang}.html`,
 		seoTitle: (t: any) => t.dbSuccessTitle,
 		seoDescription: (t: any) => t.dbSuccessSubtitle,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.home.hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
+		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -697,7 +739,11 @@ export const pages: PageConfig[] = [
 				: `booking-failure/${lang}.html`,
 		seoTitle: (t: any) => t.dbFailureTitle,
 		seoDescription: (t: any) => t.dbFailureSubtitle,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.home.hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
+		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -723,7 +769,11 @@ export const pages: PageConfig[] = [
 				: `booking-pending/${lang}.html`,
 		seoTitle: (t: any) => t.dbPendingTitle,
 		seoDescription: (t: any) => t.dbPendingSubtitle,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.home.hero,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.homeHero.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.homeHero.height,
+		ogImageAlt: (t: TranslationDict) => t.ogHomeImageAlt,
+		heroImage: IMAGES.home.hero,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"
@@ -747,7 +797,11 @@ export const pages: PageConfig[] = [
 			lang === "en" ? "privacy/index.html" : `privacy/${lang}.html`,
 		seoTitle: (t: any) => t.privacySeoTitle,
 		seoDescription: (t: any) => t.privacySeoDescription,
-		ogImage: IMAGES["1707"].hero,
+		ogImage: IMAGES.mainEntrance,
+		ogImageWidth: HERO_IMAGE_DIMENSIONS.mainEntrance.width,
+		ogImageHeight: HERO_IMAGE_DIMENSIONS.mainEntrance.height,
+		ogImageAlt: (t: TranslationDict) => t.ogPrivacyImageAlt,
+		heroImage: IMAGES.mainEntrance,
 		getStructuredData: (t: any, lang: Lang, baseUrl: string) => {
 			const url =
 				lang === "en"

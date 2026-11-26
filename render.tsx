@@ -123,8 +123,14 @@ pages.forEach((page) => {
 		const assetPrefix =
 			page.id === "404" ? "/" : depth === 0 ? "./" : "../".repeat(depth);
 
-		const markup = renderToStaticMarkup(
+		const rawMarkup = renderToStaticMarkup(
 			<PageComponent lang={lang} assetPrefix={assetPrefix} />,
+		);
+		// Strip React 19's auto-injected <link rel="preload" .../> tags from body markup;
+		// hero image preload hints are emitted inside <head> via baseTemplate.
+		const markup = rawMarkup.replace(
+			/<link\b[^>]*\brel=["']preload["'][^>]*\/?>/gi,
+			"",
 		);
 
 		const basePath = page.path ? `${BASE_URL}/${page.path}` : BASE_URL;
@@ -155,6 +161,12 @@ pages.forEach((page) => {
 			url,
 			baseUrl: BASE_URL,
 			ogImage: `${BASE_URL}/${page.ogImage}`,
+			ogImageWidth: page.ogImageWidth,
+			ogImageHeight: page.ogImageHeight,
+			ogImageAlt: page.ogImageAlt ? page.ogImageAlt(t) : undefined,
+			heroPreloadHref: page.heroImage
+				? `${assetPrefix}${page.heroImage}`
+				: undefined,
 			hrefLangTags,
 			structuredData,
 			assetPrefix,

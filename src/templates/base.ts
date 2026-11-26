@@ -6,12 +6,23 @@ interface TemplateProps {
 	url: string;
 	baseUrl: string;
 	ogImage: string;
+	ogImageWidth?: number;
+	ogImageHeight?: number;
+	ogImageAlt?: string;
+	heroPreloadHref?: string;
 	hrefLangTags: string;
 	structuredData: string;
 	assetPrefix: string;
 	customScripts?: string[];
 	pageConfig?: Record<string, any>;
 }
+
+const escapeHtmlAttr = (value: string): string =>
+	value
+		.replace(/&/g, "&amp;")
+		.replace(/"/g, "&quot;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
 
 const LOCALE_MAP = {
 	en: "en_US",
@@ -30,6 +41,10 @@ export const baseTemplate = ({
 	url,
 	baseUrl,
 	ogImage,
+	ogImageWidth,
+	ogImageHeight,
+	ogImageAlt,
+	heroPreloadHref,
 	hrefLangTags,
 	structuredData,
 	assetPrefix,
@@ -55,6 +70,33 @@ export const baseTemplate = ({
 	const scriptsMarkup =
 		scripts.length > 0 ? `\n    ${scripts.join("\n    ")}` : "";
 
+	const escapedOgImageAlt = ogImageAlt ? escapeHtmlAttr(ogImageAlt) : "";
+	const ogImageMetaLines: string[] = [
+		`<meta property="og:image" content="${escapeHtmlAttr(ogImage)}">`,
+	];
+	if (ogImageWidth) {
+		ogImageMetaLines.push(
+			`<meta property="og:image:width" content="${ogImageWidth}">`,
+		);
+	}
+	if (ogImageHeight) {
+		ogImageMetaLines.push(
+			`<meta property="og:image:height" content="${ogImageHeight}">`,
+		);
+	}
+	if (escapedOgImageAlt) {
+		ogImageMetaLines.push(
+			`<meta property="og:image:alt" content="${escapedOgImageAlt}">`,
+		);
+	}
+	const ogImageMetaMarkup = ogImageMetaLines.join("\n    ");
+	const twitterImageAltMarkup = escapedOgImageAlt
+		? `\n    <meta name="twitter:image:alt" content="${escapedOgImageAlt}">`
+		: "";
+	const heroPreloadMarkup = heroPreloadHref
+		? `\n    <link rel="preload" as="image" href="${escapeHtmlAttr(heroPreloadHref)}" fetchpriority="high" />`
+		: "";
+
 	return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -68,7 +110,7 @@ export const baseTemplate = ({
     <link rel="icon" type="image/png" href="${assetPrefix}favicon-96x96.png?v=20260614" sizes="96x96" />
     <link rel="shortcut icon" href="${assetPrefix}favicon.ico?v=20260614" />
     <link rel="apple-touch-icon" sizes="180x180" href="${assetPrefix}apple-touch-icon.png?v=20260614" />
-    <meta name="apple-mobile-web-app-title" content="${description}" />
+    <meta name="apple-mobile-web-app-title" content="OceanViewFlats" />
     <link rel="manifest" href="${assetPrefix}site.webmanifest?v=20260614" />
     
     <!-- Open Graph / Social Sharing -->
@@ -76,7 +118,7 @@ export const baseTemplate = ({
     <meta property="og:type" content="website">
     <meta property="og:title" content="${title}">
     <meta property="og:description" content="${description}">
-    <meta property="og:image" content="${ogImage}">
+    ${ogImageMetaMarkup}
     <meta property="og:url" content="${url}">
     <meta property="og:locale" content="${LOCALE_MAP[lang]}">
     ${Object.keys(LOCALE_MAP)
@@ -92,7 +134,7 @@ export const baseTemplate = ({
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${title}">
     <meta name="twitter:description" content="${description}">
-    <meta name="twitter:image" content="${ogImage}">
+    <meta name="twitter:image" content="${escapeHtmlAttr(ogImage)}">${twitterImageAltMarkup}
 
     <script src="${assetPrefix}js/lang-detect.js"></script>
 
@@ -102,8 +144,9 @@ ${hrefLangTags}
     <!-- Structured Data (JSON-LD) for Generative Engines & Rich Snippets -->
     <script type="application/ld+json">
         ${structuredData}
-    </script>
-
+    </script>${heroPreloadMarkup}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="${assetPrefix}css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
