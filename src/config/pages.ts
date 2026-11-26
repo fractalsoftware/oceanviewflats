@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	getCanonicalUrl,
 	IMAGE_DIMENSIONS,
@@ -5,11 +6,20 @@ import {
 	LANGUAGES,
 	MINOR_DOC_TYPES,
 } from "../constants/config";
+import {
+	buildGuidePricingTokens,
+	DESTINATION_GUIDES,
+	DESTINATION_GUIDES_HUB_COPY,
+	type DestinationGuideDefinition,
+	interpolateGuideText,
+} from "../i18n/destinationGuides";
 import type { TranslationDict } from "../i18n/dict";
 import BookingFailure from "../pages/BookingFailure";
 import BookingPending from "../pages/BookingPending";
 import BookingSuccess from "../pages/BookingSuccess";
 import Contact from "../pages/Contact";
+import DestinationGuideArticle from "../pages/DestinationGuideArticle";
+import DestinationGuidesHub from "../pages/DestinationGuidesHub";
 import Guide from "../pages/Guide";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
@@ -17,14 +27,16 @@ import Oceanview1606 from "../pages/Oceanview1606";
 import Oceanview1707 from "../pages/Oceanview1707";
 import Privacy from "../pages/Privacy";
 import Registry from "../pages/Registry";
-import type { Lang } from "../types";
+import type { AppProps, Lang, PortfolioPricingSummary } from "../types";
 import {
 	buildContactStructuredData,
+	buildDestinationGuideArticleStructuredData,
+	buildDestinationGuidesHubStructuredData,
 	buildHomeStructuredData,
 	buildPrivacyStructuredData,
 	buildPropertyStructuredData,
 	buildWebPageStructuredData,
-	type PortfolioPricingSummary,
+	DEFAULT_PRICING_SUMMARY,
 } from "../utils/schema";
 
 export const BASE_URL = "https://www.oceanviewflats.com";
@@ -51,7 +63,7 @@ export interface PageOgImageConfig {
 	path: string;
 	width: number;
 	height: number;
-	getAlt: (t: TranslationDict) => string;
+	getAlt: (t: TranslationDict, lang?: Lang) => string;
 }
 
 export interface PageConfig {
@@ -66,8 +78,16 @@ export interface PageConfig {
 		pricingSummary?: PortfolioPricingSummary,
 	) => string;
 	scripts: string[];
-	seoTitle?: (t: any) => string;
-	seoDescription?: (t: any) => string;
+	seoTitle?: (
+		t: any,
+		lang?: Lang,
+		pricingSummary?: PortfolioPricingSummary,
+	) => string;
+	seoDescription?: (
+		t: any,
+		lang?: Lang,
+		pricingSummary?: PortfolioPricingSummary,
+	) => string;
 	ogImage: PageOgImageConfig;
 	heroImage?: string;
 	noIndex?: boolean;
@@ -425,4 +445,76 @@ export const pages: PageConfig[] = [
 			buildPrivacyStructuredData(t, lang, baseUrl),
 		scripts: ["js/main.js"],
 	},
+	{
+		id: "destination-guides",
+		path: "santa-marta",
+		component: DestinationGuidesHub,
+		filename: (lang: Lang) =>
+			lang === "en" ? "santa-marta/index.html" : `santa-marta/${lang}.html`,
+		seoTitle: (_t: TranslationDict, lang?: Lang) =>
+			DESTINATION_GUIDES_HUB_COPY[lang ?? "en"].seoTitle,
+		seoDescription: (_t: TranslationDict, lang?: Lang) =>
+			DESTINATION_GUIDES_HUB_COPY[lang ?? "en"].seoDescription,
+		ogImage: {
+			path: IMAGES.home.hero,
+			...IMAGE_DIMENSIONS.homeHero,
+			getAlt: (_t: TranslationDict, lang?: Lang) =>
+				DESTINATION_GUIDES_HUB_COPY[lang ?? "en"].ogImageAlt,
+		},
+		heroImage: IMAGES.home.hero,
+		getStructuredData: (t, lang, baseUrl, pricingSummary) =>
+			buildDestinationGuidesHubStructuredData(
+				t,
+				lang,
+				baseUrl,
+				DESTINATION_GUIDES,
+				pricingSummary,
+			),
+		scripts: ["js/main.js"],
+	},
+	...DESTINATION_GUIDES.map(
+		(guide: DestinationGuideDefinition): PageConfig => ({
+			id: `destination-guide-${guide.slug}`,
+			path: `santa-marta/${guide.slug}`,
+			component: (props: AppProps) =>
+				React.createElement(DestinationGuideArticle, { ...props, guide }),
+			filename: (lang: Lang) =>
+				lang === "en"
+					? `santa-marta/${guide.slug}/index.html`
+					: `santa-marta/${guide.slug}/${lang}.html`,
+			seoTitle: (_t: TranslationDict, lang?: Lang) =>
+				guide.locales[lang ?? "en"].seoTitle,
+			seoDescription: (
+				_t: TranslationDict,
+				lang?: Lang,
+				pricingSummary?: PortfolioPricingSummary,
+			) => {
+				const resolvedLang = lang ?? "en";
+				return interpolateGuideText(
+					guide.locales[resolvedLang].seoDescription,
+					buildGuidePricingTokens(
+						pricingSummary ?? DEFAULT_PRICING_SUMMARY,
+						resolvedLang,
+					),
+				);
+			},
+			ogImage: {
+				path: guide.ogImage.path,
+				width: guide.ogImage.width,
+				height: guide.ogImage.height,
+				getAlt: (_t: TranslationDict, lang?: Lang) =>
+					guide.locales[lang ?? "en"].ogImageAlt,
+			},
+			heroImage: guide.heroImage,
+			getStructuredData: (t, lang, baseUrl, pricingSummary) =>
+				buildDestinationGuideArticleStructuredData(
+					guide,
+					t,
+					lang,
+					baseUrl,
+					pricingSummary,
+				),
+			scripts: ["js/main.js"],
+		}),
+	),
 ];

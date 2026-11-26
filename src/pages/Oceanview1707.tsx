@@ -7,6 +7,7 @@ import { Hero } from "../components/Hero";
 import { ImageGallery } from "../components/ImageGallery";
 import { Navigation } from "../components/Navigation";
 import { NomadSection } from "../components/NomadSection";
+import { PropertyDestinationGuides } from "../components/PropertyDestinationGuides";
 import { PropertyFaq } from "../components/PropertyFaq";
 import { QuickStats } from "../components/QuickStats";
 import { ReviewsSection1707 } from "../components/ReviewsSection1707";
@@ -57,6 +58,11 @@ export default function Oceanview1707({ lang, assetPrefix = "./" }: AppProps) {
 					assetPrefix={assetPrefix}
 				/>
 				<PropertyFaq lang={lang} propertyId="1707" />
+				<PropertyDestinationGuides
+					lang={lang}
+					propertyId="1707"
+					assetPrefix={assetPrefix}
+				/>
 			</main>
 			<Footer lang={lang} assetPrefix={assetPrefix} />
 		</div>
