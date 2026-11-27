@@ -40,6 +40,10 @@
 
 	const ALLOWED_QUERY_PREFIXES = Object.freeze(["mtm_"]);
 	const SUPPORTED_LOCALES = Object.freeze(["en", "es", "fr", "it", "de", "ja"]);
+	const HEARTBEAT_INTERVAL_SECONDS = 15;
+	const SCROLL_MILESTONES = Object.freeze([25, 50, 75, 90]);
+	const LANG_REDIRECT_STORAGE_KEY = "ovf_lang_redirect";
+	const LANG_REDIRECT_PATTERN = /^(en|es|fr|it|de|ja)->(en|es|fr|it|de|ja)$/;
 	const LANGUAGE_ACQUISITION_MODES = Object.freeze({
 		DIRECT_LOCALE: "direct_locale",
 		AUTO_REDIRECTED: "auto_redirected",
@@ -333,6 +337,80 @@
 		}
 	};
 
+	const consumeLangRedirectMarker = () => {
+		try {
+			if (typeof sessionStorage === "undefined") {
+				return null;
+			}
+			const raw = sessionStorage.getItem(LANG_REDIRECT_STORAGE_KEY);
+			if (raw === null) {
+				return null;
+			}
+			sessionStorage.removeItem(LANG_REDIRECT_STORAGE_KEY);
+			if (typeof raw !== "string") {
+				return null;
+			}
+			const trimmed = raw.trim();
+			return LANG_REDIRECT_PATTERN.test(trimmed) ? trimmed : null;
+		} catch (_) {
+			return null;
+		}
+	};
+
+	const computeScrollPercent = () => {
+		if (typeof document === "undefined") {
+			return 0;
+		}
+		const docEl = document.documentElement;
+		const body = document.body;
+		const scrollHeight = Math.max(
+			Number(docEl?.scrollHeight) || 0,
+			Number(body?.scrollHeight) || 0,
+		);
+		const viewportHeight =
+			Number(window.innerHeight) || Number(docEl?.clientHeight) || 0;
+		const scrollable = scrollHeight - viewportHeight;
+		if (!Number.isFinite(scrollable) || scrollable <= 0) {
+			return 0;
+		}
+		const scrollY = Number(
+			window.scrollY ?? window.pageYOffset ?? docEl?.scrollTop ?? 0,
+		);
+		if (!Number.isFinite(scrollY) || scrollY <= 0) {
+			return 0;
+		}
+		return Math.min(100, Math.max(0, (scrollY / scrollable) * 100));
+	};
+
+	const setupScrollDepthTracking = () => {
+		if (
+			!context.enableEngagementTracking ||
+			typeof window.addEventListener !== "function"
+		) {
+			return;
+		}
+		const firedMilestones = new Set();
+		const onScroll = () => {
+			const percent = computeScrollPercent();
+			if (!Number.isFinite(percent) || percent <= 0) {
+				return;
+			}
+			for (const milestone of SCROLL_MILESTONES) {
+				if (percent >= milestone && !firedMilestones.has(milestone)) {
+					firedMilestones.add(milestone);
+					trackEvent("Engagement", "Scroll Depth", `${milestone}%`, milestone);
+				}
+			}
+			if (
+				firedMilestones.size >= SCROLL_MILESTONES.length &&
+				typeof window.removeEventListener === "function"
+			) {
+				window.removeEventListener("scroll", onScroll);
+			}
+		};
+		window.addEventListener("scroll", onScroll, { passive: true });
+	};
+
 	const init = () => {
 		const paq = getPaq();
 		const sanitizedUrl = sanitizeUrl(getRawCurrentUrl());
@@ -354,7 +432,12 @@
 		paq.push(["setCustomDimension", DIMENSIONS.PROPERTY, context.propertyId]);
 
 		// Initial Visit-scoped Custom Dimensions (4-5)
-		setLanguageAcquisition(LANGUAGE_ACQUISITION_MODES.DIRECT_LOCALE);
+		const redirectTransition = consumeLangRedirectMarker();
+		setLanguageAcquisition(
+			redirectTransition
+				? LANGUAGE_ACQUISITION_MODES.AUTO_REDIRECTED
+				: LANGUAGE_ACQUISITION_MODES.DIRECT_LOCALE,
+		);
 		const initialStage =
 			context.pageType === "property" ? "property_viewed" : "discovery";
 		advanceFunnelStage(initialStage);
@@ -370,8 +453,18 @@
 
 		paq.push(["trackPageView"]);
 		paq.push(["enableLinkTracking"]);
+		if (context.enableEngagementTracking) {
+			paq.push(["enableHeartBeatTimer", HEARTBEAT_INTERVAL_SECONDS]);
+		}
+		if (redirectTransition) {
+			trackEvent("Language", "Auto Redirect", redirectTransition);
+		}
 		paq.push(["setTrackerUrl", `${TRACKER_URL}matomo.php`]);
 		paq.push(["setSiteId", SITE_ID]);
+
+		if (context.enableEngagementTracking) {
+			setupScrollDepthTracking();
+		}
 
 		loadMatomoScript();
 	};
@@ -384,6 +477,9 @@
 		FUNNEL_STAGES,
 		ALLOWED_QUERY_PARAMS,
 		ALLOWED_QUERY_PREFIXES,
+		HEARTBEAT_INTERVAL_SECONDS,
+		SCROLL_MILESTONES,
+		LANG_REDIRECT_STORAGE_KEY,
 		LANGUAGE_ACQUISITION_MODES,
 		trackEvent,
 		trackGoal,
