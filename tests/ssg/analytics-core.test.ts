@@ -517,6 +517,7 @@ for (const variant of [
 			["setCustomDimension", 5, "property_viewed"],
 			["trackPageView"],
 			["enableLinkTracking"],
+			["enableHeartBeatTimer", 15],
 			["setTrackerUrl", "https://stats.fractalserver.com/matomo.php"],
 			["setSiteId", "2"],
 		]);

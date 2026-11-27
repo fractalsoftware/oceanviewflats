@@ -142,7 +142,12 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 						{t.homeHeroValueProp}
 					</p>
 					<div className={HOME_THEME.heroCtaGroup}>
-						<a href="#properties" className={HOME_THEME.heroCtaBtn}>
+						<a
+							href="#properties"
+							className={HOME_THEME.heroCtaBtn}
+							data-analytics-cta="home_hero_primary"
+							data-analytics-target="properties"
+						>
 							<span>{t.homeHeroCta}</span>
 							<ArrowDown
 								className={HOME_THEME.heroCtaIcon}
@@ -154,6 +159,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								id="hero-direct-1707"
 								href={property1707Href}
 								className={HOME_THEME.heroQuickLinkBtn}
+								data-analytics-cta="home_hero_quick_link"
+								data-analytics-target="1707"
 							>
 								<span>{t.homeHeroDirect1707}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
@@ -162,6 +169,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								id="hero-direct-1606"
 								href={property1606Href}
 								className={HOME_THEME.heroQuickLinkBtn}
+								data-analytics-cta="home_hero_quick_link"
+								data-analytics-target="1606"
 							>
 								<span>{t.homeHeroDirect1606}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
@@ -209,6 +218,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												<a
 													href={cardHref}
 													className={cardTheme.cardHeadingLink}
+													data-analytics-cta="home_property_card_title"
+													data-analytics-target={card.id}
 												>
 													{t[card.titleKey]}
 												</a>
@@ -372,7 +383,12 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											</div>
 										</div>
 
-										<a href={cardHref} className={cardTheme.cardCtaBtn}>
+										<a
+											href={cardHref}
+											className={cardTheme.cardCtaBtn}
+											data-analytics-cta="home_property_card"
+											data-analytics-target={card.id}
+										>
 											<span>{t.homeCardCta}</span>
 											<ArrowRight
 												className={cardTheme.cardCtaIcon}
@@ -398,7 +414,12 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								{t.homeMultiPropertyNote}
 							</p>
 						</div>
-						<a href={contactHref} className={HOME_THEME.multiPropertyCta}>
+						<a
+							href={contactHref}
+							className={HOME_THEME.multiPropertyCta}
+							data-analytics-cta="home_multi_property_banner"
+							data-analytics-target="contact"
+						>
 							<span>{t.navContact}</span>
 							<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
 						</a>
@@ -508,6 +529,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								id="home-compare-cta-1707"
 								href={property1707Href}
 								className={HOME_THEME.compareCta1707}
+								data-analytics-cta="home_compare_cta"
+								data-analytics-target="1707"
 							>
 								<span>{t.homeCompareCta1707}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
@@ -516,6 +539,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								id="home-compare-cta-1606"
 								href={property1606Href}
 								className={HOME_THEME.compareCta1606}
+								data-analytics-cta="home_compare_cta"
+								data-analytics-target="1606"
 							>
 								<span>{t.homeCompareCta1606}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
@@ -730,6 +755,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									id="home-destination-guides-link"
 									href={destinationGuidesHref}
 									className={HOME_THEME.locationGuidesCta}
+									data-analytics-cta="home_destination_guides_callout"
+									data-analytics-target="destination_guides_hub"
 								>
 									<span>{t.homeLocationGuidesCta}</span>
 									<ArrowRight
@@ -779,6 +806,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									id="home-cta-primary"
 									href="#properties"
 									className={HOME_THEME.ctaPrimaryBtn}
+									data-analytics-cta="home_bottom_cta"
+									data-analytics-target="properties"
 								>
 									<span>{t.homeHeroCta}</span>
 									<ArrowUp
@@ -790,6 +819,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									id="home-cta-contact"
 									href={contactHref}
 									className={HOME_THEME.ctaSecondaryBtn}
+									data-analytics-cta="home_bottom_cta"
+									data-analytics-target="contact"
 								>
 									<span>{t.navContact}</span>
 									<ArrowRight

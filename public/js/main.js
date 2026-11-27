@@ -170,23 +170,107 @@ function bindDisclosure({ group, toggle, panel }) {
 	return { isOpen, open, close };
 }
 
-// Delegated Matomo CTA tracking for Destination Guide -> Property links (#311)
+// Delegated Matomo CTA tracking for Destination Guide -> Property links (#311, #345)
+// and Homepage / Discovery CTAs (#345)
 document.addEventListener("click", (e) => {
 	const target = e && e.target ? e.target : null;
 	if (!target || typeof target.closest !== "function") return;
+
 	const ctaLink = target.closest("[data-guide-cta-property][data-guide-slug]");
-	if (!ctaLink || typeof ctaLink.getAttribute !== "function") return;
-	const propertyId = ctaLink.getAttribute("data-guide-cta-property");
-	const slug = ctaLink.getAttribute("data-guide-slug");
-	if (!propertyId || !slug) return;
-	const paq = (window._paq = window._paq || []);
-	paq.push([
-		"trackEvent",
-		"DestinationGuide",
-		"PropertyCTA",
-		`${slug}:${propertyId}`,
-	]);
+	if (ctaLink && typeof ctaLink.getAttribute === "function") {
+		const propertyId = ctaLink.getAttribute("data-guide-cta-property");
+		const slug = ctaLink.getAttribute("data-guide-slug");
+		if (propertyId && slug) {
+			if (
+				window.ovfAnalytics &&
+				typeof window.ovfAnalytics.trackEvent === "function"
+			) {
+				window.ovfAnalytics.trackEvent(
+					"DestinationGuide",
+					"PropertyCTA",
+					`${slug}:${propertyId}`,
+				);
+			} else {
+				const paq = (window._paq = window._paq || []);
+				paq.push([
+					"trackEvent",
+					"DestinationGuide",
+					"PropertyCTA",
+					`${slug}:${propertyId}`,
+				]);
+			}
+		}
+		return;
+	}
+
+	const discoveryCta = target.closest(
+		"[data-analytics-cta][data-analytics-target]",
+	);
+	if (discoveryCta && typeof discoveryCta.getAttribute === "function") {
+		const placement = discoveryCta.getAttribute("data-analytics-cta");
+		const ctaTarget = discoveryCta.getAttribute("data-analytics-target");
+		if (
+			placement &&
+			ctaTarget &&
+			window.ovfAnalytics &&
+			typeof window.ovfAnalytics.trackEvent === "function"
+		) {
+			window.ovfAnalytics.trackEvent(
+				"Discovery",
+				"CTA Click",
+				`${placement}:${ctaTarget}`,
+			);
+		}
+	}
 });
+
+// FAQ <details> accordion open tracking by stable ID (#345)
+(() => {
+	const faqOpenState = new WeakMap();
+	const SAFE_FAQ_ID = /^[a-z0-9][a-z0-9_-]*$/i;
+
+	document.addEventListener("DOMContentLoaded", () => {
+		if (typeof document.querySelectorAll !== "function") return;
+		const items = document.querySelectorAll("details[id]");
+		items.forEach((details) => {
+			if (details && typeof details === "object") {
+				faqOpenState.set(details, Boolean(details.open));
+			}
+		});
+	});
+
+	document.addEventListener(
+		"toggle",
+		(e) => {
+			const target = e?.target;
+			if (!target || typeof target !== "object") return;
+			const tagName = String(target.tagName || "").toUpperCase();
+			if (tagName !== "DETAILS") return;
+
+			const faqId =
+				(typeof target.getAttribute === "function"
+					? target.getAttribute("id")
+					: null) ||
+				target.id ||
+				"";
+			if (!faqId || !SAFE_FAQ_ID.test(faqId)) return;
+
+			const isOpen = Boolean(target.open);
+			const wasOpen = faqOpenState.get(target) === true;
+			faqOpenState.set(target, isOpen);
+
+			if (!isOpen || wasOpen) return;
+
+			if (
+				window.ovfAnalytics &&
+				typeof window.ovfAnalytics.trackEvent === "function"
+			) {
+				window.ovfAnalytics.trackEvent("FAQ", "Open", faqId);
+			}
+		},
+		true,
+	);
+})();
 
 // Language Dropdown Mobile & Keyboard Toggle
 document.addEventListener("DOMContentLoaded", () => {
@@ -215,16 +299,54 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Save language preference on click
+	// Save language preference on click & track manual locale switch (#345)
 	langLinks.forEach((link) => {
 		link.addEventListener("click", () => {
-			const href = link.getAttribute("href") || "";
+			const dataLangTarget =
+				typeof link.getAttribute === "function"
+					? link.getAttribute("data-lang-target") ||
+						link.getAttribute("data-lang")
+					: null;
+			const href =
+				typeof link.getAttribute === "function"
+					? link.getAttribute("href") || ""
+					: "";
 			let clickedLang = "en";
-			if (href.includes(".html") && !href.includes("index.html")) {
-				clickedLang = href.split("?")[0].replace(".html", "");
+			if (dataLangTarget) {
+				clickedLang = dataLangTarget;
+			} else if (
+				href.includes(".html") &&
+				!href.includes("index.html") &&
+				!href.includes("404.html")
+			) {
+				clickedLang =
+					href.split("?")[0].replace(".html", "").split("/").pop() || "en";
 			}
 			if (typeof localStorage !== "undefined") {
 				localStorage.setItem("lang-pref", clickedLang);
+			}
+			if (window.ovfAnalytics) {
+				const fromLang =
+					(typeof window.ovfAnalytics.getContext === "function" &&
+						window.ovfAnalytics.getContext().lang) ||
+					(typeof window.getPageConfig === "function" &&
+						window.getPageConfig()?.lang) ||
+					currentLang ||
+					"en";
+				if (typeof window.ovfAnalytics.setLanguageAcquisition === "function") {
+					window.ovfAnalytics.setLanguageAcquisition("manual_switched");
+				}
+				if (
+					clickedLang &&
+					clickedLang !== fromLang &&
+					typeof window.ovfAnalytics.trackEvent === "function"
+				) {
+					window.ovfAnalytics.trackEvent(
+						"Language",
+						"Manual Switch",
+						`${fromLang}->${clickedLang}`,
+					);
+				}
 			}
 		});
 	});
@@ -2091,6 +2213,40 @@ document.addEventListener("DOMContentLoaded", () => {
 	let currentIndex = 0;
 	let lastFocusedElement = null;
 	const imagesData = [];
+	const viewedPhotoIndices = new Set();
+
+	const resolveGalleryPropertyId = () => {
+		if (
+			window.ovfAnalytics &&
+			typeof window.ovfAnalytics.getContext === "function"
+		) {
+			const ctxProperty = window.ovfAnalytics.getContext().propertyId;
+			if (ctxProperty === "1707" || ctxProperty === "1606") {
+				return ctxProperty;
+			}
+		}
+		if (typeof window.getPageConfig === "function") {
+			const cfgProperty = window.getPageConfig()?.analytics?.propertyId;
+			if (cfgProperty === "1707" || cfgProperty === "1606") {
+				return cfgProperty;
+			}
+		}
+		const pathname = window.location?.pathname || "";
+		if (pathname.includes("1606")) return "1606";
+		if (pathname.includes("1707")) return "1707";
+		return "portfolio";
+	};
+
+	const trackGalleryEvent = (action, name, value) => {
+		if (
+			window.ovfAnalytics &&
+			typeof window.ovfAnalytics.trackEvent === "function"
+		) {
+			window.ovfAnalytics.trackEvent("Gallery", action, name, value);
+		}
+	};
+
+	const galleryPropertyId = resolveGalleryPropertyId();
 
 	// Parse image configurations from HTML attributes
 	triggers.forEach((trigger) => {
@@ -2118,6 +2274,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			currentIndex = index;
 		}
 
+		if (!viewedPhotoIndices.has(currentIndex)) {
+			viewedPhotoIndices.add(currentIndex);
+			trackGalleryEvent(
+				"Photo Viewed",
+				`${galleryPropertyId}:photo_${currentIndex + 1}`,
+				viewedPhotoIndices.size,
+			);
+		}
+
 		const activeImg = cleanImages[currentIndex];
 
 		// Soft visual fade cross-transition
@@ -2143,7 +2308,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}, 150);
 	}
 
-	function openLightbox(index) {
+	function openLightbox(index, source = "thumbnail") {
 		lastFocusedElement = document.activeElement;
 
 		// Open natively
@@ -2155,6 +2320,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// Prevent body backdrop scrolling
 		document.body.style.overflow = "hidden";
+
+		const triggerSource = source === "view_all" ? "view_all" : "thumbnail";
+		trackGalleryEvent("Lightbox Open", `${galleryPropertyId}:${triggerSource}`);
 
 		showImage(index);
 
@@ -2186,14 +2354,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		trigger.addEventListener("click", (e) => {
 			e.preventDefault();
 			const index = parseInt(trigger.getAttribute("data-index"), 10);
-			openLightbox(isNaN(index) ? 0 : index);
+			openLightbox(isNaN(index) ? 0 : index, "thumbnail");
 		});
 	});
 
 	if (btnViewAll) {
 		btnViewAll.addEventListener("click", (e) => {
 			e.preventDefault();
-			openLightbox(0);
+			openLightbox(0, "view_all");
 		});
 	}
 
