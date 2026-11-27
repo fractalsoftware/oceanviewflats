@@ -69,6 +69,233 @@ function buildSafeAirbnbBookingUrl(rawUrl, checkInDate, checkOutDate) {
 	}
 }
 
+// Privacy-first Matomo analytics facade helpers & Demand Signal bucketing (#343 / #344)
+function getAnalyticsFacade() {
+	return window.ovfAnalytics && typeof window.ovfAnalytics === "object"
+		? window.ovfAnalytics
+		: null;
+}
+
+function trackAnalyticsEvent(category, action, name, value) {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.trackEvent === "function") {
+		return analytics.trackEvent(category, action, name, value);
+	}
+	if (
+		!window._paq ||
+		typeof window._paq.push !== "function" ||
+		typeof category !== "string" ||
+		!category ||
+		typeof action !== "string" ||
+		!action
+	) {
+		return false;
+	}
+	const cmd = ["trackEvent", category, action];
+	const hasNumericValue = typeof value === "number" && Number.isFinite(value);
+	const hasName =
+		name !== undefined && name !== null && String(name).length > 0;
+	if (hasNumericValue) {
+		cmd.push(hasName ? String(name) : "");
+		cmd.push(value);
+	} else if (hasName) {
+		cmd.push(String(name));
+	}
+	window._paq.push(cmd);
+	return true;
+}
+
+function trackAnalyticsGoal(goalKeyOrId, customRevenue) {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.trackGoal === "function") {
+		const resolvedGoal =
+			typeof goalKeyOrId === "string" &&
+			analytics.GOALS &&
+			Object.hasOwn(analytics.GOALS, goalKeyOrId)
+				? analytics.GOALS[goalKeyOrId]
+				: goalKeyOrId;
+		return analytics.trackGoal(resolvedGoal, customRevenue);
+	}
+	if (!window._paq || typeof window._paq.push !== "function") {
+		return false;
+	}
+	const fallbackGoals = {
+		CONTACT_GENERAL: 1,
+		CONTACT_DATED: 2,
+		AIRBNB_REDIRECT: 3,
+		WHATSAPP_CONTACT: 4,
+		DIRECT_RESERVATION_CONFIRMED: 5,
+		PENDING_RESERVATION_CREATED: 6,
+		GUEST_REGISTRY_COMPLETED: 7,
+	};
+	const resolvedId =
+		typeof goalKeyOrId === "string" && Object.hasOwn(fallbackGoals, goalKeyOrId)
+			? fallbackGoals[goalKeyOrId]
+			: goalKeyOrId;
+	if (!Number.isInteger(resolvedId)) {
+		return false;
+	}
+	if (
+		typeof customRevenue === "number" &&
+		Number.isFinite(customRevenue) &&
+		customRevenue >= 0
+	) {
+		window._paq.push(["trackGoal", resolvedId, customRevenue]);
+	} else {
+		window._paq.push(["trackGoal", resolvedId]);
+	}
+	return true;
+}
+
+function advanceAnalyticsFunnelStage(stage) {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.advanceFunnelStage === "function") {
+		return analytics.advanceFunnelStage(stage);
+	}
+	return false;
+}
+
+function parseCalendarDateParts(input) {
+	if (input instanceof Date) {
+		if (Number.isNaN(input.getTime())) {
+			return null;
+		}
+		return {
+			year: input.getFullYear(),
+			month: input.getMonth() + 1,
+			day: input.getDate(),
+		};
+	}
+	if (typeof input !== "string") {
+		return null;
+	}
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input.trim());
+	if (!match) {
+		return null;
+	}
+	const year = Number.parseInt(match[1], 10);
+	const month = Number.parseInt(match[2], 10);
+	const day = Number.parseInt(match[3], 10);
+	const utcCheck = new Date(Date.UTC(year, month - 1, day));
+	if (
+		utcCheck.getUTCFullYear() !== year ||
+		utcCheck.getUTCMonth() + 1 !== month ||
+		utcCheck.getUTCDate() !== day
+	) {
+		return null;
+	}
+	return { year, month, day };
+}
+
+function formatYearMonth(input) {
+	const parts = parseCalendarDateParts(input);
+	if (!parts) {
+		return null;
+	}
+	return `${parts.year}-${String(parts.month).padStart(2, "0")}`;
+}
+
+function diffCalendarDays(startInput, endInput) {
+	const startParts = parseCalendarDateParts(startInput);
+	const endParts = parseCalendarDateParts(endInput);
+	if (!startParts || !endParts) {
+		return null;
+	}
+	const startUtc = Date.UTC(
+		startParts.year,
+		startParts.month - 1,
+		startParts.day,
+	);
+	const endUtc = Date.UTC(endParts.year, endParts.month - 1, endParts.day);
+	return Math.round((endUtc - startUtc) / 86400000);
+}
+
+function getLeadTimeBucket(checkInInput, referenceInput) {
+	const diff = diffCalendarDays(referenceInput || new Date(), checkInInput);
+	if (diff === null) {
+		return null;
+	}
+	const leadDays = Math.max(0, diff);
+	if (leadDays <= 7) return "0-7d";
+	if (leadDays <= 30) return "8-30d";
+	if (leadDays <= 90) return "31-90d";
+	return "90d+";
+}
+
+function getStayLengthBucket(nights) {
+	if (typeof nights !== "number" || !Number.isFinite(nights) || nights < 1) {
+		return null;
+	}
+	const roundedNights = Math.round(nights);
+	if (roundedNights <= 1) return "1n";
+	if (roundedNights <= 3) return "2-3n";
+	if (roundedNights <= 6) return "4-6n";
+	if (roundedNights <= 13) return "7-13n";
+	return "14n+";
+}
+
+function buildInquiryDemandSignal(checkInInput, checkOutInput, referenceInput) {
+	const checkInMonth = formatYearMonth(checkInInput);
+	const leadTimeBucket = getLeadTimeBucket(checkInInput, referenceInput);
+	const nights = diffCalendarDays(checkInInput, checkOutInput);
+	const stayLengthBucket = getStayLengthBucket(nights);
+	if (!checkInMonth || !leadTimeBucket || !stayLengthBucket) {
+		return null;
+	}
+	return `${checkInMonth}:${leadTimeBucket}:${stayLengthBucket}`;
+}
+
+function classifyContactErrorCode(response, result) {
+	const explicitCode =
+		result && typeof (result.error_code || result.code) === "string"
+			? String(result.error_code || result.code).toLowerCase()
+			: "";
+	if (explicitCode) {
+		if (explicitCode.includes("rate")) return "rate_limited";
+		if (explicitCode.includes("captcha")) return "captcha_error";
+		if (explicitCode.includes("privacy") || explicitCode.includes("consent")) {
+			return "privacy_consent";
+		}
+		if (explicitCode.includes("date")) return "invalid_date_range";
+		if (explicitCode.includes("valid")) return "validation_error";
+		if (explicitCode.includes("server")) return "server_error";
+	}
+
+	const status =
+		response && typeof response.status === "number" ? response.status : 0;
+	if (status === 429) {
+		return "rate_limited";
+	}
+	if (status >= 500) {
+		return "server_error";
+	}
+	if (status === 400) {
+		const rawText =
+			result && typeof (result.error || result.message) === "string"
+				? String(result.error || result.message).toLowerCase()
+				: "";
+		if (
+			rawText.includes("privac") ||
+			rawText.includes("datos personales") ||
+			rawText.includes("données personnelles") ||
+			rawText.includes("dati personali") ||
+			rawText.includes("datenschutz") ||
+			rawText.includes("個人情報") ||
+			rawText.includes("consent")
+		) {
+			return "privacy_consent";
+		}
+		return "captcha_error";
+	}
+	if (status === 200) {
+		return result ? "validation_error" : "server_error";
+	}
+	if (status >= 400 && status < 500) {
+		return "validation_error";
+	}
+	return "server_error";
+}
+
 // State-driven scroll effect for navbar (#329)
 function syncNavbarScrollState() {
 	const nav = document.getElementById("navbar");
@@ -170,38 +397,8 @@ function bindDisclosure({ group, toggle, panel }) {
 	return { isOpen, open, close };
 }
 
-// Analytics facade helpers (null-safe for isolated unit tests without analytics.js)
+// Analytics error/payment normalization helpers (#343)
 const ANALYTICS_MACHINE_CODE_RE = /^[a-z0-9][a-z0-9_-]{1,63}$/i;
-
-function getAnalyticsFacade() {
-	return window.ovfAnalytics && typeof window.ovfAnalytics === "object"
-		? window.ovfAnalytics
-		: null;
-}
-
-function trackAnalyticsEvent(category, action, name, value) {
-	const analytics = getAnalyticsFacade();
-	if (!analytics || typeof analytics.trackEvent !== "function") return false;
-	return analytics.trackEvent(category, action, name, value);
-}
-
-function trackAnalyticsGoal(goalKey, customRevenue) {
-	const analytics = getAnalyticsFacade();
-	if (!analytics || typeof analytics.trackGoal !== "function") return false;
-	const goalId =
-		analytics.GOALS && typeof analytics.GOALS[goalKey] === "number"
-			? analytics.GOALS[goalKey]
-			: goalKey;
-	return analytics.trackGoal(goalId, customRevenue);
-}
-
-function advanceAnalyticsFunnelStage(stage) {
-	const analytics = getAnalyticsFacade();
-	if (!analytics || typeof analytics.advanceFunnelStage !== "function") {
-		return false;
-	}
-	return analytics.advanceFunnelStage(stage);
-}
 
 function sanitizeAnalyticsSlug(raw, fallback) {
 	if (typeof raw !== "string") return fallback;
@@ -1053,10 +1250,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	const txtReady = btnBook.getAttribute("data-text-ready");
 	const txtDefault = btnBook.getAttribute("data-text-default");
 
-	// Retrieve property ID from page path (defaults to 1707 if not 1606)
-	const propertyId = window.location.pathname.includes("1606")
-		? "1606"
-		: "1707";
+	// Retrieve property ID from pageConfig analytics metadata or page path (defaults to 1707 if not 1606)
+	const propertyId =
+		pageConfig.analytics &&
+		(pageConfig.analytics.propertyId === "1606" ||
+			pageConfig.analytics.propertyId === "1707")
+			? pageConfig.analytics.propertyId
+			: window.location.pathname.includes("1606")
+				? "1606"
+				: "1707";
 
 	// Fetch live blocked dates from local caching proxy
 	async function fetchBlockedDates() {
@@ -1130,11 +1332,14 @@ document.addEventListener("DOMContentLoaded", () => {
 					firstBlockedAfterCheckIn &&
 					dateStr > firstBlockedAfterCheckIn,
 			);
-			const isDisabled = isCheckoutSelectionMode
-				? isPast ||
-					(isBlocked && !isTurnoverCheckoutCandidate) ||
-					isBeyondFirstBlocked
-				: isPast || isBlocked;
+			const isUnavailableBooked = Boolean(
+				!isPast && isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut,
+			);
+			const isNativeDisabled = Boolean(
+				isPast ||
+					(isBeyondFirstBlocked && !isBlocked) ||
+					(isBlocked && isCheckOut),
+			);
 
 			let bgClass = "bg-white hover:bg-slate-100 text-slate-700";
 			if (isPast) {
@@ -1152,23 +1357,36 @@ document.addEventListener("DOMContentLoaded", () => {
 				bgClass = "bg-[#FF5A5F]/10 text-[#FF5A5F] font-medium";
 			}
 
+			btn.type = "button";
 			btn.className =
 				"calendar-day w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm transition-all relative overflow-hidden " +
 				bgClass;
 			btn.textContent = i;
-			btn.disabled = isDisabled;
+			btn.disabled = isNativeDisabled;
 			btn.setAttribute("data-date", dateStr);
 
-			// Accessible label for screen readers
-			if (isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut) {
+			// Accessible booked state using aria-disabled="true" so clicks emit an Unavailable Date Clicked Demand Signal without selecting the date (#344)
+			if (isUnavailableBooked) {
+				btn.setAttribute("aria-disabled", "true");
 				btn.setAttribute("title", "Already Booked");
 				btn.setAttribute(
 					"aria-label",
 					`${i} ${monthNames[lang][month]}, Booked`,
 				);
-			}
-
-			if (!isDisabled) {
+				btn.addEventListener("click", (e) => {
+					if (e && typeof e.preventDefault === "function") {
+						e.preventDefault();
+					}
+					const clickedMonth = formatYearMonth(thisDate);
+					if (clickedMonth) {
+						trackAnalyticsEvent(
+							"Demand",
+							"Unavailable Date Clicked",
+							`${propertyId}:${clickedMonth}`,
+						);
+					}
+				});
+			} else if (!isNativeDisabled) {
 				btn.addEventListener("click", () => {
 					if (!checkIn || (checkIn && checkOut)) {
 						checkIn = thisDate;
@@ -1229,6 +1447,68 @@ document.addEventListener("DOMContentLoaded", () => {
 	let exchangeRates = null;
 	let activeQuoteRequestId = 0;
 	let lastQuoteDetails = null;
+	let lastTrackedQuoteKey = null;
+
+	function trackQuoteDemandSignal(start, end, details) {
+		if (!start || !end || !details) {
+			return;
+		}
+		const checkInStr = formatDate(start);
+		const checkOutStr = formatDate(end);
+		const checkInMonth = formatYearMonth(start);
+		const nightsCount =
+			typeof details.nights === "number" && details.nights > 0
+				? Math.round(details.nights)
+				: diffCalendarDays(start, end);
+		const stayLengthBucket = getStayLengthBucket(nightsCount);
+		if (!checkInMonth || !stayLengthBucket) {
+			return;
+		}
+
+		const isMinStayBlocked = details.isValid === false;
+		const outcomeKey = isMinStayBlocked
+			? "min_stay_blocked"
+			: "quote_generated";
+		const dedupeKey = `${propertyId}|${checkInStr}|${checkOutStr}|${outcomeKey}`;
+		if (dedupeKey === lastTrackedQuoteKey) {
+			return;
+		}
+		lastTrackedQuoteKey = dedupeKey;
+
+		if (isMinStayBlocked) {
+			const minStayRequired =
+				typeof details.minimumStayRequired === "number" &&
+				Number.isFinite(details.minimumStayRequired) &&
+				details.minimumStayRequired > 0
+					? Math.round(details.minimumStayRequired)
+					: 2;
+			trackAnalyticsEvent(
+				"Demand",
+				"min_stay_blocked",
+				`${propertyId}:${checkInMonth}:${stayLengthBucket}:min_${minStayRequired}n`,
+			);
+			return;
+		}
+
+		advanceAnalyticsFunnelStage("quote_generated");
+		const leadTimeBucket = getLeadTimeBucket(start);
+		if (!leadTimeBucket) {
+			return;
+		}
+		const quoteSource =
+			details.source === "authoritative" ? "authoritative" : "fallback";
+		const roundedTotalCop = Math.round(Number(details.totalCOP));
+		const copEventValue =
+			Number.isFinite(roundedTotalCop) && roundedTotalCop >= 0
+				? roundedTotalCop
+				: undefined;
+		trackAnalyticsEvent(
+			"Demand",
+			"Quote Generated",
+			`${propertyId}:${checkInMonth}:${leadTimeBucket}:${stayLengthBucket}:${quoteSource}`,
+			copEventValue,
+		);
+	}
 
 	// Fetch build-time or admin-synced seasonal prices json
 	async function fetchPrices() {
@@ -1545,6 +1825,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				);
 			}
 		}
+
+		if (checkIn && checkOut) {
+			trackQuoteDemandSignal(checkIn, checkOut, details);
+		}
 	}
 
 	async function fetchAuthoritativeQuote(start, end) {
@@ -1640,6 +1924,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		} else {
 			activeQuoteRequestId++;
 			lastQuoteDetails = null;
+			lastTrackedQuoteKey = null;
 			if (minStayWarning) {
 				minStayWarning.classList.add("hidden");
 				minStayWarning.textContent = "";
@@ -2254,13 +2539,31 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	btnPrev.addEventListener("click", () => {
+		currentDate.setDate(1);
 		currentDate.setMonth(currentDate.getMonth() - 1);
 		renderCalendar();
+		const targetMonth = formatYearMonth(currentDate);
+		if (targetMonth) {
+			trackAnalyticsEvent(
+				"Demand",
+				"Calendar Month Browsed",
+				`${propertyId}:${targetMonth}`,
+			);
+		}
 	});
 
 	btnNext.addEventListener("click", () => {
+		currentDate.setDate(1);
 		currentDate.setMonth(currentDate.getMonth() + 1);
 		renderCalendar();
+		const targetMonth = formatYearMonth(currentDate);
+		if (targetMonth) {
+			trackAnalyticsEvent(
+				"Demand",
+				"Calendar Month Browsed",
+				`${propertyId}:${targetMonth}`,
+			);
+		}
 	});
 
 	// Matomo Tracking for Airbnb booking redirection (Goal 3)
@@ -2420,11 +2723,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (!nameVal || !emailVal || !phoneVal || !messageVal || !captchaVal) {
 			showMsg(msgError, false);
+			trackAnalyticsEvent(
+				"Contact Form",
+				"Validation Error",
+				"validation_error",
+			);
 			return;
 		}
 
-		if (!privacyConsent || !privacyConsent.checked) {
+		if (!privacyConsent?.checked) {
 			showMsg(msgPrivacyError, false);
+			trackAnalyticsEvent(
+				"Contact Form",
+				"Validation Error",
+				"privacy_consent",
+			);
 			return;
 		}
 
@@ -2435,16 +2748,17 @@ document.addEventListener("DOMContentLoaded", () => {
 			checkInInput.value &&
 			checkOutInput.value
 		) {
-			if (new Date(checkInInput.value) >= new Date(checkOutInput.value)) {
+			const stayNights = diffCalendarDays(
+				checkInInput.value,
+				checkOutInput.value,
+			);
+			if (stayNights === null || stayNights <= 0) {
 				showMsg(msgDateError, false);
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Contact Form",
-						"Validation Error",
-						"Check-out date before check-in",
-					]);
-				}
+				trackAnalyticsEvent(
+					"Contact Form",
+					"Validation Error",
+					"invalid_date_range",
+				);
 				return;
 			}
 		}
@@ -2469,68 +2783,62 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 			});
 
-			const result = await response.json();
+			let result = null;
+			try {
+				result = await response.json();
+			} catch (_) {
+				result = null;
+			}
 
-			if (response.ok && result.success) {
+			if (response.ok && result?.success) {
 				showMsg(msgSuccess, true);
 
-				// Matomo Goal & Event Tracking
-				if (window._paq) {
-					const hasDates =
-						checkInInput &&
+				// Matomo Goal & Normalized Demand Signal Tracking (#344)
+				const hasDates = Boolean(
+					checkInInput &&
 						checkOutInput &&
 						checkInInput.value &&
-						checkOutInput.value;
-					if (hasDates) {
-						// Goal 2: Booking Form Submitted
-						window._paq.push([
-							"trackEvent",
-							"Contact Form",
-							"Booking Inquiry Success",
-							`${checkInInput.value} to ${checkOutInput.value}`,
-						]);
-						window._paq.push(["trackGoal", 2]);
-					} else {
-						// Goal 1: Contact Form Inquiry
-						window._paq.push([
-							"trackEvent",
-							"Contact Form",
-							"Contact Inquiry Success",
-						]);
-						window._paq.push(["trackGoal", 1]);
-					}
+						checkOutInput.value,
+				);
+				if (hasDates) {
+					const demandSignal = buildInquiryDemandSignal(
+						checkInInput.value,
+						checkOutInput.value,
+					);
+					// Goal 2: Date-Specific Contact Inquiry Submitted
+					trackAnalyticsEvent(
+						"Contact Form",
+						"Date Inquiry Submitted",
+						demandSignal || undefined,
+					);
+					trackAnalyticsGoal("CONTACT_DATED");
+				} else {
+					// Goal 1: General Contact Inquiry Submitted
+					trackAnalyticsEvent("Contact Form", "General Inquiry Submitted");
+					trackAnalyticsGoal("CONTACT_GENERAL");
 				}
 
 				form.reset();
 				loadCaptcha();
 			} else {
-				const errorMsg = result.message || msgError;
+				const errorMsg =
+					(result && (result.error || result.message)) || msgError;
 				showMsg(errorMsg, false);
 
-				// Matomo Event Tracking for submission failure
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Contact Form",
-						"Submission Failure",
-						errorMsg,
-					]);
-				}
+				// Matomo Event Tracking for submission failure (locale-independent machine code)
+				trackAnalyticsEvent(
+					"Contact Form",
+					"Submission Failure",
+					classifyContactErrorCode(response, result),
+				);
 
 				loadCaptcha();
 			}
-		} catch (err) {
+		} catch (_) {
 			showMsg(msgError, false);
 
-			// Matomo Event Tracking for network or script error
-			if (window._paq) {
-				window._paq.push([
-					"trackEvent",
-					"Contact Form",
-					"Submission Error",
-					err.message || "Network Error",
-				]);
-			}
+			// Matomo Event Tracking for network error (locale-independent machine code)
+			trackAnalyticsEvent("Contact Form", "Submission Error", "network_error");
 
 			loadCaptcha();
 		} finally {

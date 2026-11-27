@@ -2862,36 +2862,64 @@ test("main.js #calendar-widget fetches blocked dates via pageConfig.apiBase and 
 		return found;
 	};
 
-	// 2. In Check-in selection mode: blocked dates (10, 15, 16) are disabled and have line-through
-	assert.equal(getDayButton(10).disabled, true);
+	// 2. In Check-in selection mode: blocked dates (10, 15, 16) use aria-disabled="true", remain non-selectable, announce Booked to screen readers, and have line-through (#344)
+	assert.equal(getDayButton(10).disabled, false);
+	assert.equal(getDayButton(10).getAttribute("aria-disabled"), "true");
+	assert.ok(getDayButton(10).getAttribute("aria-label")?.includes("Booked"));
 	assert.ok(getDayButton(10).className.includes("line-through"));
+	getDayButton(10).dispatchEvent("click");
+	assert.equal(
+		formCheckIn.value,
+		"",
+		"Clicking an aria-disabled booked date must not select check-in",
+	);
 	assert.equal(getDayButton(12).disabled, false);
-	assert.equal(getDayButton(15).disabled, true);
+	assert.equal(getDayButton(12).getAttribute("aria-disabled"), null);
+	assert.equal(getDayButton(15).disabled, false);
+	assert.equal(getDayButton(15).getAttribute("aria-disabled"), "true");
+	assert.ok(getDayButton(15).getAttribute("aria-label")?.includes("Booked"));
 	assert.ok(getDayButton(15).className.includes("line-through"));
-	assert.equal(getDayButton(16).disabled, true);
+	assert.equal(getDayButton(16).disabled, false);
+	assert.equal(getDayButton(16).getAttribute("aria-disabled"), "true");
+	assert.ok(getDayButton(16).getAttribute("aria-label")?.includes("Booked"));
 	assert.equal(getDayButton(17).disabled, false);
 
 	// 3. Click day 12 as Check-in Date -> enters Check-out selection mode
 	getDayButton(12).dispatchEvent("click");
 	assert.ok(getDayButton(12).className.includes("bg-[#FF5A5F]"));
 
-	// Blocked date <= checkIn (day 10) remains disabled
-	assert.equal(getDayButton(10).disabled, true);
+	// Blocked date <= checkIn (day 10) remains aria-disabled="true" and non-selectable
+	assert.equal(getDayButton(10).disabled, false);
+	assert.equal(getDayButton(10).getAttribute("aria-disabled"), "true");
+	getDayButton(10).dispatchEvent("click");
+	assert.equal(formCheckOut.value, "");
 	// Available days 13 and 14 are enabled
 	assert.equal(getDayButton(13).disabled, false);
 	assert.equal(getDayButton(14).disabled, false);
-	// First blocked Night after checkIn (day 15) is enabled as same-day Turnover Check-out candidate without line-through
+	// First blocked Night after checkIn (day 15) is enabled as same-day Turnover Check-out candidate without line-through or aria-disabled
 	assert.equal(
 		getDayButton(15).disabled,
 		false,
 		"First blocked Night after checkIn (day 15) must be enabled for same-day Turnover check-out",
 	);
+	assert.equal(
+		getDayButton(15).getAttribute("aria-disabled"),
+		null,
+		"Turnover check-out candidate must not carry aria-disabled while selectable",
+	);
 	assert.ok(
 		!getDayButton(15).className.includes("line-through"),
 		"Turnover check-out candidate must not render line-through while in Check-out selection mode",
 	);
-	// Dates strictly after firstBlockedAfterCheckIn (days 16, 17, 18) are disabled
-	assert.equal(getDayButton(16).disabled, true);
+	// Dates strictly after firstBlockedAfterCheckIn: booked day 16 uses aria-disabled="true" (non-selectable), unblocked days 17 & 18 are natively disabled
+	assert.equal(getDayButton(16).disabled, false);
+	assert.equal(getDayButton(16).getAttribute("aria-disabled"), "true");
+	getDayButton(16).dispatchEvent("click");
+	assert.equal(
+		formCheckOut.value,
+		"",
+		"Clicking booked day 16 beyond firstBlockedAfterCheckIn must not select check-out",
+	);
 	assert.equal(
 		getDayButton(17).disabled,
 		true,
