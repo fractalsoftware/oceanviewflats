@@ -817,6 +817,10 @@ export const dict = {
 		footerPropertiesLabel: "Properties",
 		footerStayingGuestsLabel: "Staying Guests",
 		footerLegalLabel: "Legal & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel: "Check-in — Guest Registry & Guest Guide",
+		navStayingGuestsCloseAriaLabel: "Close Check-in menu",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -1656,6 +1660,11 @@ export const dict = {
 		footerPropertiesLabel: "Propiedades",
 		footerStayingGuestsLabel: "Huéspedes Confirmados",
 		footerLegalLabel: "Legal y RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Registro de Huéspedes y Guía del Huésped",
+		navStayingGuestsCloseAriaLabel: "Cerrar menú de Check-in",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -2503,6 +2512,11 @@ export const dict = {
 		footerPropertiesLabel: "Appartements",
 		footerStayingGuestsLabel: "Voyageurs Confirmés",
 		footerLegalLabel: "Mentions Légales & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Arrivée",
+		navStayingGuestsOpenAriaLabel:
+			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
+		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -3339,6 +3353,11 @@ export const dict = {
 		footerPropertiesLabel: "Appartamenti",
 		footerStayingGuestsLabel: "Ospiti Confermati",
 		footerLegalLabel: "Note Legali e RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Registro degli Ospiti e Guida dell'Ospite",
+		navStayingGuestsCloseAriaLabel: "Chiudi il menu Check-in",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -4183,6 +4202,11 @@ export const dict = {
 		footerPropertiesLabel: "Unterkünfte",
 		footerStayingGuestsLabel: "Bestätigte Gäste",
 		footerLegalLabel: "Rechtliches & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Gästeregistrierung und Gäste-Guide",
+		navStayingGuestsCloseAriaLabel: "Check-in-Menü schließen",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -5011,6 +5035,11 @@ export const dict = {
 		footerPropertiesLabel: "物件一覧",
 		footerStayingGuestsLabel: "ご予約済みのお客様",
 		footerLegalLabel: "法的情報・RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "チェックイン",
+		navStayingGuestsOpenAriaLabel:
+			"チェックイン — 宿泊者名簿登録・ゲストガイド",
+		navStayingGuestsCloseAriaLabel: "チェックインメニューを閉じる",
 	},
 };
 

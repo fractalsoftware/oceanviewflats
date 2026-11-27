@@ -48,6 +48,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="privacy"
 			/>
 
 			{/* Hero Header */}

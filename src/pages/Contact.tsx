@@ -39,6 +39,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="contact"
 			/>
 
 			{/* Hero Section */}

@@ -113,6 +113,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				bookHref="#properties"
 				bookLabelKey="navBookDirect"
 				assetPrefix={assetPrefix}
+				currentPage="home"
 			/>
 
 			{/* Sunlit Coastal Hero Section */}

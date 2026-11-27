@@ -1,12 +1,11 @@
 import { ChevronDown, Globe } from "lucide-react";
 import React from "react";
-import { CHROME_THEME, getChromeScrollState } from "../constants/theme";
+import { CHROME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
 
 interface LanguageDropdownProps {
 	currentLang: Lang;
-	isScrolled: boolean;
 	englishHref?: string;
 }
 
@@ -26,20 +25,18 @@ const LANGUAGES: {
 
 export const LanguageDropdown = ({
 	currentLang,
-	isScrolled,
 	englishHref = "./",
 }: LanguageDropdownProps) => {
 	const t = dict[currentLang];
 	const currentLangObj =
 		LANGUAGES.find((l) => l.code === currentLang) || LANGUAGES[0];
 	const otherLangs = LANGUAGES.filter((l) => l.code !== currentLang);
-	const scrollState = getChromeScrollState(isScrolled);
 
 	return (
 		<div className={CHROME_THEME.langGroup} id="lang-toggle-group">
 			<button
 				type="button"
-				className={CHROME_THEME.langToggle[scrollState]}
+				className={CHROME_THEME.langToggle}
 				id="lang-toggle"
 				aria-label={`${t.navLangAriaLabel}: ${currentLangObj.label}`}
 				aria-haspopup="true"
