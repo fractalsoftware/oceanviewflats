@@ -311,6 +311,33 @@ test("#337 Homepage hero omits returning-Guest cue, FAQ #6 stays open as localiz
 test("#337 Post-booking transactional pages preserve Reservation UID fulfillment links while keeping shared navigation and footer free of /registry and /guide links across all 6 locales", () => {
 	const distDir = path.join(process.cwd(), "dist");
 
+	const assertTransactionalPageBoundary = (
+		route: "booking-success" | "registry" | "guide",
+		file: string,
+		requiredMainSnippets: string[],
+		mainFailureMessage: string,
+	) => {
+		const html = fs.readFileSync(path.join(distDir, route, file), "utf-8");
+		const main = html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
+		const nav = html.match(/<nav[^>]*id="navbar"[\s\S]*?<\/nav>/)?.[0] ?? "";
+		const footer = html.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? "";
+
+		assert.ok(
+			requiredMainSnippets.every((snippet) => main.includes(snippet)),
+			mainFailureMessage,
+		);
+		assert.deepEqual(
+			findPrivateFulfillmentHrefs(nav),
+			[],
+			`${route}/${file} shared <nav> must omit /registry and /guide links`,
+		);
+		assert.deepEqual(
+			findPrivateFulfillmentHrefs(footer),
+			[],
+			`${route}/${file} shared <footer> must omit /registry and /guide links`,
+		);
+	};
+
 	for (const lang of LANGUAGES) {
 		const suffix = lang === "en" ? "" : `${lang}.html`;
 		const file = lang === "en" ? "index.html" : `${lang}.html`;
@@ -319,90 +346,44 @@ test("#337 Post-booking transactional pages preserve Reservation UID fulfillment
 		assert.equal(expectedRegistryHref, `../registry/${suffix}`);
 		assert.equal(expectedGuideHref, `../guide/${suffix}`);
 
-		// 1. /booking-success retains #btn-booking-registry and #btn-booking-guide inside <main>
-		const successHtml = fs.readFileSync(
-			path.join(distDir, "booking-success", file),
-			"utf-8",
-		);
-		const successMain = successHtml.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
-		const successNav =
-			successHtml.match(/<nav[^>]*id="navbar"[\s\S]*?<\/nav>/)?.[0] ?? "";
-		const successFooter =
-			successHtml.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? "";
-
-		assert.ok(
-			successMain.includes(
-				`id="btn-booking-registry" href="${expectedRegistryHref}"`,
-			) &&
-				successMain.includes(
+		const transactionalChecks: Array<{
+			route: "booking-success" | "registry" | "guide";
+			requiredMainSnippets: string[];
+			message: string;
+		}> = [
+			{
+				route: "booking-success",
+				requiredMainSnippets: [
+					`id="btn-booking-registry" href="${expectedRegistryHref}"`,
 					`id="btn-booking-guide" href="${expectedGuideHref}"`,
-				),
-			`booking-success/${file} must preserve #btn-booking-registry and #btn-booking-guide inside <main>`,
-		);
-		assert.deepEqual(
-			findPrivateFulfillmentHrefs(successNav),
-			[],
-			`booking-success/${file} shared <nav> must omit /registry and /guide links`,
-		);
-		assert.deepEqual(
-			findPrivateFulfillmentHrefs(successFooter),
-			[],
-			`booking-success/${file} shared <footer> must omit /registry and /guide links`,
-		);
+				],
+				message: `booking-success/${file} must preserve #btn-booking-registry and #btn-booking-guide inside <main>`,
+			},
+			{
+				route: "registry",
+				requiredMainSnippets: [
+					`id="btn-unlocked-guide" href="${expectedGuideHref}"`,
+				],
+				message: `registry/${file} must preserve #btn-unlocked-guide link to localized Guest Guide inside <main>`,
+			},
+			{
+				route: "guide",
+				requiredMainSnippets: [
+					'id="guide-registry-banner"',
+					'id="registry-link"',
+				],
+				message: `guide/${file} must preserve #guide-registry-banner and #registry-link inside <main>`,
+			},
+		];
 
-		// 2. /registry retains #btn-unlocked-guide cross-link inside <main>
-		const registryHtml = fs.readFileSync(
-			path.join(distDir, "registry", file),
-			"utf-8",
-		);
-		const registryMain = registryHtml.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
-		const registryNav =
-			registryHtml.match(/<nav[^>]*id="navbar"[\s\S]*?<\/nav>/)?.[0] ?? "";
-		const registryFooter =
-			registryHtml.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? "";
-
-		assert.ok(
-			registryMain.includes(
-				`id="btn-unlocked-guide" href="${expectedGuideHref}"`,
-			),
-			`registry/${file} must preserve #btn-unlocked-guide link to localized Guest Guide inside <main>`,
-		);
-		assert.deepEqual(
-			findPrivateFulfillmentHrefs(registryNav),
-			[],
-			`registry/${file} shared <nav> must omit /registry and /guide links`,
-		);
-		assert.deepEqual(
-			findPrivateFulfillmentHrefs(registryFooter),
-			[],
-			`registry/${file} shared <footer> must omit /registry and /guide links`,
-		);
-
-		// 3. /guide retains #guide-registry-banner and #registry-link inside <main>
-		const guideHtml = fs.readFileSync(
-			path.join(distDir, "guide", file),
-			"utf-8",
-		);
-		const guideMain = guideHtml.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
-		const guideNav =
-			guideHtml.match(/<nav[^>]*id="navbar"[\s\S]*?<\/nav>/)?.[0] ?? "";
-		const guideFooter = guideHtml.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? "";
-
-		assert.ok(
-			guideMain.includes('id="guide-registry-banner"') &&
-				guideMain.includes('id="registry-link"'),
-			`guide/${file} must preserve #guide-registry-banner and #registry-link inside <main>`,
-		);
-		assert.deepEqual(
-			findPrivateFulfillmentHrefs(guideNav),
-			[],
-			`guide/${file} shared <nav> must omit /registry and /guide links`,
-		);
-		assert.deepEqual(
-			findPrivateFulfillmentHrefs(guideFooter),
-			[],
-			`guide/${file} shared <footer> must omit /registry and /guide links`,
-		);
+		for (const check of transactionalChecks) {
+			assertTransactionalPageBoundary(
+				check.route,
+				file,
+				check.requiredMainSnippets,
+				check.message,
+			);
+		}
 	}
 });
 

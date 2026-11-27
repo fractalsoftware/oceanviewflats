@@ -108,7 +108,7 @@ export const Footer = ({
 					{/* Group 3: Contact & Legal */}
 					<div className={CHROME_THEME.footerGroup}>
 						<p className={CHROME_THEME.footerGroupHeading}>
-							{t.footerLegalLabel}
+							{t.footerContactLegalLabel}
 						</p>
 						<ul className={CHROME_THEME.footerLinkList}>
 							<li>

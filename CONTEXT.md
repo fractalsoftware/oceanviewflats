@@ -65,7 +65,7 @@ A Reservation originated and transacted directly through OceanViewFlats, maintai
 _Avoid_: Internal Booking, Native Reservation, Website Booking, Direct Booking
 
 **Manual Reservation**:
-A Reservation originated directly by an administrator without an external payment gateway (e.g. phone inquiry, external bank wire, or owner occupancy), attributed to an administrative payment source and confirmed immediately to secure calendar dates. Identified by a unique `res-man-*` reservation UID, which functions as an authoritative lookup token across both the Guest Registry and Guest Guide. Distinct from statutory *Guest Registration* / *Guest Registry*, which refers solely to Colombian police registration compliance (SIRE/TRA) and building registration fees.
+A Reservation originated directly by an administrator without an external payment gateway (e.g. phone inquiry, external bank wire, or owner occupancy), attributed to an administrative payment source and confirmed immediately to secure calendar dates. Identified by a unique `res-man-*` Reservation UID, which functions as an authoritative lookup token across both the Guest Registry and Guest Guide. Distinct from statutory *Guest Registration* / *Guest Registry*, which refers solely to Colombian police registration compliance (SIRE/TRA) and building registration fees.
 _Avoid_: Offline Booking, Phone Order, Admin Reservation, Walk-in, Manual Registration
 
 **External Reservation**:

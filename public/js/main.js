@@ -96,40 +96,18 @@ function syncNavbarScrollState() {
 window.addEventListener("scroll", syncNavbarScrollState);
 document.addEventListener("DOMContentLoaded", syncNavbarScrollState);
 
-const registeredDisclosures = [];
-
-function bindDisclosure({
-	group,
-	toggle,
-	panel,
-	useVisibilityClasses = false,
-	closeOnLinkClick = false,
-	openLabelKey = null,
-	closeLabelKey = null,
-}) {
+function bindDisclosure({ group, toggle, panel }) {
 	if (!group || !panel) return null;
 
 	const trigger = toggle || group;
-	const openLabel =
-		toggle && openLabelKey
-			? translateKey(openLabelKey, {}, toggle.getAttribute("aria-label") || "")
-			: "";
-	const closeLabel =
-		toggle && closeLabelKey ? translateKey(closeLabelKey, {}, openLabel) : "";
 
 	function isOpen() {
-		if (useVisibilityClasses) {
-			if (toggle && toggle.getAttribute("aria-expanded") === "true") {
-				return true;
-			}
-			return (
-				panel.classList.contains("opacity-100") &&
-				!panel.classList.contains("invisible")
-			);
+		if (toggle && toggle.getAttribute("aria-expanded") === "true") {
+			return true;
 		}
 		return (
-			Boolean(toggle && toggle.getAttribute("aria-expanded") === "true") &&
-			!panel.classList.contains("hidden")
+			panel.classList.contains("opacity-100") &&
+			!panel.classList.contains("invisible")
 		);
 	}
 
@@ -148,21 +126,10 @@ function bindDisclosure({
 	}
 
 	function close(restoreFocus = false) {
-		if (useVisibilityClasses) {
-			panel.classList.remove("opacity-100", "visible");
-			panel.classList.add("opacity-0", "invisible");
-		} else {
-			panel.classList.add("hidden");
-			if (typeof panel.setAttribute === "function") {
-				panel.setAttribute("hidden", "");
-			}
-			panel.hidden = true;
-		}
+		panel.classList.remove("opacity-100", "visible");
+		panel.classList.add("opacity-0", "invisible");
 		if (toggle) {
 			toggle.setAttribute("aria-expanded", "false");
-			if (openLabel) {
-				toggle.setAttribute("aria-label", openLabel);
-			}
 			if (restoreFocus && typeof toggle.focus === "function") {
 				toggle.focus();
 			}
@@ -170,31 +137,12 @@ function bindDisclosure({
 	}
 
 	function open() {
-		registeredDisclosures.forEach((ctrl) => {
-			if (ctrl !== controller && ctrl.isOpen()) {
-				ctrl.close(false);
-			}
-		});
-		if (useVisibilityClasses) {
-			panel.classList.remove("hidden", "opacity-0", "invisible");
-			panel.classList.add("opacity-100", "visible");
-		} else {
-			panel.classList.remove("hidden");
-			if (typeof panel.removeAttribute === "function") {
-				panel.removeAttribute("hidden");
-			}
-			panel.hidden = false;
-		}
+		panel.classList.remove("hidden", "opacity-0", "invisible");
+		panel.classList.add("opacity-100", "visible");
 		if (toggle) {
 			toggle.setAttribute("aria-expanded", "true");
-			if (closeLabel) {
-				toggle.setAttribute("aria-label", closeLabel);
-			}
 		}
 	}
-
-	const controller = { isOpen, open, close };
-	registeredDisclosures.push(controller);
 
 	trigger.addEventListener("click", (e) => {
 		if (e && typeof e.stopPropagation === "function") {
@@ -206,14 +154,6 @@ function bindDisclosure({
 			open();
 		}
 	});
-
-	if (closeOnLinkClick && typeof panel.querySelectorAll === "function") {
-		panel.querySelectorAll("a").forEach((link) => {
-			link.addEventListener("click", () => {
-				close(false);
-			});
-		});
-	}
 
 	document.addEventListener("click", (e) => {
 		const target = e?.target ?? null;
@@ -244,7 +184,7 @@ function bindDisclosure({
 		}
 	});
 
-	return controller;
+	return { isOpen, open, close };
 }
 
 // Delegated Matomo CTA tracking for Destination Guide -> Property links (#311)
@@ -318,7 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		group: langToggleGroup,
 		toggle: langToggle,
 		panel: dropdownMenu,
-		useVisibilityClasses: true,
 	});
 });
 

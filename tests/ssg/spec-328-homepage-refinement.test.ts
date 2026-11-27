@@ -189,9 +189,9 @@ test("#336 Shared chrome across all 6 locales and depths removes public Guest Re
 	for (const locale of locales) {
 		const localeDict = dict[locale.code] as Record<string, string>;
 		assert.equal(
-			localeDict.footerLegalLabel,
+			localeDict.footerContactLegalLabel,
 			locale.contactLegalText,
-			`dict.${locale.code}.footerLegalLabel must be localized to "${locale.contactLegalText}"`,
+			`dict.${locale.code}.footerContactLegalLabel must be localized to "${locale.contactLegalText}"`,
 		);
 		for (const deadKey of [
 			"navGuestGuide",

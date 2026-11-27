@@ -811,7 +811,7 @@ export const dict = {
 		homeTrustRntDesc:
 			"The Registro Nacional de Turismo (RNT) is Colombia's official Ministry of Commerce tourism license confirming verified, legal short-term rental operation (RNT #268781 & RNT #270413).",
 		footerPropertiesLabel: "Properties",
-		footerLegalLabel: "Contact & Legal",
+		footerContactLegalLabel: "Contact & Legal",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Paid in COP · USD reference estimate on the property page",
@@ -1656,7 +1656,7 @@ export const dict = {
 		homeTrustRntDesc:
 			"El Registro Nacional de Turismo (RNT) es la licencia oficial del Ministerio de Comercio de Colombia que certifica nuestra operación legal y verificada (RNT #268781 y RNT #270413).",
 		footerPropertiesLabel: "Propiedades",
-		footerLegalLabel: "Contacto y Legal",
+		footerContactLegalLabel: "Contacto y Legal",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Se paga en COP · Estimado referencial en USD en la página del apartamento",
@@ -2510,7 +2510,7 @@ export const dict = {
 		homeTrustRntDesc:
 			"Le Registro Nacional de Turismo (RNT) est la licence officielle du ministère colombien du Commerce attestant notre activité légale et vérifiée (RNT #268781 et RNT #270413).",
 		footerPropertiesLabel: "Appartements",
-		footerLegalLabel: "Contact & Mentions Légales",
+		footerContactLegalLabel: "Contact & Mentions Légales",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Réglé en COP · Estimation indicative en EUR sur la page du logement",
@@ -3353,7 +3353,7 @@ export const dict = {
 		homeTrustRntDesc:
 			"Il Registro Nacional de Turismo (RNT) è la licenza ufficiale del Ministero del Commercio colombiano che certifica la gestione legale e verificata (RNT #268781 e RNT #270413).",
 		footerPropertiesLabel: "Appartamenti",
-		footerLegalLabel: "Contatti e Note Legali",
+		footerContactLegalLabel: "Contatti e Note Legali",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Pagamento in COP · Stima indicativa in EUR nella pagina dell'appartamento",
@@ -4204,7 +4204,7 @@ export const dict = {
 		homeTrustRntDesc:
 			"Das Registro Nacional de Turismo (RNT) ist die offizielle Lizenz des kolumbianischen Handelsministeriums für geprüfte, legale Ferienunterkünfte (RNT #268781 & RNT #270413).",
 		footerPropertiesLabel: "Unterkünfte",
-		footerLegalLabel: "Kontakt & Rechtliches",
+		footerContactLegalLabel: "Kontakt & Rechtliches",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Zahlung in COP · EUR-Richtwert im Buchungsrechner der Unterkunft",
@@ -5039,7 +5039,7 @@ export const dict = {
 		homeTrustRntDesc:
 			"国家観光登録（RNT）はコロンビア商工観光省が発行する公式ライセンスであり、適法かつ検証済みの宿泊運営を証明します（RNT #268781・RNT #270413）。",
 		footerPropertiesLabel: "物件一覧",
-		footerLegalLabel: "お問い合わせ・法的情報",
+		footerContactLegalLabel: "お問い合わせ・法的情報",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"COP決済・物件ページの料金計算ツールでJPY参考額を表示",
