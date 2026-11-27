@@ -50,6 +50,7 @@ const buildAssetVersions = (): Record<string, string> => {
 		"css/style.css",
 		"js/lang-detect.js",
 		"js/page-config.js",
+		"js/analytics.js",
 	]);
 	for (const page of pages) {
 		for (const script of page.scripts) {

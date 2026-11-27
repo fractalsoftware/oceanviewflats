@@ -190,16 +190,141 @@ export const getClientDictionaryForPage = (
 	return common;
 };
 
-export const getClientExtraConfigForPage = (
-	pageId: string,
-): Record<string, unknown> => {
-	if (pageId === "registry") {
+export type PageAnalyticsType =
+	| "home"
+	| "property"
+	| "destination_guide"
+	| "destination_hub"
+	| "contact"
+	| "privacy"
+	| "registry"
+	| "guide"
+	| "booking_result"
+	| "404";
+
+export type AnalyticsPropertyId = "1707" | "1606" | "portfolio";
+
+export interface PageAnalyticsConfig {
+	pageType: PageAnalyticsType;
+	propertyId: AnalyticsPropertyId;
+	guideSlug?: string;
+	enableEngagementTracking: boolean;
+}
+
+export const getPageAnalyticsConfig = (pageId: string): PageAnalyticsConfig => {
+	if (pageId === "home") {
 		return {
-			minorDocTypes: [...MINOR_DOC_TYPES],
+			pageType: "home",
+			propertyId: "portfolio",
+			enableEngagementTracking: true,
 		};
 	}
 
-	return {};
+	if (pageId === "Oceanview1707" || pageId === "oceanview1707") {
+		return {
+			pageType: "property",
+			propertyId: "1707",
+			enableEngagementTracking: true,
+		};
+	}
+
+	if (pageId === "Oceanview1606" || pageId === "oceanview1606") {
+		return {
+			pageType: "property",
+			propertyId: "1606",
+			enableEngagementTracking: true,
+		};
+	}
+
+	if (pageId === "destination-guides") {
+		return {
+			pageType: "destination_hub",
+			propertyId: "portfolio",
+			enableEngagementTracking: true,
+		};
+	}
+
+	if (pageId.startsWith("destination-guide-")) {
+		return {
+			pageType: "destination_guide",
+			propertyId: "portfolio",
+			guideSlug: pageId.slice("destination-guide-".length),
+			enableEngagementTracking: true,
+		};
+	}
+
+	if (pageId === "contact") {
+		return {
+			pageType: "contact",
+			propertyId: "portfolio",
+			enableEngagementTracking: true,
+		};
+	}
+
+	if (pageId === "privacy") {
+		return {
+			pageType: "privacy",
+			propertyId: "portfolio",
+			enableEngagementTracking: true,
+		};
+	}
+
+	if (pageId === "registry") {
+		return {
+			pageType: "registry",
+			propertyId: "portfolio",
+			enableEngagementTracking: false,
+		};
+	}
+
+	if (pageId === "guide") {
+		return {
+			pageType: "guide",
+			propertyId: "portfolio",
+			enableEngagementTracking: false,
+		};
+	}
+
+	if (
+		pageId === "booking-success" ||
+		pageId === "booking-failure" ||
+		pageId === "booking-pending"
+	) {
+		return {
+			pageType: "booking_result",
+			propertyId: "portfolio",
+			enableEngagementTracking: false,
+		};
+	}
+
+	if (pageId === "404") {
+		return {
+			pageType: "404",
+			propertyId: "portfolio",
+			enableEngagementTracking: false,
+		};
+	}
+
+	return {
+		pageType: "404",
+		propertyId: "portfolio",
+		enableEngagementTracking: false,
+	};
+};
+
+export const getClientExtraConfigForPage = (
+	pageId: string,
+): Record<string, unknown> => {
+	const analytics = getPageAnalyticsConfig(pageId);
+
+	if (pageId === "registry") {
+		return {
+			minorDocTypes: [...MINOR_DOC_TYPES],
+			analytics,
+		};
+	}
+
+	return { analytics };
 };
 
 export const pages: PageConfig[] = [
