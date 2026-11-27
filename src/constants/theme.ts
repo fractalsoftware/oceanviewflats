@@ -420,29 +420,38 @@ export const HOME_THEME = {
 	pageWrapper:
 		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",
 	heroHeader:
-		"relative bg-slate-900 pt-28 pb-20 md:pt-36 md:pb-28 px-4 sm:px-6 text-center overflow-hidden",
+		"relative bg-slate-900 pt-24 pb-14 sm:pt-28 sm:pb-18 md:pt-32 md:pb-22 px-4 sm:px-6 text-center overflow-hidden",
 	heroMediaWrapper: "absolute inset-0 w-full h-full",
-	heroImage: "w-full h-full object-cover",
+	heroImage: "w-full h-full object-cover object-[center_35%] saturate-[1.1]",
 	heroOverlay:
-		"absolute inset-0 bg-gradient-to-b from-slate-900/45 via-slate-900/35 to-slate-950/75",
+		"absolute inset-0 bg-gradient-to-b from-sky-950/35 via-slate-900/55 to-slate-950/80",
 	heroContent:
-		"relative z-10 max-w-4xl mx-auto mt-4 flex flex-col items-center",
+		"relative z-10 max-w-4xl mx-auto mt-2 sm:mt-4 flex flex-col items-center",
 	heroLocationBadge:
-		"inline-flex items-center gap-2 bg-slate-900/45 border border-white/25 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-semibold tracking-wider uppercase mb-6",
-	heroLocationIcon: "w-4 h-4 shrink-0",
+		"inline-flex items-center justify-center gap-2 text-white/95 text-xs md:text-sm font-semibold tracking-widest uppercase mb-3 sm:mb-4 drop-shadow-sm",
+	heroLocationIcon: "w-4 h-4 text-sky-200 shrink-0",
 	heroTitle:
-		"text-3xl sm:text-5xl md:text-6xl font-extrabold mb-4 text-white tracking-tight leading-tight drop-shadow-md text-balance max-w-4xl",
+		"text-3xl sm:text-5xl md:text-6xl font-extrabold mb-3 sm:mb-4 text-white tracking-tight leading-tight drop-shadow-md text-balance max-w-4xl",
 	heroSubtitle:
-		"text-base sm:text-lg md:text-xl text-white/95 font-normal max-w-[58ch] mx-auto mb-6 drop-shadow text-pretty leading-relaxed",
+		"text-base sm:text-lg md:text-xl text-white/95 font-normal max-w-[56ch] mx-auto mb-3 sm:mb-4 drop-shadow-sm text-pretty leading-relaxed",
 	heroValueProp:
-		"inline-flex items-center justify-center bg-slate-950/65 border border-white/25 backdrop-blur-md px-5 py-2 rounded-full text-xs md:text-sm font-semibold text-white tracking-wide mb-8",
-	heroCtaGroup: "flex flex-col items-center gap-4 w-full",
+		"text-xs sm:text-sm font-semibold text-white/95 tracking-wide max-w-[58ch] mx-auto mb-6 sm:mb-7 drop-shadow-sm text-pretty",
+	heroCtaGroup: "flex flex-col items-center gap-3.5 sm:gap-4 w-full",
 	heroCtaBtn:
-		"inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60",
+		"inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60",
 	heroCtaIcon: "w-5 h-5 text-white shrink-0",
-	heroQuickLinksRow: "flex flex-wrap items-center justify-center gap-3",
+	heroQuickLinksRow:
+		"flex flex-wrap items-center justify-center gap-2.5 sm:gap-3",
 	heroQuickLinkBtn:
-		"inline-flex items-center justify-center gap-1.5 min-h-[44px] px-5 py-2.5 rounded-full bg-slate-950/55 hover:bg-slate-950/80 border border-white/30 backdrop-blur-md text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
+		"inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 sm:px-5 py-2.5 rounded-full bg-slate-950/60 hover:bg-slate-950/85 border border-white/35 backdrop-blur-md text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
+	heroReturningGuestCue:
+		"mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-sm text-slate-100 drop-shadow-sm",
+	heroReturningGuestPrompt: "text-slate-100 font-normal",
+	heroReturningGuestLinks:
+		"inline-flex flex-wrap items-center justify-center gap-x-1.5",
+	heroReturningGuestLink:
+		"inline-flex items-center min-h-[44px] px-1.5 font-semibold text-white underline decoration-white/60 underline-offset-4 hover:decoration-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
+	heroReturningGuestDivider: "text-white/60 select-none",
 	iconSm: "w-4 h-4 shrink-0",
 	iconMd: "w-5 h-5 shrink-0",
 	iconLg: "w-6 h-6 shrink-0",

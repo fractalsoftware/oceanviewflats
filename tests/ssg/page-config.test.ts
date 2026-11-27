@@ -5533,3 +5533,223 @@ test("#319 main.js mobile navigation drawer toggles cleanly, restores focus on E
 	assert.equal(fallbackBadge1707.textContent, "From 450,000 COP / night");
 	assert.equal(fallbackCompare1707.textContent, "From 450,000 COP / night");
 });
+
+test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coastal coral token, and returning-Guest check-in cue across all 6 locales", () => {
+	const distDir = path.join(process.cwd(), "dist");
+
+	// 1. Verify WCAG AA+ warmer deep coastal coral token math (>= 4.5:1 against #FFFFFF)
+	const relativeLuminance = (hex: string): number => {
+		const clean = hex.replace("#", "");
+		const channels = [0, 2, 4].map((i) => {
+			const c = Number.parseInt(clean.slice(i, i + 2), 16) / 255;
+			return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+		});
+		return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+	};
+	const contrastWithWhite = (hex: string): number =>
+		(1 + 0.05) / (relativeLuminance(hex) + 0.05);
+
+	assert.ok(
+		contrastWithWhite("#C43E29") >= 4.5,
+		"coral-horizon-accessible (#C43E29) must meet WCAG AA (>= 4.5:1) with #FFFFFF",
+	);
+	assert.ok(
+		contrastWithWhite("#A8321E") >= 4.5,
+		"coral-horizon-ink (#A8321E) must meet WCAG AA (>= 4.5:1) with #FFFFFF",
+	);
+	assert.ok(
+		contrastWithWhite("#8F2716") >= 7.0,
+		"coral-horizon-ink-deep (#8F2716) must meet WCAG AAA (>= 7.0:1) with #FFFFFF",
+	);
+
+	// 2. Verify token registration in src/style.css, compiled CSS, DESIGN.md, and .impeccable metadata (zero #DC2626 alert-red)
+	const styleCss = fs.readFileSync(
+		path.join(process.cwd(), "src", "style.css"),
+		"utf-8",
+	);
+	assert.ok(
+		styleCss.includes("--color-coral-horizon-accessible: #c43e29;") &&
+			styleCss.includes("--color-coral-horizon-ink: #a8321e;") &&
+			styleCss.includes("--color-coral-horizon-ink-deep: #8f2716;") &&
+			!/#dc2626/i.test(styleCss),
+		"src/style.css must register warmer coastal coral tokens (#c43e29 / #a8321e / #8f2716) and remove #dc2626",
+	);
+
+	const compiledCss = fs.readFileSync(
+		path.join(distDir, "css", "style.css"),
+		"utf-8",
+	);
+	assert.ok(
+		/#c43e29/i.test(compiledCss) &&
+			/#a8321e/i.test(compiledCss) &&
+			!/#dc2626/i.test(compiledCss),
+		"dist/css/style.css must compile warmer coastal coral tokens and omit #dc2626",
+	);
+
+	for (const docRelPath of [
+		"DESIGN.md",
+		path.join(".impeccable", "design.json"),
+		path.join(".impeccable", "design-full.md"),
+	]) {
+		const docContent = fs.readFileSync(
+			path.join(process.cwd(), docRelPath),
+			"utf-8",
+		);
+		assert.ok(
+			/#C43E29/i.test(docContent) &&
+				/#A8321E/i.test(docContent) &&
+				/#8F2716/i.test(docContent) &&
+				!/#DC2626/i.test(docContent),
+			`${docRelPath} must sync warmer coastal coral tokens (#C43E29 / #A8321E / #8F2716) and omit #DC2626`,
+		);
+	}
+
+	// 3. Verify compiled Hero semantics across all 6 locales
+	const locales = [
+		{
+			lang: "en" as const,
+			file: "index.html",
+			suffix: "",
+			prompt: "Already booked?",
+			registryLabel: "Guest Registry",
+			guideLabel: "Guest Guide",
+		},
+		{
+			lang: "es" as const,
+			file: "es.html",
+			suffix: "es.html",
+			prompt: "¿Ya tienes reserva?",
+			registryLabel: "Registro de Huéspedes",
+			guideLabel: "Guía del Huésped",
+		},
+		{
+			lang: "fr" as const,
+			file: "fr.html",
+			suffix: "fr.html",
+			prompt: "Déjà réservé ?",
+			registryLabel: "Registre des Voyageurs",
+			guideLabel: "Guide de l&#x27;Invité",
+		},
+		{
+			lang: "it" as const,
+			file: "it.html",
+			suffix: "it.html",
+			prompt: "Hai già prenotato?",
+			registryLabel: "Registro degli Ospiti",
+			guideLabel: "Guida dell&#x27;Ospite",
+		},
+		{
+			lang: "de" as const,
+			file: "de.html",
+			suffix: "de.html",
+			prompt: "Bereits gebucht?",
+			registryLabel: "Gästeregistrierung",
+			guideLabel: "Gäste-Guide",
+		},
+		{
+			lang: "ja" as const,
+			file: "ja.html",
+			suffix: "ja.html",
+			prompt: "ご予約済みですか？",
+			registryLabel: "宿泊者名簿登録",
+			guideLabel: "ゲストガイド",
+		},
+	];
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+		const headerMatch = html.match(/<header[\s\S]*?<\/header>/);
+		assert.ok(headerMatch, `${locale.file} must render Hero <header>`);
+		const headerHtml = headerMatch[0];
+
+		// 3a. Sunlit focal framing & lightened upper coastal scrim preserving IMAGES.home.hero
+		assert.ok(
+			headerHtml.includes('src="./images/home-hero.webp"') &&
+				headerHtml.includes("object-[center_35%]") &&
+				headerHtml.includes("from-sky-950/35"),
+			`${locale.file} Hero must keep IMAGES.home.hero with open coastal framing and lighter upper scrim`,
+		);
+
+		// 3b. Static location eyebrow and value-proposition render as clean unboxed typography (no pill borders/fills)
+		const locationMatch = headerHtml.match(/<div[^>]*id="hero-location"[^>]*>/);
+		assert.ok(locationMatch, `${locale.file} must render #hero-location`);
+		assert.ok(
+			!locationMatch[0].includes("rounded-full") &&
+				!locationMatch[0].includes("border") &&
+				!locationMatch[0].includes("backdrop-blur") &&
+				!locationMatch[0].includes("bg-slate"),
+			`${locale.file} #hero-location must be unboxed typography without pill borders or frosted fills`,
+		);
+
+		const valuePropMatch = headerHtml.match(
+			/<p[^>]*id="hero-value-prop"[^>]*>/,
+		);
+		assert.ok(valuePropMatch, `${locale.file} must render #hero-value-prop`);
+		assert.ok(
+			!valuePropMatch[0].includes("rounded-full") &&
+				!valuePropMatch[0].includes("border") &&
+				!valuePropMatch[0].includes("backdrop-blur") &&
+				!valuePropMatch[0].includes("bg-slate"),
+			`${locale.file} #hero-value-prop must be unboxed typography without pill borders or frosted fills`,
+		);
+
+		// 3c. Scroll-only Hero CTA omits misleading calendar icon and uses directional scroll icon + warmer AA coral token
+		const heroPrimaryCtaMatch = headerHtml.match(
+			/<a[^>]*href="#properties"[^>]*>[\s\S]*?<\/a>/,
+		);
+		assert.ok(
+			heroPrimaryCtaMatch,
+			`${locale.file} must render scroll-only Hero CTA linking to #properties`,
+		);
+		assert.ok(
+			heroPrimaryCtaMatch[0].includes("bg-coral-horizon-accessible") &&
+				!heroPrimaryCtaMatch[0].includes("lucide-calendar") &&
+				heroPrimaryCtaMatch[0].includes("lucide-arrow-down"),
+			`${locale.file} scroll-only Hero CTA must omit misleading calendar icon, use arrow-down, and apply bg-coral-horizon-accessible`,
+		);
+
+		// 3d. Direct quick-entry links to Property 1707 & 1606 remain clickable relative-path pills
+		assert.ok(
+			headerHtml.includes(
+				`id="hero-direct-1707" href="./Oceanview1707/${locale.suffix}"`,
+			) &&
+				headerHtml.includes(
+					`id="hero-direct-1606" href="./Oceanview1606/${locale.suffix}"`,
+				),
+			`${locale.file} Hero must preserve relative-path #hero-direct-1707 and #hero-direct-1606 links`,
+		);
+
+		// 3e. Subtle returning-Guest check-in cue below hero actions with localized relative links & >=44px tap targets
+		const cueMatch = headerHtml.match(
+			/<div[^>]*id="hero-returning-guest-cue"[\s\S]*?<\/div>\s*<\/div>/,
+		);
+		assert.ok(
+			cueMatch,
+			`${locale.file} must render #hero-returning-guest-cue inside Hero`,
+		);
+		assert.ok(
+			!cueMatch[0].includes("rounded-full") &&
+				!cueMatch[0].includes("bg-slate") &&
+				cueMatch[0].includes(locale.prompt) &&
+				cueMatch[0].includes(
+					`id="hero-returning-registry-link" href="./registry/${locale.suffix}"`,
+				) &&
+				cueMatch[0].includes(
+					`id="hero-returning-guide-link" href="./guide/${locale.suffix}"`,
+				) &&
+				cueMatch[0].includes(locale.registryLabel) &&
+				cueMatch[0].includes(locale.guideLabel) &&
+				cueMatch[0].includes("min-h-[44px]"),
+			`${locale.file} #hero-returning-guest-cue must render subtle unboxed localized links to Guest Registry and Guest Guide with >=44px tap targets`,
+		);
+
+		if (locale.lang !== "en") {
+			assert.ok(
+				!cueMatch[0].includes("Already booked?") &&
+					!cueMatch[0].includes("Guest Registry") &&
+					!cueMatch[0].includes("Guest Guide"),
+				`${locale.file} #hero-returning-guest-cue must not leak English copy`,
+			);
+		}
+	}
+});

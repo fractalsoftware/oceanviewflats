@@ -4,9 +4,9 @@ description: Direct booking platform and self-service coastal concierge for beac
 colors:
   coral-horizon: "#FF5A5F"
   coral-horizon-deep: "#FF424D"
-  coral-horizon-accessible: "#DC2626"
-  coral-horizon-ink: "#B91C1C"
-  coral-horizon-ink-deep: "#991B1B"
+  coral-horizon-accessible: "#C43E29"
+  coral-horizon-ink: "#A8321E"
+  coral-horizon-ink-deep: "#8F2716"
   coral-wash: "#FEF2F2"
   salguero-sunset-rose: "#E11D48"
   salguero-sunset-rose-deep: "#BE123C"
