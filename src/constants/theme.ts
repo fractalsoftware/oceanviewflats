@@ -167,6 +167,15 @@ export interface PropertyTheme {
 	privacyChannelCtaBtn: string;
 	privacySecurityIconBox: string;
 	privacyRetentionCallout: string;
+	privacyAnalyticsIconBox: string;
+	privacyAnalyticsHeader: string;
+	privacyAnalyticsIcon: string;
+	privacyAnalyticsHeading: string;
+	privacyAnalyticsIntro: string;
+	privacyAnalyticsGrid: string;
+	privacyAnalyticsSubCardTitle: string;
+	privacyAnalyticsSubCardDesc: string;
+	privacyAnalyticsCallout: string;
 }
 
 export const CHROME_THEME = {
@@ -710,6 +719,19 @@ export const PRIVACY_THEME_STYLES = {
 	privacySecurityIconBox: "p-3 bg-purple-50 text-purple-600 rounded-2xl",
 	privacyRetentionCallout:
 		"p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-sm",
+	privacyAnalyticsIconBox: "p-3 bg-teal-50 text-teal-600 rounded-2xl shrink-0",
+	privacyAnalyticsHeader: "flex items-center space-x-3 mb-4",
+	privacyAnalyticsIcon: "w-6 h-6",
+	privacyAnalyticsHeading:
+		"text-xl md:text-2xl font-extrabold text-slate-900 min-w-0 break-words",
+	privacyAnalyticsIntro:
+		"text-slate-600 text-sm md:text-base leading-relaxed mb-6 break-words",
+	privacyAnalyticsGrid: "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6",
+	privacyAnalyticsSubCardTitle: "font-bold text-slate-900 mb-2",
+	privacyAnalyticsSubCardDesc:
+		"text-sm text-slate-600 leading-relaxed break-words",
+	privacyAnalyticsCallout:
+		"p-4 rounded-2xl bg-teal-50/70 border border-teal-200 text-teal-950 text-sm leading-relaxed break-words",
 } as const;
 
 export const THEMES: Record<"1707" | "1606", PropertyTheme> = {
