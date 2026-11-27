@@ -1,4 +1,5 @@
 import {
+	ArrowDown,
 	ArrowRight,
 	Building2,
 	Calendar as CalendarIcon,
@@ -132,7 +133,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					<div className={HOME_THEME.heroOverlay} aria-hidden="true" />
 				</div>
 				<div className={HOME_THEME.heroContent}>
-					<div className={HOME_THEME.heroLocationBadge}>
+					<div id="hero-location" className={HOME_THEME.heroLocationBadge}>
 						<MapPin
 							className={HOME_THEME.heroLocationIcon}
 							aria-hidden="true"
@@ -141,14 +142,16 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					</div>
 					<h1 className={HOME_THEME.heroTitle}>{t.homeWelcome}</h1>
 					<p className={HOME_THEME.heroSubtitle}>{t.homeSubtitle}</p>
-					<p className={HOME_THEME.heroValueProp}>{t.homeHeroValueProp}</p>
+					<p id="hero-value-prop" className={HOME_THEME.heroValueProp}>
+						{t.homeHeroValueProp}
+					</p>
 					<div className={HOME_THEME.heroCtaGroup}>
 						<a href="#properties" className={HOME_THEME.heroCtaBtn}>
-							<CalendarIcon
+							<span>{t.homeHeroCta}</span>
+							<ArrowDown
 								className={HOME_THEME.heroCtaIcon}
 								aria-hidden="true"
 							/>
-							<span>{t.homeHeroCta}</span>
 						</a>
 						<div className={HOME_THEME.heroQuickLinksRow}>
 							<a
@@ -166,6 +169,36 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							>
 								<span>{t.homeHeroDirect1606}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+						</div>
+					</div>
+					<div
+						id="hero-returning-guest-cue"
+						className={HOME_THEME.heroReturningGuestCue}
+					>
+						<span className={HOME_THEME.heroReturningGuestPrompt}>
+							{t.homeHeroReturningGuestPrompt}
+						</span>
+						<div className={HOME_THEME.heroReturningGuestLinks}>
+							<a
+								id="hero-returning-registry-link"
+								href={registryHref}
+								className={HOME_THEME.heroReturningGuestLink}
+							>
+								{t.homeHeroReturningGuestRegistry}
+							</a>
+							<span
+								className={HOME_THEME.heroReturningGuestDivider}
+								aria-hidden="true"
+							>
+								·
+							</span>
+							<a
+								id="hero-returning-guide-link"
+								href={guideHref}
+								className={HOME_THEME.heroReturningGuestLink}
+							>
+								{t.homeHeroReturningGuestGuide}
 							</a>
 						</div>
 					</div>

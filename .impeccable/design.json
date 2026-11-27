@@ -24,29 +24,59 @@
 				"displayName": "Coral Horizon Deep",
 				"canonical": "#FF424D",
 				"tonalRamp": [
-					"#450A0A",
-					"#7F1D1D",
-					"#B91C1C",
-					"#DC2626",
+					"#4A120A",
+					"#6F1D10",
+					"#8F2716",
+					"#A8321E",
+					"#C43E29",
 					"#FF424D",
 					"#F87171",
-					"#FCA5A5",
 					"#FEF2F2"
+				]
+			},
+			"coral-horizon-accessible": {
+				"role": "primary",
+				"displayName": "Coral Horizon Accessible",
+				"canonical": "#C43E29",
+				"tonalRamp": [
+					"#4A120A",
+					"#6F1D10",
+					"#8F2716",
+					"#A8321E",
+					"#C43E29",
+					"#DF5B44",
+					"#F7A899",
+					"#FFF7F3"
 				]
 			},
 			"coral-horizon-ink": {
 				"role": "primary",
 				"displayName": "Coral Horizon Ink",
-				"canonical": "#B91C1C",
+				"canonical": "#A8321E",
 				"tonalRamp": [
-					"#450A0A",
-					"#7F1D1D",
-					"#991B1B",
-					"#B91C1C",
-					"#DC2626",
-					"#EF4444",
-					"#FCA5A5",
-					"#FEF2F2"
+					"#4A120A",
+					"#6F1D10",
+					"#8F2716",
+					"#A8321E",
+					"#C43E29",
+					"#DF5B44",
+					"#F7A899",
+					"#FFF7F3"
+				]
+			},
+			"coral-horizon-ink-deep": {
+				"role": "primary",
+				"displayName": "Coral Horizon Ink Deep",
+				"canonical": "#8F2716",
+				"tonalRamp": [
+					"#4A120A",
+					"#6F1D10",
+					"#8F2716",
+					"#A8321E",
+					"#C43E29",
+					"#DF5B44",
+					"#F7A899",
+					"#FFF7F3"
 				]
 			},
 			"coral-wash": {
@@ -54,9 +84,9 @@
 				"displayName": "Coral Wash",
 				"canonical": "#FEF2F2",
 				"tonalRamp": [
-					"#7F1D1D",
-					"#B91C1C",
-					"#EF4444",
+					"#6F1D10",
+					"#A8321E",
+					"#C43E29",
 					"#F87171",
 					"#FCA5A5",
 					"#FECACA",
@@ -640,7 +670,7 @@
 		"rules": [
 			{
 				"name": "The Property Temperature Rule",
-				"body": "On dedicated property pages (/Oceanview1707, /Oceanview1606) and homepage showcase cards (#home-card-1707, #home-card-1606), Property 1707 pairs Coral Horizon and Nomad Sky cues with cool Slate neutrals, while Property 1606 pairs Salguero Sunset Rose cues with warm Travertine Stone neutrals—resolved strictly through centralized theme maps (THEMES, HOME_CARD_THEMES). Primary Coral Horizon filled pills with white text use WCAG AA+ coral-horizon-accessible (#DC2626, hover coral-horizon-ink #B91C1C), and the scrolled navigation brand wordmark uses coral-horizon-ink (#B91C1C, hover coral-horizon-ink-deep #991B1B).",
+				"body": "On dedicated property pages (/Oceanview1707, /Oceanview1606) and homepage showcase cards (#home-card-1707, #home-card-1606), Property 1707 pairs Coral Horizon and Nomad Sky cues with cool Slate neutrals, while Property 1606 pairs Salguero Sunset Rose cues with warm Travertine Stone neutrals—resolved strictly through centralized theme maps (THEMES, HOME_CARD_THEMES). Primary Coral Horizon filled pills with white text use WCAG AA+ deep coastal coral coral-horizon-accessible (#C43E29, hover coral-horizon-ink #A8321E), and the scrolled navigation brand wordmark uses coral-horizon-ink (#A8321E, hover coral-horizon-ink-deep #8F2716).",
 				"section": "colors"
 			},
 			{

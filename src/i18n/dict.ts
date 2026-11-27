@@ -99,9 +99,8 @@ export const dict = {
 			"Reserve Property 1606 in Playa Salguero, Santa Marta. 16th-floor beachfront stay for couples and families with Caribbean sunsets, pool, and 900 Mbps Wi-Fi.",
 		homeWelcome: "Beachfront Residences in Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Two private 16th- and 17th-floor ocean-view apartments one block from the beach—booked directly with your host Manuel Enrique.",
-		homeHeroValueProp:
-			"Save 15–20% Booking Direct • Upfront COP Pricing • Secure Online Checkout",
+			"Two private 16th- & 17th-floor ocean-view apartments steps from the beach, booked directly with host Manuel Enrique.",
+		homeHeroValueProp: "Save 15–20% Direct · Clear COP Rates · Secure Checkout",
 		homeHeroCta: "Explore Beachfront Properties",
 		homeFeaturedPropertiesTitle: "Our Featured Beachfront Properties",
 		homeMultiPropertyNote:
@@ -817,6 +816,10 @@ export const dict = {
 		footerPropertiesLabel: "Properties",
 		footerStayingGuestsLabel: "Staying Guests",
 		footerLegalLabel: "Legal & RNT",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Already booked?",
+		homeHeroReturningGuestRegistry: "Guest Registry",
+		homeHeroReturningGuestGuide: "Guest Guide",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -917,10 +920,9 @@ export const dict = {
 			"Reserva directa en OceanViewFlats 1606, Playa Salguero, Santa Marta. Piso 16 frente al mar para parejas y familias con Wi-Fi 900 Mbps, piscina y atardeceres.",
 		homeWelcome: "Apartamentos Frente al Mar en Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Dos apartamentos privados frente al mar en los pisos 16 y 17, a una cuadra de la playa, reservados directamente con tu anfitrión Manuel Enrique.",
-		homeHeroValueProp:
-			"Ahorra 15–20% Reservando Directo • Precios Claros en COP • Pago Seguro en Línea",
-		homeHeroCta: "Explorar Apartamentos Frente al Mar",
+			"Dos apartamentos privados frente al mar en los pisos 16 y 17, a una cuadra de la playa, directo con tu anfitrión Manuel Enrique.",
+		homeHeroValueProp: "Ahorra 15–20% Directo · Precios en COP · Pago Seguro",
+		homeHeroCta: "Ver Apartamentos Frente al Mar",
 		homeFeaturedPropertiesTitle: "Nuestras Propiedades Frente al Mar",
 		homeMultiPropertyNote:
 			"¿Viajas con un grupo grande de 7–12 Huéspedes? El Apartamento 1707 (Piso 17) y el Apartamento 1606 (Piso 16) están ubicados a solo un piso de distancia en el Edificio Salguero Sunset: reserva ambas propiedades juntas o envíanos una consulta para coordinar una estadía familiar multipropiedad.",
@@ -1656,6 +1658,10 @@ export const dict = {
 		footerPropertiesLabel: "Propiedades",
 		footerStayingGuestsLabel: "Huéspedes Confirmados",
 		footerLegalLabel: "Legal y RNT",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "¿Ya tienes reserva?",
+		homeHeroReturningGuestRegistry: "Registro de Huéspedes",
+		homeHeroReturningGuestGuide: "Guía del Huésped",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -1756,10 +1762,10 @@ export const dict = {
 			"Réservez en direct OceanViewFlats 1606 à Playa Salguero, Santa Marta. 16e étage face à la mer pour couples et familles : Wi-Fi 900 Mbps et piscine.",
 		homeWelcome: "Résidences en Bord de Mer à Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Deux appartements privés face à la mer aux 16e et 17e étages, à un pâté de maisons de la plage, réservés directement auprès de votre hôte Manuel Enrique.",
+			"Deux appartements privés face à la mer (16e et 17e étages), à deux pas de la plage, en direct avec votre hôte Manuel Enrique.",
 		homeHeroValueProp:
-			"Économisez 15–20 % en Direct • Tarifs Clairs en COP • Paiement Sécurisé en Ligne",
-		homeHeroCta: "Découvrir nos Appartements Vue Mer",
+			"−15 à 20 % en Direct · Tarifs en COP · Paiement Sécurisé",
+		homeHeroCta: "Voir les Appartements Vue Mer",
 		homeFeaturedPropertiesTitle: "Nos Propriétés en Bord de Mer",
 		homeMultiPropertyNote:
 			"Vous voyagez avec un grand groupe de 7–12 Voyageurs ? L'Appartement 1707 (17e étage) et l'Appartement 1606 (16e étage) sont situés à un seul étage d'écart dans l'Edificio Salguero Sunset — réservez les deux logements ensemble ou envoyez-nous une demande pour un séjour familial multi-propriétés.",
@@ -2503,6 +2509,10 @@ export const dict = {
 		footerPropertiesLabel: "Appartements",
 		footerStayingGuestsLabel: "Voyageurs Confirmés",
 		footerLegalLabel: "Mentions Légales & RNT",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Déjà réservé ?",
+		homeHeroReturningGuestRegistry: "Registre des Voyageurs",
+		homeHeroReturningGuestGuide: "Guide de l'Invité",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -2603,10 +2613,9 @@ export const dict = {
 			"Prenota diretto OceanViewFlats 1606 a Playa Salguero, Santa Marta. 16° piano fronte mare per coppie e famiglie con Wi-Fi 900 Mbps, piscina e tramonti.",
 		homeWelcome: "Residenze Fronte Mare a Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Due appartamenti privati fronte mare al 16° e 17° piano, a un isolato dalla spiaggia, prenotati direttamente con il tuo host Manuel Enrique.",
-		homeHeroValueProp:
-			"Risparmia il 15–20% Prenotando Diretto • Prezzi Chiari in COP • Pagamento Sicuro Online",
-		homeHeroCta: "Esplora gli Appartamenti Fronte Mare",
+			"Due appartamenti privati fronte mare (16° e 17° piano), a un isolato dalla spiaggia, diretti con l'host Manuel Enrique.",
+		homeHeroValueProp: "−15–20% Diretto · Prezzi in COP · Pagamento Sicuro",
+		homeHeroCta: "Vedi gli Appartamenti Fronte Mare",
 		homeFeaturedPropertiesTitle: "Le Nostre Proprietà Fronte Mare",
 		homeMultiPropertyNote:
 			"Viaggi con un gruppo numeroso di 7–12 Ospiti? L'Appartamento 1707 (17° piano) e l'Appartamento 1606 (16° piano) si trovano a un solo piano di distanza nell'Edificio Salguero Sunset: prenota entrambi gli appartamenti insieme o inviaci una richiesta per un soggiorno familiare multi-proprietà.",
@@ -3339,6 +3348,10 @@ export const dict = {
 		footerPropertiesLabel: "Appartamenti",
 		footerStayingGuestsLabel: "Ospiti Confermati",
 		footerLegalLabel: "Note Legali e RNT",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Hai già prenotato?",
+		homeHeroReturningGuestRegistry: "Registro degli Ospiti",
+		homeHeroReturningGuestGuide: "Guida dell'Ospite",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3441,10 +3454,10 @@ export const dict = {
 			"Buchen Sie OceanViewFlats 1606 direkt in Playa Salguero, Santa Marta. 16. Etage am Strand für Paare und Familien mit 900-Mbps-WLAN, Pool und Meerblick.",
 		homeWelcome: "Strandapartments in Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Zwei private Meerblick-Apartments im 16. und 17. Stock, nur einen Block vom Strand entfernt — direkt bei Ihrem Gastgeber Manuel Enrique gebucht.",
+			"Zwei private Meerblick-Apartments (16. & 17. Etage), einen Block vom Strand — direkt bei Gastgeber Manuel Enrique.",
 		homeHeroValueProp:
-			"15–20 % Sparen bei Direktbuchung • Klare Preise in COP • Sichere Online-Zahlung",
-		homeHeroCta: "Strandapartments Entdecken",
+			"15–20 % Günstiger Direkt · Klare COP-Preise · Sicher Zahlen",
+		homeHeroCta: "Strandapartments entdecken",
 		homeFeaturedPropertiesTitle: "Unsere Strandunterkünfte",
 		homeMultiPropertyNote:
 			"Reisen Sie mit einer größeren Gruppe von 7–12 Gästen? Das Apartment 1707 (17. Etage) und das Apartment 1606 (16. Etage) liegen nur eine Etage voneinander entfernt im Edificio Salguero Sunset – buchen Sie beide Unterkünfte zusammen oder senden Sie uns eine Anfrage für einen koordinierten Familienaufenthalt.",
@@ -4183,6 +4196,10 @@ export const dict = {
 		footerPropertiesLabel: "Unterkünfte",
 		footerStayingGuestsLabel: "Bestätigte Gäste",
 		footerLegalLabel: "Rechtliches & RNT",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Bereits gebucht?",
+		homeHeroReturningGuestRegistry: "Gästeregistrierung",
+		homeHeroReturningGuestGuide: "Gäste-Guide",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -4285,9 +4302,8 @@ export const dict = {
 			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1606を直接予約。16階ビーチフロントでカップルや家族に最適。900Mbps Wi-Fi、プール、美しい夕日。",
 		homeWelcome: "サンタマルタ・プラヤサルグエロのビーチフロント滞在",
 		homeSubtitle:
-			"ビーチまで徒歩1ブロック。16階・17階のオーシャンビュー物件2室を、オーナーのManuel Enriqueから直接ご予約いただけます。",
-		homeHeroValueProp:
-			"直接予約で15〜20%お得 • 明朗なCOP料金 • 安全なオンライン決済",
+			"ビーチまで徒歩1ブロック。16階・17階のオーシャンビュー2室を、オーナーのManuel Enriqueから直接ご予約いただけます。",
+		homeHeroValueProp: "直接予約で15〜20%お得 · 明朗なCOP料金 · 安全決済",
 		homeHeroCta: "ビーチフロント物件を見る",
 		homeFeaturedPropertiesTitle: "おすすめのビーチフロント物件",
 		homeMultiPropertyNote:
@@ -5011,6 +5027,10 @@ export const dict = {
 		footerPropertiesLabel: "物件一覧",
 		footerStayingGuestsLabel: "ご予約済みのお客様",
 		footerLegalLabel: "法的情報・RNT",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "ご予約済みですか？",
+		homeHeroReturningGuestRegistry: "宿泊者名簿登録",
+		homeHeroReturningGuestGuide: "ゲストガイド",
 	},
 };
 
