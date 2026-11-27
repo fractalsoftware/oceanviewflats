@@ -795,7 +795,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Close navigation menu",
 		navMenuLabel: "Menu",
 		navLangAriaLabel: "Select language",
-		navGuestGuide: "Guest Guide",
 		homeHeroDirect1707: "Flat 1707 • 17th Floor",
 		homeHeroDirect1606: "Flat 1606 • 16th Floor",
 		homeCompareRowCleaningFee: "Cleaning Fee (COP)",
@@ -814,12 +813,7 @@ export const dict = {
 		faq6RegistryLink: "Complete Guest Registry",
 		faq6GuideLink: "Open Guest Guide",
 		footerPropertiesLabel: "Properties",
-		footerStayingGuestsLabel: "Staying Guests",
-		footerLegalLabel: "Legal & RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel: "Check-in — Guest Registry & Guest Guide",
-		navStayingGuestsCloseAriaLabel: "Close Check-in menu",
+		footerLegalLabel: "Contact & Legal",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Already booked?",
 		homeHeroReturningGuestRegistry: "Guest Registry",
@@ -1651,7 +1645,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Cerrar menú de navegación",
 		navMenuLabel: "Menú",
 		navLangAriaLabel: "Seleccionar idioma",
-		navGuestGuide: "Guía del Huésped",
 		homeHeroDirect1707: "Apto 1707 • Piso 17",
 		homeHeroDirect1606: "Apto 1606 • Piso 16",
 		homeCompareRowCleaningFee: "Tarifa de Limpieza (COP)",
@@ -1671,13 +1664,7 @@ export const dict = {
 		faq6RegistryLink: "Completar Registro de Huéspedes",
 		faq6GuideLink: "Abrir Guía del Huésped",
 		footerPropertiesLabel: "Propiedades",
-		footerStayingGuestsLabel: "Huéspedes Confirmados",
-		footerLegalLabel: "Legal y RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel:
-			"Check-in — Registro de Huéspedes y Guía del Huésped",
-		navStayingGuestsCloseAriaLabel: "Cerrar menú de Check-in",
+		footerLegalLabel: "Contacto y Legal",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "¿Ya tienes reserva?",
 		homeHeroReturningGuestRegistry: "Registro de Huéspedes",
@@ -2518,7 +2505,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Fermer le menu de navigation",
 		navMenuLabel: "Menu",
 		navLangAriaLabel: "Choisir la langue",
-		navGuestGuide: "Guide de l'Invité",
 		homeHeroDirect1707: "Appt 1707 • 17e Étage",
 		homeHeroDirect1606: "Appt 1606 • 16e Étage",
 		homeCompareRowCleaningFee: "Frais de Ménage (COP)",
@@ -2538,13 +2524,7 @@ export const dict = {
 		faq6RegistryLink: "Remplir le Registre des Invités",
 		faq6GuideLink: "Ouvrir le Guide de l'Invité",
 		footerPropertiesLabel: "Appartements",
-		footerStayingGuestsLabel: "Voyageurs Confirmés",
-		footerLegalLabel: "Mentions Légales & RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Arrivée",
-		navStayingGuestsOpenAriaLabel:
-			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
-		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
+		footerLegalLabel: "Contact & Mentions Légales",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Déjà réservé ?",
 		homeHeroReturningGuestRegistry: "Registre des Voyageurs",
@@ -3374,7 +3354,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Chiudi il menu di navigazione",
 		navMenuLabel: "Menu",
 		navLangAriaLabel: "Seleziona lingua",
-		navGuestGuide: "Guida dell'Ospite",
 		homeHeroDirect1707: "App. 1707 • 17° Piano",
 		homeHeroDirect1606: "App. 1606 • 16° Piano",
 		homeCompareRowCleaningFee: "Spese di Pulizia (COP)",
@@ -3394,13 +3373,7 @@ export const dict = {
 		faq6RegistryLink: "Compila il Registro Ospiti",
 		faq6GuideLink: "Apri la Guida dell'Ospite",
 		footerPropertiesLabel: "Appartamenti",
-		footerStayingGuestsLabel: "Ospiti Confermati",
-		footerLegalLabel: "Note Legali e RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel:
-			"Check-in — Registro degli Ospiti e Guida dell'Ospite",
-		navStayingGuestsCloseAriaLabel: "Chiudi il menu Check-in",
+		footerLegalLabel: "Contatti e Note Legali",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Hai già prenotato?",
 		homeHeroReturningGuestRegistry: "Registro degli Ospiti",
@@ -4238,7 +4211,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Navigationsmenü schließen",
 		navMenuLabel: "Menü",
 		navLangAriaLabel: "Sprache auswählen",
-		navGuestGuide: "Gäste-Guide",
 		homeHeroDirect1707: "Apt. 1707 • 17. Etage",
 		homeHeroDirect1606: "Apt. 1606 • 16. Etage",
 		homeCompareRowCleaningFee: "Reinigungsgebühr (COP)",
@@ -4258,13 +4230,7 @@ export const dict = {
 		faq6RegistryLink: "Gästeregistrierung ausfüllen",
 		faq6GuideLink: "Gäste-Guide öffnen",
 		footerPropertiesLabel: "Unterkünfte",
-		footerStayingGuestsLabel: "Bestätigte Gäste",
-		footerLegalLabel: "Rechtliches & RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel:
-			"Check-in — Gästeregistrierung und Gäste-Guide",
-		navStayingGuestsCloseAriaLabel: "Check-in-Menü schließen",
+		footerLegalLabel: "Kontakt & Rechtliches",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Bereits gebucht?",
 		homeHeroReturningGuestRegistry: "Gästeregistrierung",
@@ -5088,7 +5054,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "ナビゲーションメニューを閉じる",
 		navMenuLabel: "メニュー",
 		navLangAriaLabel: "言語を選択",
-		navGuestGuide: "ゲストガイド",
 		homeHeroDirect1707: "1707号室 • 17階",
 		homeHeroDirect1606: "1606号室 • 16階",
 		homeCompareRowCleaningFee: "清掃費（COP）",
@@ -5106,13 +5071,7 @@ export const dict = {
 		faq6RegistryLink: "宿泊者名簿（ゲスト登録）を入力",
 		faq6GuideLink: "ゲストガイドを開く",
 		footerPropertiesLabel: "物件一覧",
-		footerStayingGuestsLabel: "ご予約済みのお客様",
-		footerLegalLabel: "法的情報・RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "チェックイン",
-		navStayingGuestsOpenAriaLabel:
-			"チェックイン — 宿泊者名簿登録・ゲストガイド",
-		navStayingGuestsCloseAriaLabel: "チェックインメニューを閉じる",
+		footerLegalLabel: "お問い合わせ・法的情報",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "ご予約済みですか？",
 		homeHeroReturningGuestRegistry: "宿泊者名簿登録",

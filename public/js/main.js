@@ -322,24 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 });
 
-// Accessible Desktop Staying-Guest Check-in Disclosure Menu (#329)
-document.addEventListener("DOMContentLoaded", () => {
-	const checkinGroup = document.getElementById("nav-checkin-group");
-	const checkinToggle = document.getElementById("nav-checkin-toggle");
-	const checkinMenu = document.getElementById("nav-checkin-menu");
-	if (!checkinGroup || !checkinToggle || !checkinMenu) return;
-
-	bindDisclosure({
-		group: checkinGroup,
-		toggle: checkinToggle,
-		panel: checkinMenu,
-		useVisibilityClasses: false,
-		closeOnLinkClick: true,
-		openLabelKey: "navStayingGuestsOpenAriaLabel",
-		closeLabelKey: "navStayingGuestsCloseAriaLabel",
-	});
-});
-
 // Accessible Mobile Navigation Drawer (#319)
 document.addEventListener("DOMContentLoaded", () => {
 	const mobileToggle = document.getElementById("mobile-nav-toggle");

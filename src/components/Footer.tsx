@@ -3,10 +3,8 @@ import {
 	getContactPagePath,
 	getDestinationGuidePath,
 	getDestinationGuidesHubPath,
-	getGuidePagePath,
 	getPrivacyPolicyPath,
 	getPropertyPagePath,
-	getRegistryPagePath,
 } from "../constants/config";
 import { CHROME_THEME } from "../constants/theme";
 import { DESTINATION_GUIDES } from "../i18n/destinationGuides";
@@ -27,8 +25,6 @@ export const Footer = ({
 	const t = dict[lang];
 	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
 	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
-	const registryHref = getRegistryPagePath(lang, assetPrefix);
-	const guideHref = getGuidePagePath(lang, assetPrefix);
 	const contactHref = getContactPagePath(lang, assetPrefix);
 	const privacyHref = getPrivacyPolicyPath(lang, assetPrefix);
 	const guidesHubHref = getDestinationGuidesHubPath(lang, assetPrefix);
@@ -66,46 +62,7 @@ export const Footer = ({
 						</ul>
 					</div>
 
-					{/* Group 2: Staying Guests */}
-					<div className={CHROME_THEME.footerGroup}>
-						<p className={CHROME_THEME.footerGroupHeading}>
-							{t.footerStayingGuestsLabel}
-						</p>
-						<ul className={CHROME_THEME.footerLinkList}>
-							<li>
-								<a
-									id="footer-registry-link"
-									href={registryHref}
-									className={CHROME_THEME.footerLink}
-									aria-current={currentPage === "registry" ? "page" : undefined}
-								>
-									{t.registryTitle}
-								</a>
-							</li>
-							<li>
-								<a
-									id="footer-guide-link"
-									href={guideHref}
-									className={CHROME_THEME.footerLink}
-									aria-current={currentPage === "guide" ? "page" : undefined}
-								>
-									{t.navGuestGuide}
-								</a>
-							</li>
-							<li>
-								<a
-									id="footer-contact-link"
-									href={contactHref}
-									className={CHROME_THEME.footerLink}
-									aria-current={currentPage === "contact" ? "page" : undefined}
-								>
-									{t.navContact}
-								</a>
-							</li>
-						</ul>
-					</div>
-
-					{/* Group 3: Destination Guides */}
+					{/* Group 2: Destination Guides */}
 					<nav
 						id="footer-destination-guides"
 						aria-label={t.footerGuidesLabel}
@@ -148,21 +105,33 @@ export const Footer = ({
 						</ul>
 					</nav>
 
-					{/* Group 4: Legal & RNT */}
+					{/* Group 3: Contact & Legal */}
 					<div className={CHROME_THEME.footerGroup}>
 						<p className={CHROME_THEME.footerGroupHeading}>
 							{t.footerLegalLabel}
 						</p>
-						<p className={CHROME_THEME.footerPrivacyWrapper}>
-							<a
-								id="footer-privacy-link"
-								href={privacyHref}
-								className={CHROME_THEME.footerPrivacyLink}
-								aria-current={currentPage === "privacy" ? "page" : undefined}
-							>
-								{t.footerPrivacyLink}
-							</a>
-						</p>
+						<ul className={CHROME_THEME.footerLinkList}>
+							<li>
+								<a
+									id="footer-contact-link"
+									href={contactHref}
+									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "contact" ? "page" : undefined}
+								>
+									{t.navContact}
+								</a>
+							</li>
+							<li>
+								<a
+									id="footer-privacy-link"
+									href={privacyHref}
+									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "privacy" ? "page" : undefined}
+								>
+									{t.footerPrivacyLink}
+								</a>
+							</li>
+						</ul>
 						<p className={CHROME_THEME.footerRntText}>
 							{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
 						</p>

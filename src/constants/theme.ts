@@ -181,18 +181,6 @@ export const CHROME_THEME = {
 	navActions: "flex items-center gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-4 min-w-0",
 	navGuides:
 		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
-	navCheckinGroup: "hidden md:block relative shrink-0",
-	navCheckinToggle:
-		"inline-flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
-	navCheckinChevron:
-		"ovf-checkin-chevron w-3.5 h-3.5 shrink-0 transition-transform duration-200",
-	navCheckinMenuWrapper: "hidden absolute right-0 top-full pt-2 w-60 z-50",
-	navCheckinMenuCard:
-		"bg-white rounded-xl shadow-lg border border-slate-100 p-1.5",
-	navCheckinMenuList: "space-y-1 list-none m-0 p-0",
-	navCheckinMenuLink:
-		"flex items-center justify-between gap-2 min-h-[44px] px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 hover:text-coral-horizon-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
-	navCheckinMenuLinkIcon: "w-4 h-4 text-slate-400 shrink-0",
 	navContact:
 		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navBookBtn:
@@ -215,6 +203,7 @@ export const CHROME_THEME = {
 	mobileDrawerLink:
 		"flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-800 hover:bg-slate-50 hover:text-coral-horizon-ink transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	mobileDrawerLinkIcon: "w-4 h-4 text-slate-400 shrink-0",
+	mobileDrawerStandaloneSection: "pt-4 border-t border-slate-100",
 	langGroup: "relative group shrink-0",
 	langToggle:
 		"inline-flex items-center justify-center gap-1 sm:gap-1.5 min-h-[44px] min-w-[44px] px-2 sm:px-3 lg:px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
@@ -233,7 +222,7 @@ export const CHROME_THEME = {
 	footer: "bg-slate-900 text-slate-300 py-14 px-6 border-t border-slate-800",
 	footerContainer: "max-w-6xl mx-auto",
 	footerGrid:
-		"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-left pb-10 border-b border-slate-800",
+		"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-left pb-10 border-b border-slate-800",
 	footerGroup: "min-w-0",
 	footerGroupHeading:
 		"text-xs font-bold uppercase tracking-wider text-white mb-3",
@@ -243,9 +232,6 @@ export const CHROME_THEME = {
 	footerHostText: "text-sm font-medium text-slate-200 mt-3",
 	footerRntText:
 		"text-xs tracking-wider text-slate-300 uppercase mt-2 leading-relaxed",
-	footerPrivacyWrapper: "text-sm mb-2",
-	footerPrivacyLink:
-		"inline-flex items-center min-h-[44px] text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	footerGuidesNav: "min-w-0",
 	footerGuidesHeading:
 		"text-xs font-bold uppercase tracking-wider text-white mb-3",

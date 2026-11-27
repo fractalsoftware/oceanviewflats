@@ -123,25 +123,21 @@
 }
 
 #navbar #nav-guides,
-#navbar #nav-checkin-toggle,
 #navbar #nav-contact {
 	color: var(--color-pure-white);
 }
 
 #navbar #nav-guides:hover,
-#navbar #nav-checkin-toggle:hover,
 #navbar #nav-contact:hover {
 	color: color-mix(in srgb, var(--color-pure-white) 80%, transparent);
 }
 
 #navbar[data-scrolled="true"] #nav-guides,
-#navbar[data-scrolled="true"] #nav-checkin-toggle,
 #navbar[data-scrolled="true"] #nav-contact {
 	color: var(--color-slate-body);
 }
 
 #navbar[data-scrolled="true"] #nav-guides:hover,
-#navbar[data-scrolled="true"] #nav-checkin-toggle:hover,
 #navbar[data-scrolled="true"] #nav-contact:hover {
 	color: var(--color-coral-horizon-ink);
 }
@@ -194,16 +190,11 @@
 	background-color: var(--color-slate-surface);
 }
 
-#nav-checkin-toggle[aria-expanded="true"] .ovf-checkin-chevron {
-	transform: rotate(180deg);
-}
-
 /* Non-color active destination indicators for aria-current="page" (#329) */
 #navbar #nav-logo[aria-current="page"],
 #navbar #nav-guides[aria-current="page"],
 #navbar #nav-guides[data-active="true"],
-#navbar #nav-contact[aria-current="page"],
-#navbar #nav-checkin-toggle[data-active="true"] {
+#navbar #nav-contact[aria-current="page"] {
 	position: relative;
 	font-weight: 700;
 }
@@ -211,8 +202,7 @@
 #navbar #nav-logo[aria-current="page"]::after,
 #navbar #nav-guides[aria-current="page"]::after,
 #navbar #nav-guides[data-active="true"]::after,
-#navbar #nav-contact[aria-current="page"]::after,
-#navbar #nav-checkin-toggle[data-active="true"]::after {
+#navbar #nav-contact[aria-current="page"]::after {
 	content: "";
 	position: absolute;
 	inset-inline: 0.5rem;
@@ -229,8 +219,7 @@
 
 #navbar[data-scrolled="true"] #nav-guides[aria-current="page"],
 #navbar[data-scrolled="true"] #nav-guides[data-active="true"],
-#navbar[data-scrolled="true"] #nav-contact[aria-current="page"],
-#navbar[data-scrolled="true"] #nav-checkin-toggle[data-active="true"] {
+#navbar[data-scrolled="true"] #nav-contact[aria-current="page"] {
 	color: var(--color-coral-horizon-ink);
 }
 
@@ -244,7 +233,6 @@ footer a[aria-current="page"] {
 	padding-inline-start: 0.625rem;
 }
 
-#nav-checkin-menu a[aria-current="page"],
 #mobile-nav-drawer a[aria-current="page"],
 #mobile-nav-drawer a[data-active="true"] {
 	background-color: var(--color-coral-wash);
@@ -261,12 +249,10 @@ footer a[aria-current="page"] {
 	#navbar #nav-logo[aria-current="page"]::after,
 	#navbar #nav-guides[aria-current="page"]::after,
 	#navbar #nav-guides[data-active="true"]::after,
-	#navbar #nav-contact[aria-current="page"]::after,
-	#navbar #nav-checkin-toggle[data-active="true"]::after {
+	#navbar #nav-contact[aria-current="page"]::after {
 		border-block-end-color: LinkText;
 	}
 
-	#nav-checkin-menu a[aria-current="page"],
 	#mobile-nav-drawer a[aria-current="page"],
 	#mobile-nav-drawer a[data-active="true"] {
 		border-inline-start-color: LinkText;

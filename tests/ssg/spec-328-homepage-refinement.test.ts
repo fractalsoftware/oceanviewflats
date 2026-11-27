@@ -16,7 +16,7 @@ import {
 } from "../../src/constants/theme";
 import { dict } from "../../src/i18n/dict";
 
-test("#329 Shared chrome across all 6 locales and depths exposes desktop staying-guest check-in disclosure, prioritized mobile Staying Guests drawer, aria-current='page' in nav and footer, >=44px tap targets, and declarative data-scrolled CSS tokens", () => {
+test("#336 Shared chrome across all 6 locales and depths removes public Guest Registry & Guest Guide links, structures mobile drawer and 3-column Contact & Legal footer, preserves aria-current='page', >=44px tap targets, and declarative data-scrolled CSS tokens", () => {
 	const distDir = path.join(process.cwd(), "dist");
 	const css = fs.readFileSync(path.join(distDir, "css", "style.css"), "utf-8");
 
@@ -51,16 +51,48 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 			css.includes("forced-colors:active"),
 		"Compiled CSS must provide non-color visual indicators for aria-current='page' in navbar, drawer, and footer with forced-colors adaptation",
 	);
+	for (const deadSelector of [
+		"#nav-checkin-toggle",
+		"#nav-checkin-menu",
+		".ovf-checkin-chevron",
+	]) {
+		assert.ok(
+			!styleSource.includes(deadSelector) && !css.includes(deadSelector),
+			`Dead check-in CSS selector "${deadSelector}" must be removed from src/style.css and dist/css/style.css`,
+		);
+	}
 
-	// 2. Six-Locale Measure Rule: desktop chrome links must not use whitespace-nowrap
+	// 2. Six-Locale Measure Rule & dead CHROME_THEME token removal
 	assert.ok(
 		!CHROME_THEME.navGuides.includes("whitespace-nowrap") &&
-			!CHROME_THEME.navCheckinToggle.includes("whitespace-nowrap") &&
 			!CHROME_THEME.navContact.includes("whitespace-nowrap"),
 		"CHROME_THEME desktop nav links must omit whitespace-nowrap per DESIGN.md six-locale measure rule",
 	);
+	const chromeThemeKeys = Object.keys(CHROME_THEME);
+	for (const deadToken of [
+		"navCheckinGroup",
+		"navCheckinToggle",
+		"navCheckinChevron",
+		"navCheckinMenuWrapper",
+		"navCheckinMenuCard",
+		"navCheckinMenuList",
+		"navCheckinMenuLink",
+		"navCheckinMenuLinkIcon",
+		"footerPrivacyWrapper",
+		"footerPrivacyLink",
+	]) {
+		assert.ok(
+			!chromeThemeKeys.includes(deadToken),
+			`Dead CHROME_THEME token "${deadToken}" must be removed`,
+		);
+	}
+	assert.ok(
+		CHROME_THEME.footerGrid.includes("lg:grid-cols-3") &&
+			!CHROME_THEME.footerGrid.includes("lg:grid-cols-4"),
+		"CHROME_THEME.footerGrid must use a three-column desktop grid (lg:grid-cols-3)",
+	);
 
-	// 3. Verify main.js uses declarative data-scrolled and shared bindDisclosure helper
+	// 3. Verify main.js uses declarative data-scrolled, retains bindDisclosure for #lang-dropdown, and removes check-in hooks
 	const mainJs = fs.readFileSync(
 		path.join(process.cwd(), "public", "js", "main.js"),
 		"utf-8",
@@ -79,9 +111,21 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 	);
 	assert.ok(
 		mainJs.includes("function bindDisclosure(") &&
-			(mainJs.match(/\bbindDisclosure\(\{/g) || []).length >= 2,
-		"main.js must deduplicate #lang-dropdown and #nav-checkin-group via shared bindDisclosure()",
+			(mainJs.match(/(?<!function )\bbindDisclosure\(\{/g) || []).length === 1,
+		"main.js must retain shared bindDisclosure() for #lang-dropdown with the check-in disclosure binding removed",
 	);
+	for (const deadJsToken of [
+		"nav-checkin-group",
+		"nav-checkin-toggle",
+		"nav-checkin-menu",
+		"navStayingGuestsOpenAriaLabel",
+		"navStayingGuestsCloseAriaLabel",
+	]) {
+		assert.ok(
+			!mainJs.includes(deadJsToken),
+			`public/js/main.js must not reference removed check-in token "${deadJsToken}"`,
+		);
+	}
 
 	// 4. Verify all 6 locales across root (depth 0), depth 1, and depth 2 pages
 	const locales = [
@@ -89,51 +133,83 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 			code: "en",
 			suffix: "",
 			homeFile: "index.html",
-			checkinLabel: "Check-in",
-			registryLabel: "Guest Registry",
-			guideLabel: "Guest Guide",
+			notFoundFile: "404.html",
+			contactLegalHtml: "Contact &amp; Legal",
+			contactLegalText: "Contact & Legal",
+			removedStayingGuestsHeading: "Staying Guests",
 		},
 		{
 			code: "es",
 			suffix: "es.html",
 			homeFile: "es.html",
-			checkinLabel: "Check-in",
-			registryLabel: "Registro de Huéspedes",
-			guideLabel: "Guía del Huésped",
+			notFoundFile: "404/es.html",
+			contactLegalHtml: "Contacto y Legal",
+			contactLegalText: "Contacto y Legal",
+			removedStayingGuestsHeading: "Huéspedes Confirmados",
 		},
 		{
 			code: "fr",
 			suffix: "fr.html",
 			homeFile: "fr.html",
-			checkinLabel: "Arrivée",
-			registryLabel: "Registre des Voyageurs",
-			guideLabel: "Guide de l&#x27;Invité",
+			notFoundFile: "404/fr.html",
+			contactLegalHtml: "Contact &amp; Mentions Légales",
+			contactLegalText: "Contact & Mentions Légales",
+			removedStayingGuestsHeading: "Voyageurs Confirmés",
 		},
 		{
 			code: "it",
 			suffix: "it.html",
 			homeFile: "it.html",
-			checkinLabel: "Check-in",
-			registryLabel: "Registro degli Ospiti",
-			guideLabel: "Guida dell&#x27;Ospite",
+			notFoundFile: "404/it.html",
+			contactLegalHtml: "Contatti e Note Legali",
+			contactLegalText: "Contatti e Note Legali",
+			removedStayingGuestsHeading: "Ospiti Confermati",
 		},
 		{
 			code: "de",
 			suffix: "de.html",
 			homeFile: "de.html",
-			checkinLabel: "Check-in",
-			registryLabel: "Gästeregistrierung",
-			guideLabel: "Gäste-Guide",
+			notFoundFile: "404/de.html",
+			contactLegalHtml: "Kontakt &amp; Rechtliches",
+			contactLegalText: "Kontakt & Rechtliches",
+			removedStayingGuestsHeading: "Bestätigte Gäste",
 		},
 		{
 			code: "ja",
 			suffix: "ja.html",
 			homeFile: "ja.html",
-			checkinLabel: "チェックイン",
-			registryLabel: "宿泊者名簿登録",
-			guideLabel: "ゲストガイド",
+			notFoundFile: "404/ja.html",
+			contactLegalHtml: "お問い合わせ・法的情報",
+			contactLegalText: "お問い合わせ・法的情報",
+			removedStayingGuestsHeading: "ご予約済みのお客様",
 		},
 	] as const;
+
+	// Verify dead shared-chrome translation keys are removed across all 6 locales
+	for (const locale of locales) {
+		const localeDict = dict[locale.code] as Record<string, string>;
+		assert.equal(
+			localeDict.footerLegalLabel,
+			locale.contactLegalText,
+			`dict.${locale.code}.footerLegalLabel must be localized to "${locale.contactLegalText}"`,
+		);
+		for (const deadKey of [
+			"navGuestGuide",
+			"footerStayingGuestsLabel",
+			"navStayingGuests",
+			"navStayingGuestsOpenAriaLabel",
+			"navStayingGuestsCloseAriaLabel",
+		]) {
+			assert.equal(
+				localeDict[deadKey],
+				undefined,
+				`dict.${locale.code} must remove orphaned shared-chrome key "${deadKey}"`,
+			);
+		}
+	}
+
+	const privateFulfillmentHrefRegex =
+		/<a\b[^>]*href=["'][^"']*(?:^|\/)(?:registry|guide)(?:\/|$|\?|#)/i;
 
 	for (const locale of locales) {
 		const pageMatrix = [
@@ -141,8 +217,7 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: locale.homeFile,
 				prefix: "./",
 				activeDesktopId: "nav-logo",
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: null,
 				expectGuidesAncestorActive: false,
 				activeFooterId: null,
 				activeFooterGuideSlug: null,
@@ -151,8 +226,7 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: `Oceanview1707/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: null,
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: "1707",
 				expectGuidesAncestorActive: false,
 				activeFooterId: "footer-property-1707-link",
 				activeFooterGuideSlug: null,
@@ -161,8 +235,7 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: `Oceanview1606/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: null,
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: "1606",
 				expectGuidesAncestorActive: false,
 				activeFooterId: "footer-property-1606-link",
 				activeFooterGuideSlug: null,
@@ -171,28 +244,25 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: `registry/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: null,
-				activeCheckinId: "nav-checkin-registry",
-				expectCheckinParentActive: true,
+				activeDrawerHrefType: null,
 				expectGuidesAncestorActive: false,
-				activeFooterId: "footer-registry-link",
+				activeFooterId: null,
 				activeFooterGuideSlug: null,
 			},
 			{
 				file: `guide/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: null,
-				activeCheckinId: "nav-checkin-guide",
-				expectCheckinParentActive: true,
+				activeDrawerHrefType: null,
 				expectGuidesAncestorActive: false,
-				activeFooterId: "footer-guide-link",
+				activeFooterId: null,
 				activeFooterGuideSlug: null,
 			},
 			{
 				file: `contact/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: "nav-contact",
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: "contact",
 				expectGuidesAncestorActive: false,
 				activeFooterId: "footer-contact-link",
 				activeFooterGuideSlug: null,
@@ -201,8 +271,7 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: `privacy/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: null,
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: null,
 				expectGuidesAncestorActive: false,
 				activeFooterId: "footer-privacy-link",
 				activeFooterGuideSlug: null,
@@ -211,8 +280,7 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: `santa-marta/${locale.suffix || "index.html"}`,
 				prefix: "../",
 				activeDesktopId: "nav-guides",
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: "guides",
 				expectGuidesAncestorActive: false,
 				activeFooterId: "footer-guides-hub-link",
 				activeFooterGuideSlug: null,
@@ -221,11 +289,19 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				file: `santa-marta/digital-nomad-remote-work/${locale.suffix || "index.html"}`,
 				prefix: "../../",
 				activeDesktopId: null,
-				activeCheckinId: null,
-				expectCheckinParentActive: false,
+				activeDrawerHrefType: null,
 				expectGuidesAncestorActive: true,
 				activeFooterId: null,
 				activeFooterGuideSlug: "digital-nomad-remote-work",
+			},
+			{
+				file: locale.notFoundFile,
+				prefix: "/",
+				activeDesktopId: null,
+				activeDrawerHrefType: null,
+				expectGuidesAncestorActive: false,
+				activeFooterId: null,
+				activeFooterGuideSlug: null,
 			},
 		] as const;
 
@@ -251,101 +327,108 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				`${page.file} <nav id="navbar"> must not use ARIA application-menu roles`,
 			);
 
-			// Desktop staying-guest check-in disclosure button & menu
-			const checkinBtnMatch = navHtml.match(
-				/<button[^>]*id="nav-checkin-toggle"[^>]*>[\s\S]*?<\/button>/,
-			);
+			// Zero desktop check-in disclosure elements or /registry /guide links in <nav id="navbar">
+			for (const removedId of [
+				"nav-checkin-group",
+				"nav-checkin-toggle",
+				"nav-checkin-menu",
+				"nav-checkin-registry",
+				"nav-checkin-guide",
+			]) {
+				assert.ok(
+					!navHtml.includes(removedId),
+					`${page.file} <nav id="navbar"> must not include removed element #${removedId}`,
+				);
+			}
 			assert.ok(
-				checkinBtnMatch,
-				`${page.file} must render #nav-checkin-toggle button`,
-			);
-			assert.ok(
-				checkinBtnMatch[0].includes('type="button"') &&
-					checkinBtnMatch[0].includes('aria-expanded="false"') &&
-					checkinBtnMatch[0].includes('aria-controls="nav-checkin-menu"') &&
-					checkinBtnMatch[0].includes("min-h-[44px]") &&
-					checkinBtnMatch[0].includes("min-w-[44px]") &&
-					checkinBtnMatch[0].includes(`>${locale.checkinLabel}<`),
-				`${page.file} #nav-checkin-toggle must include localized "${locale.checkinLabel}", aria-expanded/aria-controls, and >=44px tap target`,
-			);
-			assert.equal(
-				checkinBtnMatch[0].includes('data-active="true"'),
-				page.expectCheckinParentActive,
-				`${page.file} #nav-checkin-toggle data-active must match staying-guest active state`,
+				!privateFulfillmentHrefRegex.test(navHtml),
+				`${page.file} <nav id="navbar"> must not contain any link to /registry or /guide`,
 			);
 
-			const expectedRegistryHref = `${page.prefix}registry/${locale.suffix}`;
-			const expectedGuideHref = `${page.prefix}guide/${locale.suffix}`;
 			const expectedContactHref = `${page.prefix}contact/${locale.suffix}`;
 			const expected1707Href = `${page.prefix}Oceanview1707/${locale.suffix}`;
 			const expected1606Href = `${page.prefix}Oceanview1606/${locale.suffix}`;
 			const expectedGuidesHref = `${page.prefix}santa-marta/${locale.suffix}`;
+			const expectedPrivacyHref = `${page.prefix}privacy/${locale.suffix}`;
 
-			const checkinMenuMatch = navHtml.match(
-				/<div[^>]*id="nav-checkin-menu"[^>]*>[\s\S]*?<\/ul>[\s\S]*?<\/div>[\s\S]*?<\/div>/,
-			);
-			assert.ok(checkinMenuMatch, `${page.file} must render #nav-checkin-menu`);
-			assert.ok(
-				checkinMenuMatch[0].includes("hidden") &&
-					checkinMenuMatch[0].includes(
-						`id="nav-checkin-registry" href="${expectedRegistryHref}"`,
-					) &&
-					checkinMenuMatch[0].includes(
-						`id="nav-checkin-guide" href="${expectedGuideHref}"`,
-					) &&
-					checkinMenuMatch[0].includes(`>${locale.registryLabel}<`) &&
-					checkinMenuMatch[0].includes(`>${locale.guideLabel}<`),
-				`${page.file} #nav-checkin-menu must be hidden by default and expose relative localized links to Guest Registry (${expectedRegistryHref}) and Guest Guide (${expectedGuideHref})`,
-			);
-
-			// Mobile drawer prioritizes Staying Guests FIRST (above Properties and Destination Guides)
+			// Mobile drawer orders Properties (1707, 1606) -> Destination Guides -> standalone Contact Us
 			const drawerMatch = navHtml.match(
 				/<div[^>]*id="mobile-nav-drawer"[^>]*>[\s\S]*<\/nav>/,
 			);
 			assert.ok(drawerMatch, `${page.file} must render #mobile-nav-drawer`);
 			const drawerHtml = drawerMatch[0];
-			const drawerRegistryIdx = drawerHtml.indexOf(
-				`href="${expectedRegistryHref}"`,
+			assert.ok(
+				!drawerHtml.includes(locale.removedStayingGuestsHeading) &&
+					!privateFulfillmentHrefRegex.test(drawerHtml),
+				`${page.file} #mobile-nav-drawer must omit Staying Guests heading and /registry or /guide links`,
 			);
-			const drawerGuideIdx = drawerHtml.indexOf(`href="${expectedGuideHref}"`);
-			const drawerContactIdx = drawerHtml.indexOf(
-				`href="${expectedContactHref}"`,
+			const drawerHeadings = drawerHtml.match(/<p\b[^>]*>[\s\S]*?<\/p>/g) || [];
+			assert.equal(
+				drawerHeadings.length,
+				2,
+				`${page.file} #mobile-nav-drawer must render exactly 2 group headings (Properties and Destination Guides; Contact Us is standalone)`,
 			);
 			const drawer1707Idx = drawerHtml.indexOf(`href="${expected1707Href}"`);
 			const drawer1606Idx = drawerHtml.indexOf(`href="${expected1606Href}"`);
 			const drawerGuidesIdx = drawerHtml.indexOf(
 				`href="${expectedGuidesHref}"`,
 			);
+			const drawerContactIdx = drawerHtml.indexOf(
+				`href="${expectedContactHref}"`,
+			);
 			assert.ok(
-				drawerRegistryIdx > 0 &&
-					drawerGuideIdx > drawerRegistryIdx &&
-					drawerContactIdx > drawerGuideIdx &&
-					drawer1707Idx > drawerContactIdx &&
+				drawer1707Idx > 0 &&
 					drawer1606Idx > drawer1707Idx &&
-					drawerGuidesIdx > drawer1606Idx,
-				`${page.file} #mobile-nav-drawer must prioritize Staying Guests (Registry, Guide, Contact) before Properties (1707, 1606) and Destination Guides`,
+					drawerGuidesIdx > drawer1606Idx &&
+					drawerContactIdx > drawerGuidesIdx,
+				`${page.file} #mobile-nav-drawer must order Properties (1707, 1606) -> Destination Guides -> standalone Contact Us`,
 			);
 
-			// Mobile drawer hub link uses aria-current="page" only on Hub, and data-active="true" on child articles
-			const drawerGuidesLinkMatch = drawerHtml.match(
-				new RegExp(
-					`<a[^>]*href="${expectedGuidesHref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*>`,
-				),
-			);
-			assert.ok(
-				drawerGuidesLinkMatch,
-				`${page.file} #mobile-nav-drawer must render Destination Guides hub link`,
-			);
+			// Mobile drawer links enforce >=44px tap targets and accurate aria-current="page" / data-active="true"
+			const drawerAnchors = drawerHtml.match(/<a\b[^>]*>/g) || [];
 			assert.equal(
-				drawerGuidesLinkMatch[0].includes('aria-current="page"'),
-				page.activeDesktopId === "nav-guides",
-				`${page.file} mobile drawer guides link aria-current="page" must only appear on Hub`,
+				drawerAnchors.length,
+				4,
+				`${page.file} #mobile-nav-drawer must contain exactly 4 links (1707, 1606, Destination Guides, Contact Us)`,
 			);
-			assert.equal(
-				drawerGuidesLinkMatch[0].includes('data-active="true"'),
-				page.expectGuidesAncestorActive,
-				`${page.file} mobile drawer guides link data-active="true" must match child article state`,
-			);
+			for (const drawerAnchor of drawerAnchors) {
+				assert.ok(
+					drawerAnchor.includes("min-h-[44px]"),
+					`${page.file} every mobile drawer link must enforce min-h-[44px], got: ${drawerAnchor}`,
+				);
+			}
+
+			const escapeRegex = (value: string) =>
+				value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+			const drawerLinkTargets = [
+				{ key: "1707", href: expected1707Href },
+				{ key: "1606", href: expected1606Href },
+				{ key: "guides", href: expectedGuidesHref },
+				{ key: "contact", href: expectedContactHref },
+			] as const;
+
+			for (const target of drawerLinkTargets) {
+				const linkMatch = drawerHtml.match(
+					new RegExp(`<a[^>]*href="${escapeRegex(target.href)}"[^>]*>`),
+				);
+				assert.ok(
+					linkMatch,
+					`${page.file} #mobile-nav-drawer must render ${target.key} link`,
+				);
+				assert.equal(
+					linkMatch[0].includes('aria-current="page"'),
+					page.activeDrawerHrefType === target.key,
+					`${page.file} mobile drawer ${target.key} link aria-current="page" mismatch`,
+				);
+				if (target.key === "guides") {
+					assert.equal(
+						linkMatch[0].includes('data-active="true"'),
+						page.expectGuidesAncestorActive,
+						`${page.file} mobile drawer guides link data-active="true" must match child article state`,
+					);
+				}
+			}
 
 			// Active aria-current="page" and data-active checks on desktop nav links
 			for (const id of ["nav-logo", "nav-guides", "nav-contact"] as const) {
@@ -365,20 +448,6 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				}
 			}
 
-			for (const id of ["nav-checkin-registry", "nav-checkin-guide"] as const) {
-				const linkMatch = navHtml.match(new RegExp(`<a[^>]*id="${id}"[^>]*>`));
-				assert.ok(linkMatch, `${page.file} must render #${id}`);
-				assert.equal(
-					linkMatch[0].includes('aria-current="page"'),
-					page.activeCheckinId === id,
-					`${page.file} #${id} aria-current="page" mismatch`,
-				);
-				assert.ok(
-					linkMatch[0].includes("min-h-[44px]"),
-					`${page.file} #${id} must enforce min-h-[44px] tap target`,
-				);
-			}
-
 			// >=44px tap targets across all nav and footer interactive controls (zero legacy min-h-[40px])
 			assert.ok(
 				!navHtml.includes("min-h-[40px]") && !navHtml.includes("min-w-[40px]"),
@@ -388,10 +457,39 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 			const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
 			assert.ok(footerMatch, `${page.file} must render <footer>`);
 			const footerHtml = footerMatch[0];
-			const footerLinks = footerHtml.match(/<a\b[^>]*>/g) || [];
 			assert.ok(
-				footerLinks.length >= 11,
-				`${page.file} footer must contain all navigation & legal links`,
+				footerHtml.includes("lg:grid-cols-3") &&
+					!footerHtml.includes("lg:grid-cols-4"),
+				`${page.file} <footer> must use a three-column desktop grid (lg:grid-cols-3)`,
+			);
+			assert.ok(
+				!footerHtml.includes("footer-registry-link") &&
+					!footerHtml.includes("footer-guide-link") &&
+					!footerHtml.includes(locale.removedStayingGuestsHeading) &&
+					!privateFulfillmentHrefRegex.test(footerHtml),
+				`${page.file} <footer> must omit Staying Guests column and any /registry or /guide links`,
+			);
+			const contactLegalHeadingIdx = footerHtml.indexOf(
+				`>${locale.contactLegalHtml}</p>`,
+			);
+			const footerContactIdx = footerHtml.indexOf(
+				`id="footer-contact-link" href="${expectedContactHref}"`,
+			);
+			const footerPrivacyIdx = footerHtml.indexOf(
+				`id="footer-privacy-link" href="${expectedPrivacyHref}"`,
+			);
+			assert.ok(
+				contactLegalHeadingIdx > 0 &&
+					footerContactIdx > contactLegalHeadingIdx &&
+					footerPrivacyIdx > footerContactIdx,
+				`${page.file} <footer> Column 3 must render localized "${locale.contactLegalText}" heading followed by #footer-contact-link and #footer-privacy-link`,
+			);
+
+			const footerLinks = footerHtml.match(/<a\b[^>]*>/g) || [];
+			assert.equal(
+				footerLinks.length,
+				10,
+				`${page.file} 3-column footer must contain exactly 10 links (2 Properties + 5 Guides + Contact + Privacy + FractalSoftware badge)`,
 			);
 			for (const footerAnchor of footerLinks) {
 				assert.ok(
@@ -434,7 +532,7 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 				);
 			}
 
-			// #ovf-page-config exposes localized check-in aria labels (with WCAG 2.5.3 Label in Name)
+			// #ovf-page-config omits removed check-in ARIA keys while retaining mobile drawer ARIA keys
 			const configMatch = html.match(
 				/<script id="ovf-page-config" type="application\/json">([\s\S]*?)<\/script>/,
 			);
@@ -442,20 +540,26 @@ test("#329 Shared chrome across all 6 locales and depths exposes desktop staying
 			const parsedConfig = JSON.parse(configMatch[1]) as {
 				i18n: Record<string, string>;
 			};
+			assert.equal(
+				parsedConfig.i18n.navStayingGuestsOpenAriaLabel,
+				undefined,
+				`${page.file} #ovf-page-config must omit removed navStayingGuestsOpenAriaLabel`,
+			);
+			assert.equal(
+				parsedConfig.i18n.navStayingGuestsCloseAriaLabel,
+				undefined,
+				`${page.file} #ovf-page-config must omit removed navStayingGuestsCloseAriaLabel`,
+			);
 			assert.ok(
-				parsedConfig.i18n.navStayingGuestsOpenAriaLabel?.includes(
-					locale.checkinLabel,
-				) &&
-					parsedConfig.i18n.navStayingGuestsCloseAriaLabel?.includes(
-						locale.checkinLabel,
-					),
-				`${page.file} #ovf-page-config must include localized navStayingGuestsOpenAriaLabel & navStayingGuestsCloseAriaLabel containing "${locale.checkinLabel}"`,
+				Boolean(parsedConfig.i18n.navMenuOpenAriaLabel) &&
+					Boolean(parsedConfig.i18n.navMenuCloseAriaLabel),
+				`${page.file} #ovf-page-config must preserve localized mobile drawer ARIA labels`,
 			);
 		}
 	}
 });
 
-test("#329 main.js desktop staying-guest check-in disclosure handles click, Escape focus restoration, outside click, focusout, and mutual dismissal with #lang-dropdown", () => {
+test("#336 main.js runs cleanly with zero check-in DOM elements: language dropdown disclosure, mobile drawer, navbar scroll-state sync, and /booking-success Reservation UID hydration", () => {
 	const mainJsCode = fs.readFileSync(
 		path.join(process.cwd(), "public", "js", "main.js"),
 		"utf-8",
@@ -473,6 +577,8 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 		id: string;
 		tagName: string;
 		hidden: boolean;
+		href: string;
+		textContent: string;
 		classList: {
 			add: (...cls: string[]) => void;
 			remove: (...cls: string[]) => void;
@@ -503,10 +609,20 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 		const listeners: Record<string, Listener[]> = {};
 		const children: MockNode[] = [];
 		let focused = false;
+		const collectAll = (predicate: (n: MockNode) => boolean): MockNode[] => {
+			const matches: MockNode[] = [];
+			for (const child of children) {
+				if (predicate(child)) matches.push(child);
+				matches.push(...child.querySelectorAll("a").filter(predicate));
+			}
+			return matches;
+		};
 		const node: MockNode = {
 			id,
 			tagName,
 			hidden: initialClasses.includes("hidden"),
+			href: initialAttrs.href || "",
+			textContent: "",
 			classList: {
 				add: (...cls: string[]) => {
 					for (const c of cls) classes.add(c);
@@ -519,6 +635,7 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 			getAttribute: (name: string) => attrs[name] ?? null,
 			setAttribute: (name: string, val: string) => {
 				attrs[name] = val;
+				if (name === "href") node.href = val;
 			},
 			removeAttribute: (name: string) => {
 				delete attrs[name];
@@ -554,7 +671,7 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 			},
 			querySelector: () => children[0] || null,
 			querySelectorAll: (sel: string) =>
-				sel === "a" ? children.filter((c) => c.tagName === "A") : [],
+				sel === "a" ? collectAll((c) => c.tagName === "A") : [],
 		};
 		return node;
 	};
@@ -562,26 +679,6 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 	const navbar = createMockNode("navbar", "NAV", [], {
 		"data-scrolled": "false",
 	});
-	const checkinGroup = createMockNode("nav-checkin-group", "DIV");
-	const checkinToggle = createMockNode("nav-checkin-toggle", "BUTTON", [], {
-		type: "button",
-		"aria-expanded": "false",
-		"aria-controls": "nav-checkin-menu",
-		"aria-label": "Arrivée — Registre des Voyageurs et Guide de l'Invité",
-	});
-	const checkinMenu = createMockNode("nav-checkin-menu", "DIV", ["hidden"], {
-		hidden: "",
-	});
-	const registryLink = createMockNode("nav-checkin-registry", "A", [], {
-		href: "./registry/fr.html",
-	});
-	const guideLink = createMockNode("nav-checkin-guide", "A", [], {
-		href: "./guide/fr.html",
-	});
-	checkinMenu.appendChild(registryLink);
-	checkinMenu.appendChild(guideLink);
-	checkinGroup.appendChild(checkinToggle);
-	checkinGroup.appendChild(checkinMenu);
 
 	const langToggleGroup = createMockNode("lang-toggle-group", "DIV");
 	const langToggle = createMockNode("lang-toggle", "BUTTON", [], {
@@ -593,19 +690,63 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 		"opacity-0",
 		"invisible",
 	]);
+	const langOptionEn = createMockNode("lang-opt-en", "A", [], {
+		href: "./index.html",
+	});
+	langDropdown.appendChild(langOptionEn);
 	langToggleGroup.appendChild(langToggle);
 	langToggleGroup.appendChild(langDropdown);
+
+	const mobileToggle = createMockNode("mobile-nav-toggle", "BUTTON", [], {
+		type: "button",
+		"aria-expanded": "false",
+		"aria-controls": "mobile-nav-drawer",
+		"aria-label": "Ouvrir le menu de navigation",
+	});
+	const mobileDrawer = createMockNode("mobile-nav-drawer", "DIV", ["hidden"], {
+		hidden: "",
+	});
+	const mobileClose = createMockNode("mobile-nav-close", "BUTTON", [], {
+		type: "button",
+		"aria-label": "Fermer le menu de navigation",
+	});
+	const drawerContactLink = createMockNode("drawer-contact", "A", [], {
+		href: "../contact/fr.html",
+	});
+	mobileDrawer.appendChild(mobileClose);
+	mobileDrawer.appendChild(drawerContactLink);
+	navbar.appendChild(langToggleGroup);
+	navbar.appendChild(mobileToggle);
+	navbar.appendChild(mobileDrawer);
+
+	const bookingRefBox = createMockNode("booking-reference-box", "DIV", [
+		"hidden",
+	]);
+	const displayReservationCode = createMockNode(
+		"display-reservation-code",
+		"SPAN",
+	);
+	const btnBookingRegistry = createMockNode("btn-booking-registry", "A", [], {
+		href: "../registry/fr.html",
+	});
+	const btnBookingGuide = createMockNode("btn-booking-guide", "A", [], {
+		href: "../guide/fr.html",
+	});
 
 	const outsideNode = createMockNode("main-content", "MAIN");
 
 	const elementsById = new Map<string, MockNode>([
 		["navbar", navbar],
-		["nav-checkin-group", checkinGroup],
-		["nav-checkin-toggle", checkinToggle],
-		["nav-checkin-menu", checkinMenu],
 		["lang-toggle-group", langToggleGroup],
 		["lang-toggle", langToggle],
 		["lang-dropdown", langDropdown],
+		["mobile-nav-toggle", mobileToggle],
+		["mobile-nav-drawer", mobileDrawer],
+		["mobile-nav-close", mobileClose],
+		["booking-reference-box", bookingRefBox],
+		["display-reservation-code", displayReservationCode],
+		["btn-booking-registry", btnBookingRegistry],
+		["btn-booking-guide", btnBookingGuide],
 	]);
 
 	const docListeners: Record<string, Listener[]> = {};
@@ -617,16 +758,21 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 	};
 
 	const translations: Record<string, string> = {
-		navStayingGuestsOpenAriaLabel:
-			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
-		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
+		navMenuOpenAriaLabel: "Ouvrir le menu de navigation",
+		navMenuCloseAriaLabel: "Fermer le menu de navigation",
 	};
 
+	const sessionStore = new Map<string, string>();
 	const sandbox = {
+		URL,
+		URLSearchParams,
 		window: {
 			_paq: [] as unknown[],
 			scrollY: 75,
-			location: { search: "", pathname: "/fr.html" },
+			location: {
+				search: "?code=ovf_test_uid_336",
+				pathname: "/booking-success/fr.html",
+			},
 			addEventListener: (evt: string, fn: Listener) => {
 				winListeners[evt] = winListeners[evt] || [];
 				winListeners[evt].push(fn);
@@ -636,8 +782,8 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 			},
 			getPageConfig: () => ({
 				lang: "fr",
-				assetPrefix: "./",
-				apiBase: "./api/",
+				assetPrefix: "../",
+				apiBase: "../api/",
 			}),
 			t: (key: string, _params?: Record<string, string>, fallback?: string) =>
 				translations[key] ?? fallback ?? key,
@@ -662,6 +808,12 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 			},
 		},
 		localStorage: { getItem: () => null, setItem: () => {} },
+		sessionStorage: {
+			getItem: (key: string) => sessionStore.get(key) ?? null,
+			setItem: (key: string, value: string) => {
+				sessionStore.set(key, value);
+			},
+		},
 		console,
 	};
 
@@ -669,32 +821,19 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 	vm.runInContext(mainJsCode, sandbox);
 	sandbox.document.dispatchEvent("DOMContentLoaded");
 
-	// 1. data-scrolled syncs on DOMContentLoaded even without #nav-logo in DOM
+	// 1. data-scrolled syncs on DOMContentLoaded and scroll
 	assert.equal(navbar.getAttribute("data-scrolled"), "true");
 	sandbox.window.scrollY = 0;
 	sandbox.window.dispatchEvent("scroll");
 	assert.equal(navbar.getAttribute("data-scrolled"), "false");
 
-	// 2. Opening #lang-dropdown first, then opening #nav-checkin-toggle closes #lang-dropdown
+	// 2. Language dropdown disclosure: click toggle, Escape focus restoration, outside click, focusout
 	langToggle.dispatchEvent("click");
 	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(langDropdown.classList.contains("opacity-100"), true);
+	assert.equal(langDropdown.classList.contains("visible"), true);
 
-	checkinToggle.dispatchEvent("click");
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
-	assert.equal(checkinMenu.classList.contains("hidden"), false);
-	assert.equal(checkinMenu.hidden, false);
-	assert.equal(
-		checkinToggle.getAttribute("aria-label"),
-		"Fermer le menu Arrivée",
-	);
-	assert.equal(
-		langToggle.getAttribute("aria-expanded"),
-		"false",
-		"Opening #nav-checkin-toggle must close an open #lang-dropdown",
-	);
-
-	// 3. Escape closes #nav-checkin-menu and restores focus to #nav-checkin-toggle
-	checkinToggle.resetFocus();
+	langToggle.resetFocus();
 	let escapePrevented = false;
 	sandbox.document.dispatchEvent("keydown", {
 		key: "Escape",
@@ -703,51 +842,86 @@ test("#329 main.js desktop staying-guest check-in disclosure handles click, Esca
 		},
 	});
 	assert.equal(escapePrevented, true);
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
-	assert.equal(checkinMenu.classList.contains("hidden"), true);
-	assert.equal(checkinMenu.hidden, true);
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langDropdown.classList.contains("invisible"), true);
 	assert.equal(
-		checkinToggle.getAttribute("aria-label"),
-		"Arrivée — Registre des Voyageurs et Guide de l'Invité",
-	);
-	assert.equal(
-		checkinToggle.isFocused(),
+		langToggle.isFocused(),
 		true,
-		"Escape must restore focus to #nav-checkin-toggle",
+		"Escape must restore focus to #lang-toggle",
 	);
 
-	// 4. Outside click dismisses without stealing focus
-	checkinToggle.dispatchEvent("click");
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
-	checkinToggle.resetFocus();
-	sandbox.document.dispatchEvent("click", { target: outsideNode });
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
-	assert.equal(checkinMenu.classList.contains("hidden"), true);
-	assert.equal(checkinToggle.isFocused(), false);
-
-	// 5. focusout inside #nav-checkin-group keeps menu open; focusout outside closes it
-	checkinToggle.dispatchEvent("click");
-	checkinGroup.dispatchEvent("focusout", { relatedTarget: registryLink });
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
-	assert.equal(checkinMenu.classList.contains("hidden"), false);
-
-	checkinGroup.dispatchEvent("focusout", { relatedTarget: outsideNode });
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
-	assert.equal(checkinMenu.classList.contains("hidden"), true);
-
-	// 6. Clicking a link inside #nav-checkin-menu closes it, and opening #lang-toggle closes #nav-checkin-menu
-	checkinToggle.dispatchEvent("click");
-	guideLink.dispatchEvent("click");
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
-
-	checkinToggle.dispatchEvent("click");
-	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
 	langToggle.dispatchEvent("click");
+	langToggle.resetFocus();
+	sandbox.document.dispatchEvent("click", { target: outsideNode });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(langToggle.isFocused(), false);
+
+	langToggle.dispatchEvent("click");
+	langToggleGroup.dispatchEvent("focusout", { relatedTarget: langOptionEn });
 	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	langToggleGroup.dispatchEvent("focusout", { relatedTarget: outsideNode });
+	assert.equal(langToggle.getAttribute("aria-expanded"), "false");
+
+	// 3. Mobile navigation drawer: open toggle, Escape + focus restoration, close button, outside click
+	mobileClose.resetFocus();
+	mobileToggle.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(mobileDrawer.classList.contains("hidden"), false);
+	assert.equal(mobileDrawer.hidden, false);
 	assert.equal(
-		checkinToggle.getAttribute("aria-expanded"),
-		"false",
-		"Opening #lang-toggle must close an open #nav-checkin-menu",
+		mobileToggle.getAttribute("aria-label"),
+		"Fermer le menu de navigation",
+	);
+	assert.equal(mobileClose.isFocused(), true);
+
+	mobileToggle.resetFocus();
+	escapePrevented = false;
+	sandbox.document.dispatchEvent("keydown", {
+		key: "Escape",
+		preventDefault: () => {
+			escapePrevented = true;
+		},
+	});
+	assert.equal(escapePrevented, true);
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(mobileDrawer.classList.contains("hidden"), true);
+	assert.equal(mobileDrawer.hidden, true);
+	assert.equal(
+		mobileToggle.getAttribute("aria-label"),
+		"Ouvrir le menu de navigation",
+	);
+	assert.equal(
+		mobileToggle.isFocused(),
+		true,
+		"Escape must restore focus to #mobile-nav-toggle",
+	);
+
+	mobileToggle.dispatchEvent("click");
+	mobileToggle.resetFocus();
+	mobileClose.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(mobileToggle.isFocused(), true);
+
+	mobileToggle.dispatchEvent("click");
+	mobileToggle.resetFocus();
+	sandbox.document.dispatchEvent("click", { target: outsideNode });
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(mobileToggle.isFocused(), false);
+
+	// 4. /booking-success Reservation UID hydration preserves token-carrying links & language query propagation
+	assert.equal(bookingRefBox.classList.contains("hidden"), false);
+	assert.equal(displayReservationCode.textContent, "ovf_test_uid_336");
+	assert.equal(
+		btnBookingRegistry.getAttribute("href"),
+		"../registry/fr.html?code=ovf_test_uid_336",
+	);
+	assert.equal(
+		btnBookingGuide.getAttribute("href"),
+		"../guide/fr.html?code=ovf_test_uid_336",
+	);
+	assert.equal(
+		langOptionEn.getAttribute("href"),
+		"./index.html?code=ovf_test_uid_336",
 	);
 });
 

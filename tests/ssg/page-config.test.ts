@@ -5033,16 +5033,24 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 					) &&
 					drawerHtml.includes(`href="${prefix}santa-marta/${locale.suffix}"`) &&
 					drawerHtml.includes(`href="${prefix}contact/${locale.suffix}"`) &&
-					drawerHtml.includes(`href="${prefix}registry/${locale.suffix}"`) &&
-					drawerHtml.includes(`href="${prefix}guide/${locale.suffix}"`),
-				`${label} #mobile-nav-drawer must be hidden by default and include relative links to 1707, 1606, Destination Guides, Contact, Guest Registry, and Guest Guide`,
+					!drawerHtml.includes(`href="${prefix}registry/${locale.suffix}"`) &&
+					!drawerHtml.includes(`href="${prefix}guide/${locale.suffix}"`),
+				`${label} #mobile-nav-drawer must be hidden by default, include relative links to 1707, 1606, Destination Guides, and Contact, and omit Guest Registry and Guest Guide`,
 			);
 
-			// Contact is grouped under Staying Guests (after registry & guide links), matching Footer.tsx
+			// Properties (1707, 1606) -> Destination Guides -> standalone Contact Us
 			assert.ok(
-				drawerHtml.indexOf(`href="${prefix}guide/${locale.suffix}"`) <
-					drawerHtml.indexOf(`href="${prefix}contact/${locale.suffix}"`),
-				`${label} #mobile-nav-drawer must group Contact under Staying Guests alongside Guest Registry and Guest Guide`,
+				drawerHtml.indexOf(`href="${prefix}Oceanview1707/${locale.suffix}"`) <
+					drawerHtml.indexOf(
+						`href="${prefix}Oceanview1606/${locale.suffix}"`,
+					) &&
+					drawerHtml.indexOf(`href="${prefix}Oceanview1606/${locale.suffix}"`) <
+						drawerHtml.indexOf(
+							`href="${prefix}santa-marta/${locale.suffix}"`,
+						) &&
+					drawerHtml.indexOf(`href="${prefix}santa-marta/${locale.suffix}"`) <
+						drawerHtml.indexOf(`href="${prefix}contact/${locale.suffix}"`),
+				`${label} #mobile-nav-drawer must order Properties (1707, 1606), Destination Guides, and standalone Contact Us`,
 			);
 
 			// 4. Decorative brand & attribution SVGs hidden from screen readers + #nav-logo >=44px tap target
@@ -5055,23 +5063,21 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 				`${label} #nav-logo must enforce min-h-[44px] tap target and aria-hidden="true" on decorative SVG`,
 			);
 
-			// 5. Reorganized 4-group global Footer with relative links, aria-hidden SVGs, and rounded-lg focus rings
+			// 5. Reorganized 3-column global Footer (Properties, Destination Guides, Contact & Legal) with relative links, aria-hidden SVGs, and rounded-lg focus rings
 			const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
 			assert.ok(footerMatch, `${label} must render <footer>`);
 			const footerHtml = footerMatch[0];
 			assert.ok(
-				footerHtml.includes(
-					`id="footer-property-1707-link" href="${prefix}Oceanview1707/${locale.suffix}"`,
-				) &&
+				footerHtml.includes("lg:grid-cols-3") &&
+					!footerHtml.includes("lg:grid-cols-4") &&
+					footerHtml.includes(
+						`id="footer-property-1707-link" href="${prefix}Oceanview1707/${locale.suffix}"`,
+					) &&
 					footerHtml.includes(
 						`id="footer-property-1606-link" href="${prefix}Oceanview1606/${locale.suffix}"`,
 					) &&
-					footerHtml.includes(
-						`id="footer-registry-link" href="${prefix}registry/${locale.suffix}"`,
-					) &&
-					footerHtml.includes(
-						`id="footer-guide-link" href="${prefix}guide/${locale.suffix}"`,
-					) &&
+					!footerHtml.includes("footer-registry-link") &&
+					!footerHtml.includes("footer-guide-link") &&
 					footerHtml.includes(
 						`id="footer-contact-link" href="${prefix}contact/${locale.suffix}"`,
 					) &&
@@ -5081,7 +5087,7 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 					footerHtml.includes(
 						`id="footer-privacy-link" href="${prefix}privacy/${locale.suffix}"`,
 					),
-				`${label} Footer must include relative links for Properties, Staying Guests, Destination Guides, and Legal`,
+				`${label} 3-column Footer must include relative links for Properties, Destination Guides, and Contact & Legal while omitting Guest Registry and Guest Guide`,
 			);
 			assert.ok(
 				!footerHtml.includes("rounded-sm") && footerHtml.includes("rounded-lg"),
