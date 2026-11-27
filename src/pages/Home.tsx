@@ -8,7 +8,6 @@ import {
 	Compass,
 	CreditCard,
 	ExternalLink,
-	FileCheck,
 	Heart,
 	Landmark,
 	Mail,
@@ -17,7 +16,6 @@ import {
 	Percent,
 	Plane,
 	ShieldCheck,
-	Sparkles,
 	Star,
 	Trees,
 	Users,
@@ -536,10 +534,30 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								))}
 							</dl>
 						</div>
+
+						{/* Direct Action CTAs into Property 1707 & Property 1606 */}
+						<div id="home-compare-ctas" className={HOME_THEME.compareCtaRow}>
+							<a
+								id="home-compare-cta-1707"
+								href={property1707Href}
+								className={HOME_THEME.compareCta1707}
+							>
+								<span>{t.homeCompareCta1707}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+							<a
+								id="home-compare-cta-1606"
+								href={property1606Href}
+								className={HOME_THEME.compareCta1606}
+							>
+								<span>{t.homeCompareCta1606}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+						</div>
 					</div>
 				</section>
 
-				{/* Editorial Why Book Direct + Direct Reservation Trust Strip + Host Card */}
+				{/* Consolidated Proof-Led Direct Reservation & Host Showcase */}
 				<section id="why-book-direct" className={HOME_THEME.directSection}>
 					<div className={HOME_THEME.directContainer}>
 						<div className={HOME_THEME.directHeader}>
@@ -547,163 +565,117 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							<p className={HOME_THEME.directSubtitle}>{t.directSubtitle}</p>
 						</div>
 
-						<ul className={HOME_THEME.directGrid}>
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
+						<div className={HOME_THEME.directShowcaseGrid}>
+							{/* Three Concrete, Non-Redundant Direct Reservation Proof Pillars */}
+							<ul id="home-trust-strip" className={HOME_THEME.trustStripGrid}>
+								<li className={HOME_THEME.trustStripCard}>
 									<Percent
-										className={HOME_THEME.directIconEmerald}
+										className={HOME_THEME.trustStripIconEmerald}
 										aria-hidden="true"
 									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason1Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason1Desc}
-								</p>
-							</li>
-
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
-									<Sparkles
-										className={HOME_THEME.directIconCoral}
+									<div>
+										<h3 className={HOME_THEME.trustStripTitle}>
+											{t.homeDirectPillar1Title}
+										</h3>
+										<p className={HOME_THEME.trustStripDesc}>
+											{t.homeDirectPillar1Desc}
+										</p>
+									</div>
+								</li>
+								<li className={HOME_THEME.trustStripCardEmerald}>
+									<CreditCard
+										className={HOME_THEME.trustStripIconEmerald}
 										aria-hidden="true"
 									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason2Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason2Desc}
-								</p>
-							</li>
-
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
-									<MessageCircle
-										className={HOME_THEME.directIconSky}
-										aria-hidden="true"
-									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason3Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason3Desc}
-								</p>
-							</li>
-
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
+									<div>
+										<h3 className={HOME_THEME.trustStripTitle}>
+											{t.homeTrustPaymentsTitle}
+										</h3>
+										<p className={HOME_THEME.trustStripDesc}>
+											{t.homeTrustPaymentsDesc}
+										</p>
+									</div>
+								</li>
+								<li className={HOME_THEME.trustStripCard}>
 									<ShieldCheck
-										className={HOME_THEME.directIconEmerald}
+										className={HOME_THEME.trustStripIconSlate}
 										aria-hidden="true"
 									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason4Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason4Desc}
-								</p>
-							</li>
-						</ul>
+									<div>
+										<h3 className={HOME_THEME.trustStripTitle}>
+											{t.homeTrustRntTitle}
+										</h3>
+										<p className={HOME_THEME.trustStripDesc}>
+											{t.homeTrustRntDesc}
+										</p>
+									</div>
+								</li>
+							</ul>
 
-						{/* Direct Reservation Payment & Colombian RNT Trust Strip */}
-						<div id="home-trust-strip" className={HOME_THEME.trustStripGrid}>
-							<div className={HOME_THEME.trustStripCardEmerald}>
-								<CreditCard
-									className={HOME_THEME.trustStripIconEmerald}
-									aria-hidden="true"
-								/>
-								<div>
-									<h3 className={HOME_THEME.trustStripTitle}>
-										{t.homeTrustPaymentsTitle}
-									</h3>
-									<p className={HOME_THEME.trustStripDesc}>
-										{t.homeTrustPaymentsDesc}
-									</p>
+							{/* Owner-Hosted Showcase Card with Direct Contact Actions */}
+							<div id="home-host-card" className={HOME_THEME.hostCard}>
+								<div className={HOME_THEME.hostAvatarWrapper}>
+									<img
+										src={`${assetPrefix}${IMAGES.general.host}`}
+										alt={t.hostImgAlt}
+										width={IMAGE_DIMENSIONS.host.width}
+										height={IMAGE_DIMENSIONS.host.height}
+										className={HOME_THEME.hostAvatarImg}
+										loading="lazy"
+										decoding="async"
+									/>
 								</div>
-							</div>
-							<div className={HOME_THEME.trustStripCardSlate}>
-								<ShieldCheck
-									className={HOME_THEME.trustStripIconSlate}
-									aria-hidden="true"
-								/>
-								<div>
-									<h3 className={HOME_THEME.trustStripTitle}>
-										{t.homeTrustRntTitle}
-									</h3>
-									<p className={HOME_THEME.trustStripDesc}>
-										{t.homeTrustRntDesc}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						{/* Host & Data Controller Showcase Card with Direct Contact Actions */}
-						<div id="home-host-card" className={HOME_THEME.hostCard}>
-							<div className={HOME_THEME.hostAvatarWrapper}>
-								<img
-									src={`${assetPrefix}${IMAGES.general.host}`}
-									alt={t.hostImgAlt}
-									width={IMAGE_DIMENSIONS.host.width}
-									height={IMAGE_DIMENSIONS.host.height}
-									className={HOME_THEME.hostAvatarImg}
-									loading="lazy"
-									decoding="async"
-								/>
-							</div>
-							<div className={HOME_THEME.hostBody}>
-								<div className={HOME_THEME.hostHeaderRow}>
-									<h3 className={HOME_THEME.hostName}>{t.hostName}</h3>
-									<span className={HOME_THEME.hostRoleBadge}>
-										{t.hostTitle}
-									</span>
-								</div>
-								<p className={HOME_THEME.hostBio}>{t.hostBio}</p>
-								<div className={HOME_THEME.hostBadgesRow}>
-									<span className={HOME_THEME.hostControllerBadge}>
-										<FileCheck
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-										<span>
-											{t.hostDataControllerLabel}: {DATA_CONTROLLER.name}
+								<div className={HOME_THEME.hostBody}>
+									<div className={HOME_THEME.hostHeaderRow}>
+										<h3 className={HOME_THEME.hostName}>{t.hostName}</h3>
+										<span className={HOME_THEME.hostRoleBadge}>
+											{t.hostTitle}
 										</span>
-									</span>
-									<span className={HOME_THEME.hostRntBadge}>
-										<ShieldCheck
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-										<span>
-											{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
+									</div>
+									<p className={HOME_THEME.hostBio}>{t.hostBio}</p>
+									<div className={HOME_THEME.hostBadgesRow}>
+										<span className={HOME_THEME.hostOwnerBadge}>
+											<CheckCircle2
+												className={HOME_THEME.iconSm}
+												aria-hidden="true"
+											/>
+											<span>
+												{`${t.homeHostOwnerBadge}: ${DATA_CONTROLLER.name}`}
+											</span>
 										</span>
-									</span>
-								</div>
-								<div className={HOME_THEME.hostActionsRow}>
-									<a
-										id="home-host-whatsapp"
-										href={DATA_CONTROLLER.whatsappHref}
-										target="_blank"
-										rel="noopener noreferrer"
-										className={HOME_THEME.hostWhatsAppBtn}
-									>
-										<MessageCircle
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-										<span>{t.homeCtaWhatsApp}</span>
-									</a>
-									<a
-										id="home-host-email"
-										href={`mailto:${DATA_CONTROLLER.email}`}
-										className={HOME_THEME.hostEmailBtn}
-									>
-										<Mail className={HOME_THEME.iconSm} aria-hidden="true" />
-										<span>{DATA_CONTROLLER.email}</span>
-									</a>
+										<span className={HOME_THEME.hostRntBadge}>
+											<ShieldCheck
+												className={HOME_THEME.iconSm}
+												aria-hidden="true"
+											/>
+											<span>
+												{`${t.rntTitle}: ${t.rnt1707} • ${t.rnt1606}`}
+											</span>
+										</span>
+									</div>
+									<div className={HOME_THEME.hostActionsRow}>
+										<a
+											id="home-host-whatsapp"
+											href={DATA_CONTROLLER.whatsappHref}
+											target="_blank"
+											rel="noopener noreferrer"
+											className={HOME_THEME.hostWhatsAppBtn}
+										>
+											<MessageCircle
+												className={HOME_THEME.iconSm}
+												aria-hidden="true"
+											/>
+											<span>{t.homeCtaWhatsApp}</span>
+										</a>
+										<a
+											id="home-host-email"
+											href={`mailto:${DATA_CONTROLLER.email}`}
+											className={HOME_THEME.hostEmailBtn}
+										>
+											<Mail className={HOME_THEME.iconSm} aria-hidden="true" />
+											<span>{DATA_CONTROLLER.email}</span>
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>

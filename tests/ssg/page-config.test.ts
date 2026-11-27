@@ -1875,7 +1875,7 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 	);
 });
 
-test("Homepage renders visible #properties heading, starting COP nightly rates, 900 Mbps Wi-Fi pills, badged & balanced 2-item #experiences cards, default-open #faq-3, and primary/secondary bottom CTA hierarchy across all 6 locales (#243)", () => {
+test("Homepage renders visible #properties heading, starting COP nightly rates, 900 Mbps Wi-Fi pills, badged & balanced 2-item #experiences cards, default-open #faq-6, and primary/secondary bottom CTA hierarchy across all 6 locales (#243 #332)", () => {
 	const distDir = path.join(process.cwd(), "dist");
 	const locales = [
 		{
@@ -2004,12 +2004,13 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} must not render redundant #experiences section`,
 		);
 
-		// 3. #faq pre-opens #faq-3 (faqQ3) by default and leaves #faq-1 closed
+		// 3. #faq pre-opens #faq-6 (arrival & Guest Registry) by default and leaves #faq-1 and #faq-3 closed (#332)
 		const faq1Match = html.match(/<details[^>]*id="faq-1"[^>]*>/);
 		const faq3Match = html.match(/<details[^>]*id="faq-3"[^>]*>/);
+		const faq6Match = html.match(/<details[^>]*id="faq-6"[^>]*>/);
 		assert.ok(
-			faq1Match && faq3Match,
-			`${locale.file} #faq must render #faq-1 and #faq-3`,
+			faq1Match && faq3Match && faq6Match,
+			`${locale.file} #faq must render #faq-1, #faq-3, and #faq-6`,
 		);
 		const openAttrRegex = /\bopen(?:="")?(?=\s|>)/;
 		assert.ok(
@@ -2017,8 +2018,12 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} #faq-1 must NOT be open by default`,
 		);
 		assert.ok(
-			openAttrRegex.test(faq3Match[0]),
-			`${locale.file} #faq-3 must have the open attribute by default`,
+			!openAttrRegex.test(faq3Match[0]),
+			`${locale.file} #faq-3 must NOT be open by default`,
+		);
+		assert.ok(
+			openAttrRegex.test(faq6Match[0]),
+			`${locale.file} #faq-6 must have the open attribute by default`,
 		);
 
 		// 4. Bottom CTA buttons use primary solid white pill + secondary bordered dark slate pills
@@ -2134,7 +2139,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. #why-book-direct uses Clearance Emerald inline editorial icons (text-emerald-700) on Reasons 1 & 4 without boxed 48px stacked icon tiles or decorative Rose
+		// 1. #why-book-direct uses Clearance Emerald inline proof icons (text-emerald-700) on the savings & Mercado Pago pillars without boxed 48px stacked icon tiles or decorative Rose
 		const directMatch = html.match(
 			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
 		);
@@ -2144,7 +2149,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 		assert.equal(
 			emeraldIcons.length,
 			2,
-			`${locale.file} #why-book-direct must use inline Clearance Emerald (text-emerald-700) on both Reason 1 and Reason 4`,
+			`${locale.file} #why-book-direct must use inline Clearance Emerald (text-emerald-700) on the savings and Mercado Pago proof pillars`,
 		);
 		assert.ok(
 			!directHtml.includes("w-12 h-12") &&
@@ -5937,4 +5942,231 @@ test("#331 Homepage renders editorial tabular-nums Nightly Rates with localized 
 			);
 		}
 	}
+});
+
+test("#332 Distilled 3-pillar Direct Reservation & Host showcase, warm Santa Marta host voice, actionable comparison CTAs, arrival-first #faq-6 default, and Safari WebKit marker suppression across all 6 locales", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales: Array<{
+		code: keyof typeof dict;
+		file: string;
+		suffix: string;
+		expectedOwnerBadge: string;
+		expectedPillar1Title: string;
+		expectedCta1707: string;
+		expectedCta1606: string;
+		expectedHostLocationToken: string;
+	}> = [
+		{
+			code: "en",
+			file: "index.html",
+			suffix: "",
+			expectedOwnerBadge:
+				"Owner &amp; Local Host: OceanViewFlats — Manuel Enrique Herrera",
+			expectedPillar1Title: "Direct-Owner Rates — No Platform Markups",
+			expectedCta1707: "Check Dates &amp; Book Flat 1707",
+			expectedCta1606: "Check Dates &amp; Book Flat 1606",
+			expectedHostLocationToken: "Edificio Salguero Sunset",
+		},
+		{
+			code: "es",
+			file: "es.html",
+			suffix: "es.html",
+			expectedOwnerBadge:
+				"Propietario y Anfitrión Local: OceanViewFlats — Manuel Enrique Herrera",
+			expectedPillar1Title: "Tarifa Directa del Propietario — Sin Recargos",
+			expectedCta1707: "Ver Fechas y Reservar Apto 1707",
+			expectedCta1606: "Ver Fechas y Reservar Apto 1606",
+			expectedHostLocationToken: "Edificio Salguero Sunset",
+		},
+		{
+			code: "fr",
+			file: "fr.html",
+			suffix: "fr.html",
+			expectedOwnerBadge:
+				"Propriétaire &amp; Hôte Local: OceanViewFlats — Manuel Enrique Herrera",
+			expectedPillar1Title:
+				"Tarifs Propriétaire en Direct — Sans Frais de Plateforme",
+			expectedCta1707: "Voir les Dates — Appt 1707",
+			expectedCta1606: "Voir les Dates — Appt 1606",
+			expectedHostLocationToken: "Edificio Salguero Sunset",
+		},
+		{
+			code: "it",
+			file: "it.html",
+			suffix: "it.html",
+			expectedOwnerBadge:
+				"Proprietario e Host Locale: OceanViewFlats — Manuel Enrique Herrera",
+			expectedPillar1Title: "Tariffe Dirette dal Proprietario — Zero Ricarichi",
+			expectedCta1707: "Verifica Date — App. 1707",
+			expectedCta1606: "Verifica Date — App. 1606",
+			expectedHostLocationToken: "Edificio Salguero Sunset",
+		},
+		{
+			code: "de",
+			file: "de.html",
+			suffix: "de.html",
+			expectedOwnerBadge:
+				"Eigentümer &amp; Lokaler Gastgeber: OceanViewFlats — Manuel Enrique Herrera",
+			expectedPillar1Title:
+				"Direktpreise vom Eigentümer — Ohne Plattformaufschläge",
+			expectedCta1707: "Termine prüfen — Apt. 1707",
+			expectedCta1606: "Termine prüfen — Apt. 1606",
+			expectedHostLocationToken: "Edificio Salguero Sunset",
+		},
+		{
+			code: "ja",
+			file: "ja.html",
+			suffix: "ja.html",
+			expectedOwnerBadge:
+				"オーナー兼現地ホスト: OceanViewFlats — Manuel Enrique Herrera",
+			expectedPillar1Title: "オーナー直接料金・仲介サイト上乗せなし",
+			expectedCta1707: "1707号室の空室確認・予約",
+			expectedCta1606: "1606号室の空室確認・予約",
+			expectedHostLocationToken: "Edificio Salguero Sunset",
+		},
+	];
+
+	const escapeHtml = (value: string) => value.replace(/&/g, "&amp;");
+
+	for (const locale of locales) {
+		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+		const t = dict[locale.code];
+
+		// 1. Consolidated Direct Reservation & Host showcase has exactly 3 proof pillars paired with #home-host-card
+		const directMatch = html.match(
+			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(directMatch, `${locale.file} must render #why-book-direct`);
+		const directHtml = directMatch[0];
+
+		const trustStripMatch = directHtml.match(
+			/<ul[^>]*id="home-trust-strip"[^>]*>([\s\S]*?)<\/ul>/,
+		);
+		assert.ok(
+			trustStripMatch,
+			`${locale.file} #why-book-direct must render <ul id="home-trust-strip">`,
+		);
+		const pillarItems = trustStripMatch[1].match(/<li\b[^>]*>/g) || [];
+		assert.equal(
+			pillarItems.length,
+			3,
+			`${locale.file} #home-trust-strip must contain exactly 3 concrete proof pillars (savings, Mercado Pago, RNT)`,
+		);
+		assert.ok(
+			trustStripMatch[1].includes(locale.expectedPillar1Title) &&
+				trustStripMatch[1].includes("Mercado Pago") &&
+				trustStripMatch[1].includes("PSE") &&
+				trustStripMatch[1].includes("Efecty") &&
+				trustStripMatch[1].includes("RNT #268781") &&
+				trustStripMatch[1].includes("RNT #270413"),
+			`${locale.file} #home-trust-strip must present direct-owner savings, Mercado Pago rails (Card/PSE/Efecty), and Colombian RNT licensing`,
+		);
+
+		// Old 4-card boilerplate grid is removed
+		const directLists = directHtml.match(/<ul\b[^>]*>/g) || [];
+		assert.equal(
+			directLists.length,
+			1,
+			`${locale.file} #why-book-direct must consolidate the 4-card grid and trust strip into one <ul>`,
+		);
+
+		// 2. Host card uses warm Santa Marta copy & owner badge without cold "Data Controller" jargon, while keeping hostDataControllerLabel intact for schema/property pages
+		const hostCardMatch = directHtml.match(
+			/<div[^>]*id="home-host-card"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(hostCardMatch, `${locale.file} must render #home-host-card`);
+		const hostCardHtml = hostCardMatch[0];
+		assert.ok(
+			hostCardHtml.includes(locale.expectedOwnerBadge) &&
+				hostCardHtml.includes(locale.expectedHostLocationToken) &&
+				hostCardHtml.includes("268781") &&
+				hostCardHtml.includes("270413") &&
+				hostCardHtml.includes('id="home-host-whatsapp"') &&
+				hostCardHtml.includes('id="home-host-email"') &&
+				hostCardHtml.includes("bg-slate-700"),
+			`${locale.file} #home-host-card must render warm owner attribution, Santa Marta host bio, both RNTs, avatar placeholder, and WhatsApp/Email actions`,
+		);
+		const visibleHostText = hostCardHtml.replace(/<[^>]+>/g, " ");
+		assert.ok(
+			!visibleHostText.includes(escapeHtml(t.hostDataControllerLabel)) &&
+				!visibleHostText.includes("Data Controller"),
+			`${locale.file} #home-host-card must omit cold "Data Controller" phrasing from the visible homepage host card`,
+		);
+		assert.ok(
+			t.hostDataControllerLabel.length > 0,
+			`${locale.code} dict must preserve hostDataControllerLabel for JSON-LD and Property pages`,
+		);
+
+		// Generic template copy replaced on homepage
+		assert.ok(
+			!html.includes("Combine productivity with paradise") &&
+				!html.includes("perfect blend of luxury and comfort") &&
+				!html.includes("With years of experience in hospitality"),
+			`${locale.file} must replace generic template copy in property descriptions and host bio`,
+		);
+
+		// 3. Actionable localized relative-path Property CTAs directly beneath #compare-properties
+		const compareMatch = html.match(
+			/<section[^>]*id="compare-properties"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(compareMatch, `${locale.file} must render #compare-properties`);
+		const compareHtml = compareMatch[0];
+		assert.ok(
+			compareHtml.includes(
+				`id="home-compare-cta-1707" href="./Oceanview1707/${locale.suffix}"`,
+			) &&
+				compareHtml.includes(locale.expectedCta1707) &&
+				compareHtml.includes(
+					`id="home-compare-cta-1606" href="./Oceanview1606/${locale.suffix}"`,
+				) &&
+				compareHtml.includes(locale.expectedCta1606),
+			`${locale.file} #compare-properties must render localized relative-path CTA buttons for Property 1707 and Property 1606`,
+		);
+
+		// 4. Arrival-first #faq-6 default-open, #faq-3 collapsed, and Safari WebKit marker suppression on every homepage FAQ summary
+		const faqMatch = html.match(
+			/<section[^>]*id="faq"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(faqMatch, `${locale.file} must render #faq`);
+		const faqHtml = faqMatch[0];
+		const faqSummaryTags = faqHtml.match(/<summary[^>]*>/g) || [];
+		assert.equal(faqSummaryTags.length, 6);
+		for (const summaryTag of faqSummaryTags) {
+			assert.ok(
+				summaryTag.includes("[&amp;::-webkit-details-marker]:hidden") ||
+					summaryTag.includes("[&::-webkit-details-marker]:hidden"),
+				`${locale.file} every homepage FAQ <summary> must include WebKit disclosure-marker suppression`,
+			);
+		}
+		const openAttrRegex = /\bopen(?:="")?(?=\s|>)/;
+		const faq3OpenTag = faqHtml.match(/<details[^>]*id="faq-3"[^>]*>/)?.[0];
+		const faq6OpenTag = faqHtml.match(/<details[^>]*id="faq-6"[^>]*>/)?.[0];
+		assert.ok(faq3OpenTag && !openAttrRegex.test(faq3OpenTag));
+		assert.ok(faq6OpenTag && openAttrRegex.test(faq6OpenTag));
+
+		// Zero untranslated English #332 copy on non-English locales
+		if (locale.code !== "en") {
+			for (const enSnippet of [
+				"Direct-Owner Rates",
+				"Owner &amp; Local Host",
+				"Check Dates &amp; Book Flat 1707",
+				"Check Dates &amp; Book Flat 1606",
+			]) {
+				assert.ok(
+					!html.includes(enSnippet),
+					`${locale.file} must not leak untranslated English string "${enSnippet}"`,
+				);
+			}
+		}
+	}
+
+	// 5. Compiled CSS emits ::-webkit-details-marker suppression rule for Safari parity
+	const compiledCss = fs.readFileSync(
+		path.join(distDir, "css", "style.css"),
+		"utf-8",
+	);
+	assert.ok(
+		compiledCss.includes("::-webkit-details-marker"),
+		"dist/css/style.css must emit ::-webkit-details-marker suppression for Safari FAQ disclosure parity",
+	);
 });
