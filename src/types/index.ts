@@ -7,8 +7,6 @@ export type ActiveNavPage =
 	| "guides"
 	| "guide-article"
 	| "contact"
-	| "registry"
-	| "guide"
 	| "privacy";
 
 export interface SeasonalRateTierRow {

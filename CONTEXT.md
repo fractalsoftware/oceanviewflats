@@ -65,12 +65,16 @@ A Reservation originated and transacted directly through OceanViewFlats, maintai
 _Avoid_: Internal Booking, Native Reservation, Website Booking, Direct Booking
 
 **Manual Reservation**:
-A Reservation originated directly by an administrator without an external payment gateway (e.g. phone inquiry, external bank wire, or owner occupancy), attributed to an administrative payment source and confirmed immediately to secure calendar dates. Identified by a unique `res-man-*` reservation UID, which functions as an authoritative lookup token across both the Guest Registry and Guest Guide. Distinct from statutory *Guest Registration* / *Guest Registry*, which refers solely to Colombian police registration compliance (SIRE/TRA) and building registration fees.
+A Reservation originated directly by an administrator without an external payment gateway (e.g. phone inquiry, external bank wire, or owner occupancy), attributed to an administrative payment source and confirmed immediately to secure calendar dates. Identified by a unique `res-man-*` Reservation UID, which functions as an authoritative lookup token across both the Guest Registry and Guest Guide. Distinct from statutory *Guest Registration* / *Guest Registry*, which refers solely to Colombian police registration compliance (SIRE/TRA) and building registration fees.
 _Avoid_: Offline Booking, Phone Order, Admin Reservation, Walk-in, Manual Registration
 
 **External Reservation**:
-A Reservation originating from an external Online Travel Agency (e.g. Airbnb) where financial settlement occurs out-of-band on the external platform, but guest identity, legal Guest Registry completion, and Access Credentials fulfillment are managed within OceanViewFlats. Identified by a unique `res-abnb-*` reservation UID and linked to an External Confirmation Code and optional Channel Block UID.
+A Reservation originating from an external Online Travel Agency (e.g. Airbnb) where financial settlement occurs out-of-band on the external platform, but guest identity, legal Guest Registry completion, and Access Credentials fulfillment are managed within OceanViewFlats. Identified by a unique `res-abnb-*` Reservation UID and linked to an External Confirmation Code and optional Channel Block UID.
 _Avoid_: External Booking, OTA Hold, Airbnb Order
+
+**Reservation UID**:
+The unique authoritative identifier assigned to every OceanViewFlats Reservation (`ovf_*` for Direct Reservations, `res-man-*` for Manual Reservations, `res-abnb-*` for External Reservations), delivered out-of-band to the Primary Guest and serving as the mandatory lookup token for private Guest Registry and Guest Guide fulfillment. Distinct from an *External Confirmation Code*.
+_Avoid_: Reservation Code, Booking Code, Booking ID, Reference Token
 
 
 **Pending Reservation**:
@@ -224,11 +228,11 @@ _Avoid_: Calendar Export, ICS Feed, Availability Export
 ### Guest Onboarding & Fulfillment
 
 **Guest Registry**:
-The mandatory record of legal identification, ages, Primary Guest contact email, and vehicle details for all staying Guests required by building administration and regulatory compliance before Property access is granted. Can be pre-filled via stay parameters in the query string or resolved asynchronously by reservation UID (`code=res-man-*`, `code=res-abnb-*`, or `code=ovf_*`).
+The mandatory record of legal identification, ages, Primary Guest contact email, and vehicle details for all staying Guests required by building administration and regulatory compliance before Property access is granted. A private fulfillment workflow requiring a valid Reservation UID delivered out-of-band via Reservation Confirmation or External Guest Dispatch, and excluded from public browsing surfaces.
 _Avoid_: Check-in Form, Registration Card, Guest List
 
 **Guest Guide**:
-The digital handbook providing access credentials, arrival instructions, and house rules, unlocked only after the Guest Registry is completed. Distinct from a *Destination Guide*, which is public pre-booking editorial content about Santa Marta and Playa Salguero.
+The private digital handbook providing Access Credentials, arrival instructions, and house rules, requiring a valid Reservation UID and unlocked only after the Guest Registry is completed. Excluded from public browsing surfaces and distinct from a *Destination Guide*, which is public pre-booking editorial content about Santa Marta and Playa Salguero.
 _Avoid_: Welcome Pack, House Manual, Instructions Page
 
 **Access Credential**:

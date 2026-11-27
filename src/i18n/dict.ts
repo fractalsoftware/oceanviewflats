@@ -167,7 +167,7 @@ export const dict = {
 			"Yes, OceanViewFlats operates legally and is fully registered under the National Tourism Registry of Colombia. Flat 1707 is registered under RNT #268781 and Flat 1606 under RNT #270413.",
 		faqQ6: "How do check-in, the Guest Registry, and the building fee work?",
 		faqA6:
-			"1. Pre-Arrival Guest Registry: Before check-in, the Primary Guest completes our mandatory online Guest Registry, including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors. 2. Smart-Lock & Parking Unlock: Submitting the registry immediately unlocks your digital Guest Guide, private parking space, and temporary 0XXXXXX# smart-lock Access Credential. 3. Reception Fee & Pool Schedule: Upon arrival at Edificio Salguero Sunset front-desk reception, a one-time Building Registration Fee of 20,000 COP per person is paid on-site for security wristbands and infinity pool access; swimming pools close every Tuesday for scheduled maintenance.",
+			"1. Pre-Arrival Guest Registry: Once your reservation is confirmed, your personal Guest Registry and Guest Guide links are sent directly in your Reservation Confirmation or External Guest Dispatch. Before check-in, the Primary Guest completes the mandatory online Guest Registry, including Colombian Law 1581 Personal Data Authorization and Law 679 Minor Guardian Attestation when traveling with minors. 2. Smart-Lock & Parking Unlock: Submitting the registry immediately unlocks your personal digital Guest Guide, private parking space, and temporary 0XXXXXX# smart-lock Access Credential. 3. Reception Fee, Pool Schedule & Link Recovery: Upon arrival at Edificio Salguero Sunset front-desk reception, a one-time Building Registration Fee of 20,000 COP per person is paid on-site for security wristbands and infinity pool access; swimming pools close every Tuesday for scheduled maintenance. Confirmed Guests who misplaced their personal link can reach out via Contact Us to have it resent.",
 		hostTitle: "Your Host",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -795,7 +795,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Close navigation menu",
 		navMenuLabel: "Menu",
 		navLangAriaLabel: "Select language",
-		navGuestGuide: "Guest Guide",
 		homeHeroDirect1707: "Flat 1707 • 17th Floor",
 		homeHeroDirect1606: "Flat 1606 • 16th Floor",
 		homeCompareRowCleaningFee: "Cleaning Fee (COP)",
@@ -811,19 +810,8 @@ export const dict = {
 		homeTrustRntTitle: "Officially Licensed Colombian Tourism Operator (RNT)",
 		homeTrustRntDesc:
 			"The Registro Nacional de Turismo (RNT) is Colombia's official Ministry of Commerce tourism license confirming verified, legal short-term rental operation (RNT #268781 & RNT #270413).",
-		faq6RegistryLink: "Complete Guest Registry",
-		faq6GuideLink: "Open Guest Guide",
 		footerPropertiesLabel: "Properties",
-		footerStayingGuestsLabel: "Staying Guests",
-		footerLegalLabel: "Legal & RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel: "Check-in — Guest Registry & Guest Guide",
-		navStayingGuestsCloseAriaLabel: "Close Check-in menu",
-		// #330 hero returning-Guest check-in cue
-		homeHeroReturningGuestPrompt: "Already booked?",
-		homeHeroReturningGuestRegistry: "Guest Registry",
-		homeHeroReturningGuestGuide: "Guest Guide",
+		footerContactLegalLabel: "Contact & Legal",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Paid in COP · USD reference estimate on the property page",
@@ -1005,7 +993,7 @@ export const dict = {
 		faqQ6:
 			"¿Cómo funcionan el check-in, el Registro de Huéspedes y la tarifa del edificio?",
 		faqA6:
-			"1. Registro Previo en Línea: Antes del check-in, el Huésped Principal completa nuestro Registro de Huéspedes obligatorio en línea, incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores. 2. Clave Digital y Parqueadero: Al enviar el registro se desbloquean de inmediato tu Guía del Huésped digital, tu parqueadero privado incluido y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. 3. Recepción y Horario de Piscinas: Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio única de 20,000 COP por persona para las manillas de seguridad y el acceso a las piscinas infinitas; las piscinas cierran todos los martes por mantenimiento programado.",
+			"1. Registro Previo en Línea: Una vez confirmada tu reserva, los enlaces personales al Registro de Huéspedes y a la Guía del Huésped se envían directamente en tu Confirmación de Reserva o en el Envío para Huéspedes Externos. Antes del check-in, el Huésped Principal completa el Registro de Huéspedes obligatorio en línea, incluyendo la Autorización de Tratamiento de Datos Personales según la Ley 1581 y la Declaración de Patria Potestad según la Ley 679 cuando viajan menores. 2. Clave Digital y Parqueadero: Al enviar el registro se desbloquean de inmediato tu Guía del Huésped digital personal, tu parqueadero privado incluido y tu Credencial de Acceso temporal 0XXXXXX# para la cerradura inteligente. 3. Recepción, Piscinas y Reenvío de Enlaces: Al llegar a la recepción del Edificio Salguero Sunset, se paga en sitio una Tarifa de Registro del Edificio única de 20,000 COP por persona para las manillas de seguridad y el acceso a las piscinas infinitas; las piscinas cierran todos los martes por mantenimiento programado. Si ya tienes una reserva confirmada y extraviaste tu enlace personal, puedes escribirnos a través de Contáctenos para reenviártelo.",
 		hostTitle: "Tu Anfitrión",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -1651,7 +1639,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Cerrar menú de navegación",
 		navMenuLabel: "Menú",
 		navLangAriaLabel: "Seleccionar idioma",
-		navGuestGuide: "Guía del Huésped",
 		homeHeroDirect1707: "Apto 1707 • Piso 17",
 		homeHeroDirect1606: "Apto 1606 • Piso 16",
 		homeCompareRowCleaningFee: "Tarifa de Limpieza (COP)",
@@ -1668,20 +1655,8 @@ export const dict = {
 			"Operador Turístico Oficialmente Registrado en Colombia (RNT)",
 		homeTrustRntDesc:
 			"El Registro Nacional de Turismo (RNT) es la licencia oficial del Ministerio de Comercio de Colombia que certifica nuestra operación legal y verificada (RNT #268781 y RNT #270413).",
-		faq6RegistryLink: "Completar Registro de Huéspedes",
-		faq6GuideLink: "Abrir Guía del Huésped",
 		footerPropertiesLabel: "Propiedades",
-		footerStayingGuestsLabel: "Huéspedes Confirmados",
-		footerLegalLabel: "Legal y RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel:
-			"Check-in — Registro de Huéspedes y Guía del Huésped",
-		navStayingGuestsCloseAriaLabel: "Cerrar menú de Check-in",
-		// #330 hero returning-Guest check-in cue
-		homeHeroReturningGuestPrompt: "¿Ya tienes reserva?",
-		homeHeroReturningGuestRegistry: "Registro de Huéspedes",
-		homeHeroReturningGuestGuide: "Guía del Huésped",
+		footerContactLegalLabel: "Contacto y Legal",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Se paga en COP · Estimado referencial en USD en la página del apartamento",
@@ -1865,7 +1840,7 @@ export const dict = {
 		faqQ6:
 			"Comment fonctionnent l'enregistrement, le Registre des Invités et les frais d'immeuble ?",
 		faqA6:
-			"1. Registre des Invités en Ligne : Avant l'arrivée, l'Invité Principal remplit notre Registre des Invités obligatoire en ligne, incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs. 2. Serrure Connectée et Parking : Cette étape débloque immédiatement votre Guide de l'Invité numérique, votre place de parking privé incluse et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. 3. Frais de Réception et Piscines : À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble uniques de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement ; les piscines ferment tous les mardis pour maintenance.",
+			"1. Registre des Invités en Ligne : Une fois votre réservation confirmée, vos liens personnels vers le Registre des Invités et le Guide de l'Invité sont envoyés directement dans votre Confirmation de Réservation ou votre Envoi d'Accueil Externe. Avant l'arrivée, l'Invité Principal remplit le Registre des Invités obligatoire en ligne, incluant l'Autorisation de Données Personnelles selon la Loi colombienne 1581 et l'Attestation de Responsabilité Parentale selon la Loi 679 pour les mineurs. 2. Serrure Connectée et Parking : Cette étape débloque immédiatement votre Guide de l'Invité numérique personnel, votre place de parking privé incluse et votre Code d'Accès temporaire 0XXXXXX# pour la serrure connectée. 3. Frais de Réception, Piscines et Renvoi des Liens : À votre arrivée à la réception de l'Edificio Salguero Sunset, des Frais d'Enregistrement d'Immeuble uniques de 20,000 COP par personne sont payables sur place pour les bracelets de sécurité et l'accès aux piscines à débordement ; les piscines ferment tous les mardis pour maintenance. Les invités confirmés ayant égaré leur lien personnel peuvent nous écrire via Contactez-nous pour le recevoir à nouveau.",
 		hostTitle: "Votre Hôte",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -2518,7 +2493,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Fermer le menu de navigation",
 		navMenuLabel: "Menu",
 		navLangAriaLabel: "Choisir la langue",
-		navGuestGuide: "Guide de l'Invité",
 		homeHeroDirect1707: "Appt 1707 • 17e Étage",
 		homeHeroDirect1606: "Appt 1606 • 16e Étage",
 		homeCompareRowCleaningFee: "Frais de Ménage (COP)",
@@ -2535,20 +2509,8 @@ export const dict = {
 			"Opérateur Touristique Officiellement Enregistré en Colombie (RNT)",
 		homeTrustRntDesc:
 			"Le Registro Nacional de Turismo (RNT) est la licence officielle du ministère colombien du Commerce attestant notre activité légale et vérifiée (RNT #268781 et RNT #270413).",
-		faq6RegistryLink: "Remplir le Registre des Invités",
-		faq6GuideLink: "Ouvrir le Guide de l'Invité",
 		footerPropertiesLabel: "Appartements",
-		footerStayingGuestsLabel: "Voyageurs Confirmés",
-		footerLegalLabel: "Mentions Légales & RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Arrivée",
-		navStayingGuestsOpenAriaLabel:
-			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
-		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
-		// #330 hero returning-Guest check-in cue
-		homeHeroReturningGuestPrompt: "Déjà réservé ?",
-		homeHeroReturningGuestRegistry: "Registre des Voyageurs",
-		homeHeroReturningGuestGuide: "Guide de l'Invité",
+		footerContactLegalLabel: "Contact & Mentions Légales",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Réglé en COP · Estimation indicative en EUR sur la page du logement",
@@ -2731,7 +2693,7 @@ export const dict = {
 		faqQ6:
 			"Come funzionano il check-in, il Registro Ospiti e la tariffa condominiale?",
 		faqA6:
-			"1. Registro Ospiti Online: Prima dell'arrivo, l'Ospite Principale compila il nostro Registro Ospiti online obbligatorio, inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679. 2. Serratura Smart e Parcheggio: L'invio del modulo sblocca immediatamente la Guida dell'Ospite digitale, il parcheggio privato incluso e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. 3. Tariffa Reception e Piscine: All'arrivo alla reception dell'Edificio Salguero Sunset, si paga in loco una Tariffa di Registrazione Condominiale una tantum di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro; le piscine chiudono ogni martedì per manutenzione programmata.",
+			"1. Registro Ospiti Online: Una volta confermata la prenotazione, i tuoi link personali al Registro Ospiti e alla Guida dell'Ospite vengono inviati direttamente nella Conferma di Prenotazione o nell'Invio per Ospiti Esterni. Prima dell'arrivo, l'Ospite Principale compila il Registro Ospiti online obbligatorio, inclusa l'Autorizzazione ai Dati Personali ai sensi della Legge colombiana 1581 e l'Attestazione di Tutela dei Minori ai sensi della Legge 679. 2. Serratura Smart e Parcheggio: L'invio del modulo sblocca immediatamente la Guida dell'Ospite digitale personale, il parcheggio privato incluso e la Credenziale di Accesso temporanea 0XXXXXX# per la serratura smart. 3. Tariffa Reception, Piscine e Reinvio dei Link: All'arrivo alla reception dell'Edificio Salguero Sunset, si paga in loco una Tariffa di Registrazione Condominiale una tantum di 20,000 COP a persona per i braccialetti di sicurezza e l'accesso alle piscine a sfioro; le piscine chiudono ogni martedì per manutenzione programmata. Gli ospiti confermati che hanno smarrito il proprio link personale possono scriverci tramite Contattaci per riceverlo nuovamente.",
 		hostTitle: "Il Tuo Ospite",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -3374,7 +3336,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Chiudi il menu di navigazione",
 		navMenuLabel: "Menu",
 		navLangAriaLabel: "Seleziona lingua",
-		navGuestGuide: "Guida dell'Ospite",
 		homeHeroDirect1707: "App. 1707 • 17° Piano",
 		homeHeroDirect1606: "App. 1606 • 16° Piano",
 		homeCompareRowCleaningFee: "Spese di Pulizia (COP)",
@@ -3391,20 +3352,8 @@ export const dict = {
 			"Operatore Turistico Ufficialmente Registrato in Colombia (RNT)",
 		homeTrustRntDesc:
 			"Il Registro Nacional de Turismo (RNT) è la licenza ufficiale del Ministero del Commercio colombiano che certifica la gestione legale e verificata (RNT #268781 e RNT #270413).",
-		faq6RegistryLink: "Compila il Registro Ospiti",
-		faq6GuideLink: "Apri la Guida dell'Ospite",
 		footerPropertiesLabel: "Appartamenti",
-		footerStayingGuestsLabel: "Ospiti Confermati",
-		footerLegalLabel: "Note Legali e RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel:
-			"Check-in — Registro degli Ospiti e Guida dell'Ospite",
-		navStayingGuestsCloseAriaLabel: "Chiudi il menu Check-in",
-		// #330 hero returning-Guest check-in cue
-		homeHeroReturningGuestPrompt: "Hai già prenotato?",
-		homeHeroReturningGuestRegistry: "Registro degli Ospiti",
-		homeHeroReturningGuestGuide: "Guida dell'Ospite",
+		footerContactLegalLabel: "Contatti e Note Legali",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Pagamento in COP · Stima indicativa in EUR nella pagina dell'appartamento",
@@ -3589,7 +3538,7 @@ export const dict = {
 		faqQ6:
 			"Wie funktionieren Check-in, Gästeregistrierung und die Gebäudegebühr?",
 		faqA6:
-			"1. Online-Gästeregistrierung: Vor der Anreise füllt der Hauptgast unsere verpflichtende Online-Gästeregistrierung aus, einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen. 2. Smart-Lock & Parkplatz: Dadurch werden sofort Ihr digitaler Gäste-Guide, Ihr privater Parkplatz sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. 3. Rezeptionsgebühr & Poolzeiten: Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten; die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen.",
+			"1. Online-Gästeregistrierung: Sobald Ihre Reservierung bestätigt ist, erhalten Sie Ihre persönlichen Links zur Gästeregistrierung und zum Gäste-Guide direkt in Ihrer Reservierungsbestätigung oder im Versand für externe Gäste. Vor der Anreise füllt der Hauptgast die verpflichtende Online-Gästeregistrierung aus, einschließlich der kolumbianischen Datenschutzgenehmigung nach Gesetz 1581 und der Erziehungsberechtigten-Bestätigung nach Gesetz 679 bei Minderjährigen. 2. Smart-Lock & Parkplatz: Dadurch werden sofort Ihr persönlicher digitaler Gäste-Guide, Ihr privater Parkplatz sowie Ihr temporärer Smart-Lock-Zugangscode 0XXXXXX# freigeschaltet. 3. Rezeptionsgebühr, Poolzeiten & Link-Erneuerung: Bei der Ankunft an der Rezeption des Edificio Salguero Sunset ist vor Ort eine einmalige Gebäuderegistrierungsgebühr von 20,000 COP pro Person für Sicherheitsarmbänder und den Zugang zu den Infinity-Pools zu entrichten; die Pools sind jeden Dienstag wegen planmäßiger Wartung geschlossen. Bestätigte Gäste, die ihren persönlichen Link verlegt haben, können sich über Kontaktieren Sie uns an uns wenden, um ihn erneut anzufordern.",
 		hostTitle: "Ihr Gastgeber",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -4238,7 +4187,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "Navigationsmenü schließen",
 		navMenuLabel: "Menü",
 		navLangAriaLabel: "Sprache auswählen",
-		navGuestGuide: "Gäste-Guide",
 		homeHeroDirect1707: "Apt. 1707 • 17. Etage",
 		homeHeroDirect1606: "Apt. 1606 • 16. Etage",
 		homeCompareRowCleaningFee: "Reinigungsgebühr (COP)",
@@ -4255,20 +4203,8 @@ export const dict = {
 			"Offiziell lizenzierter Tourismusanbieter in Kolumbien (RNT)",
 		homeTrustRntDesc:
 			"Das Registro Nacional de Turismo (RNT) ist die offizielle Lizenz des kolumbianischen Handelsministeriums für geprüfte, legale Ferienunterkünfte (RNT #268781 & RNT #270413).",
-		faq6RegistryLink: "Gästeregistrierung ausfüllen",
-		faq6GuideLink: "Gäste-Guide öffnen",
 		footerPropertiesLabel: "Unterkünfte",
-		footerStayingGuestsLabel: "Bestätigte Gäste",
-		footerLegalLabel: "Rechtliches & RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "Check-in",
-		navStayingGuestsOpenAriaLabel:
-			"Check-in — Gästeregistrierung und Gäste-Guide",
-		navStayingGuestsCloseAriaLabel: "Check-in-Menü schließen",
-		// #330 hero returning-Guest check-in cue
-		homeHeroReturningGuestPrompt: "Bereits gebucht?",
-		homeHeroReturningGuestRegistry: "Gästeregistrierung",
-		homeHeroReturningGuestGuide: "Gäste-Guide",
+		footerContactLegalLabel: "Kontakt & Rechtliches",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"Zahlung in COP · EUR-Richtwert im Buchungsrechner der Unterkunft",
@@ -4452,7 +4388,7 @@ export const dict = {
 		faqQ6:
 			"チェックイン、宿泊者名簿（ゲスト登録）、および建物登録料の仕組みは？",
 		faqA6:
-			"1. 事前の宿泊者名簿登録：ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意、および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出ください。 2. スマートロック暗証番号と駐車場の開示：名簿の提出後、デジタルゲストガイド、専用駐車場、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。 3. フロント受付とプール営業日：Edificio Salguero Sunset到着時はフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください。なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます。",
+			"1. 事前の宿泊者名簿登録：ご予約確定後、お客様専用の宿泊者名簿およびゲストガイドのリンクは予約確認メールまたは外部サイト予約者向け案内にて直接お送りします。ご到着前に代表ゲスト様がオンライン宿泊者名簿（コロンビア法1581号に基づく個人情報取扱同意、および未成年同伴時の法679号に基づく親権者宣誓を含む）をご提出ください。 2. スマートロック暗証番号と駐車場の開示：名簿の提出後、お客様専用のデジタルゲストガイド、専用駐車場、およびスマートロックの期間限定暗証番号（0XXXXXX#）が即座に発行されます。 3. フロント受付、プール営業日およびリンク再送：Edificio Salguero Sunset到着時はフロント受付にて、セキュリティリストバンドおよびインフィニティプール利用のため、お一人様あたり20,000 COPの建物登録料を現地でお支払いください。なお、プールは毎週火曜日に定期メンテナンスのため閉鎖されます。予約確定済みのゲスト様で専用リンクを紛失された場合は、お問い合わせページよりご連絡いただければ再送いたします。",
 		hostTitle: "ホスト",
 		hostName: "Manuel Enrique",
 		hostBio:
@@ -5088,7 +5024,6 @@ export const dict = {
 		navMenuCloseAriaLabel: "ナビゲーションメニューを閉じる",
 		navMenuLabel: "メニュー",
 		navLangAriaLabel: "言語を選択",
-		navGuestGuide: "ゲストガイド",
 		homeHeroDirect1707: "1707号室 • 17階",
 		homeHeroDirect1606: "1606号室 • 16階",
 		homeCompareRowCleaningFee: "清掃費（COP）",
@@ -5103,20 +5038,8 @@ export const dict = {
 		homeTrustRntTitle: "コロンビア政府公認の観光登録事業者（RNT）",
 		homeTrustRntDesc:
 			"国家観光登録（RNT）はコロンビア商工観光省が発行する公式ライセンスであり、適法かつ検証済みの宿泊運営を証明します（RNT #268781・RNT #270413）。",
-		faq6RegistryLink: "宿泊者名簿（ゲスト登録）を入力",
-		faq6GuideLink: "ゲストガイドを開く",
 		footerPropertiesLabel: "物件一覧",
-		footerStayingGuestsLabel: "ご予約済みのお客様",
-		footerLegalLabel: "法的情報・RNT",
-		// #329 desktop staying-guest check-in disclosure
-		navStayingGuests: "チェックイン",
-		navStayingGuestsOpenAriaLabel:
-			"チェックイン — 宿泊者名簿登録・ゲストガイド",
-		navStayingGuestsCloseAriaLabel: "チェックインメニューを閉じる",
-		// #330 hero returning-Guest check-in cue
-		homeHeroReturningGuestPrompt: "ご予約済みですか？",
-		homeHeroReturningGuestRegistry: "宿泊者名簿登録",
-		homeHeroReturningGuestGuide: "ゲストガイド",
+		footerContactLegalLabel: "お問い合わせ・法的情報",
 		// #331 editorial nightly rate currency cue & location map link
 		homeRateCurrencyNote:
 			"COP決済・物件ページの料金計算ツールでJPY参考額を表示",

@@ -115,8 +115,6 @@ export const getClientDictionaryForPage = (
 		contactDateError: t.contactDateError || "",
 		navMenuOpenAriaLabel: t.navMenuOpenAriaLabel || "",
 		navMenuCloseAriaLabel: t.navMenuCloseAriaLabel || "",
-		navStayingGuestsOpenAriaLabel: t.navStayingGuestsOpenAriaLabel || "",
-		navStayingGuestsCloseAriaLabel: t.navStayingGuestsCloseAriaLabel || "",
 	};
 
 	if (pageId === "home") {

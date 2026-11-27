@@ -42,7 +42,6 @@ export default function Guide({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
-				currentPage="guide"
 			/>
 
 			{/* Hero Header */}
@@ -533,7 +532,7 @@ export default function Guide({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="guide" />
+			<Footer lang={lang} assetPrefix={assetPrefix} />
 
 			{/* Global Copy Alert Overlay (rendered dynamically by guide.js) */}
 			<div
