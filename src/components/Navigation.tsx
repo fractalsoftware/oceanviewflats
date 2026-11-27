@@ -1,4 +1,4 @@
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import React from "react";
 import {
 	getContactPagePath,
@@ -8,10 +8,12 @@ import {
 	getPropertyPagePath,
 	getRegistryPagePath,
 } from "../constants/config";
-import { CHROME_THEME, getChromeScrollState } from "../constants/theme";
+import { CHROME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
-import type { Lang } from "../types";
+import type { ActiveNavPage, Lang } from "../types";
 import { LanguageDropdown } from "./LanguageDropdown";
+
+export type { ActiveNavPage };
 
 interface NavigationProps {
 	isScrolled: boolean;
@@ -21,6 +23,7 @@ interface NavigationProps {
 	bookLabelKey?: "navBook" | "navBookDirect";
 	assetPrefix?: string;
 	englishHref?: string;
+	currentPage?: ActiveNavPage;
 }
 
 export const Navigation = ({
@@ -31,9 +34,9 @@ export const Navigation = ({
 	bookLabelKey = "navBook",
 	assetPrefix = "./",
 	englishHref = "./",
+	currentPage,
 }: NavigationProps) => {
 	const t = dict[lang];
-	const scrollState = getChromeScrollState(isScrolled);
 	const homeHref = getHomePagePath(lang, assetPrefix);
 	const guidesHref = getDestinationGuidesHubPath(lang, assetPrefix);
 	const contactHref = getContactPagePath(lang, assetPrefix);
@@ -41,6 +44,7 @@ export const Navigation = ({
 	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
 	const registryHref = getRegistryPagePath(lang, assetPrefix);
 	const guideHref = getGuidePagePath(lang, assetPrefix);
+	const isCheckinActive = currentPage === "registry" || currentPage === "guide";
 
 	return (
 		<>
@@ -53,14 +57,16 @@ export const Navigation = ({
 			</a>
 			<nav
 				aria-label={t.navPrimaryLabel}
-				className={CHROME_THEME.nav[scrollState]}
+				className={CHROME_THEME.nav}
 				id="navbar"
+				data-scrolled={isScrolled ? "true" : "false"}
 			>
 				<div className={CHROME_THEME.navContainer}>
 					<a
 						href={homeHref}
-						className={CHROME_THEME.navLogo[scrollState]}
+						className={CHROME_THEME.navLogo}
 						id="nav-logo"
+						aria-current={currentPage === "home" ? "page" : undefined}
 					>
 						<svg
 							viewBox="0 0 96 96"
@@ -76,28 +82,89 @@ export const Navigation = ({
 						<a
 							id="nav-guides"
 							href={guidesHref}
-							className={CHROME_THEME.navGuides[scrollState]}
+							className={CHROME_THEME.navGuides}
 							aria-label={t.navGuidesAriaLabel}
+							aria-current={currentPage === "guides" ? "page" : undefined}
+							data-active={currentPage === "guide-article" ? "true" : undefined}
 						>
 							<span>{t.navGuides}</span>
 						</a>
+						<div
+							id="nav-checkin-group"
+							className={CHROME_THEME.navCheckinGroup}
+						>
+							<button
+								id="nav-checkin-toggle"
+								type="button"
+								className={CHROME_THEME.navCheckinToggle}
+								aria-expanded="false"
+								aria-controls="nav-checkin-menu"
+								aria-label={t.navStayingGuestsOpenAriaLabel}
+								data-active={isCheckinActive ? "true" : undefined}
+							>
+								<span>{t.navStayingGuests}</span>
+								<ChevronDown
+									className={CHROME_THEME.navCheckinChevron}
+									aria-hidden="true"
+								/>
+							</button>
+							<div
+								id="nav-checkin-menu"
+								className={CHROME_THEME.navCheckinMenuWrapper}
+								hidden
+							>
+								<div className={CHROME_THEME.navCheckinMenuCard}>
+									<ul className={CHROME_THEME.navCheckinMenuList}>
+										<li>
+											<a
+												id="nav-checkin-registry"
+												href={registryHref}
+												className={CHROME_THEME.navCheckinMenuLink}
+												aria-current={
+													currentPage === "registry" ? "page" : undefined
+												}
+											>
+												<span>{t.registryTitle}</span>
+												<ArrowRight
+													className={CHROME_THEME.navCheckinMenuLinkIcon}
+													aria-hidden="true"
+												/>
+											</a>
+										</li>
+										<li>
+											<a
+												id="nav-checkin-guide"
+												href={guideHref}
+												className={CHROME_THEME.navCheckinMenuLink}
+												aria-current={
+													currentPage === "guide" ? "page" : undefined
+												}
+											>
+												<span>{t.navGuestGuide}</span>
+												<ArrowRight
+													className={CHROME_THEME.navCheckinMenuLinkIcon}
+													aria-hidden="true"
+												/>
+											</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
 						<a
 							id="nav-contact"
 							href={contactHref}
-							className={CHROME_THEME.navContact[scrollState]}
+							className={CHROME_THEME.navContact}
+							aria-current={currentPage === "contact" ? "page" : undefined}
 						>
 							<span>{t.navContact}</span>
 						</a>
-						<LanguageDropdown
-							currentLang={lang}
-							isScrolled={isScrolled}
-							englishHref={englishHref}
-						/>
+						<LanguageDropdown currentLang={lang} englishHref={englishHref} />
 						{showBookButton && (
 							<a
 								id="nav-book"
 								href={bookHref}
-								className={CHROME_THEME.navBookBtn[scrollState]}
+								className={CHROME_THEME.navBookBtn}
 							>
 								{t[bookLabelKey]}
 							</a>
@@ -105,7 +172,7 @@ export const Navigation = ({
 						<button
 							id="mobile-nav-toggle"
 							type="button"
-							className={CHROME_THEME.navMenuToggle[scrollState]}
+							className={CHROME_THEME.navMenuToggle}
 							aria-expanded="false"
 							aria-controls="mobile-nav-drawer"
 							aria-label={t.navMenuOpenAriaLabel}
@@ -137,6 +204,56 @@ export const Navigation = ({
 					<div className={CHROME_THEME.mobileDrawerGroups}>
 						<div>
 							<p className={CHROME_THEME.mobileDrawerGroupHeading}>
+								{t.footerStayingGuestsLabel}
+							</p>
+							<ul className={CHROME_THEME.mobileDrawerList}>
+								<li>
+									<a
+										href={registryHref}
+										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={
+											currentPage === "registry" ? "page" : undefined
+										}
+									>
+										<span>{t.registryTitle}</span>
+										<ArrowRight
+											className={CHROME_THEME.mobileDrawerLinkIcon}
+											aria-hidden="true"
+										/>
+									</a>
+								</li>
+								<li>
+									<a
+										href={guideHref}
+										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={currentPage === "guide" ? "page" : undefined}
+									>
+										<span>{t.navGuestGuide}</span>
+										<ArrowRight
+											className={CHROME_THEME.mobileDrawerLinkIcon}
+											aria-hidden="true"
+										/>
+									</a>
+								</li>
+								<li>
+									<a
+										href={contactHref}
+										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={
+											currentPage === "contact" ? "page" : undefined
+										}
+									>
+										<span>{t.navContact}</span>
+										<ArrowRight
+											className={CHROME_THEME.mobileDrawerLinkIcon}
+											aria-hidden="true"
+										/>
+									</a>
+								</li>
+							</ul>
+						</div>
+						<div>
+							<p className={CHROME_THEME.mobileDrawerGroupHeading}>
 								{t.footerPropertiesLabel}
 							</p>
 							<ul className={CHROME_THEME.mobileDrawerList}>
@@ -144,6 +261,7 @@ export const Navigation = ({
 									<a
 										href={property1707Href}
 										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={currentPage === "1707" ? "page" : undefined}
 									>
 										<span>{t.heroTitle}</span>
 										<ArrowRight
@@ -156,6 +274,7 @@ export const Navigation = ({
 									<a
 										href={property1606Href}
 										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={currentPage === "1606" ? "page" : undefined}
 									>
 										<span>{t.hero1606Title}</span>
 										<ArrowRight
@@ -175,48 +294,12 @@ export const Navigation = ({
 									<a
 										href={guidesHref}
 										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={currentPage === "guides" ? "page" : undefined}
+										data-active={
+											currentPage === "guide-article" ? "true" : undefined
+										}
 									>
 										<span>{t.footerGuidesHubLink}</span>
-										<ArrowRight
-											className={CHROME_THEME.mobileDrawerLinkIcon}
-											aria-hidden="true"
-										/>
-									</a>
-								</li>
-							</ul>
-						</div>
-						<div>
-							<p className={CHROME_THEME.mobileDrawerGroupHeading}>
-								{t.footerStayingGuestsLabel}
-							</p>
-							<ul className={CHROME_THEME.mobileDrawerList}>
-								<li>
-									<a
-										href={registryHref}
-										className={CHROME_THEME.mobileDrawerLink}
-									>
-										<span>{t.registryTitle}</span>
-										<ArrowRight
-											className={CHROME_THEME.mobileDrawerLinkIcon}
-											aria-hidden="true"
-										/>
-									</a>
-								</li>
-								<li>
-									<a href={guideHref} className={CHROME_THEME.mobileDrawerLink}>
-										<span>{t.navGuestGuide}</span>
-										<ArrowRight
-											className={CHROME_THEME.mobileDrawerLinkIcon}
-											aria-hidden="true"
-										/>
-									</a>
-								</li>
-								<li>
-									<a
-										href={contactHref}
-										className={CHROME_THEME.mobileDrawerLink}
-									>
-										<span>{t.navContact}</span>
 										<ArrowRight
 											className={CHROME_THEME.mobileDrawerLinkIcon}
 											aria-hidden="true"

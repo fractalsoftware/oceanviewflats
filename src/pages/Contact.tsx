@@ -39,6 +39,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="contact"
 			/>
 
 			{/* Hero Section */}
@@ -418,7 +419,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="contact" />
 		</div>
 	);
 }

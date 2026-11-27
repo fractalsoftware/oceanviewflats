@@ -11,14 +11,18 @@ import {
 import { CHROME_THEME } from "../constants/theme";
 import { DESTINATION_GUIDES } from "../i18n/destinationGuides";
 import { dict } from "../i18n/dict";
-import type { Lang } from "../types";
+import type { ActiveNavPage, Lang } from "../types";
 
 export const Footer = ({
 	lang,
 	assetPrefix = "../",
+	currentPage,
+	currentGuideSlug,
 }: {
 	lang: Lang;
 	assetPrefix?: string;
+	currentPage?: ActiveNavPage;
+	currentGuideSlug?: string;
 }) => {
 	const t = dict[lang];
 	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
@@ -44,6 +48,7 @@ export const Footer = ({
 									id="footer-property-1707-link"
 									href={property1707Href}
 									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "1707" ? "page" : undefined}
 								>
 									{t.heroTitle}
 								</a>
@@ -53,6 +58,7 @@ export const Footer = ({
 									id="footer-property-1606-link"
 									href={property1606Href}
 									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "1606" ? "page" : undefined}
 								>
 									{t.hero1606Title}
 								</a>
@@ -71,6 +77,7 @@ export const Footer = ({
 									id="footer-registry-link"
 									href={registryHref}
 									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "registry" ? "page" : undefined}
 								>
 									{t.registryTitle}
 								</a>
@@ -80,6 +87,7 @@ export const Footer = ({
 									id="footer-guide-link"
 									href={guideHref}
 									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "guide" ? "page" : undefined}
 								>
 									{t.navGuestGuide}
 								</a>
@@ -89,6 +97,7 @@ export const Footer = ({
 									id="footer-contact-link"
 									href={contactHref}
 									className={CHROME_THEME.footerLink}
+									aria-current={currentPage === "contact" ? "page" : undefined}
 								>
 									{t.navContact}
 								</a>
@@ -111,6 +120,7 @@ export const Footer = ({
 									id="footer-guides-hub-link"
 									href={guidesHubHref}
 									className={CHROME_THEME.footerGuidesLink}
+									aria-current={currentPage === "guides" ? "page" : undefined}
 								>
 									{t.footerGuidesHubLink}
 								</a>
@@ -124,6 +134,12 @@ export const Footer = ({
 											assetPrefix,
 										)}
 										className={CHROME_THEME.footerGuidesLink}
+										aria-current={
+											currentPage === "guide-article" &&
+											currentGuideSlug === guide.slug
+												? "page"
+												: undefined
+										}
 									>
 										{guide.locales[lang].breadcrumbLabel}
 									</a>
@@ -142,6 +158,7 @@ export const Footer = ({
 								id="footer-privacy-link"
 								href={privacyHref}
 								className={CHROME_THEME.footerPrivacyLink}
+								aria-current={currentPage === "privacy" ? "page" : undefined}
 							>
 								{t.footerPrivacyLink}
 							</a>

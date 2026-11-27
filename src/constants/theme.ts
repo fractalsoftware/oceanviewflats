@@ -169,48 +169,36 @@ export interface PropertyTheme {
 	privacyRetentionCallout: string;
 }
 
-export type ChromeScrollState = "top" | "scrolled";
-
-export const getChromeScrollState = (isScrolled: boolean): ChromeScrollState =>
-	isScrolled ? "scrolled" : "top";
-
 export const CHROME_THEME = {
 	skipLink:
-		"ovf-skip-link fixed top-3 left-3 z-[60] bg-slate-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/50",
-	nav: {
-		top: "fixed w-full z-50 transition-all duration-300 bg-transparent py-5",
-		scrolled:
-			"fixed w-full z-50 transition-all duration-300 bg-white/90 backdrop-blur-md shadow-sm py-3",
-	},
+		"ovf-skip-link fixed top-3 left-3 z-[60] inline-flex items-center min-h-[44px] bg-slate-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/50",
+	nav: "fixed w-full z-50 transition-all duration-300",
 	navContainer:
 		"max-w-6xl mx-auto px-3 sm:px-6 flex justify-between items-center gap-2",
-	navLogo: {
-		top: "font-bold text-sm sm:text-lg md:text-xl tracking-tight inline-flex items-center gap-1.5 sm:gap-2 min-h-[40px] shrink-0 transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-		scrolled:
-			"font-bold text-sm sm:text-lg md:text-xl tracking-tight inline-flex items-center gap-1.5 sm:gap-2 min-h-[40px] shrink-0 transition-colors rounded-lg text-coral-horizon-ink hover:text-coral-horizon-ink-deep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	},
+	navLogo:
+		"font-bold text-sm sm:text-base lg:text-xl tracking-tight inline-flex items-center gap-1.5 sm:gap-2 min-h-[44px] shrink-0 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navLogoIcon: "w-5 h-5 sm:w-6 sm:h-6 fill-current shrink-0",
-	navActions: "flex items-center gap-1.5 sm:gap-2 md:gap-5 min-w-0",
-	navGuides: {
-		top: "hidden md:inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2.5 text-sm font-semibold transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-		scrolled:
-			"hidden md:inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2.5 text-sm font-semibold transition-colors rounded-lg text-slate-600 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	},
-	navContact: {
-		top: "hidden md:inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2.5 text-sm font-semibold transition-colors rounded-lg text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-		scrolled:
-			"hidden md:inline-flex items-center justify-center min-h-[40px] min-w-[40px] px-2.5 text-sm font-semibold transition-colors rounded-lg text-slate-600 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	},
-	navBookBtn: {
-		top: "inline-flex items-center justify-center min-h-[40px] px-2.5 sm:px-4 md:px-5 py-2 text-[11px] sm:text-xs md:text-sm font-bold leading-tight text-center rounded-full bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-		scrolled:
-			"inline-flex items-center justify-center min-h-[40px] px-2.5 sm:px-4 md:px-5 py-2 text-[11px] sm:text-xs md:text-sm font-bold leading-tight text-center rounded-full bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	},
-	navMenuToggle: {
-		top: "md:hidden inline-flex items-center justify-center min-h-[40px] min-w-[40px] p-2 rounded-lg text-white hover:bg-white/20 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-		scrolled:
-			"md:hidden inline-flex items-center justify-center min-h-[40px] min-w-[40px] p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	},
+	navActions: "flex items-center gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-4 min-w-0",
+	navGuides:
+		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	navCheckinGroup: "hidden md:block relative shrink-0",
+	navCheckinToggle:
+		"inline-flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	navCheckinChevron:
+		"ovf-checkin-chevron w-3.5 h-3.5 shrink-0 transition-transform duration-200",
+	navCheckinMenuWrapper: "hidden absolute right-0 top-full pt-2 w-60 z-50",
+	navCheckinMenuCard:
+		"bg-white rounded-xl shadow-lg border border-slate-100 p-1.5",
+	navCheckinMenuList: "space-y-1 list-none m-0 p-0",
+	navCheckinMenuLink:
+		"flex items-center justify-between gap-2 min-h-[44px] px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 hover:text-coral-horizon-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	navCheckinMenuLinkIcon: "w-4 h-4 text-slate-400 shrink-0",
+	navContact:
+		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	navBookBtn:
+		"inline-flex items-center justify-center min-h-[44px] px-2.5 sm:px-3.5 lg:px-5 py-2 text-[11px] sm:text-xs lg:text-sm font-bold leading-tight text-center rounded-full bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	navMenuToggle:
+		"md:hidden inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navMenuIcon: "w-5 h-5",
 	mobileDrawer:
 		"hidden md:hidden absolute top-full inset-x-0 bg-white border-b border-slate-200 shadow-2xl px-4 py-5 max-h-[82dvh] overflow-y-auto",
@@ -219,22 +207,19 @@ export const CHROME_THEME = {
 	mobileDrawerTitle:
 		"text-xs font-bold uppercase tracking-wider text-slate-600",
 	mobileDrawerCloseBtn:
-		"inline-flex items-center justify-center min-h-[40px] min-w-[40px] p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	mobileDrawerGroups: "space-y-5",
 	mobileDrawerGroupHeading:
 		"text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 px-2",
 	mobileDrawerList: "space-y-1 list-none m-0 p-0",
 	mobileDrawerLink:
-		"flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-800 hover:bg-slate-50 hover:text-[#B91C1C] transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-800 hover:bg-slate-50 hover:text-coral-horizon-ink transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	mobileDrawerLinkIcon: "w-4 h-4 text-slate-400 shrink-0",
 	langGroup: "relative group shrink-0",
-	langToggle: {
-		top: "inline-flex items-center justify-center gap-1 sm:gap-1.5 min-h-[40px] min-w-[40px] px-2 sm:px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-		scrolled:
-			"inline-flex items-center justify-center gap-1 sm:gap-1.5 min-h-[40px] min-w-[40px] px-2 sm:px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	},
-	langCodeMobile: "md:hidden font-bold uppercase tracking-wide",
-	langLabelDesktop: "hidden md:inline",
+	langToggle:
+		"inline-flex items-center justify-center gap-1 sm:gap-1.5 min-h-[44px] min-w-[44px] px-2 sm:px-3 lg:px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	langCodeMobile: "lg:hidden font-bold uppercase tracking-wide",
+	langLabelDesktop: "hidden lg:inline",
 	langGlobeIcon: "w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0",
 	langChevronIcon: "w-3 h-3 hidden sm:inline shrink-0",
 	langDropdownWrapper:
@@ -242,9 +227,9 @@ export const CHROME_THEME = {
 	langDropdownCard: "bg-white rounded-xl shadow-lg border border-slate-100",
 	langDropdownList: "py-2",
 	langDropdownItem:
-		"block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-rose-700 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"flex items-center min-h-[44px] px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-rose-700 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	langDropdownActiveItem:
-		"block px-4 py-2 text-sm font-semibold text-rose-700 bg-slate-50 rounded-lg",
+		"flex items-center min-h-[44px] px-4 py-2.5 text-sm font-semibold text-rose-700 bg-slate-50 rounded-lg",
 	footer: "bg-slate-900 text-slate-300 py-14 px-6 border-t border-slate-800",
 	footerContainer: "max-w-6xl mx-auto",
 	footerGrid:
@@ -252,28 +237,28 @@ export const CHROME_THEME = {
 	footerGroup: "min-w-0",
 	footerGroupHeading:
 		"text-xs font-bold uppercase tracking-wider text-white mb-3",
-	footerLinkList: "space-y-2.5 list-none m-0 p-0",
+	footerLinkList: "space-y-0.5 list-none m-0 p-0",
 	footerLink:
-		"inline-block text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"inline-flex items-center min-h-[44px] text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	footerHostText: "text-sm font-medium text-slate-200 mt-3",
 	footerRntText:
 		"text-xs tracking-wider text-slate-300 uppercase mt-2 leading-relaxed",
 	footerPrivacyWrapper: "text-sm mb-2",
 	footerPrivacyLink:
-		"inline-block text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"inline-flex items-center min-h-[44px] text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	footerGuidesNav: "min-w-0",
 	footerGuidesHeading:
 		"text-xs font-bold uppercase tracking-wider text-white mb-3",
-	footerGuidesList: "space-y-2.5 list-none m-0 p-0",
+	footerGuidesList: "space-y-0.5 list-none m-0 p-0",
 	footerGuidesLink:
-		"inline-block text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"inline-flex items-center min-h-[44px] text-sm text-slate-300 hover:text-white underline underline-offset-4 transition-colors rounded-lg py-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	footerBottom:
 		"pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left",
 	footerBrandRow: "flex items-center gap-3",
 	footerLogo: "w-7 h-7 fill-current text-slate-400 shrink-0",
 	footerCopyright: "text-sm text-slate-300",
 	footerBadge:
-		"group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 hover:border-slate-500 text-xs font-mono font-semibold text-slate-300 hover:text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"group inline-flex items-center min-h-[44px] gap-2 px-3.5 py-2 rounded-full bg-slate-800/80 border border-slate-700 hover:border-slate-500 text-xs font-mono font-semibold text-slate-300 hover:text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	footerBadgeDot: "w-1.5 h-1.5 rounded-full bg-slate-400",
 	footerBadgeLogo:
 		"w-3.5 h-3.5 fill-current text-slate-300 transition-transform duration-300 group-hover:scale-110",
@@ -320,7 +305,7 @@ const BASE_HOME_CARD_THEME = {
 		"absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700",
 	cardHeaderContent: "z-10 p-5 sm:p-6 text-white",
 	cardTitle: "text-2xl md:text-3xl font-extrabold text-white text-balance",
-	rateRow: "flex flex-wrap items-center justify-between gap-2 mb-4",
+	rateRow: "flex flex-col gap-1 mb-4",
 	lifestyleStrip:
 		"mt-5 grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-4 items-start",
 	lifestyleThumbImg: "w-full h-full object-cover",
@@ -328,8 +313,9 @@ const BASE_HOME_CARD_THEME = {
 	highlightItem: "flex items-start gap-2.5",
 	reviewStarsRow: "flex items-center gap-1 text-amber-500 mb-2",
 	reviewStarIcon: "w-4 h-4 fill-current",
-	reviewMetaRow: "flex flex-wrap items-center justify-between gap-2 text-xs",
-	reviewAuthorGroup: "flex flex-wrap items-center gap-2",
+	reviewFooter: "flex flex-col gap-1.5",
+	reviewMetaRow: "flex flex-wrap items-center gap-x-2 gap-y-1 text-xs",
+	reviewLinkRow: "flex items-center",
 	reviewVerifiedBadge:
 		"inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full",
 	reviewIconSm: "w-3.5 h-3.5 shrink-0",
@@ -352,7 +338,8 @@ export const HOME_CARD_THEMES = {
 		cardBody:
 			"relative z-10 flex-grow flex flex-col justify-between p-6 md:p-8 bg-slate-50/60 border-t border-slate-200/80",
 		rateBadge:
-			"inline-flex items-center px-3.5 py-1.5 rounded-full text-xs md:text-sm font-bold bg-slate-900 text-white",
+			"block text-xl md:text-2xl font-extrabold tracking-tight tabular-nums text-slate-900 leading-snug",
+		rateCurrencyNote: "text-xs text-slate-600 leading-relaxed text-pretty",
 		cardDesc:
 			"text-slate-700 text-base leading-relaxed max-w-[58ch] text-pretty",
 		cardSpecBar:
@@ -370,11 +357,11 @@ export const HOME_CARD_THEMES = {
 			"text-sm italic text-slate-700 leading-relaxed mb-3 pl-3.5 border-l-2 border-sky-500 text-pretty",
 		reviewMetaRow: `${BASE_HOME_CARD_THEME.reviewMetaRow} text-slate-600`,
 		reviewAuthorName: "font-bold text-slate-900",
-		reviewDate: "text-slate-500 font-medium",
+		reviewDate: "text-slate-600 font-medium",
 		reviewAirbnbLink:
-			"inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-coral-horizon-ink underline underline-offset-4 rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+			"inline-flex items-center gap-1.5 min-h-[44px] py-2 -ml-1 px-1 text-xs font-semibold text-slate-700 hover:text-coral-horizon-ink underline underline-offset-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 		cardCtaBtn:
-			"mt-6 inline-flex items-center justify-between w-full min-h-[48px] px-6 py-3 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+			"mt-6 inline-flex items-center justify-between w-full min-h-[48px] px-6 py-3 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	},
 	"1606": {
 		...BASE_HOME_CARD_THEME,
@@ -390,7 +377,8 @@ export const HOME_CARD_THEMES = {
 		cardBody:
 			"relative z-10 flex-grow flex flex-col justify-between p-6 md:p-8 bg-stone-50/70 border-t border-stone-200/80",
 		rateBadge:
-			"inline-flex items-center px-3.5 py-1.5 rounded-full text-xs md:text-sm font-bold bg-stone-900 text-white",
+			"block text-xl md:text-2xl font-extrabold tracking-tight tabular-nums text-stone-900 leading-snug",
+		rateCurrencyNote: "text-xs text-stone-600 leading-relaxed text-pretty",
 		cardDesc:
 			"text-stone-700 text-base leading-relaxed max-w-[58ch] text-pretty",
 		cardSpecBar:
@@ -408,9 +396,9 @@ export const HOME_CARD_THEMES = {
 			"text-sm italic text-stone-700 leading-relaxed mb-3 pl-3.5 border-l-2 border-rose-500 text-pretty",
 		reviewMetaRow: `${BASE_HOME_CARD_THEME.reviewMetaRow} text-stone-600`,
 		reviewAuthorName: "font-bold text-stone-900",
-		reviewDate: "text-stone-500 font-medium",
+		reviewDate: "text-stone-600 font-medium",
 		reviewAirbnbLink:
-			"inline-flex items-center gap-1 font-semibold text-stone-700 hover:text-salguero-sunset-rose-deep underline underline-offset-4 rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/40",
+			"inline-flex items-center gap-1.5 min-h-[44px] py-2 -ml-1 px-1 text-xs font-semibold text-stone-700 hover:text-salguero-sunset-rose-deep underline underline-offset-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/40",
 		cardCtaBtn:
 			"mt-6 inline-flex items-center justify-between w-full min-h-[48px] px-6 py-3 rounded-full bg-stone-900 hover:bg-salguero-sunset-rose-deep text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-500/40",
 	},
@@ -420,29 +408,38 @@ export const HOME_THEME = {
 	pageWrapper:
 		"min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 scroll-smooth",
 	heroHeader:
-		"relative bg-slate-900 pt-28 pb-20 md:pt-36 md:pb-28 px-4 sm:px-6 text-center overflow-hidden",
+		"relative bg-slate-900 pt-24 pb-14 sm:pt-28 sm:pb-18 md:pt-32 md:pb-22 px-4 sm:px-6 text-center overflow-hidden",
 	heroMediaWrapper: "absolute inset-0 w-full h-full",
-	heroImage: "w-full h-full object-cover",
+	heroImage: "w-full h-full object-cover object-[center_35%] saturate-[1.1]",
 	heroOverlay:
-		"absolute inset-0 bg-gradient-to-b from-slate-900/45 via-slate-900/35 to-slate-950/75",
+		"absolute inset-0 bg-gradient-to-b from-sky-950/35 via-slate-900/55 to-slate-950/80",
 	heroContent:
-		"relative z-10 max-w-4xl mx-auto mt-4 flex flex-col items-center",
+		"relative z-10 max-w-4xl mx-auto mt-2 sm:mt-4 flex flex-col items-center",
 	heroLocationBadge:
-		"inline-flex items-center gap-2 bg-slate-900/45 border border-white/25 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-semibold tracking-wider uppercase mb-6",
-	heroLocationIcon: "w-4 h-4 shrink-0",
+		"inline-flex items-center justify-center gap-2 text-white/95 text-xs md:text-sm font-semibold tracking-widest uppercase mb-3 sm:mb-4 drop-shadow-sm",
+	heroLocationIcon: "w-4 h-4 text-sky-200 shrink-0",
 	heroTitle:
-		"text-3xl sm:text-5xl md:text-6xl font-extrabold mb-4 text-white tracking-tight leading-tight drop-shadow-md text-balance max-w-4xl",
+		"text-3xl sm:text-5xl md:text-6xl font-extrabold mb-3 sm:mb-4 text-white tracking-tight leading-tight drop-shadow-md text-balance max-w-4xl",
 	heroSubtitle:
-		"text-base sm:text-lg md:text-xl text-white/95 font-normal max-w-[58ch] mx-auto mb-6 drop-shadow text-pretty leading-relaxed",
+		"text-base sm:text-lg md:text-xl text-white/95 font-normal max-w-[56ch] mx-auto mb-3 sm:mb-4 drop-shadow-sm text-pretty leading-relaxed",
 	heroValueProp:
-		"inline-flex items-center justify-center bg-slate-950/65 border border-white/25 backdrop-blur-md px-5 py-2 rounded-full text-xs md:text-sm font-semibold text-white tracking-wide mb-8",
-	heroCtaGroup: "flex flex-col items-center gap-4 w-full",
+		"text-xs sm:text-sm font-semibold text-white/95 tracking-wide max-w-[58ch] mx-auto mb-6 sm:mb-7 drop-shadow-sm text-pretty",
+	heroCtaGroup: "flex flex-col items-center gap-3.5 sm:gap-4 w-full",
 	heroCtaBtn:
-		"inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60",
+		"inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full font-bold text-base md:text-lg shadow-2xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60",
 	heroCtaIcon: "w-5 h-5 text-white shrink-0",
-	heroQuickLinksRow: "flex flex-wrap items-center justify-center gap-3",
+	heroQuickLinksRow:
+		"flex flex-wrap items-center justify-center gap-2.5 sm:gap-3",
 	heroQuickLinkBtn:
-		"inline-flex items-center justify-center gap-1.5 min-h-[44px] px-5 py-2.5 rounded-full bg-slate-950/55 hover:bg-slate-950/80 border border-white/30 backdrop-blur-md text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
+		"inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 sm:px-5 py-2.5 rounded-full bg-slate-950/60 hover:bg-slate-950/85 border border-white/35 backdrop-blur-md text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
+	heroReturningGuestCue:
+		"mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-sm text-slate-100 drop-shadow-sm",
+	heroReturningGuestPrompt: "text-slate-100 font-normal",
+	heroReturningGuestLinks:
+		"inline-flex flex-wrap items-center justify-center gap-x-1.5",
+	heroReturningGuestLink:
+		"inline-flex items-center min-h-[44px] px-1.5 font-semibold text-white underline decoration-white/60 underline-offset-4 hover:decoration-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
+	heroReturningGuestDivider: "text-white/60 select-none",
 	iconSm: "w-4 h-4 shrink-0",
 	iconMd: "w-5 h-5 shrink-0",
 	iconLg: "w-6 h-6 shrink-0",
@@ -457,11 +454,11 @@ export const HOME_THEME = {
 		"mt-10 bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6",
 	multiPropertyContent: "flex items-start gap-4",
 	multiPropertyIconBox:
-		"w-11 h-11 shrink-0 bg-red-50 text-[#B91C1C] rounded-2xl flex items-center justify-center",
+		"w-11 h-11 shrink-0 bg-coral-wash text-coral-horizon-ink rounded-2xl flex items-center justify-center",
 	multiPropertyText:
 		"text-sm md:text-base text-slate-700 leading-relaxed max-w-[58ch] text-pretty",
 	multiPropertyCta:
-		"shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	// #302 & #319 Homepage Differentiating Property Comparison Table + Shared Building Rules
 	compareSection:
 		"py-16 md:py-20 px-4 sm:px-6 bg-white border-t border-slate-200 scroll-mt-20",
@@ -472,7 +469,7 @@ export const HOME_THEME = {
 	compareSubtitle:
 		"text-base md:text-lg text-slate-700 leading-relaxed max-w-[58ch] mx-auto text-pretty",
 	compareTableWrapper:
-		"ovf-compare-wrapper rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"ovf-compare-wrapper rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	compareTable:
 		"ovf-compare-table w-full border-separate border-spacing-0 text-left text-sm md:text-base",
 	compareCaption:
@@ -489,7 +486,7 @@ export const HOME_THEME = {
 		"py-4 px-5 md:px-6 font-semibold text-slate-900 align-top border-b border-slate-200",
 	compareCell:
 		"py-4 px-5 md:px-6 text-slate-700 align-top border-b border-slate-200 leading-relaxed",
-	compareRatePrimary: "block font-bold text-slate-900",
+	compareRatePrimary: "block font-bold text-slate-900 tabular-nums",
 	compareRateNote: "block text-xs text-slate-600 mt-1",
 	sharedRulesBox:
 		"mt-8 rounded-3xl bg-slate-50 border border-slate-200 p-6 md:p-8",
@@ -505,12 +502,23 @@ export const HOME_THEME = {
 		"text-xs font-bold uppercase tracking-wider text-slate-600 mb-1",
 	sharedRulesValue:
 		"text-sm font-semibold text-slate-900 leading-snug text-pretty",
-	// #302 & #319 Homepage Playa Salguero Location & Balanced 3x2 Grid
+	compareCtaRow:
+		"mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4",
+	compareCta1707:
+		"inline-flex items-center justify-center gap-2 min-h-[48px] px-7 py-3.5 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	compareCta1606:
+		"inline-flex items-center justify-center gap-2 min-h-[48px] px-7 py-3.5 rounded-full bg-stone-900 hover:bg-salguero-sunset-rose-deep text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-salguero-sunset-rose/40",
+	// #302, #319 & #331 Homepage Playa Salguero Location & Balanced 3x2 Grid
 	locationSection: "py-16 md:py-20 px-4 sm:px-6 bg-white scroll-mt-20",
 	locationContainer: "max-w-6xl mx-auto",
 	locationHeader: "text-center max-w-3xl mx-auto mb-12",
+	locationAddressRow:
+		"flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mb-5",
 	locationAddressBadge:
-		"inline-flex items-center justify-center gap-2 bg-slate-100 border border-slate-200 px-4 py-1.5 rounded-full text-slate-700 text-xs md:text-sm font-semibold mb-5",
+		"inline-flex items-center justify-center gap-2 bg-slate-100 border border-slate-200 px-3.5 py-1.5 rounded-md text-slate-700 text-xs md:text-sm font-medium",
+	locationMapLink:
+		"inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 rounded-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-900 hover:text-coral-horizon-ink text-xs md:text-sm font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	locationMapExternalIcon: "w-3.5 h-3.5 shrink-0",
 	locationTitle:
 		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4 text-balance",
 	locationSubtitle:
@@ -520,9 +528,10 @@ export const HOME_THEME = {
 	locationCard:
 		"flex flex-col bg-slate-50 rounded-3xl p-6 md:p-7 border border-slate-200 shadow-sm hover:bg-white hover:shadow-md transition-all duration-300",
 	locationCardTop: "flex items-center justify-between gap-3 mb-4",
-	locationIconBox: "inline-flex items-center justify-center text-[#B91C1C]",
+	locationIconBox:
+		"inline-flex items-center justify-center text-coral-horizon-ink",
 	locationProximityBadge:
-		"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white",
+		"inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80",
 	locationCardTitle:
 		"text-lg md:text-xl font-bold text-slate-900 mb-2 text-balance",
 	locationCardDesc: "text-sm text-slate-700 leading-relaxed text-pretty",
@@ -538,58 +547,52 @@ export const HOME_THEME = {
 	cards: HOME_CARD_THEMES,
 	card1707: HOME_CARD_THEMES["1707"],
 	card1606: HOME_CARD_THEMES["1606"],
-	// #319 Editorial Why Book Direct + Trust Strip + Host Card Band
+	// #332 Distilled Direct Reservation Proof Pillars + Owner-Hosted Showcase Band
 	directSection:
 		"py-16 md:py-20 bg-gradient-to-b from-slate-50 to-white border-t border-b border-slate-200 px-4 sm:px-6",
 	directContainer: "max-w-6xl mx-auto",
-	directHeader: "text-center max-w-3xl mx-auto mb-12",
+	directHeader: "text-center max-w-3xl mx-auto mb-10 md:mb-12",
 	directTitle:
 		"text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-4 text-balance",
 	directSubtitle:
 		"text-base md:text-lg text-slate-700 leading-relaxed max-w-[58ch] mx-auto text-pretty",
-	directGrid:
-		"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 list-none m-0 p-0",
-	directEditorialItem:
-		"bg-white p-6 md:p-7 rounded-2xl border border-slate-200 shadow-xs flex flex-col",
-	directItemHeader: "flex items-center gap-2.5 mb-3",
-	directIconEmerald: "w-5 h-5 text-emerald-700 shrink-0",
-	directIconCoral: "w-5 h-5 text-[#B91C1C] shrink-0",
-	directIconSky: "w-5 h-5 text-sky-700 shrink-0",
-	directCardTitle: "text-lg font-bold text-slate-900 leading-snug text-balance",
-	directCardDesc: "text-sm text-slate-700 leading-relaxed text-pretty",
-	trustStripGrid: "mt-10 grid grid-cols-1 md:grid-cols-2 gap-6",
+	directShowcaseGrid:
+		"grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch",
+	trustStripGrid:
+		"lg:col-span-5 flex flex-col justify-between gap-4 list-none m-0 p-0",
+	trustStripCard:
+		"rounded-2xl p-5 bg-white border border-slate-200 shadow-xs flex items-start gap-3.5",
 	trustStripCardEmerald:
-		"rounded-2xl p-6 bg-emerald-50/70 border border-emerald-200 flex items-start gap-4",
-	trustStripCardSlate:
-		"rounded-2xl p-6 bg-slate-50 border border-slate-200 flex items-start gap-4",
-	trustStripIconEmerald: "w-6 h-6 text-emerald-700 shrink-0 mt-0.5",
-	trustStripIconSlate: "w-6 h-6 text-slate-800 shrink-0 mt-0.5",
-	trustStripTitle: "text-base font-bold text-slate-900 mb-1.5 text-balance",
+		"rounded-2xl p-5 bg-emerald-wash/70 border border-emerald-200 shadow-xs flex items-start gap-3.5",
+	trustStripIconEmerald: "w-5 h-5 text-emerald-700 shrink-0 mt-0.5",
+	trustStripIconSlate: "w-5 h-5 text-slate-800 shrink-0 mt-0.5",
+	trustStripTitle:
+		"text-base font-bold text-slate-900 mb-1 leading-snug text-balance",
 	trustStripDesc:
 		"text-sm text-slate-700 leading-relaxed max-w-[58ch] text-pretty",
 	hostCard:
-		"mt-10 bg-slate-900 rounded-3xl p-6 sm:p-8 md:p-10 border border-slate-800 shadow-lg flex flex-col md:flex-row items-center gap-8 md:gap-10",
+		"lg:col-span-7 bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-lg flex flex-col sm:flex-row items-center sm:items-start gap-6 md:gap-8",
 	hostAvatarWrapper:
-		"w-28 h-28 md:w-40 md:h-40 rounded-full overflow-hidden shrink-0 border-4 border-slate-700 bg-slate-700",
+		"w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden shrink-0 border-4 border-slate-700 bg-slate-700",
 	hostAvatarImg: "w-full h-full object-cover",
-	hostBody: "flex-grow text-center md:text-left",
+	hostBody: "flex-grow text-center sm:text-left",
 	hostHeaderRow:
-		"flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3",
+		"flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-3",
 	hostName: "text-2xl md:text-3xl font-bold text-white",
 	hostRoleBadge:
 		"inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-200 border border-slate-700",
 	hostBio:
-		"text-base text-slate-200 leading-relaxed mb-4 max-w-[58ch] text-pretty",
+		"text-sm md:text-base text-slate-200 leading-relaxed mb-5 max-w-[58ch] text-pretty",
 	hostBadgesRow:
-		"flex flex-wrap items-center justify-center md:justify-start gap-2.5",
-	hostControllerBadge:
-		"inline-flex items-center gap-2 text-xs font-semibold text-slate-200 bg-slate-800 px-4 py-2 rounded-full border border-slate-700",
+		"flex flex-wrap items-center justify-center sm:justify-start gap-2.5",
+	hostOwnerBadge:
+		"inline-flex items-center gap-2 text-xs font-semibold text-slate-200 bg-slate-800 px-3.5 py-2 rounded-full border border-slate-700",
 	hostRntBadge:
-		"inline-flex items-center gap-2 text-xs font-semibold text-[#34D399] bg-slate-800 px-4 py-2 rounded-full border border-slate-700",
+		"inline-flex items-center gap-2 text-xs font-semibold text-clearance-emerald-light bg-slate-800 px-3.5 py-2 rounded-full border border-slate-700",
 	hostActionsRow:
-		"mt-5 flex flex-wrap items-center justify-center md:justify-start gap-3",
+		"mt-5 flex flex-wrap items-center justify-center sm:justify-start gap-3",
 	hostWhatsAppBtn:
-		"inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-[#34D399] border border-[#047857] transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/40",
+		"inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-clearance-emerald-light border border-clearance-emerald-deep transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/40",
 	hostEmailBtn:
 		"inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-full text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
 	faqSection:
@@ -600,7 +603,7 @@ export const HOME_THEME = {
 	faqDetails:
 		"group bg-white rounded-2xl border border-slate-200 shadow-sm open:shadow-md transition-all",
 	faqSummary:
-		"flex items-center justify-between gap-4 p-5 sm:p-6 md:p-8 cursor-pointer list-none font-bold text-base sm:text-lg md:text-xl text-slate-900 select-none rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"flex items-center justify-between gap-4 p-5 sm:p-6 md:p-8 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-bold text-base sm:text-lg md:text-xl text-slate-900 select-none rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	faqChevron:
 		"w-5 h-5 text-slate-500 shrink-0 transition-transform duration-300 group-open:rotate-180",
 	faqAnswerWrapper:
@@ -608,25 +611,26 @@ export const HOME_THEME = {
 	faqAnswer: "text-slate-700 leading-relaxed max-w-[58ch] text-pretty",
 	faqLinksRow: "mt-4 flex flex-wrap items-center gap-3",
 	faqActionLinkPrimary:
-		"inline-flex items-center gap-2 min-h-[40px] px-4 py-2 rounded-full bg-slate-900 hover:bg-[#B91C1C] text-white text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	faqActionLinkSecondary:
-		"inline-flex items-center gap-2 min-h-[40px] px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
-	ctaSection: "py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto mb-12",
+		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+	// #333 Warm Sunlit Coastal Bottom CTA (Coral Horizon light wash, visually distinct from dark global Footer below)
+	ctaSection: "py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto mb-8",
 	ctaCard:
-		"bg-slate-900 text-white text-center relative overflow-hidden rounded-3xl py-14 px-6 sm:px-8 md:px-16 shadow-2xl border border-slate-800",
-	ctaContent: "relative z-10 max-w-3xl mx-auto flex flex-col items-center",
+		"bg-pure-white bg-gradient-to-br from-coral-wash via-pure-white to-coral-wash/80 text-deep-caribbean-slate text-center relative overflow-hidden rounded-3xl py-12 sm:py-14 px-5 sm:px-8 lg:px-12 shadow-md border border-coral-horizon/25",
+	ctaContent: "relative z-10 max-w-5xl mx-auto flex flex-col items-center",
 	ctaTitle:
-		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white text-balance",
+		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-deep-caribbean-slate text-balance max-w-3xl",
 	ctaSubtitle:
-		"text-base md:text-lg text-slate-200 mb-8 leading-relaxed max-w-[58ch] text-pretty",
+		"text-base md:text-lg text-slate-body mb-8 leading-relaxed max-w-[58ch] text-pretty",
 	ctaActionsRow:
-		"flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 w-full sm:w-auto",
+		"flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3.5 w-full sm:w-auto",
 	ctaPrimaryBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60",
+		"w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink border border-transparent text-pure-white px-6 sm:px-7 py-3.5 rounded-full font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	ctaSecondaryBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-slate-800/80 border border-slate-600 text-white hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
+		"w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[48px] bg-pure-white hover:bg-slate-surface border border-slate-300 hover:border-slate-400 text-deep-caribbean-slate hover:text-coral-horizon-ink px-6 py-3.5 rounded-full font-semibold text-sm md:text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	ctaWhatsAppBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-slate-800/80 border border-[#047857] text-[#34D399] hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
+		"w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[48px] bg-pure-white hover:bg-emerald-wash border border-clearance-emerald-deep/40 hover:border-clearance-emerald-deep text-clearance-emerald-deep px-6 py-3.5 rounded-full font-semibold text-sm md:text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-clearance-emerald/40",
 } as const;
 
 export const SHARED_BOOKING_STATUS_THEME = {

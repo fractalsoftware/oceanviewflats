@@ -882,18 +882,18 @@ test("Shared chrome across all 6 locales renders accessible #lang-toggle button,
 				`${label} #lang-toggle must include aria-haspopup="true" and aria-expanded="false"`,
 			);
 			assert.ok(
-				langToggleMatch[0].includes("min-h-[40px]") &&
-					langToggleMatch[0].includes("min-w-[40px]"),
-				`${label} #lang-toggle must enforce >= 40px x 40px touch target`,
+				langToggleMatch[0].includes("min-h-[44px]") &&
+					langToggleMatch[0].includes("min-w-[44px]"),
+				`${label} #lang-toggle must enforce >= 44px x 44px touch target`,
 			);
 
-			// 2. #nav-contact enforces >=40px x 40px touch target
+			// 2. #nav-contact enforces >=44px x 44px touch target
 			const navContactMatch = html.match(/<a[^>]*id="nav-contact"[^>]*>/);
 			assert.ok(navContactMatch, `${label} must render #nav-contact`);
 			assert.ok(
-				navContactMatch[0].includes("min-h-[40px]") &&
-					navContactMatch[0].includes("min-w-[40px]"),
-				`${label} #nav-contact must enforce >= 40px x 40px touch target`,
+				navContactMatch[0].includes("min-h-[44px]") &&
+					navContactMatch[0].includes("min-w-[44px]"),
+				`${label} #nav-contact must enforce >= 44px x 44px touch target`,
 			);
 
 			// 3. Closed #lang-dropdown has invisible class (visibility: hidden) so collapsed links are not keyboard-focusable, and AA hover contrast
@@ -1797,33 +1797,16 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 	sandbox.document.dispatchEvent("DOMContentLoaded");
 
 	assert.equal(
-		navbar.classList.contains("bg-white/90") &&
-			navbar.classList.contains("backdrop-blur-md") &&
-			navbar.classList.contains("shadow-sm") &&
-			navbar.classList.contains("py-3") &&
-			!navbar.classList.contains("bg-transparent") &&
-			!navbar.classList.contains("py-5"),
-		true,
-		"#navbar must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+		navbar.getAttribute("data-scrolled"),
+		"true",
+		"#navbar must immediately set data-scrolled='true' on DOMContentLoaded when window.scrollY > 50",
 	);
 	assert.equal(
-		navLogo.classList.contains("text-coral-horizon-ink") &&
-			!navLogo.classList.contains("text-white"),
-		true,
-		"#nav-logo must immediately receive WCAG AA+ scrolled classes (text-coral-horizon-ink) on DOMContentLoaded when window.scrollY > 50",
-	);
-	assert.equal(
-		langToggle.classList.contains("bg-slate-100") &&
-			langToggle.classList.contains("text-slate-700") &&
-			!langToggle.classList.contains("text-white"),
-		true,
-		"#lang-toggle must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
-	);
-	assert.equal(
-		navContact.classList.contains("text-slate-600") &&
-			!navContact.classList.contains("text-white"),
-		true,
-		"#nav-contact must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+		navLogo.classList.contains("text-coral-horizon-ink") ||
+			langToggle.classList.contains("bg-slate-100") ||
+			navContact.classList.contains("text-slate-600"),
+		false,
+		"main.js must not mutate individual link color classes on scroll (declarative CSS via data-scrolled)",
 	);
 	assert.equal(
 		navBook.classList.contains("text-white") &&
@@ -1832,11 +1815,14 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 		"#nav-book must preserve high-contrast white text on its solid Coral Horizon pill when scrolled",
 	);
 
-	// Verify scrolling back to top (scrollY = 0) restores transparent classes
+	// Verify scrolling back to top (scrollY = 0) restores data-scrolled="false"
 	sandbox.window.scrollY = 0;
 	sandbox.window.dispatchEvent("scroll");
-	assert.equal(navbar.classList.contains("bg-transparent"), true);
-	assert.equal(navLogo.classList.contains("text-white"), true);
+	assert.equal(
+		navbar.getAttribute("data-scrolled"),
+		"false",
+		"#navbar must set data-scrolled='false' when scrolled back to top",
+	);
 
 	// 3. Verify #lang-toggle-group focusout closes #lang-dropdown when relatedTarget is outside the group
 	langToggle.dispatchEvent("click");
@@ -1868,7 +1854,7 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 	);
 });
 
-test("Homepage renders visible #properties heading, starting COP nightly rates, 900 Mbps Wi-Fi pills, badged & balanced 2-item #experiences cards, default-open #faq-3, and primary/secondary bottom CTA hierarchy across all 6 locales (#243)", () => {
+test("Homepage renders visible #properties heading, starting COP nightly rates, 900 Mbps Wi-Fi pills, badged & balanced 2-item #experiences cards, default-open #faq-6, and primary/secondary bottom CTA hierarchy across all 6 locales (#243 #332)", () => {
 	const distDir = path.join(process.cwd(), "dist");
 	const locales = [
 		{
@@ -1997,12 +1983,13 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} must not render redundant #experiences section`,
 		);
 
-		// 3. #faq pre-opens #faq-3 (faqQ3) by default and leaves #faq-1 closed
+		// 3. #faq pre-opens #faq-6 (arrival & Guest Registry) by default and leaves #faq-1 and #faq-3 closed (#332)
 		const faq1Match = html.match(/<details[^>]*id="faq-1"[^>]*>/);
 		const faq3Match = html.match(/<details[^>]*id="faq-3"[^>]*>/);
+		const faq6Match = html.match(/<details[^>]*id="faq-6"[^>]*>/);
 		assert.ok(
-			faq1Match && faq3Match,
-			`${locale.file} #faq must render #faq-1 and #faq-3`,
+			faq1Match && faq3Match && faq6Match,
+			`${locale.file} #faq must render #faq-1, #faq-3, and #faq-6`,
 		);
 		const openAttrRegex = /\bopen(?:="")?(?=\s|>)/;
 		assert.ok(
@@ -2010,8 +1997,12 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} #faq-1 must NOT be open by default`,
 		);
 		assert.ok(
-			openAttrRegex.test(faq3Match[0]),
-			`${locale.file} #faq-3 must have the open attribute by default`,
+			!openAttrRegex.test(faq3Match[0]),
+			`${locale.file} #faq-3 must NOT be open by default`,
+		);
+		assert.ok(
+			openAttrRegex.test(faq6Match[0]),
+			`${locale.file} #faq-6 must have the open attribute by default`,
 		);
 
 		// 4. Bottom CTA buttons use primary solid white pill + secondary bordered dark slate pills
@@ -2127,7 +2118,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. #why-book-direct uses Clearance Emerald inline editorial icons (text-emerald-700) on Reasons 1 & 4 without boxed 48px stacked icon tiles or decorative Rose
+		// 1. #why-book-direct uses Clearance Emerald inline proof icons (text-emerald-700) on the savings & Mercado Pago pillars without boxed 48px stacked icon tiles or decorative Rose
 		const directMatch = html.match(
 			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
 		);
@@ -2137,7 +2128,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 		assert.equal(
 			emeraldIcons.length,
 			2,
-			`${locale.file} #why-book-direct must use inline Clearance Emerald (text-emerald-700) on both Reason 1 and Reason 4`,
+			`${locale.file} #why-book-direct must use inline Clearance Emerald (text-emerald-700) on the savings and Mercado Pago proof pillars`,
 		);
 		assert.ok(
 			!directHtml.includes("w-12 h-12") &&
@@ -5022,9 +5013,9 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 				mobileToggleMatch[0].includes('type="button"') &&
 					mobileToggleMatch[0].includes('aria-expanded="false"') &&
 					mobileToggleMatch[0].includes('aria-controls="mobile-nav-drawer"') &&
-					mobileToggleMatch[0].includes("min-h-[40px]") &&
-					mobileToggleMatch[0].includes("min-w-[40px]"),
-				`${label} #mobile-nav-toggle must enforce button semantics, aria-expanded, aria-controls, and >=40px tap target`,
+					mobileToggleMatch[0].includes("min-h-[44px]") &&
+					mobileToggleMatch[0].includes("min-w-[44px]"),
+				`${label} #mobile-nav-toggle must enforce button semantics, aria-expanded, aria-controls, and >=44px tap target`,
 			);
 
 			const drawerMatch = html.match(
@@ -5054,14 +5045,14 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 				`${label} #mobile-nav-drawer must group Contact under Staying Guests alongside Guest Registry and Guest Guide`,
 			);
 
-			// 4. Decorative brand & attribution SVGs hidden from screen readers + #nav-logo >=40px tap target
+			// 4. Decorative brand & attribution SVGs hidden from screen readers + #nav-logo >=44px tap target
 			const navLogoMatch = html.match(
 				/<a[^>]*id="nav-logo"[^>]*>[\s\S]*?<\/a>/,
 			);
 			assert.ok(
 				navLogoMatch?.[0].includes('aria-hidden="true"') &&
-					navLogoMatch[0].includes("min-h-[40px]"),
-				`${label} #nav-logo must enforce min-h-[40px] tap target and aria-hidden="true" on decorative SVG`,
+					navLogoMatch[0].includes("min-h-[44px]"),
+				`${label} #nav-logo must enforce min-h-[44px] tap target and aria-hidden="true" on decorative SVG`,
 			);
 
 			// 5. Reorganized 4-group global Footer with relative links, aria-hidden SVGs, and rounded-lg focus rings

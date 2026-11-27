@@ -323,14 +323,14 @@ export interface HomeFaqItemConfig {
 export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
 	{ id: "faq-1", qKey: "faqQ1", aKey: "faqA1", defaultOpen: false },
 	{ id: "faq-2", qKey: "faqQ2", aKey: "faqA2", defaultOpen: false },
-	{ id: "faq-3", qKey: "faqQ3", aKey: "faqA3", defaultOpen: true },
+	{ id: "faq-3", qKey: "faqQ3", aKey: "faqA3", defaultOpen: false },
 	{ id: "faq-4", qKey: "faqQ4", aKey: "faqA4", defaultOpen: false },
 	{ id: "faq-5", qKey: "faqQ5", aKey: "faqA5", defaultOpen: false },
 	{
 		id: "faq-6",
 		qKey: "faqQ6",
 		aKey: "faqA6",
-		defaultOpen: false,
+		defaultOpen: true,
 		showFulfillmentLinks: true,
 	},
 ];
@@ -588,6 +588,9 @@ export const BUILDING_LOCATION = {
 	latitude: 11.1876481,
 	longitude: -74.2313921,
 } as const;
+
+export const BUILDING_MAP_URL =
+	`https://maps.google.com/?q=${BUILDING_LOCATION.latitude},${BUILDING_LOCATION.longitude}` as const;
 
 export interface PlayaSalgueroLandmarkConfig {
 	id:

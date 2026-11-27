@@ -1,13 +1,13 @@
 import {
+	ArrowDown,
 	ArrowRight,
+	ArrowUp,
 	Building2,
-	Calendar as CalendarIcon,
 	CheckCircle2,
 	ChevronDown,
 	Compass,
 	CreditCard,
 	ExternalLink,
-	FileCheck,
 	Heart,
 	Landmark,
 	Mail,
@@ -16,7 +16,6 @@ import {
 	Percent,
 	Plane,
 	ShieldCheck,
-	Sparkles,
 	Star,
 	Trees,
 	Users,
@@ -27,6 +26,7 @@ import React from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import {
+	BUILDING_MAP_URL,
 	DATA_CONTROLLER,
 	getContactPagePath,
 	getDestinationGuidesHubPath,
@@ -113,6 +113,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				bookHref="#properties"
 				bookLabelKey="navBookDirect"
 				assetPrefix={assetPrefix}
+				currentPage="home"
 			/>
 
 			{/* Sunlit Coastal Hero Section */}
@@ -132,7 +133,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					<div className={HOME_THEME.heroOverlay} aria-hidden="true" />
 				</div>
 				<div className={HOME_THEME.heroContent}>
-					<div className={HOME_THEME.heroLocationBadge}>
+					<div id="hero-location" className={HOME_THEME.heroLocationBadge}>
 						<MapPin
 							className={HOME_THEME.heroLocationIcon}
 							aria-hidden="true"
@@ -141,14 +142,16 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					</div>
 					<h1 className={HOME_THEME.heroTitle}>{t.homeWelcome}</h1>
 					<p className={HOME_THEME.heroSubtitle}>{t.homeSubtitle}</p>
-					<p className={HOME_THEME.heroValueProp}>{t.homeHeroValueProp}</p>
+					<p id="hero-value-prop" className={HOME_THEME.heroValueProp}>
+						{t.homeHeroValueProp}
+					</p>
 					<div className={HOME_THEME.heroCtaGroup}>
 						<a href="#properties" className={HOME_THEME.heroCtaBtn}>
-							<CalendarIcon
+							<span>{t.homeHeroCta}</span>
+							<ArrowDown
 								className={HOME_THEME.heroCtaIcon}
 								aria-hidden="true"
 							/>
-							<span>{t.homeHeroCta}</span>
 						</a>
 						<div className={HOME_THEME.heroQuickLinksRow}>
 							<a
@@ -166,6 +169,36 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							>
 								<span>{t.homeHeroDirect1606}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+						</div>
+					</div>
+					<div
+						id="hero-returning-guest-cue"
+						className={HOME_THEME.heroReturningGuestCue}
+					>
+						<span className={HOME_THEME.heroReturningGuestPrompt}>
+							{t.homeHeroReturningGuestPrompt}
+						</span>
+						<div className={HOME_THEME.heroReturningGuestLinks}>
+							<a
+								id="hero-returning-registry-link"
+								href={registryHref}
+								className={HOME_THEME.heroReturningGuestLink}
+							>
+								{t.homeHeroReturningGuestRegistry}
+							</a>
+							<span
+								className={HOME_THEME.heroReturningGuestDivider}
+								aria-hidden="true"
+							>
+								·
+							</span>
+							<a
+								id="hero-returning-guide-link"
+								href={guideHref}
+								className={HOME_THEME.heroReturningGuestLink}
+							>
+								{t.homeHeroReturningGuestGuide}
 							</a>
 						</div>
 					</div>
@@ -227,6 +260,9 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												>
 													{t[card.rateKey]}
 												</span>
+												<p className={cardTheme.rateCurrencyNote}>
+													{t.homeRateCurrencyNote}
+												</p>
 											</div>
 											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
 
@@ -330,8 +366,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												<blockquote className={cardTheme.reviewQuote}>
 													{t[review.textKey]}
 												</blockquote>
-												<div className={cardTheme.reviewMetaRow}>
-													<div className={cardTheme.reviewAuthorGroup}>
+												<div className={cardTheme.reviewFooter}>
+													<div className={cardTheme.reviewMetaRow}>
 														<span className={cardTheme.reviewAuthorName}>
 															{t[review.authorKey]}
 														</span>
@@ -352,18 +388,20 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 															)}
 														</time>
 													</div>
-													<a
-														href={card.airbnbUrl}
-														target="_blank"
-														rel="noopener noreferrer"
-														className={cardTheme.reviewAirbnbLink}
-													>
-														<span>{t.reviewViewOnAirbnb}</span>
-														<ExternalLink
-															className={cardTheme.reviewIconSm}
-															aria-hidden="true"
-														/>
-													</a>
+													<div className={cardTheme.reviewLinkRow}>
+														<a
+															href={card.airbnbUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className={cardTheme.reviewAirbnbLink}
+														>
+															<span>{t.reviewViewOnAirbnb}</span>
+															<ExternalLink
+																className={cardTheme.reviewIconSm}
+																aria-hidden="true"
+															/>
+														</a>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -497,10 +535,30 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								))}
 							</dl>
 						</div>
+
+						{/* Direct Action CTAs into Property 1707 & Property 1606 */}
+						<div id="home-compare-ctas" className={HOME_THEME.compareCtaRow}>
+							<a
+								id="home-compare-cta-1707"
+								href={property1707Href}
+								className={HOME_THEME.compareCta1707}
+							>
+								<span>{t.homeCompareCta1707}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+							<a
+								id="home-compare-cta-1606"
+								href={property1606Href}
+								className={HOME_THEME.compareCta1606}
+							>
+								<span>{t.homeCompareCta1606}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+						</div>
 					</div>
 				</section>
 
-				{/* Editorial Why Book Direct + Direct Reservation Trust Strip + Host Card */}
+				{/* Consolidated Proof-Led Direct Reservation & Host Showcase */}
 				<section id="why-book-direct" className={HOME_THEME.directSection}>
 					<div className={HOME_THEME.directContainer}>
 						<div className={HOME_THEME.directHeader}>
@@ -508,163 +566,117 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							<p className={HOME_THEME.directSubtitle}>{t.directSubtitle}</p>
 						</div>
 
-						<ul className={HOME_THEME.directGrid}>
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
+						<div className={HOME_THEME.directShowcaseGrid}>
+							{/* Three Concrete, Non-Redundant Direct Reservation Proof Pillars */}
+							<ul id="home-trust-strip" className={HOME_THEME.trustStripGrid}>
+								<li className={HOME_THEME.trustStripCard}>
 									<Percent
-										className={HOME_THEME.directIconEmerald}
+										className={HOME_THEME.trustStripIconEmerald}
 										aria-hidden="true"
 									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason1Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason1Desc}
-								</p>
-							</li>
-
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
-									<Sparkles
-										className={HOME_THEME.directIconCoral}
+									<div>
+										<h3 className={HOME_THEME.trustStripTitle}>
+											{t.homeDirectPillar1Title}
+										</h3>
+										<p className={HOME_THEME.trustStripDesc}>
+											{t.homeDirectPillar1Desc}
+										</p>
+									</div>
+								</li>
+								<li className={HOME_THEME.trustStripCardEmerald}>
+									<CreditCard
+										className={HOME_THEME.trustStripIconEmerald}
 										aria-hidden="true"
 									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason2Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason2Desc}
-								</p>
-							</li>
-
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
-									<MessageCircle
-										className={HOME_THEME.directIconSky}
-										aria-hidden="true"
-									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason3Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason3Desc}
-								</p>
-							</li>
-
-							<li className={HOME_THEME.directEditorialItem}>
-								<div className={HOME_THEME.directItemHeader}>
+									<div>
+										<h3 className={HOME_THEME.trustStripTitle}>
+											{t.homeTrustPaymentsTitle}
+										</h3>
+										<p className={HOME_THEME.trustStripDesc}>
+											{t.homeTrustPaymentsDesc}
+										</p>
+									</div>
+								</li>
+								<li className={HOME_THEME.trustStripCard}>
 									<ShieldCheck
-										className={HOME_THEME.directIconEmerald}
+										className={HOME_THEME.trustStripIconSlate}
 										aria-hidden="true"
 									/>
-									<h3 className={HOME_THEME.directCardTitle}>
-										{t.directReason4Title}
-									</h3>
-								</div>
-								<p className={HOME_THEME.directCardDesc}>
-									{t.directReason4Desc}
-								</p>
-							</li>
-						</ul>
+									<div>
+										<h3 className={HOME_THEME.trustStripTitle}>
+											{t.homeTrustRntTitle}
+										</h3>
+										<p className={HOME_THEME.trustStripDesc}>
+											{t.homeTrustRntDesc}
+										</p>
+									</div>
+								</li>
+							</ul>
 
-						{/* Direct Reservation Payment & Colombian RNT Trust Strip */}
-						<div id="home-trust-strip" className={HOME_THEME.trustStripGrid}>
-							<div className={HOME_THEME.trustStripCardEmerald}>
-								<CreditCard
-									className={HOME_THEME.trustStripIconEmerald}
-									aria-hidden="true"
-								/>
-								<div>
-									<h3 className={HOME_THEME.trustStripTitle}>
-										{t.homeTrustPaymentsTitle}
-									</h3>
-									<p className={HOME_THEME.trustStripDesc}>
-										{t.homeTrustPaymentsDesc}
-									</p>
+							{/* Owner-Hosted Showcase Card with Direct Contact Actions */}
+							<div id="home-host-card" className={HOME_THEME.hostCard}>
+								<div className={HOME_THEME.hostAvatarWrapper}>
+									<img
+										src={`${assetPrefix}${IMAGES.general.host}`}
+										alt={t.hostImgAlt}
+										width={IMAGE_DIMENSIONS.host.width}
+										height={IMAGE_DIMENSIONS.host.height}
+										className={HOME_THEME.hostAvatarImg}
+										loading="lazy"
+										decoding="async"
+									/>
 								</div>
-							</div>
-							<div className={HOME_THEME.trustStripCardSlate}>
-								<ShieldCheck
-									className={HOME_THEME.trustStripIconSlate}
-									aria-hidden="true"
-								/>
-								<div>
-									<h3 className={HOME_THEME.trustStripTitle}>
-										{t.homeTrustRntTitle}
-									</h3>
-									<p className={HOME_THEME.trustStripDesc}>
-										{t.homeTrustRntDesc}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						{/* Host & Data Controller Showcase Card with Direct Contact Actions */}
-						<div id="home-host-card" className={HOME_THEME.hostCard}>
-							<div className={HOME_THEME.hostAvatarWrapper}>
-								<img
-									src={`${assetPrefix}${IMAGES.general.host}`}
-									alt={t.hostImgAlt}
-									width={IMAGE_DIMENSIONS.host.width}
-									height={IMAGE_DIMENSIONS.host.height}
-									className={HOME_THEME.hostAvatarImg}
-									loading="lazy"
-									decoding="async"
-								/>
-							</div>
-							<div className={HOME_THEME.hostBody}>
-								<div className={HOME_THEME.hostHeaderRow}>
-									<h3 className={HOME_THEME.hostName}>{t.hostName}</h3>
-									<span className={HOME_THEME.hostRoleBadge}>
-										{t.hostTitle}
-									</span>
-								</div>
-								<p className={HOME_THEME.hostBio}>{t.hostBio}</p>
-								<div className={HOME_THEME.hostBadgesRow}>
-									<span className={HOME_THEME.hostControllerBadge}>
-										<FileCheck
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-										<span>
-											{t.hostDataControllerLabel}: {DATA_CONTROLLER.name}
+								<div className={HOME_THEME.hostBody}>
+									<div className={HOME_THEME.hostHeaderRow}>
+										<h3 className={HOME_THEME.hostName}>{t.hostName}</h3>
+										<span className={HOME_THEME.hostRoleBadge}>
+											{t.hostTitle}
 										</span>
-									</span>
-									<span className={HOME_THEME.hostRntBadge}>
-										<ShieldCheck
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-										<span>
-											{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
+									</div>
+									<p className={HOME_THEME.hostBio}>{t.hostBio}</p>
+									<div className={HOME_THEME.hostBadgesRow}>
+										<span className={HOME_THEME.hostOwnerBadge}>
+											<CheckCircle2
+												className={HOME_THEME.iconSm}
+												aria-hidden="true"
+											/>
+											<span>
+												{`${t.homeHostOwnerBadge}: ${DATA_CONTROLLER.name}`}
+											</span>
 										</span>
-									</span>
-								</div>
-								<div className={HOME_THEME.hostActionsRow}>
-									<a
-										id="home-host-whatsapp"
-										href={DATA_CONTROLLER.whatsappHref}
-										target="_blank"
-										rel="noopener noreferrer"
-										className={HOME_THEME.hostWhatsAppBtn}
-									>
-										<MessageCircle
-											className={HOME_THEME.iconSm}
-											aria-hidden="true"
-										/>
-										<span>{t.homeCtaWhatsApp}</span>
-									</a>
-									<a
-										id="home-host-email"
-										href={`mailto:${DATA_CONTROLLER.email}`}
-										className={HOME_THEME.hostEmailBtn}
-									>
-										<Mail className={HOME_THEME.iconSm} aria-hidden="true" />
-										<span>{DATA_CONTROLLER.email}</span>
-									</a>
+										<span className={HOME_THEME.hostRntBadge}>
+											<ShieldCheck
+												className={HOME_THEME.iconSm}
+												aria-hidden="true"
+											/>
+											<span>
+												{`${t.rntTitle}: ${t.rnt1707} • ${t.rnt1606}`}
+											</span>
+										</span>
+									</div>
+									<div className={HOME_THEME.hostActionsRow}>
+										<a
+											id="home-host-whatsapp"
+											href={DATA_CONTROLLER.whatsappHref}
+											target="_blank"
+											rel="noopener noreferrer"
+											className={HOME_THEME.hostWhatsAppBtn}
+										>
+											<MessageCircle
+												className={HOME_THEME.iconSm}
+												aria-hidden="true"
+											/>
+											<span>{t.homeCtaWhatsApp}</span>
+										</a>
+										<a
+											id="home-host-email"
+											href={`mailto:${DATA_CONTROLLER.email}`}
+											className={HOME_THEME.hostEmailBtn}
+										>
+											<Mail className={HOME_THEME.iconSm} aria-hidden="true" />
+											<span>{DATA_CONTROLLER.email}</span>
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -675,10 +687,26 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				<section id="location" className={HOME_THEME.locationSection}>
 					<div className={HOME_THEME.locationContainer}>
 						<div className={HOME_THEME.locationHeader}>
-							<p className={HOME_THEME.locationAddressBadge}>
-								<Building2 className={HOME_THEME.iconSm} aria-hidden="true" />
-								<span>{t.homeLocationAddress}</span>
-							</p>
+							<div className={HOME_THEME.locationAddressRow}>
+								<p className={HOME_THEME.locationAddressBadge}>
+									<Building2 className={HOME_THEME.iconSm} aria-hidden="true" />
+									<span>{t.homeLocationAddress}</span>
+								</p>
+								<a
+									id="home-location-map-link"
+									href={BUILDING_MAP_URL}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={HOME_THEME.locationMapLink}
+								>
+									<MapPin className={HOME_THEME.iconSm} aria-hidden="true" />
+									<span>{t.homeLocationMapLink}</span>
+									<ExternalLink
+										className={HOME_THEME.locationMapExternalIcon}
+										aria-hidden="true"
+									/>
+								</a>
+							</div>
 							<h2 className={HOME_THEME.locationTitle}>
 								{t.homeLocationTitle}
 							</h2>
@@ -804,20 +832,28 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				</section>
 
 				{/* Bottom Direct-Reservation & Inquiry CTA Section */}
-				<section className={HOME_THEME.ctaSection}>
-					<div className={HOME_THEME.ctaCard}>
+				<section id="cta" className={HOME_THEME.ctaSection}>
+					<div id="home-cta-card" className={HOME_THEME.ctaCard}>
 						<div className={HOME_THEME.ctaContent}>
 							<h2 className={HOME_THEME.ctaTitle}>{t.homeCtaTitle}</h2>
 							<p className={HOME_THEME.ctaSubtitle}>{t.homeCtaSub}</p>
-							<div className={HOME_THEME.ctaActionsRow}>
-								<a href="#properties" className={HOME_THEME.ctaPrimaryBtn}>
-									<CalendarIcon
+							<div id="home-cta-actions" className={HOME_THEME.ctaActionsRow}>
+								<a
+									id="home-cta-primary"
+									href="#properties"
+									className={HOME_THEME.ctaPrimaryBtn}
+								>
+									<span>{t.homeHeroCta}</span>
+									<ArrowUp
 										className={HOME_THEME.heroCtaIcon}
 										aria-hidden="true"
 									/>
-									<span>{t.homeHeroCta}</span>
 								</a>
-								<a href={contactHref} className={HOME_THEME.ctaSecondaryBtn}>
+								<a
+									id="home-cta-contact"
+									href={contactHref}
+									className={HOME_THEME.ctaSecondaryBtn}
+								>
 									<span>{t.navContact}</span>
 									<ArrowRight
 										className={HOME_THEME.iconMd}
@@ -825,6 +861,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									/>
 								</a>
 								<a
+									id="home-cta-whatsapp"
 									href={DATA_CONTROLLER.whatsappHref}
 									target="_blank"
 									rel="noopener noreferrer"
@@ -842,7 +879,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				</section>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="home" />
 		</div>
 	);
 }

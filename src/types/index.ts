@@ -1,5 +1,16 @@
 export type Lang = "en" | "es" | "fr" | "it" | "de" | "ja";
 
+export type ActiveNavPage =
+	| "home"
+	| "1707"
+	| "1606"
+	| "guides"
+	| "guide-article"
+	| "contact"
+	| "registry"
+	| "guide"
+	| "privacy";
+
 export interface SeasonalRateTierRow {
 	property_id: string;
 	start_date: string;

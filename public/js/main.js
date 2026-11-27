@@ -86,88 +86,166 @@ function buildSafeAirbnbBookingUrl(rawUrl, checkInDate, checkOutDate) {
 	}
 }
 
-// Simple scroll effect for navbar
+// State-driven scroll effect for navbar (#329)
 function syncNavbarScrollState() {
 	const nav = document.getElementById("navbar");
-	const logo = document.getElementById("nav-logo");
-	const toggle = document.getElementById("lang-toggle");
-	const guides = document.getElementById("nav-guides");
-	const contact = document.getElementById("nav-contact");
-	const mobileMenuToggle = document.getElementById("mobile-nav-toggle");
-	if (!nav || !logo || !toggle) return;
-
-	if (window.scrollY > 50) {
-		nav.classList.add("bg-white/90", "backdrop-blur-md", "shadow-sm", "py-3");
-		nav.classList.remove("bg-transparent", "py-5");
-		logo.classList.add(
-			"text-coral-horizon-ink",
-			"hover:text-coral-horizon-ink-deep",
-		);
-		logo.classList.remove("text-white", "hover:text-white/80");
-		toggle.classList.add(
-			"bg-slate-100",
-			"hover:bg-slate-200",
-			"text-slate-700",
-		);
-		toggle.classList.remove(
-			"bg-white/20",
-			"hover:bg-white/30",
-			"text-white",
-			"backdrop-blur-sm",
-		);
-		if (guides) {
-			guides.classList.add("text-slate-600", "hover:text-rose-700");
-			guides.classList.remove("text-white", "hover:text-white/80");
-		}
-		if (contact) {
-			contact.classList.add("text-slate-600", "hover:text-rose-700");
-			contact.classList.remove("text-white", "hover:text-white/80");
-		}
-		if (mobileMenuToggle) {
-			mobileMenuToggle.classList.add("text-slate-700", "hover:bg-slate-100");
-			mobileMenuToggle.classList.remove("text-white", "hover:bg-white/20");
-		}
-	} else {
-		nav.classList.remove(
-			"bg-white/90",
-			"backdrop-blur-md",
-			"shadow-sm",
-			"py-3",
-		);
-		nav.classList.add("bg-transparent", "py-5");
-		logo.classList.remove(
-			"text-coral-horizon-ink",
-			"hover:text-coral-horizon-ink-deep",
-		);
-		logo.classList.add("text-white", "hover:text-white/80");
-		toggle.classList.remove(
-			"bg-slate-100",
-			"hover:bg-slate-200",
-			"text-slate-700",
-		);
-		toggle.classList.add(
-			"bg-white/20",
-			"hover:bg-white/30",
-			"text-white",
-			"backdrop-blur-sm",
-		);
-		if (guides) {
-			guides.classList.remove("text-slate-600", "hover:text-rose-700");
-			guides.classList.add("text-white", "hover:text-white/80");
-		}
-		if (contact) {
-			contact.classList.remove("text-slate-600", "hover:text-rose-700");
-			contact.classList.add("text-white", "hover:text-white/80");
-		}
-		if (mobileMenuToggle) {
-			mobileMenuToggle.classList.remove("text-slate-700", "hover:bg-slate-100");
-			mobileMenuToggle.classList.add("text-white", "hover:bg-white/20");
-		}
-	}
+	if (!nav || typeof nav.setAttribute !== "function") return;
+	nav.setAttribute("data-scrolled", window.scrollY > 50 ? "true" : "false");
 }
 
 window.addEventListener("scroll", syncNavbarScrollState);
 document.addEventListener("DOMContentLoaded", syncNavbarScrollState);
+
+const registeredDisclosures = [];
+
+function bindDisclosure({
+	group,
+	toggle,
+	panel,
+	useVisibilityClasses = false,
+	closeOnLinkClick = false,
+	openLabelKey = null,
+	closeLabelKey = null,
+}) {
+	if (!group || !panel) return null;
+
+	const trigger = toggle || group;
+	const openLabel =
+		toggle && openLabelKey
+			? translateKey(openLabelKey, {}, toggle.getAttribute("aria-label") || "")
+			: "";
+	const closeLabel =
+		toggle && closeLabelKey ? translateKey(closeLabelKey, {}, openLabel) : "";
+
+	function isOpen() {
+		if (useVisibilityClasses) {
+			if (toggle && toggle.getAttribute("aria-expanded") === "true") {
+				return true;
+			}
+			return (
+				panel.classList.contains("opacity-100") &&
+				!panel.classList.contains("invisible")
+			);
+		}
+		return (
+			Boolean(toggle && toggle.getAttribute("aria-expanded") === "true") &&
+			!panel.classList.contains("hidden")
+		);
+	}
+
+	function isInside(node) {
+		if (!node) return false;
+		return (
+			node === group ||
+			node === toggle ||
+			node === panel ||
+			(typeof group.contains === "function" && group.contains(node)) ||
+			(toggle &&
+				typeof toggle.contains === "function" &&
+				toggle.contains(node)) ||
+			(typeof panel.contains === "function" && panel.contains(node))
+		);
+	}
+
+	function close(restoreFocus = false) {
+		if (useVisibilityClasses) {
+			panel.classList.remove("opacity-100", "visible");
+			panel.classList.add("opacity-0", "invisible");
+		} else {
+			panel.classList.add("hidden");
+			if (typeof panel.setAttribute === "function") {
+				panel.setAttribute("hidden", "");
+			}
+			panel.hidden = true;
+		}
+		if (toggle) {
+			toggle.setAttribute("aria-expanded", "false");
+			if (openLabel) {
+				toggle.setAttribute("aria-label", openLabel);
+			}
+			if (restoreFocus && typeof toggle.focus === "function") {
+				toggle.focus();
+			}
+		}
+	}
+
+	function open() {
+		registeredDisclosures.forEach((ctrl) => {
+			if (ctrl !== controller && ctrl.isOpen()) {
+				ctrl.close(false);
+			}
+		});
+		if (useVisibilityClasses) {
+			panel.classList.remove("hidden", "opacity-0", "invisible");
+			panel.classList.add("opacity-100", "visible");
+		} else {
+			panel.classList.remove("hidden");
+			if (typeof panel.removeAttribute === "function") {
+				panel.removeAttribute("hidden");
+			}
+			panel.hidden = false;
+		}
+		if (toggle) {
+			toggle.setAttribute("aria-expanded", "true");
+			if (closeLabel) {
+				toggle.setAttribute("aria-label", closeLabel);
+			}
+		}
+	}
+
+	const controller = { isOpen, open, close };
+	registeredDisclosures.push(controller);
+
+	trigger.addEventListener("click", (e) => {
+		if (e && typeof e.stopPropagation === "function") {
+			e.stopPropagation();
+		}
+		if (isOpen()) {
+			close(false);
+		} else {
+			open();
+		}
+	});
+
+	if (closeOnLinkClick && typeof panel.querySelectorAll === "function") {
+		panel.querySelectorAll("a").forEach((link) => {
+			link.addEventListener("click", () => {
+				close(false);
+			});
+		});
+	}
+
+	document.addEventListener("click", (e) => {
+		const target = e?.target ?? null;
+		if (isOpen() && !isInside(target)) {
+			close(false);
+		}
+	});
+
+	const handleKeydown = (e) => {
+		if (e && (e.key === "Escape" || e.key === "Esc") && isOpen()) {
+			if (typeof e.preventDefault === "function") {
+				e.preventDefault();
+			}
+			close(true);
+		}
+	};
+
+	document.addEventListener("keydown", handleKeydown);
+	if (toggle) {
+		toggle.addEventListener("keydown", handleKeydown);
+	}
+	panel.addEventListener("keydown", handleKeydown);
+
+	group.addEventListener("focusout", (e) => {
+		const relatedTarget = e?.relatedTarget ?? null;
+		if (isOpen() && relatedTarget && !isInside(relatedTarget)) {
+			close(false);
+		}
+	});
+
+	return controller;
+}
 
 // Delegated Matomo CTA tracking for Destination Guide -> Property links (#311)
 document.addEventListener("click", (e) => {
@@ -236,98 +314,29 @@ document.addEventListener("DOMContentLoaded", () => {
 			: null);
 	if (!dropdownMenu) return;
 
-	function isLangDropdownOpen() {
-		if (langToggle && langToggle.getAttribute("aria-expanded") === "true") {
-			return true;
-		}
-		return (
-			dropdownMenu.classList.contains("opacity-100") &&
-			!dropdownMenu.classList.contains("invisible")
-		);
-	}
-
-	function openLangDropdown() {
-		dropdownMenu.classList.remove("hidden", "opacity-0", "invisible");
-		dropdownMenu.classList.add("opacity-100", "visible");
-		if (langToggle) {
-			langToggle.setAttribute("aria-expanded", "true");
-		}
-	}
-
-	function closeLangDropdown(restoreFocus = false) {
-		dropdownMenu.classList.remove("opacity-100", "visible");
-		dropdownMenu.classList.add("opacity-0", "invisible");
-		if (langToggle) {
-			langToggle.setAttribute("aria-expanded", "false");
-			if (restoreFocus && typeof langToggle.focus === "function") {
-				langToggle.focus();
-			}
-		}
-	}
-
-	const handleToggleClick = (e) => {
-		if (e && typeof e.stopPropagation === "function") {
-			e.stopPropagation();
-		}
-		if (isLangDropdownOpen()) {
-			closeLangDropdown(false);
-		} else {
-			openLangDropdown();
-		}
-	};
-
-	if (langToggle) {
-		langToggle.addEventListener("click", handleToggleClick);
-	} else {
-		langToggleGroup.addEventListener("click", handleToggleClick);
-	}
-
-	// Close when clicking outside
-	document.addEventListener("click", (e) => {
-		const target = e && e.target ? e.target : null;
-		const clickedInside =
-			target === langToggle ||
-			target === langToggleGroup ||
-			target === dropdownMenu ||
-			(langToggleGroup &&
-				typeof langToggleGroup.contains === "function" &&
-				langToggleGroup.contains(target)) ||
-			(dropdownMenu &&
-				typeof dropdownMenu.contains === "function" &&
-				dropdownMenu.contains(target));
-		if (!clickedInside && isLangDropdownOpen()) {
-			closeLangDropdown(false);
-		}
+	bindDisclosure({
+		group: langToggleGroup,
+		toggle: langToggle,
+		panel: dropdownMenu,
+		useVisibilityClasses: true,
 	});
+});
 
-	// Close on Escape key and restore focus to #lang-toggle
-	const handleKeydown = (e) => {
-		if (e && (e.key === "Escape" || e.key === "Esc")) {
-			if (isLangDropdownOpen()) {
-				if (typeof e.preventDefault === "function") {
-					e.preventDefault();
-				}
-				closeLangDropdown(true);
-			}
-		}
-	};
+// Accessible Desktop Staying-Guest Check-in Disclosure Menu (#329)
+document.addEventListener("DOMContentLoaded", () => {
+	const checkinGroup = document.getElementById("nav-checkin-group");
+	const checkinToggle = document.getElementById("nav-checkin-toggle");
+	const checkinMenu = document.getElementById("nav-checkin-menu");
+	if (!checkinGroup || !checkinToggle || !checkinMenu) return;
 
-	document.addEventListener("keydown", handleKeydown);
-	if (langToggle) {
-		langToggle.addEventListener("keydown", handleKeydown);
-	}
-	dropdownMenu.addEventListener("keydown", handleKeydown);
-
-	// Close when keyboard focus tabs out of #lang-toggle-group
-	langToggleGroup.addEventListener("focusout", (e) => {
-		const relatedTarget = e && e.relatedTarget ? e.relatedTarget : null;
-		if (
-			relatedTarget &&
-			typeof langToggleGroup.contains === "function" &&
-			!langToggleGroup.contains(relatedTarget)
-		) {
-			closeLangDropdown(false);
-		}
+	bindDisclosure({
+		group: checkinGroup,
+		toggle: checkinToggle,
+		panel: checkinMenu,
+		useVisibilityClasses: false,
+		closeOnLinkClick: true,
+		openLabelKey: "navStayingGuestsOpenAriaLabel",
+		closeLabelKey: "navStayingGuestsCloseAriaLabel",
 	});
 });
 

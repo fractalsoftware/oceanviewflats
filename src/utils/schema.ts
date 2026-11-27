@@ -1,5 +1,6 @@
 import {
 	BUILDING_LOCATION,
+	BUILDING_MAP_URL,
 	DATA_CONTROLLER,
 	getBusinessSameAsUrls,
 	getCanonicalUrl,
@@ -44,7 +45,7 @@ const DEFAULT_PROPERTY_RATES_COP: Record<PropertyId, number> = {
 
 const DEFAULT_MIN_STAY = 2;
 
-const MAP_URL = `https://maps.google.com/?q=${BUILDING_LOCATION.latitude},${BUILDING_LOCATION.longitude}`;
+const MAP_URL = BUILDING_MAP_URL;
 const PHONE_E164 = DATA_CONTROLLER.phoneHref.replace(/^tel:/, "");
 const CHECKIN_TIME = "15:00";
 const CHECKOUT_TIME = "11:00";

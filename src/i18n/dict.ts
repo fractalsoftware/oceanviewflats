@@ -16,7 +16,7 @@ export const dict = {
 		statsBaths: "2 Baths",
 		nomadTitle: "Designed for Digital Nomads",
 		nomadDesc:
-			"Combine productivity with paradise. Enjoy high-speed Wi-Fi, a laptop-friendly workspace, and stunning ocean sunsets right from your private balcony.",
+			"Start your mornings with 900 Mbps fiber overlooking Playa Salguero from the 17th floor, then unwind on your private terrace as the sun sets over the Caribbean Sea in Santa Marta.",
 		nomadBadgeTitle: "Fast Connection",
 		nomadBadgeSub: "Perfect for video calls",
 		aboutTitle: "About the Space",
@@ -63,7 +63,7 @@ export const dict = {
 		stats1606Beds: "2 Bedrooms • 3 Beds",
 		romanticTitle: "Crafted for Unforgettable Moments",
 		romanticDesc:
-			"Whether you're seeking a romantic getaway or a joyful family vacation, our flat offers the perfect blend of luxury and comfort.",
+			"Unwind on the 16th floor above Playa Salguero—a quiet coastal retreat for couples and families, steps from the sand with unobstructed Caribbean sunset views from your private terrace.",
 		romanticBadgeTitle: "Exclusive Retreat",
 		romanticBadgeSub: "Peaceful and Private",
 		amFamily: "Family Friendly",
@@ -99,9 +99,8 @@ export const dict = {
 			"Reserve Property 1606 in Playa Salguero, Santa Marta. 16th-floor beachfront stay for couples and families with Caribbean sunsets, pool, and 900 Mbps Wi-Fi.",
 		homeWelcome: "Beachfront Residences in Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Two private 16th- and 17th-floor ocean-view apartments one block from the beach—booked directly with your host Manuel Enrique.",
-		homeHeroValueProp:
-			"Save 15–20% Booking Direct • Upfront COP Pricing • Secure Online Checkout",
+			"Two private 16th- & 17th-floor ocean-view apartments steps from the beach, booked directly with host Manuel Enrique.",
+		homeHeroValueProp: "Save 15–20% Direct · Clear COP Rates · Secure Checkout",
 		homeHeroCta: "Explore Beachfront Properties",
 		homeFeaturedPropertiesTitle: "Our Featured Beachfront Properties",
 		homeMultiPropertyNote:
@@ -141,7 +140,7 @@ export const dict = {
 			"All flats include high-speed Wi-Fi, a fully equipped kitchen, air conditioning, private parking, and access to the building's swimming pools and common areas (a one-time 20,000 COP per-person Building Registration Fee is paid at reception for security wristbands; swimming pools close on Tuesdays for maintenance).",
 		directTitle: "Why Book Direct?",
 		directSubtitle:
-			"Save money and enjoy a personalized, premium experience without platform service fees.",
+			"Book directly with your Santa Marta host for transparent COP rates, local Mercado Pago checkout, and official Colombian tourism registration.",
 		directReason1Title: "0% Service Fees",
 		directReason1Desc:
 			"Avoid the 15-20% extra booking and service fees charged by Airbnb, Booking.com, and other platforms.",
@@ -172,7 +171,7 @@ export const dict = {
 		hostTitle: "Your Host",
 		hostName: "Manuel Enrique",
 		hostBio:
-			"With years of experience in hospitality, I am dedicated to providing a premium, seamless stay for all my guests in beautiful Santa Marta.",
+			"I personally own and host both apartments at Edificio Salguero Sunset in Santa Marta—so from direct booking and pre-arrival check-in to local tips for Playa Salguero, Rodadero, and Tayrona, you always speak directly with me.",
 		navContact: "Contact Us",
 		contactTitle: "Contact Us and Book",
 		contactSub:
@@ -817,6 +816,25 @@ export const dict = {
 		footerPropertiesLabel: "Properties",
 		footerStayingGuestsLabel: "Staying Guests",
 		footerLegalLabel: "Legal & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel: "Check-in — Guest Registry & Guest Guide",
+		navStayingGuestsCloseAriaLabel: "Close Check-in menu",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Already booked?",
+		homeHeroReturningGuestRegistry: "Guest Registry",
+		homeHeroReturningGuestGuide: "Guest Guide",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Paid in COP · USD reference estimate on the property page",
+		homeLocationMapLink: "View on Google Maps",
+		// #332 distilled direct showcase, warm host voice & comparison CTAs
+		homeDirectPillar1Title: "Direct-Owner Rates — No Platform Markups",
+		homeDirectPillar1Desc:
+			"Skip the 15–20% booking fees added by third-party sites and pay the exact owner rate in COP—often saving enough for a sunset dinner or Tayrona day trip.",
+		homeHostOwnerBadge: "Owner & Local Host",
+		homeCompareCta1707: "Check Dates for Oceanview 1707",
+		homeCompareCta1606: "Check Dates for Oceanview 1606",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -835,7 +853,7 @@ export const dict = {
 		statsBaths: "2 Baños",
 		nomadTitle: "Diseñado para Nómadas Digitales",
 		nomadDesc:
-			"Combina productividad con el paraíso. Disfruta de Wi-Fi de alta velocidad, espacio de trabajo cómodo y atardeceres increíbles desde tu balcón.",
+			"Empieza tus mañanas con fibra óptica de 900 Mbps frente a Playa Salguero desde el piso 17 y cierra tu jornada viendo caer el sol sobre el mar Caribe en Santa Marta desde tu terraza privada.",
 		nomadBadgeTitle: "Conexión Rápida",
 		nomadBadgeSub: "Ideal para videollamadas",
 		aboutTitle: "Sobre el Espacio",
@@ -882,7 +900,7 @@ export const dict = {
 		stats1606Beds: "2 Habitaciones • 3 Camas",
 		romanticTitle: "Diseñado para Momentos Inolvidables",
 		romanticDesc:
-			"Ya sea que busques una escapada romántica o unas alegres vacaciones familiares, nuestro apartamento ofrece la combinación perfecta de lujo y comodidad.",
+			"Descansa en el piso 16 sobre Playa Salguero: un refugio costero tranquilo para parejas y familias, a pasos de la arena y con atardeceres despejados sobre el mar Caribe desde tu terraza privada.",
 		romanticBadgeTitle: "Refugio Exclusivo",
 		romanticBadgeSub: "Tranquilo y Privado",
 		amFamily: "Ideal para Familias",
@@ -917,10 +935,9 @@ export const dict = {
 			"Reserva directa en OceanViewFlats 1606, Playa Salguero, Santa Marta. Piso 16 frente al mar para parejas y familias con Wi-Fi 900 Mbps, piscina y atardeceres.",
 		homeWelcome: "Apartamentos Frente al Mar en Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Dos apartamentos privados frente al mar en los pisos 16 y 17, a una cuadra de la playa, reservados directamente con tu anfitrión Manuel Enrique.",
-		homeHeroValueProp:
-			"Ahorra 15–20% Reservando Directo • Precios Claros en COP • Pago Seguro en Línea",
-		homeHeroCta: "Explorar Apartamentos Frente al Mar",
+			"Dos apartamentos privados frente al mar en los pisos 16 y 17, a una cuadra de la playa, directo con tu anfitrión Manuel Enrique.",
+		homeHeroValueProp: "Ahorra 15–20% Directo · Precios en COP · Pago Seguro",
+		homeHeroCta: "Ver Apartamentos Frente al Mar",
 		homeFeaturedPropertiesTitle: "Nuestras Propiedades Frente al Mar",
 		homeMultiPropertyNote:
 			"¿Viajas con un grupo grande de 7–12 Huéspedes? El Apartamento 1707 (Piso 17) y el Apartamento 1606 (Piso 16) están ubicados a solo un piso de distancia en el Edificio Salguero Sunset: reserva ambas propiedades juntas o envíanos una consulta para coordinar una estadía familiar multipropiedad.",
@@ -959,7 +976,7 @@ export const dict = {
 			"Todos los apartamentos incluyen Wi-Fi de alta velocidad, cocina totalmente equipada, aire acondicionado, parqueadero privado y acceso a las piscinas y áreas comunes del edificio (aplica una Tarifa de Registro del Edificio única de 20.000 COP por persona pagadera en recepción para las manillas; las piscinas cierran los martes por mantenimiento).",
 		directTitle: "¿Por qué Reservar Directamente?",
 		directSubtitle:
-			"Ahorra dinero y disfruta de una experiencia premium personalizada sin tarifas de servicio de plataformas.",
+			"Reserva directamente con tu anfitrión en Santa Marta para acceder a tarifas claras en COP, pago seguro con Mercado Pago y registro turístico oficial en Colombia.",
 		directReason1Title: "0% de Comisiones",
 		directReason1Desc:
 			"Evita los cargos adicionales del 15 al 20% en tarifas de reserva y servicio cobradas por Airbnb, Booking.com y otras plataformas.",
@@ -992,7 +1009,7 @@ export const dict = {
 		hostTitle: "Tu Anfitrión",
 		hostName: "Manuel Enrique",
 		hostBio:
-			"Con años de experiencia en hospitalidad, me dedico a brindar una estancia premium y sin complicaciones a todos mis huéspedes en la hermosa Santa Marta.",
+			"Soy el propietario y anfitrión directo de ambos apartamentos en el Edificio Salguero Sunset en Santa Marta: desde la reserva y tu llegada hasta recomendaciones locales de Playa Salguero, El Rodadero y Tayrona, siempre hablas directamente conmigo.",
 		navContact: "Contáctenos",
 		contactTitle: "Contáctenos y Reserve",
 		contactSub:
@@ -1656,6 +1673,26 @@ export const dict = {
 		footerPropertiesLabel: "Propiedades",
 		footerStayingGuestsLabel: "Huéspedes Confirmados",
 		footerLegalLabel: "Legal y RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Registro de Huéspedes y Guía del Huésped",
+		navStayingGuestsCloseAriaLabel: "Cerrar menú de Check-in",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "¿Ya tienes reserva?",
+		homeHeroReturningGuestRegistry: "Registro de Huéspedes",
+		homeHeroReturningGuestGuide: "Guía del Huésped",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Se paga en COP · Estimado referencial en USD en la página del apartamento",
+		homeLocationMapLink: "Ver en Google Maps",
+		// #332 distilled direct showcase, warm host voice & comparison CTAs
+		homeDirectPillar1Title: "Tarifa Directa del Propietario — Sin Recargos",
+		homeDirectPillar1Desc:
+			"Evita el 15–20% en comisiones que cobran las plataformas externas y paga el valor real en COP directamente al propietario, sin intermediarios.",
+		homeHostOwnerBadge: "Propietario y Anfitrión Local",
+		homeCompareCta1707: "Ver Fechas en Oceanview 1707",
+		homeCompareCta1606: "Ver Fechas en Oceanview 1606",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -1674,7 +1711,7 @@ export const dict = {
 		statsBaths: "2 Salles de bain",
 		nomadTitle: "Conçu pour les Nomades Digitaux",
 		nomadDesc:
-			"Alliez productivité et paradis. Profitez d'un Wi-Fi haut débit, d'un espace de travail confortable et de magnifiques couchers de soleil depuis votre balcon.",
+			"Commencez vos matinées avec la fibre 900 Mbps face à Playa Salguero depuis le 17e étage, puis profitez du coucher de soleil sur la mer des Caraïbes à Santa Marta depuis votre terrasse privée.",
 		nomadBadgeTitle: "Connexion Rapide",
 		nomadBadgeSub: "Parfait pour les appels vidéo",
 		aboutTitle: "À propos du logement",
@@ -1721,7 +1758,7 @@ export const dict = {
 		stats1606Beds: "2 Chambres • 3 Lits",
 		romanticTitle: "Conçu pour des Moments Inoubliables",
 		romanticDesc:
-			"Que vous recherchiez une escapade romantique ou des vacances en famille joyeuses, notre appartement offre le mélange parfait de luxe et de confort.",
+			"Détendez-vous au 16e étage au-dessus de Playa Salguero : un refuge côtier paisible pour les couples et les familles, à quelques pas du sable avec vue dégagée sur le coucher de soleil caribéen.",
 		romanticBadgeTitle: "Refuge Exclusif",
 		romanticBadgeSub: "Paisible et Privé",
 		amFamily: "Idéal pour les Familles",
@@ -1756,10 +1793,10 @@ export const dict = {
 			"Réservez en direct OceanViewFlats 1606 à Playa Salguero, Santa Marta. 16e étage face à la mer pour couples et familles : Wi-Fi 900 Mbps et piscine.",
 		homeWelcome: "Résidences en Bord de Mer à Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Deux appartements privés face à la mer aux 16e et 17e étages, à un pâté de maisons de la plage, réservés directement auprès de votre hôte Manuel Enrique.",
+			"Deux appartements privés face à la mer (16e et 17e étages), à deux pas de la plage, en direct avec votre hôte Manuel Enrique.",
 		homeHeroValueProp:
-			"Économisez 15–20 % en Direct • Tarifs Clairs en COP • Paiement Sécurisé en Ligne",
-		homeHeroCta: "Découvrir nos Appartements Vue Mer",
+			"−15 à 20 % en Direct · Tarifs en COP · Paiement Sécurisé",
+		homeHeroCta: "Voir les Appartements Vue Mer",
 		homeFeaturedPropertiesTitle: "Nos Propriétés en Bord de Mer",
 		homeMultiPropertyNote:
 			"Vous voyagez avec un grand groupe de 7–12 Voyageurs ? L'Appartement 1707 (17e étage) et l'Appartement 1606 (16e étage) sont situés à un seul étage d'écart dans l'Edificio Salguero Sunset — réservez les deux logements ensemble ou envoyez-nous une demande pour un séjour familial multi-propriétés.",
@@ -1798,7 +1835,7 @@ export const dict = {
 			"Tous les appartements comprennent un Wi-Fi haut débit, une cuisine entièrement équipée, la climatisation, un parking privé et l'accès aux piscines et espaces communs de l'immeuble (des Frais d'Enregistrement d'Immeuble uniques de 20 000 COP par personne sont payables à la réception pour les bracelets ; les piscines sont fermées le mardi pour maintenance).",
 		directTitle: "Pourquoi Réserver Directement ?",
 		directSubtitle:
-			"Économisez de l'argent et profitez d'une expérience premium personnalisée sans frais de service de plateforme.",
+			"Réservez en direct auprès de votre hôte à Santa Marta pour des tarifs transparents en COP, un paiement sécurisé via Mercado Pago et une licence touristique officielle en Colombie.",
 		directReason1Title: "0% de Frais de Service",
 		directReason1Desc:
 			"Évitez les frais de réservation et de service supplémentaires de 15 à 20 % facturés par Airbnb, Booking.com et d'autres plateformes.",
@@ -1832,7 +1869,7 @@ export const dict = {
 		hostTitle: "Votre Hôte",
 		hostName: "Manuel Enrique",
 		hostBio:
-			"Avec des années d'expérience dans l'hôtellerie, je me consacre à offrir un séjour haut de gamme et sans faille à tous mes clients dans la belle Santa Marta.",
+			"Je suis personnellement propriétaire et hôte des deux appartements à l'Edificio Salguero Sunset à Santa Marta : de la réservation directe et votre arrivée jusqu'aux bonnes adresses à Playa Salguero, El Rodadero et Tayrona, vous échangez toujours directement avec moi.",
 		navContact: "Contactez-nous",
 		contactTitle: "Contactez-nous et Réservez",
 		contactSub:
@@ -2503,6 +2540,27 @@ export const dict = {
 		footerPropertiesLabel: "Appartements",
 		footerStayingGuestsLabel: "Voyageurs Confirmés",
 		footerLegalLabel: "Mentions Légales & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Arrivée",
+		navStayingGuestsOpenAriaLabel:
+			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
+		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Déjà réservé ?",
+		homeHeroReturningGuestRegistry: "Registre des Voyageurs",
+		homeHeroReturningGuestGuide: "Guide de l'Invité",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Réglé en COP · Estimation indicative en EUR sur la page du logement",
+		homeLocationMapLink: "Voir sur Google Maps",
+		// #332 distilled direct showcase, warm host voice & comparison CTAs
+		homeDirectPillar1Title:
+			"Tarifs Propriétaire en Direct — Sans Frais de Plateforme",
+		homeDirectPillar1Desc:
+			"Évitez les 15 à 20 % de frais ajoutés par les sites tiers et payez le juste tarif propriétaire en COP, directement sans intermédiaire.",
+		homeHostOwnerBadge: "Propriétaire & Hôte Local",
+		homeCompareCta1707: "Voir les Dates — Oceanview 1707",
+		homeCompareCta1606: "Voir les Dates — Oceanview 1606",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -2521,7 +2579,7 @@ export const dict = {
 		statsBaths: "2 Bagni",
 		nomadTitle: "Progettato per i Nomadi Digitali",
 		nomadDesc:
-			"Unisce produttività e paradiso. Goditi il Wi-Fi ad alta velocità, uno spazio di lavoro comodo e splendidi tramonti sul mare direttamente dal tuo balcone.",
+			"Inizia le tue mattine con la fibra a 900 Mbps affacciata su Playa Salguero dal 17° piano e concludi la giornata ammirando il tramonto sul Mar dei Caraibi a Santa Marta dalla tua terrazza privata.",
 		nomadBadgeTitle: "Connessione Veloce",
 		nomadBadgeSub: "Perfetto per le videochiamate",
 		aboutTitle: "Informazioni sullo Spazio",
@@ -2568,7 +2626,7 @@ export const dict = {
 		stats1606Beds: "2 Camere • 3 Letti",
 		romanticTitle: "Creato per Momenti Indimenticabili",
 		romanticDesc:
-			"Che tu stia cercando una fuga romantica o una gioiosa vacanza in famiglia, il nostro appartamento offre il perfetto mix di lusso e comfort.",
+			"Rilassati al 16° piano sopra Playa Salguero: un rifugio costiero tranquillo per coppie e famiglie, a pochi passi dalla sabbia con tramonti liberi sul Mar dei Caraibi dalla tua terrazza privata.",
 		romanticBadgeTitle: "Rifugio Esclusivo",
 		romanticBadgeSub: "Tranquillo e Privato",
 		amFamily: "Adatto alle Famiglie",
@@ -2603,10 +2661,9 @@ export const dict = {
 			"Prenota diretto OceanViewFlats 1606 a Playa Salguero, Santa Marta. 16° piano fronte mare per coppie e famiglie con Wi-Fi 900 Mbps, piscina e tramonti.",
 		homeWelcome: "Residenze Fronte Mare a Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Due appartamenti privati fronte mare al 16° e 17° piano, a un isolato dalla spiaggia, prenotati direttamente con il tuo host Manuel Enrique.",
-		homeHeroValueProp:
-			"Risparmia il 15–20% Prenotando Diretto • Prezzi Chiari in COP • Pagamento Sicuro Online",
-		homeHeroCta: "Esplora gli Appartamenti Fronte Mare",
+			"Due appartamenti privati fronte mare (16° e 17° piano), a un isolato dalla spiaggia, diretti con l'host Manuel Enrique.",
+		homeHeroValueProp: "−15–20% Diretto · Prezzi in COP · Pagamento Sicuro",
+		homeHeroCta: "Vedi gli Appartamenti Fronte Mare",
 		homeFeaturedPropertiesTitle: "Le Nostre Proprietà Fronte Mare",
 		homeMultiPropertyNote:
 			"Viaggi con un gruppo numeroso di 7–12 Ospiti? L'Appartamento 1707 (17° piano) e l'Appartamento 1606 (16° piano) si trovano a un solo piano di distanza nell'Edificio Salguero Sunset: prenota entrambi gli appartamenti insieme o inviaci una richiesta per un soggiorno familiare multi-proprietà.",
@@ -2645,7 +2702,7 @@ export const dict = {
 			"Tutti gli appartamenti includono Wi-Fi ad alta velocità, cucina completamente attrezzata, aria condizionata, parcheggio privato e accesso alle piscine e alle aree comuni dell'edificio (è prevista una Tariffa di Registrazione Condominiale una tantum di 20.000 COP a persona da pagare alla reception per i braccialetti; le piscine sono chiuse il martedì per manutenzione).",
 		directTitle: "Perché Prenotare Direttamente?",
 		directSubtitle:
-			"Risparmia e goditi un'esperienza premium personalizzata senza costi di servizio delle piattaforme.",
+			"Prenota direttamente con il tuo host a Santa Marta per tariffe chiare in COP, pagamento sicuro tramite Mercado Pago e registrazione turistica ufficiale in Colombia.",
 		directReason1Title: "0% Commissioni",
 		directReason1Desc:
 			"Evita i costi aggiuntivi di prenotazione e servizio del 15-20% addebitati da Airbnb, Booking.com e altre piattaforme.",
@@ -2678,7 +2735,7 @@ export const dict = {
 		hostTitle: "Il Tuo Ospite",
 		hostName: "Manuel Enrique",
 		hostBio:
-			"Con anni di esperienza nell'ospitalità, mi dedico a fornire un soggiorno premium e senza intoppi a tutti i miei ospiti nella splendida Santa Marta.",
+			"Sono personalmente proprietario e host di entrambi gli appartamenti nell'Edificio Salguero Sunset a Santa Marta: dalla prenotazione diretta e il check-in fino ai consigli locali per Playa Salguero, El Rodadero e Tayrona, parli sempre direttamente con me.",
 		navContact: "Contattaci",
 		contactTitle: "Contattaci e Prenota",
 		contactSub:
@@ -3339,6 +3396,26 @@ export const dict = {
 		footerPropertiesLabel: "Appartamenti",
 		footerStayingGuestsLabel: "Ospiti Confermati",
 		footerLegalLabel: "Note Legali e RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Registro degli Ospiti e Guida dell'Ospite",
+		navStayingGuestsCloseAriaLabel: "Chiudi il menu Check-in",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Hai già prenotato?",
+		homeHeroReturningGuestRegistry: "Registro degli Ospiti",
+		homeHeroReturningGuestGuide: "Guida dell'Ospite",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Pagamento in COP · Stima indicativa in EUR nella pagina dell'appartamento",
+		homeLocationMapLink: "Apri su Google Maps",
+		// #332 distilled direct showcase, warm host voice & comparison CTAs
+		homeDirectPillar1Title: "Tariffe Dirette dal Proprietario — Zero Ricarichi",
+		homeDirectPillar1Desc:
+			"Evita il 15–20% di commissioni applicate dai portali esterni e paga la tariffa reale del proprietario in COP, senza intermediari.",
+		homeHostOwnerBadge: "Proprietario e Host Locale",
+		homeCompareCta1707: "Verifica Date — Oceanview 1707",
+		homeCompareCta1606: "Verifica Date — Oceanview 1606",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3357,7 +3434,7 @@ export const dict = {
 		statsBaths: "2 Bäder",
 		nomadTitle: "Entwickelt für Digitale Nomaden",
 		nomadDesc:
-			"Verbinde Produktivität mit dem Paradies. Genieße High-Speed-WLAN, einen laptoptauglichen Arbeitsplatz und atemberaubende Sonnenuntergänge direkt von deinem privaten Balkon.",
+			"Starten Sie Ihren Morgen mit 900-Mbit/s-Glasfaser und Blick über Playa Salguero aus dem 17. Stock – und lassen Sie den Arbeitstag bei karibischen Sonnenuntergängen über Santa Marta auf Ihrer privaten Terrasse ausklingen.",
 		nomadBadgeTitle: "Schnelle Verbindung",
 		nomadBadgeSub: "Perfekt für Videoanrufe",
 		aboutTitle: "Über die Unterkunft",
@@ -3404,7 +3481,7 @@ export const dict = {
 		stats1606Beds: "2 Schlafzimmer • 3 Betten",
 		romanticTitle: "Geschaffen für unvergessliche Momente",
 		romanticDesc:
-			"Ob Sie einen romantischen Kurzurlaub oder einen fröhlichen Familienurlaub suchen, unser Apartment bietet die perfekte Mischung aus Luxus und Komfort.",
+			"Entspannen Sie im 16. Stock über Playa Salguero: ein ruhiger Rückzugsort am Meer für Paare und Familien, nur wenige Schritte vom Strand entfernt mit freiem Blick auf den karibischen Sonnenuntergang.",
 		romanticBadgeTitle: "Exklusiver Rückzugsort",
 		romanticBadgeSub: "Friedlich und Privat",
 		amFamily: "Familienfreundlich",
@@ -3441,10 +3518,10 @@ export const dict = {
 			"Buchen Sie OceanViewFlats 1606 direkt in Playa Salguero, Santa Marta. 16. Etage am Strand für Paare und Familien mit 900-Mbps-WLAN, Pool und Meerblick.",
 		homeWelcome: "Strandapartments in Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Zwei private Meerblick-Apartments im 16. und 17. Stock, nur einen Block vom Strand entfernt — direkt bei Ihrem Gastgeber Manuel Enrique gebucht.",
+			"Zwei private Meerblick-Apartments (16. & 17. Etage), einen Block vom Strand — direkt bei Gastgeber Manuel Enrique.",
 		homeHeroValueProp:
-			"15–20 % Sparen bei Direktbuchung • Klare Preise in COP • Sichere Online-Zahlung",
-		homeHeroCta: "Strandapartments Entdecken",
+			"15–20 % Günstiger Direkt · Klare COP-Preise · Sicher Zahlen",
+		homeHeroCta: "Strandapartments entdecken",
 		homeFeaturedPropertiesTitle: "Unsere Strandunterkünfte",
 		homeMultiPropertyNote:
 			"Reisen Sie mit einer größeren Gruppe von 7–12 Gästen? Das Apartment 1707 (17. Etage) und das Apartment 1606 (16. Etage) liegen nur eine Etage voneinander entfernt im Edificio Salguero Sunset – buchen Sie beide Unterkünfte zusammen oder senden Sie uns eine Anfrage für einen koordinierten Familienaufenthalt.",
@@ -3484,7 +3561,7 @@ export const dict = {
 			"Alle Wohnungen verfügen über Highspeed-WLAN, eine voll ausgestattete Küche, Klimaanlage, einen privaten Parkplatz und Zugang zu den Schwimmbädern und Gemeinschaftsbereichen des Gebäudes (an der Rezeption fällt eine einmalige Gebäuderegistrierungsgebühr von 20.000 COP pro Person für die Armbänder an; dienstags sind die Pools wegen Wartung geschlossen).",
 		directTitle: "Warum Direkt Buchen?",
 		directSubtitle:
-			"Sparen Sie Geld und genießen Sie ein erstklassiges, personalisiertes Erlebnis ohne Buchungsgebühren der Plattformen.",
+			"Buchen Sie direkt bei Ihrem Gastgeber in Santa Marta für transparente COP-Preise, sichere Zahlung über Mercado Pago und offizielle kolumbianische Tourismuslizenz.",
 		directReason1Title: "0% Servicegebühren",
 		directReason1Desc:
 			"Vermeiden Sie die zusätzlichen 15-20% Buchungs- und Servicegebühren, die von Airbnb, Booking.com und anderen Plattformen erhoben werden.",
@@ -3516,7 +3593,7 @@ export const dict = {
 		hostTitle: "Ihr Gastgeber",
 		hostName: "Manuel Enrique",
 		hostBio:
-			"Mit jahrelanger Erfahrung in der Hotellerie widme ich mich der Bereitstellung eines erstklassigen, nahtlosen Aufenthalts für alle meine Gäste im schönen Santa Marta.",
+			"Ich bin persönlich Eigentümer und Gastgeber beider Apartments im Edificio Salguero Sunset in Santa Marta – von der Direktbuchung und dem Check-in bis zu lokalen Tipps für Playa Salguero, El Rodadero und Tayrona sprechen Sie immer direkt mit mir.",
 		navContact: "Kontaktieren Sie uns",
 		contactTitle: "Kontaktieren Sie uns und Buchen Sie",
 		contactSub:
@@ -4183,6 +4260,27 @@ export const dict = {
 		footerPropertiesLabel: "Unterkünfte",
 		footerStayingGuestsLabel: "Bestätigte Gäste",
 		footerLegalLabel: "Rechtliches & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Gästeregistrierung und Gäste-Guide",
+		navStayingGuestsCloseAriaLabel: "Check-in-Menü schließen",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "Bereits gebucht?",
+		homeHeroReturningGuestRegistry: "Gästeregistrierung",
+		homeHeroReturningGuestGuide: "Gäste-Guide",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Zahlung in COP · EUR-Richtwert im Buchungsrechner der Unterkunft",
+		homeLocationMapLink: "Auf Google Maps ansehen",
+		// #332 distilled direct showcase, warm host voice & comparison CTAs
+		homeDirectPillar1Title:
+			"Direktpreise vom Eigentümer — Ohne Plattformaufschläge",
+		homeDirectPillar1Desc:
+			"Sparen Sie die 15–20 % Buchungsgebühren externer Portale und zahlen Sie den direkten Eigentümerpreis in COP ohne Zwischenhändler.",
+		homeHostOwnerBadge: "Eigentümer & Lokaler Gastgeber",
+		homeCompareCta1707: "Termine prüfen — Oceanview 1707",
+		homeCompareCta1606: "Termine prüfen — Oceanview 1606",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -4201,7 +4299,7 @@ export const dict = {
 		statsBaths: "2 バスルーム",
 		nomadTitle: "デジタルノマドのためのデザイン",
 		nomadDesc:
-			"生産性とパラダイスを両立させましょう。高速Wi-Fi、ノートPC対応のワークスペース、およびプライベートバルコニーからの美しい夕日をお楽しみください。",
+			"17階からプラヤ・サルグエロを望む900 Mbps光回線で朝を始め、仕事の後はサンタマルタのプライベートテラスでカリブ海に沈む夕日を眺めながらくつろげます。",
 		nomadBadgeTitle: "高速接続",
 		nomadBadgeSub: "ビデオ通話に最適",
 		aboutTitle: "お部屋について",
@@ -4250,7 +4348,7 @@ export const dict = {
 		stats1606Beds: "2 寝室 • 3 ベッド",
 		romanticTitle: "忘れられない瞬間のために",
 		romanticDesc:
-			"ロマンチックな休暇でも、楽しい家族旅行でも、私たちのフラットは贅沢さと快適さの完璧な融合を提供します。",
+			"プラヤ・サルグエロを見下ろす16階の穏やかな海辺の隠れ家。砂浜まで歩いてすぐ、カップルやご家族でプライベートテラスからカリブ海の夕日をゆったり満喫できます。",
 		romanticBadgeTitle: "特別なリトリート",
 		romanticBadgeSub: "平和でプライベートな空間",
 		amFamily: "ファミリーフレンドリー",
@@ -4285,9 +4383,8 @@ export const dict = {
 			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1606を直接予約。16階ビーチフロントでカップルや家族に最適。900Mbps Wi-Fi、プール、美しい夕日。",
 		homeWelcome: "サンタマルタ・プラヤサルグエロのビーチフロント滞在",
 		homeSubtitle:
-			"ビーチまで徒歩1ブロック。16階・17階のオーシャンビュー物件2室を、オーナーのManuel Enriqueから直接ご予約いただけます。",
-		homeHeroValueProp:
-			"直接予約で15〜20%お得 • 明朗なCOP料金 • 安全なオンライン決済",
+			"ビーチまで徒歩1ブロック。16階・17階のオーシャンビュー2室を、オーナーのManuel Enriqueから直接ご予約いただけます。",
+		homeHeroValueProp: "直接予約で15〜20%お得 · 明朗なCOP料金 · 安全決済",
 		homeHeroCta: "ビーチフロント物件を見る",
 		homeFeaturedPropertiesTitle: "おすすめのビーチフロント物件",
 		homeMultiPropertyNote:
@@ -4327,7 +4424,7 @@ export const dict = {
 			"すべてのフラットに高速Wi-Fi、設備の整ったキッチン、エアコン、専用駐車場、および建物のスイミングプールと共用エリアへのアクセスが含まれています（受付にてリストバンド発行のためお一人様20,000 COPの建物登録料（1回限り）のお支払いが必要です。また、プールは毎週火曜日にメンテナンスのため休業します）。",
 		directTitle: "公式サイトから直接予約する理由",
 		directSubtitle:
-			"プラットフォームの手数料を節約し、個別対応のプレミアムな体験を最安値で提供します。",
+			"サンタマルタのオーナーホストへ直接ご予約いただくことで、透明なCOP建て料金、Mercado Pagoによる安心決済、コロンビア政府公認RNT登録の滞在をお届けします。",
 		directReason1Title: "手数料0%",
 		directReason1Desc:
 			"AirbnbやBooking.comなどの仲介サイトで発生する15〜20%の余計な手数料やサービス料金を完全に回避できます。",
@@ -4359,7 +4456,7 @@ export const dict = {
 		hostTitle: "ホスト",
 		hostName: "Manuel Enrique",
 		hostBio:
-			"長年のホスピタリティ経験を活かし、美しいサンタマルタを訪れるすべてのゲストに、プレミアムでシームレスな滞在を提供することに専念しています。",
+			"サンタマルタのEdificio Salguero Sunsetにある2室はいずれも私自身が所有・運営しています。直接予約や到着時のご案内から、プラヤ・サルグエロ、ロダデロ、タイロナのおすすめスポットまで、いつでも私本人が直接対応いたします。",
 		navContact: "お問い合わせ",
 		contactTitle: "お問い合わせ・ご予約",
 		contactSub:
@@ -5011,6 +5108,26 @@ export const dict = {
 		footerPropertiesLabel: "物件一覧",
 		footerStayingGuestsLabel: "ご予約済みのお客様",
 		footerLegalLabel: "法的情報・RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "チェックイン",
+		navStayingGuestsOpenAriaLabel:
+			"チェックイン — 宿泊者名簿登録・ゲストガイド",
+		navStayingGuestsCloseAriaLabel: "チェックインメニューを閉じる",
+		// #330 hero returning-Guest check-in cue
+		homeHeroReturningGuestPrompt: "ご予約済みですか？",
+		homeHeroReturningGuestRegistry: "宿泊者名簿登録",
+		homeHeroReturningGuestGuide: "ゲストガイド",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"COP決済・物件ページの料金計算ツールでJPY参考額を表示",
+		homeLocationMapLink: "Google マップで見る",
+		// #332 distilled direct showcase, warm host voice & comparison CTAs
+		homeDirectPillar1Title: "オーナー直接料金・仲介サイト上乗せなし",
+		homeDirectPillar1Desc:
+			"外部予約サイトで加算される15〜20%のサービス手数料を省き、仲介なしで透明なオーナー直接料金（COP建て）にてご予約いただけます。",
+		homeHostOwnerBadge: "オーナー兼現地ホスト",
+		homeCompareCta1707: "Oceanview 1707 の空室を確認",
+		homeCompareCta1606: "Oceanview 1606 の空室を確認",
 	},
 };
 

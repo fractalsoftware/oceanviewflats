@@ -48,6 +48,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="privacy"
 			/>
 
 			{/* Hero Header */}
@@ -404,7 +405,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				</section>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="privacy" />
 		</div>
 	);
 }

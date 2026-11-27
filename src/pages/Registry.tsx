@@ -49,6 +49,7 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="registry"
 			/>
 
 			{/* Hero Header */}
@@ -657,7 +658,7 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="registry" />
 		</div>
 	);
 }

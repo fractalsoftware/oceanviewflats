@@ -68,6 +68,7 @@ export default function DestinationGuidePage({
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="guide-article"
 			/>
 
 			<header className={DESTINATION_GUIDES_THEME.heroHeader}>
@@ -431,7 +432,12 @@ export default function DestinationGuidePage({
 				</article>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer
+				lang={lang}
+				assetPrefix={assetPrefix}
+				currentPage="guide-article"
+				currentGuideSlug={guide.slug}
+			/>
 		</div>
 	);
 }

@@ -4,9 +4,9 @@ description: Direct booking platform and self-service coastal concierge for beac
 colors:
   coral-horizon: "#FF5A5F"
   coral-horizon-deep: "#FF424D"
-  coral-horizon-accessible: "#DC2626"
-  coral-horizon-ink: "#B91C1C"
-  coral-horizon-ink-deep: "#991B1B"
+  coral-horizon-accessible: "#C43E29"
+  coral-horizon-ink: "#A8321E"
+  coral-horizon-ink-deep: "#8F2716"
   coral-wash: "#FEF2F2"
   salguero-sunset-rose: "#E11D48"
   salguero-sunset-rose-deep: "#BE123C"
@@ -152,7 +152,7 @@ The visual world explicitly rejects hidden-fee OTA clutter, sterile corporate ho
 The palette pairs sun-warmed coastal accents (Coral Horizon and Salguero Sunset Rose) with semantic concierge status hues (Clearance Emerald, Keycard Amber, and Nomad Sky) anchored by cool Slate and warm Travertine neutral ramps.
 
 ### Primary
-- **Coral Horizon** (`coral-horizon` / `#FF5A5F`, hover `coral-horizon-deep` / `#FF424D`, high-contrast text/icon ink `coral-horizon-ink` / `#B91C1C`, soft wash `coral-wash` / `#FEF2F2`): The global brand signature and Property 1707 primary accent. Used on the scrolled brand wordmark, primary navigation "Book Direct" pills, homepage property comparison card CTAs (`#B91C1C` on light card surfaces for WCAG AA+ contrast), Property 1707 calendar active date cells, `Guest Registry` submission CTAs, and high-priority `Guest Guide` unlock banners.
+- **Coral Horizon** (`coral-horizon` / `#FF5A5F`, hover `coral-horizon-deep` / `#FF424D`, WCAG AA+ deep coastal coral CTA fill `coral-horizon-accessible` / `#C43E29`, high-contrast text/icon & hover ink `coral-horizon-ink` / `#A8321E`, deep ink `coral-horizon-ink-deep` / `#8F2716`, soft wash `coral-wash` / `#FEF2F2`): The global brand signature and Property 1707 primary accent. Used on primary conversion pills (`#C43E29` with `#FFFFFF` text, `5.16:1` WCAG AA+ contrast, hover `#A8321E`), the scrolled brand wordmark (`#A8321E`, hover `#8F2716`), homepage property comparison card CTAs, Property 1707 calendar active date cells, `Guest Registry` submission CTAs, and high-priority `Guest Guide` unlock banners.
 
 ### Secondary
 - **Salguero Sunset Rose** (`salguero-sunset-rose` / `#E11D48`, hover `salguero-sunset-rose-deep` / `#BE123C`, dark-surface icon accent `salguero-sunset-rose-light` / `#FB7185`, soft wash `rose-wash` / `#FFF1F2`): The dedicated Property 1606 page primary accent, evoking 16th-floor sunset views over Playa Salguero. Replaces Coral Horizon across `/Oceanview1606` quick-stats icons, amenity badges, interactive calendar selection states, and booking form focus rings, as well as the Property 1606 editorial lifestyle icons on dark slate bands.
@@ -171,7 +171,7 @@ The palette pairs sun-warmed coastal accents (Coral Horizon and Salguero Sunset 
 - **Warm Travertine Stone Ramp** (`travertine-mist` / `#FAFAF9`, `travertine-surface` / `#F5F5F4`, `travertine-border` / `#E7E5E4`, `travertine-ink` / `#292524`, `warm-travertine-stone` / `#1C1917`): Property 1606's dedicated page neutral scale on `/Oceanview1606`, substituting cool slate with sun-baked stone tones across backgrounds, borders, body copy, and dark feature sections.
 
 ### Named Rules
-**The Property Temperature Rule.** On dedicated property pages (`/Oceanview1707`, `/Oceanview1606`) and homepage showcase cards (`#home-card-1707`, `#home-card-1606`), Property 1707 pairs **Coral Horizon** and **Nomad Sky** cues with cool **Slate** neutrals, while Property 1606 pairs **Salguero Sunset Rose** cues with warm **Travertine Stone** neutrals—all resolved exclusively through centralized theme maps (`THEMES`, `HOME_CARD_THEMES`) without inline JSX conditionals. Primary Coral Horizon filled pills with white text use WCAG AA+ `coral-horizon-accessible` (`#DC2626`, hover `coral-horizon-ink` `#B91C1C`), and the scrolled navigation brand wordmark uses `coral-horizon-ink` (`#B91C1C`, hover `coral-horizon-ink-deep` `#991B1B`).
+**The Property Temperature Rule.** On dedicated property pages (`/Oceanview1707`, `/Oceanview1606`) and homepage showcase cards (`#home-card-1707`, `#home-card-1606`), Property 1707 pairs **Coral Horizon** and **Nomad Sky** cues with cool **Slate** neutrals, while Property 1606 pairs **Salguero Sunset Rose** cues with warm **Travertine Stone** neutrals—all resolved exclusively through centralized theme maps (`THEMES`, `HOME_CARD_THEMES`) without inline JSX conditionals. Primary Coral Horizon filled pills with white text use WCAG AA+ deep coastal coral `coral-horizon-accessible` (`#C43E29`, hover `coral-horizon-ink` `#A8321E`), and the scrolled navigation brand wordmark uses `coral-horizon-ink` (`#A8321E`, hover `coral-horizon-ink-deep` `#8F2716`).
 
 **The Semantic Trust Rule.** **Clearance Emerald** and **Keycard Amber** are functional signals, never decorative fills. Emerald appears only when confirming direct COP payment, statutory data protection, or WhatsApp host assistance; Amber appears only on physical access credentials (`0XXXXXX#`), locked-access gates, minor guardian attestations, and mandatory building notices.
 
@@ -287,7 +287,7 @@ Every component is tactile, generous, and travel-ready—engineered with unmista
 - **Do** centralize every new color class, border token, and property-specific variant in `src/constants/theme.ts` (`THEMES["1707"]`, `THEMES["1606"]`, `PRIVACY_THEME_STYLES`) so React components in `src/components/` and `src/pages/` remain 100% style-agnostic.
 - **Do** honor the **Property Temperature Rule**: use Coral Horizon (`#FF5A5F`) + Cool Slate (`#0F172A` / `#F8FAFC`) on global pages and Property 1707, and Salguero Sunset Rose (`#E11D48`) + Warm Travertine Stone (`#1C1917` / `#FAFAF9`) on Property 1606.
 - **Do** display Settlement Currency (`COP`) as the primary, largest typographic value in every quote and financial summary, treating foreign currency (`USD`) strictly as a secondary `12px` muted estimate (`text-slate-500`) with an explicit disclaimer.
-- **Do** keep interactive tap targets at or above `40px × 40px` (`py-2.5` to `py-4` on inputs and buttons, `w-10 h-10` on desktop calendar cells) and maintain WCAG 2.1 AA+ contrast ratios so older travelers and mobile guests in transit can complete check-in effortlessly.
+- **Do** keep interactive tap targets at or above `44px × 44px` (`min-h-[44px]` on navigation, review, footer, and CTA controls; `py-2.5` to `py-4` on inputs and buttons) and maintain WCAG 2.1 AA+ contrast ratios so older travelers and mobile guests in transit can complete check-in effortlessly.
 - **Do** pair every white card on a light canvas with both an explicit `1px` border (`border-slate-100` or `border-slate-200`) and a soft shadow (`shadow-sm` to `shadow-xl`).
 
 ### Don't:
