@@ -5,6 +5,7 @@ import test from "node:test";
 import {
 	BUILDING_LOCATION,
 	HOME_PROPERTY_COMPARISON_ROWS,
+	HOME_SHARED_BUILDING_RULES,
 	PLAYA_SALGUERO_LANDMARKS,
 } from "../../src/constants/config";
 
@@ -18,6 +19,8 @@ interface LocaleExpectation {
 	rate1707: string;
 	rate1606Base: string;
 	rate1606Peak: string;
+	cleaning1707: string;
+	cleaning1606: string;
 	buildingRegistrationFee: string;
 	parking1707: string;
 	parking1606: string;
@@ -43,6 +46,8 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450,000 COP",
 		rate1606Base: "350,000 COP",
 		rate1606Peak: "550,000 COP",
+		cleaning1707: "100,000 COP",
+		cleaning1606: "80,000 COP",
 		buildingRegistrationFee: "20,000 COP",
 		parking1707: "Bay 95",
 		parking1606: "Bay 87",
@@ -66,6 +71,8 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450.000 COP",
 		rate1606Base: "350.000 COP",
 		rate1606Peak: "550.000 COP",
+		cleaning1707: "100.000 COP",
+		cleaning1606: "80.000 COP",
 		buildingRegistrationFee: "20.000 COP",
 		parking1707: "Bahía 95",
 		parking1606: "Bahía 87",
@@ -89,6 +96,8 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450 000 COP",
 		rate1606Base: "350 000 COP",
 		rate1606Peak: "550 000 COP",
+		cleaning1707: "100 000 COP",
+		cleaning1606: "80 000 COP",
 		buildingRegistrationFee: "20 000 COP",
 		parking1707: "Place 95",
 		parking1606: "Place 87",
@@ -112,6 +121,8 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450.000 COP",
 		rate1606Base: "350.000 COP",
 		rate1606Peak: "550.000 COP",
+		cleaning1707: "100.000 COP",
+		cleaning1606: "80.000 COP",
 		buildingRegistrationFee: "20.000 COP",
 		parking1707: "Posto 95",
 		parking1606: "Posto 87",
@@ -135,6 +146,8 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450.000 COP",
 		rate1606Base: "350.000 COP",
 		rate1606Peak: "550.000 COP",
+		cleaning1707: "100.000 COP",
+		cleaning1606: "80.000 COP",
 		buildingRegistrationFee: "20.000 COP",
 		parking1707: "Stellplatz 95",
 		parking1606: "Stellplatz 87",
@@ -158,6 +171,8 @@ const LOCALE_EXPECTATIONS: readonly LocaleExpectation[] = [
 		rate1707: "450,000 COP",
 		rate1606Base: "350,000 COP",
 		rate1606Peak: "550,000 COP",
+		cleaning1707: "100,000 COP",
+		cleaning1606: "80,000 COP",
 		buildingRegistrationFee: "20,000 COP",
 		parking1707: "95番",
 		parking1606: "87番",
@@ -195,17 +210,26 @@ const UNTRANSLATED_ENGLISH_TOKENS = [
 	"by car",
 ] as const;
 
-test("Homepage renders semantic HTML comparison <table> covering all 12 reconciled attributes across all 6 locales (#302)", () => {
+test("Homepage renders semantic HTML comparison <table> for 8 differentiating attributes (including Cleaning Fees & live rate targets) plus companion shared building rules callout across all 6 locales (#302 #319)", () => {
 	assert.equal(
 		HOME_PROPERTY_COMPARISON_ROWS.length,
-		12,
-		"HOME_PROPERTY_COMPARISON_ROWS must declare all 12 comparison attributes",
+		8,
+		"HOME_PROPERTY_COMPARISON_ROWS must declare the 8 differentiating comparison attributes",
 	);
 	assert.ok(
-		HOME_PROPERTY_COMPARISON_ROWS.some(
-			(row) => row.id === "building-registration-fee",
+		HOME_PROPERTY_COMPARISON_ROWS.some((row) => row.id === "cleaning-fee"),
+		"HOME_PROPERTY_COMPARISON_ROWS must include differentiating Cleaning Fee row",
+	);
+	assert.equal(
+		HOME_SHARED_BUILDING_RULES.length,
+		5,
+		"HOME_SHARED_BUILDING_RULES must declare the 5 shared building-wide rules",
+	);
+	assert.ok(
+		HOME_SHARED_BUILDING_RULES.some(
+			(rule) => rule.id === "building-registration-fee",
 		),
-		"HOME_PROPERTY_COMPARISON_ROWS must use canonical 'building-registration-fee' id",
+		"HOME_SHARED_BUILDING_RULES must use canonical 'building-registration-fee' id",
 	);
 
 	for (const locale of LOCALE_EXPECTATIONS) {
@@ -221,7 +245,7 @@ test("Homepage renders semantic HTML comparison <table> covering all 12 reconcil
 
 		// Heading and keyboard-accessible scrollable table region
 		assert.ok(
-			sectionHtml.includes(`<h2`) && sectionHtml.includes(locale.compareTitle),
+			sectionHtml.includes("<h2") && sectionHtml.includes(locale.compareTitle),
 			`${locale.file} #compare-properties must render <h2> with localized comparison title`,
 		);
 		assert.ok(
@@ -254,11 +278,24 @@ test("Homepage renders semantic HTML comparison <table> covering all 12 reconcil
 		const rowHeaders = sectionHtml.match(/<th[^>]*scope="row"[^>]*>/g) || [];
 		assert.equal(
 			rowHeaders.length,
-			12,
-			`${locale.file} comparison table must have 12 <th scope="row"> headers`,
+			8,
+			`${locale.file} comparison table must have 8 differentiating <th scope="row"> headers`,
 		);
 
-		// Verify all 12 reconciled facts appear inside the comparison table
+		// Synchronized live-rate hydration targets inside comparison table
+		assert.ok(
+			sectionHtml.includes('id="home-compare-rate-1707"') &&
+				sectionHtml.includes('id="home-compare-rate-1606"'),
+			`${locale.file} comparison table must expose #home-compare-rate-1707 and #home-compare-rate-1606 hydration targets`,
+		);
+
+		// Companion shared building rules callout
+		assert.ok(
+			sectionHtml.includes('id="home-shared-building-rules"'),
+			`${locale.file} #compare-properties must render #home-shared-building-rules companion callout`,
+		);
+
+		// Verify all reconciled facts (8 differentiating + 5 shared) appear inside #compare-properties
 		const requiredFacts = [
 			"17",
 			"16",
@@ -269,6 +306,8 @@ test("Homepage renders semantic HTML comparison <table> covering all 12 reconcil
 			locale.rate1707,
 			locale.rate1606Base,
 			locale.rate1606Peak,
+			locale.cleaning1707,
+			locale.cleaning1606,
 			"2",
 			"4",
 			"3",
@@ -284,7 +323,7 @@ test("Homepage renders semantic HTML comparison <table> covering all 12 reconcil
 		for (const token of requiredFacts) {
 			assert.ok(
 				sectionHtml.includes(token),
-				`${locale.file} comparison table must include reconciled fact "${token}"`,
+				`${locale.file} #compare-properties must include reconciled fact "${token}"`,
 			);
 		}
 

@@ -97,17 +97,18 @@ export const dict = {
 		seo1606Title: "Playa Salguero, Santa Marta | OceanViewFlats 1606",
 		seo1606Description:
 			"Reserve Property 1606 in Playa Salguero, Santa Marta. 16th-floor beachfront stay for couples and families with Caribbean sunsets, pool, and 900 Mbps Wi-Fi.",
-		homeWelcome: "Welcome to OceanViewFlats",
-		homeSubtitle: "Discover your perfect beachfront stay in Santa Marta.",
+		homeWelcome: "Beachfront Residences in Playa Salguero, Santa Marta",
+		homeSubtitle:
+			"Two private 16th- and 17th-floor ocean-view apartments one block from the beach—booked directly with your host Manuel Enrique.",
 		homeHeroValueProp:
-			"0% OTA Commission • Authoritative COP Quotes • Instant Online Checkout",
+			"Save 15–20% Booking Direct • Upfront COP Pricing • Secure Online Checkout",
 		homeHeroCta: "Explore Beachfront Properties",
 		homeFeaturedPropertiesTitle: "Our Featured Beachfront Properties",
 		homeMultiPropertyNote:
 			"Traveling with a larger group of 7–12 Guests? Oceanview Flat 1707 (17th Floor) and Oceanview Flat 1606 (16th Floor) are located just one floor apart in Edificio Salguero Sunset—book both Properties together or send us an Inquiry for a coordinated multi-property family stay.",
 		homeCtaTitle: "Ready to Book Direct or Have a Question?",
 		homeCtaSub:
-			"Select a beachfront Property above to calculate an authoritative COP Quote and complete instant online checkout (Card, PSE, or Cash Voucher) with 0% OTA commission—or send a pre-booking Inquiry via our Contact page or WhatsApp for custom requests and 7–12 Guest multi-property stays.",
+			"Choose an apartment above to see upfront pricing in COP and book securely online via Card, PSE, or Efecty without extra platform fees—or message us via Contact or WhatsApp for custom requests and 7–12 Guest stays.",
 		homeCtaWhatsApp: "Chat on WhatsApp",
 		homeCard1707Badge: "17th Floor • RNT #268781",
 		homeCard1606Badge: "16th Floor • RNT #270413",
@@ -610,7 +611,7 @@ export const dict = {
 		// #302 homepage comparison table & Playa Salguero location
 		homeCompareTitle: "Compare Our Beachfront Properties",
 		homeCompareSubtitle:
-			"Compare Property 1707 and Property 1606 side by side across floor level, RNT registration, Settlement Currency (COP) Nightly Rates, sleeping layout, and building policies.",
+			"Compare Property 1707 and Property 1606 side by side across floor level, nightly rates in COP, cleaning fees, beds, parking, and RNT registration.",
 		homeCompareCaption:
 			"Side-by-side specification comparison of Oceanview Flat 1707 (17th Floor) and Oceanview Flat 1606 (16th Floor) at Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
 		homeCompareColFeature: "Specification",
@@ -625,7 +626,7 @@ export const dict = {
 		homeCompare1707Rate: "From 450,000 COP / night",
 		homeCompare1606Rate: "From 350,000 COP / night (peak 550,000 COP)",
 		homeCompareRowMinStay: "Minimum Stay",
-		homeCompare1707MinStay: "2 nights",
+		homeCompare1707MinStay: "2 nights (year-round)",
 		homeCompare1606MinStay: "2 nights (4 nights peak: Dec 15 – Jan 15)",
 		homeCompareRowBeds: "Bedrooms & Beds",
 		homeCompare1707Beds:
@@ -789,6 +790,33 @@ export const dict = {
 		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
 		guideTopicDayTrips: "Day Trips from Playa Salguero",
 		propertyGuidesHubCta: "All Santa Marta Guides",
+		// #319 homepage overhaul, mobile drawer, trust cues & reorganized footer
+		skipToMainContent: "Skip to main content",
+		navMenuOpenAriaLabel: "Open navigation menu",
+		navMenuCloseAriaLabel: "Close navigation menu",
+		navMenuLabel: "Menu",
+		navLangAriaLabel: "Select language",
+		navGuestGuide: "Guest Guide",
+		homeHeroDirect1707: "Flat 1707 • 17th Floor",
+		homeHeroDirect1606: "Flat 1606 • 16th Floor",
+		homeCompareRowCleaningFee: "Cleaning Fee (COP)",
+		homeCompare1707CleaningFee: "100,000 COP (flat per stay)",
+		homeCompare1606CleaningFee: "80,000 COP (flat per stay)",
+		homeCompare1707RateNote: "Year-round standard rate",
+		homeCompare1606RateNote: "Peak 550,000 COP (Dec 15 – Jan 15)",
+		homeSharedRulesTitle:
+			"Included & Shared Building Policies (Both Properties)",
+		homeTrustPaymentsTitle: "Secure Direct Checkout via Mercado Pago",
+		homeTrustPaymentsDesc:
+			"Pay safely in Colombian Pesos (COP) with Credit/Debit Card, PSE bank transfer, or Cash Voucher (Efecty)—instant confirmation with zero third-party booking markups.",
+		homeTrustRntTitle: "Officially Licensed Colombian Tourism Operator (RNT)",
+		homeTrustRntDesc:
+			"The Registro Nacional de Turismo (RNT) is Colombia's official Ministry of Commerce tourism license confirming verified, legal short-term rental operation (RNT #268781 & RNT #270413).",
+		faq6RegistryLink: "Complete Guest Registry",
+		faq6GuideLink: "Open Guest Guide",
+		footerPropertiesLabel: "Properties",
+		footerStayingGuestsLabel: "Staying Guests",
+		footerLegalLabel: "Legal & RNT",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -887,17 +915,18 @@ export const dict = {
 		seo1606Title: "Vista al Mar 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Reserva directa en OceanViewFlats 1606, Playa Salguero, Santa Marta. Piso 16 frente al mar para parejas y familias con Wi-Fi 900 Mbps, piscina y atardeceres.",
-		homeWelcome: "Bienvenido a OceanViewFlats",
-		homeSubtitle: "Descubre tu estancia perfecta frente al mar en Santa Marta.",
+		homeWelcome: "Apartamentos Frente al Mar en Playa Salguero, Santa Marta",
+		homeSubtitle:
+			"Dos apartamentos privados frente al mar en los pisos 16 y 17, a una cuadra de la playa, reservados directamente con tu anfitrión Manuel Enrique.",
 		homeHeroValueProp:
-			"0% Comisión de Plataformas • Cotizaciones Oficiales en COP • Reserva Inmediata en Línea",
+			"Ahorra 15–20% Reservando Directo • Precios Claros en COP • Pago Seguro en Línea",
 		homeHeroCta: "Explorar Apartamentos Frente al Mar",
 		homeFeaturedPropertiesTitle: "Nuestras Propiedades Frente al Mar",
 		homeMultiPropertyNote:
 			"¿Viajas con un grupo grande de 7–12 Huéspedes? El Apartamento 1707 (Piso 17) y el Apartamento 1606 (Piso 16) están ubicados a solo un piso de distancia en el Edificio Salguero Sunset: reserva ambas propiedades juntas o envíanos una consulta para coordinar una estadía familiar multipropiedad.",
 		homeCtaTitle: "¿Listo para Reservar Directo o Tienes Alguna Pregunta?",
 		homeCtaSub:
-			"Selecciona una Propiedad arriba para calcular una Cotización oficial en COP y completar tu pago en línea al instante (Tarjeta, PSE o Efecty) con 0% de comisión OTA, o envía una Consulta previa desde nuestra página de Contacto o por WhatsApp para solicitudes especiales y estadías multipropiedad de 7–12 Huéspedes.",
+			"Elige un apartamento arriba para ver precios claros en COP y reservar en línea con Tarjeta, PSE o Efecty sin comisiones de plataformas, o escríbenos desde Contacto o WhatsApp para solicitudes especiales y grupos de 7–12 Huéspedes.",
 		homeCtaWhatsApp: "Chatear por WhatsApp",
 		homeCard1707Badge: "Piso 17 • RNT #268781",
 		homeCard1606Badge: "Piso 16 • RNT #270413",
@@ -1417,7 +1446,7 @@ export const dict = {
 		// #302 homepage comparison table & Playa Salguero location
 		homeCompareTitle: "Compara Nuestros Apartamentos Frente al Mar",
 		homeCompareSubtitle:
-			"Compara el Apartamento 1707 y el Apartamento 1606 lado a lado en piso, registro RNT, tarifas por noche en pesos colombianos (COP), distribución de camas y normas del edificio.",
+			"Compara el Apartamento 1707 y el Apartamento 1606 lado a lado en piso, tarifas por noche en COP, tarifas de limpieza, camas, parqueadero y registro RNT.",
 		homeCompareCaption:
 			"Comparación de especificaciones entre el Apartamento Vista al Mar 1707 (Piso 17) y el Apartamento Vista al Mar 1606 (Piso 16) en Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
 		homeCompareColFeature: "Especificación",
@@ -1433,7 +1462,7 @@ export const dict = {
 		homeCompare1606Rate:
 			"Desde 350.000 COP / noche (temporada alta 550.000 COP)",
 		homeCompareRowMinStay: "Estadía Mínima",
-		homeCompare1707MinStay: "2 noches",
+		homeCompare1707MinStay: "2 noches (todo el año)",
 		homeCompare1606MinStay: "2 noches (4 noches en pico: 15 dic – 15 ene)",
 		homeCompareRowBeds: "Habitaciones y Camas",
 		homeCompare1707Beds:
@@ -1599,6 +1628,34 @@ export const dict = {
 		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
 		guideTopicDayTrips: "Excursiones de un Día desde Playa Salguero",
 		propertyGuidesHubCta: "Todas las Guías de Santa Marta",
+		// #319 homepage overhaul, mobile drawer, trust cues & reorganized footer
+		skipToMainContent: "Saltar al contenido principal",
+		navMenuOpenAriaLabel: "Abrir menú de navegación",
+		navMenuCloseAriaLabel: "Cerrar menú de navegación",
+		navMenuLabel: "Menú",
+		navLangAriaLabel: "Seleccionar idioma",
+		navGuestGuide: "Guía del Huésped",
+		homeHeroDirect1707: "Apto 1707 • Piso 17",
+		homeHeroDirect1606: "Apto 1606 • Piso 16",
+		homeCompareRowCleaningFee: "Tarifa de Limpieza (COP)",
+		homeCompare1707CleaningFee: "100.000 COP (única por estadía)",
+		homeCompare1606CleaningFee: "80.000 COP (única por estadía)",
+		homeCompare1707RateNote: "Tarifa estándar todo el año",
+		homeCompare1606RateNote: "Temporada alta 550.000 COP (15 dic – 15 ene)",
+		homeSharedRulesTitle:
+			"Incluido y Normas Compartidas del Edificio (Ambos Apartamentos)",
+		homeTrustPaymentsTitle: "Pago Directo Seguro con Mercado Pago",
+		homeTrustPaymentsDesc:
+			"Paga con tranquilidad en pesos colombianos (COP) mediante Tarjeta de Crédito/Débito, transferencia PSE o cupón en efectivo (Efecty), con confirmación inmediata y sin recargos de intermediarios.",
+		homeTrustRntTitle:
+			"Operador Turístico Oficialmente Registrado en Colombia (RNT)",
+		homeTrustRntDesc:
+			"El Registro Nacional de Turismo (RNT) es la licencia oficial del Ministerio de Comercio de Colombia que certifica nuestra operación legal y verificada (RNT #268781 y RNT #270413).",
+		faq6RegistryLink: "Completar Registro de Huéspedes",
+		faq6GuideLink: "Abrir Guía del Huésped",
+		footerPropertiesLabel: "Propiedades",
+		footerStayingGuestsLabel: "Huéspedes Confirmados",
+		footerLegalLabel: "Legal y RNT",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -1697,18 +1754,18 @@ export const dict = {
 		seo1606Title: "Séjour Vue Mer 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Réservez en direct OceanViewFlats 1606 à Playa Salguero, Santa Marta. 16e étage face à la mer pour couples et familles : Wi-Fi 900 Mbps et piscine.",
-		homeWelcome: "Bienvenue chez OceanViewFlats",
+		homeWelcome: "Résidences en Bord de Mer à Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Découvrez votre séjour parfait en bord de mer à Santa Marta.",
+			"Deux appartements privés face à la mer aux 16e et 17e étages, à un pâté de maisons de la plage, réservés directement auprès de votre hôte Manuel Enrique.",
 		homeHeroValueProp:
-			"0% de Commission OTA • Devis Officiels en COP • Paiement Direct en Ligne",
+			"Économisez 15–20 % en Direct • Tarifs Clairs en COP • Paiement Sécurisé en Ligne",
 		homeHeroCta: "Découvrir nos Appartements Vue Mer",
 		homeFeaturedPropertiesTitle: "Nos Propriétés en Bord de Mer",
 		homeMultiPropertyNote:
 			"Vous voyagez avec un grand groupe de 7–12 Voyageurs ? L'Appartement 1707 (17e étage) et l'Appartement 1606 (16e étage) sont situés à un seul étage d'écart dans l'Edificio Salguero Sunset — réservez les deux logements ensemble ou envoyez-nous une demande pour un séjour familial multi-propriétés.",
 		homeCtaTitle: "Prêt à Réserver en Direct ou Vous Avez une Question ?",
 		homeCtaSub:
-			"Sélectionnez un appartement ci-dessus pour obtenir un Devis officiel en COP et finaliser votre paiement en ligne instantané (Carte, PSE ou Efecty) avec 0 % de commission OTA — ou envoyez une Demande via notre page Contact ou sur WhatsApp pour toute question ou un séjour multi-propriétés de 7–12 Voyageurs.",
+			"Choisissez un appartement ci-dessus pour voir nos tarifs clairs en COP et réserver en ligne par Carte, PSE ou Efecty sans frais de plateforme — ou contactez-nous via la page Contact ou WhatsApp pour toute demande et les séjours de 7–12 Voyageurs.",
 		homeCtaWhatsApp: "Discuter sur WhatsApp",
 		homeCard1707Badge: "17e Étage • RNT #268781",
 		homeCard1606Badge: "16e Étage • RNT #270413",
@@ -2234,7 +2291,7 @@ export const dict = {
 		// #302 homepage comparison table & Playa Salguero location
 		homeCompareTitle: "Comparez Nos Appartements en Bord de Mer",
 		homeCompareSubtitle:
-			"Comparez l'Appartement 1707 et l'Appartement 1606 côte à côte : étage, immatriculation RNT, tarifs par nuit en pesos colombiens (COP), couchages et règlement de l'immeuble.",
+			"Comparez l'Appartement 1707 et l'Appartement 1606 côte à côte : étage, tarifs par nuit en COP, frais de ménage, couchages, parking et immatriculation RNT.",
 		homeCompareCaption:
 			"Comparaison détaillée des caractéristiques de l'Appartement Vue Mer 1707 (17e étage) et de l'Appartement Vue Mer 1606 (16e étage) à l'Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
 		homeCompareColFeature: "Caractéristique",
@@ -2250,7 +2307,7 @@ export const dict = {
 		homeCompare1606Rate:
 			"À partir de 350 000 COP / nuit (haute saison 550 000 COP)",
 		homeCompareRowMinStay: "Séjour Minimum",
-		homeCompare1707MinStay: "2 nuits",
+		homeCompare1707MinStay: "2 nuits (toute l'année)",
 		homeCompare1606MinStay:
 			"2 nuits (4 nuits haute saison : 15 déc. – 15 janv.)",
 		homeCompareRowBeds: "Chambres et Lits",
@@ -2418,6 +2475,34 @@ export const dict = {
 		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
 		guideTopicDayTrips: "Excursions d'une Journée depuis Playa Salguero",
 		propertyGuidesHubCta: "Tous les Guides Santa Marta",
+		// #319 homepage overhaul, mobile drawer, trust cues & reorganized footer
+		skipToMainContent: "Aller au contenu principal",
+		navMenuOpenAriaLabel: "Ouvrir le menu de navigation",
+		navMenuCloseAriaLabel: "Fermer le menu de navigation",
+		navMenuLabel: "Menu",
+		navLangAriaLabel: "Choisir la langue",
+		navGuestGuide: "Guide de l'Invité",
+		homeHeroDirect1707: "Appt 1707 • 17e Étage",
+		homeHeroDirect1606: "Appt 1606 • 16e Étage",
+		homeCompareRowCleaningFee: "Frais de Ménage (COP)",
+		homeCompare1707CleaningFee: "100 000 COP (forfait par séjour)",
+		homeCompare1606CleaningFee: "80 000 COP (forfait par séjour)",
+		homeCompare1707RateNote: "Tarif standard toute l'année",
+		homeCompare1606RateNote: "Haute saison 550 000 COP (15 déc. – 15 janv.)",
+		homeSharedRulesTitle:
+			"Inclus et Règles Communes de l'Immeuble (Les Deux Appartements)",
+		homeTrustPaymentsTitle: "Paiement Direct Sécurisé via Mercado Pago",
+		homeTrustPaymentsDesc:
+			"Payez en toute sécurité en pesos colombiens (COP) par Carte bancaire, virement PSE ou bon d'espèces (Efecty) — confirmation immédiate et sans frais de plateforme.",
+		homeTrustRntTitle:
+			"Opérateur Touristique Officiellement Enregistré en Colombie (RNT)",
+		homeTrustRntDesc:
+			"Le Registro Nacional de Turismo (RNT) est la licence officielle du ministère colombien du Commerce attestant notre activité légale et vérifiée (RNT #268781 et RNT #270413).",
+		faq6RegistryLink: "Remplir le Registre des Invités",
+		faq6GuideLink: "Ouvrir le Guide de l'Invité",
+		footerPropertiesLabel: "Appartements",
+		footerStayingGuestsLabel: "Voyageurs Confirmés",
+		footerLegalLabel: "Mentions Légales & RNT",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -2516,17 +2601,18 @@ export const dict = {
 		seo1606Title: "Fronte Mare 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Prenota diretto OceanViewFlats 1606 a Playa Salguero, Santa Marta. 16° piano fronte mare per coppie e famiglie con Wi-Fi 900 Mbps, piscina e tramonti.",
-		homeWelcome: "Benvenuti a OceanViewFlats",
-		homeSubtitle: "Scopri il tuo soggiorno perfetto fronte mare a Santa Marta.",
+		homeWelcome: "Residenze Fronte Mare a Playa Salguero, Santa Marta",
+		homeSubtitle:
+			"Due appartamenti privati fronte mare al 16° e 17° piano, a un isolato dalla spiaggia, prenotati direttamente con il tuo host Manuel Enrique.",
 		homeHeroValueProp:
-			"0% Commissioni OTA • Preventivi Ufficiali in COP • Checkout Diretto Online",
+			"Risparmia il 15–20% Prenotando Diretto • Prezzi Chiari in COP • Pagamento Sicuro Online",
 		homeHeroCta: "Esplora gli Appartamenti Fronte Mare",
 		homeFeaturedPropertiesTitle: "Le Nostre Proprietà Fronte Mare",
 		homeMultiPropertyNote:
 			"Viaggi con un gruppo numeroso di 7–12 Ospiti? L'Appartamento 1707 (17° piano) e l'Appartamento 1606 (16° piano) si trovano a un solo piano di distanza nell'Edificio Salguero Sunset: prenota entrambi gli appartamenti insieme o inviaci una richiesta per un soggiorno familiare multi-proprietà.",
 		homeCtaTitle: "Pronto a Prenotare Diretto o Hai una Domanda?",
 		homeCtaSub:
-			"Seleziona un appartamento qui sopra per calcolare un Preventivo ufficiale in COP e completare il pagamento istantaneo online (Carta, PSE o Efecty) con lo 0% di commissioni OTA, oppure invia una Richiesta tramite la pagina Contatti o su WhatsApp per domande personalizzate e soggiorni multi-proprietà da 7–12 Ospiti.",
+			"Scegli un appartamento qui sopra per vedere prezzi trasparenti in COP e prenotare online con Carta, PSE o Efecty senza commissioni di piattaforma, oppure scrivici tramite Contatti o WhatsApp per richieste speciali e soggiorni per 7–12 Ospiti.",
 		homeCtaWhatsApp: "Scrivici su WhatsApp",
 		homeCard1707Badge: "17° Piano • RNT #268781",
 		homeCard1606Badge: "16° Piano • RNT #270413",
@@ -3044,7 +3130,7 @@ export const dict = {
 		// #302 homepage comparison table & Playa Salguero location
 		homeCompareTitle: "Confronta i Nostri Appartamenti Fronte Mare",
 		homeCompareSubtitle:
-			"Confronta l'Appartamento 1707 e l'Appartamento 1606 fianco a fianco per piano, registrazione RNT, tariffe per notte in pesos colombiani (COP), posti letto e regole dell'edificio.",
+			"Confronta l'Appartamento 1707 e l'Appartamento 1606 fianco a fianco per piano, tariffe per notte in COP, spese di pulizia, posti letto, parcheggio e registrazione RNT.",
 		homeCompareCaption:
 			"Confronto dettagliato tra Appartamento Vista Mare 1707 (17° piano) e Appartamento Vista Mare 1606 (16° piano) presso Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
 		homeCompareColFeature: "Caratteristica",
@@ -3059,7 +3145,7 @@ export const dict = {
 		homeCompare1707Rate: "Da 450.000 COP / notte",
 		homeCompare1606Rate: "Da 350.000 COP / notte (alta stagione 550.000 COP)",
 		homeCompareRowMinStay: "Soggiorno Minimo",
-		homeCompare1707MinStay: "2 notti",
+		homeCompare1707MinStay: "2 notti (tutto l'anno)",
 		homeCompare1606MinStay: "2 notti (4 notti alta stagione: 15 dic – 15 gen)",
 		homeCompareRowBeds: "Camere e Letti",
 		homeCompare1707Beds:
@@ -3225,6 +3311,34 @@ export const dict = {
 		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
 		guideTopicDayTrips: "Gite in Giornata da Playa Salguero",
 		propertyGuidesHubCta: "Tutte le Guide di Santa Marta",
+		// #319 homepage overhaul, mobile drawer, trust cues & reorganized footer
+		skipToMainContent: "Vai al contenuto principale",
+		navMenuOpenAriaLabel: "Apri il menu di navigazione",
+		navMenuCloseAriaLabel: "Chiudi il menu di navigazione",
+		navMenuLabel: "Menu",
+		navLangAriaLabel: "Seleziona lingua",
+		navGuestGuide: "Guida dell'Ospite",
+		homeHeroDirect1707: "App. 1707 • 17° Piano",
+		homeHeroDirect1606: "App. 1606 • 16° Piano",
+		homeCompareRowCleaningFee: "Spese di Pulizia (COP)",
+		homeCompare1707CleaningFee: "100.000 COP (quota fissa)",
+		homeCompare1606CleaningFee: "80.000 COP (quota fissa)",
+		homeCompare1707RateNote: "Tariffa standard tutto l'anno",
+		homeCompare1606RateNote: "Alta stagione 550.000 COP (15 dic – 15 gen)",
+		homeSharedRulesTitle:
+			"Incluso e Regole Condivise dell'Edificio (Entrambi gli Appartamenti)",
+		homeTrustPaymentsTitle: "Pagamento Diretto Sicuro tramite Mercado Pago",
+		homeTrustPaymentsDesc:
+			"Paga in sicurezza in pesos colombiani (COP) con Carta di Credito/Debito, bonifico PSE o voucher in contanti (Efecty): conferma immediata e zero commissioni di piattaforma.",
+		homeTrustRntTitle:
+			"Operatore Turistico Ufficialmente Registrato in Colombia (RNT)",
+		homeTrustRntDesc:
+			"Il Registro Nacional de Turismo (RNT) è la licenza ufficiale del Ministero del Commercio colombiano che certifica la gestione legale e verificata (RNT #268781 e RNT #270413).",
+		faq6RegistryLink: "Compila il Registro Ospiti",
+		faq6GuideLink: "Apri la Guida dell'Ospite",
+		footerPropertiesLabel: "Appartamenti",
+		footerStayingGuestsLabel: "Ospiti Confermati",
+		footerLegalLabel: "Note Legali e RNT",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -3325,18 +3439,18 @@ export const dict = {
 		seo1606Title: "Meerblick-Apartment 1606 | Playa Salguero, Santa Marta",
 		seo1606Description:
 			"Buchen Sie OceanViewFlats 1606 direkt in Playa Salguero, Santa Marta. 16. Etage am Strand für Paare und Familien mit 900-Mbps-WLAN, Pool und Meerblick.",
-		homeWelcome: "Willkommen bei OceanViewFlats",
+		homeWelcome: "Strandapartments in Playa Salguero, Santa Marta",
 		homeSubtitle:
-			"Entdecken Sie Ihren perfekten Aufenthalt direkt am Strand in Santa Marta.",
+			"Zwei private Meerblick-Apartments im 16. und 17. Stock, nur einen Block vom Strand entfernt — direkt bei Ihrem Gastgeber Manuel Enrique gebucht.",
 		homeHeroValueProp:
-			"0% Plattformgebühren • Verbindliche COP-Preise • Direkter Online-Checkout",
+			"15–20 % Sparen bei Direktbuchung • Klare Preise in COP • Sichere Online-Zahlung",
 		homeHeroCta: "Strandapartments Entdecken",
 		homeFeaturedPropertiesTitle: "Unsere Strandunterkünfte",
 		homeMultiPropertyNote:
 			"Reisen Sie mit einer größeren Gruppe von 7–12 Gästen? Das Apartment 1707 (17. Etage) und das Apartment 1606 (16. Etage) liegen nur eine Etage voneinander entfernt im Edificio Salguero Sunset – buchen Sie beide Unterkünfte zusammen oder senden Sie uns eine Anfrage für einen koordinierten Familienaufenthalt.",
 		homeCtaTitle: "Bereit für Ihre Direktbuchung oder Haben Sie Fragen?",
 		homeCtaSub:
-			"Wählen Sie oben ein Strandapartment aus, um ein verbindliches Angebot in COP zu berechnen und sofort online zu buchen (Karte, PSE oder Efecty) mit 0 % OTA-Provision – oder senden Sie uns über die Kontaktseite oder per WhatsApp eine Vorabanfrage für individuelle Wünsche und Aufenthalte für 7–12 Gäste.",
+			"Wählen Sie oben ein Apartment für transparente COP-Preise und sichere Online-Buchung per Karte, PSE oder Efecty ohne Plattformgebühren — oder kontaktieren Sie uns über Kontakt oder WhatsApp für Sonderwünsche und Aufenthalte mit 7–12 Gästen.",
 		homeCtaWhatsApp: "Per WhatsApp Chatten",
 		homeCard1707Badge: "17. Etage • RNT #268781",
 		homeCard1606Badge: "16. Etage • RNT #270413",
@@ -3859,7 +3973,7 @@ export const dict = {
 		// #302 homepage comparison table & Playa Salguero location
 		homeCompareTitle: "Unsere Strand-Apartments im Vergleich",
 		homeCompareSubtitle:
-			"Vergleichen Sie Apartment 1707 und Apartment 1606 direkt nebeneinander nach Etage, RNT-Registrierung, Nachtpreisen in kolumbianischen Pesos (COP), Bettenaufteilung und Hausregeln.",
+			"Vergleichen Sie Apartment 1707 und Apartment 1606 direkt nebeneinander nach Etage, Nachtpreisen in COP, Reinigungsgebühren, Betten, Parkplatz und RNT-Registrierung.",
 		homeCompareCaption:
 			"Direkter Ausstattungsvergleich zwischen Apartment mit Meerblick 1707 (17. Etage) und Apartment mit Meerblick 1606 (16. Etage) im Edificio Salguero Sunset, Playa Salguero, Santa Marta.",
 		homeCompareColFeature: "Merkmal",
@@ -3874,7 +3988,7 @@ export const dict = {
 		homeCompare1707Rate: "Ab 450.000 COP / Nacht",
 		homeCompare1606Rate: "Ab 350.000 COP / Nacht (Hochsaison 550.000 COP)",
 		homeCompareRowMinStay: "Mindestaufenthalt",
-		homeCompare1707MinStay: "2 Nächte",
+		homeCompare1707MinStay: "2 Nächte (ganzjährig)",
 		homeCompare1606MinStay:
 			"2 Nächte (4 Nächte Hochsaison: 15. Dez. – 15. Jan.)",
 		homeCompareRowBeds: "Schlafzimmer & Betten",
@@ -4041,6 +4155,34 @@ export const dict = {
 		guideTopicBeachComparison: "Playa Salguero vs. El Rodadero",
 		guideTopicDayTrips: "Tagesausflüge ab Playa Salguero",
 		propertyGuidesHubCta: "Alle Santa Marta Guides",
+		// #319 homepage overhaul, mobile drawer, trust cues & reorganized footer
+		skipToMainContent: "Zum Hauptinhalt springen",
+		navMenuOpenAriaLabel: "Navigationsmenü öffnen",
+		navMenuCloseAriaLabel: "Navigationsmenü schließen",
+		navMenuLabel: "Menü",
+		navLangAriaLabel: "Sprache auswählen",
+		navGuestGuide: "Gäste-Guide",
+		homeHeroDirect1707: "Apt. 1707 • 17. Etage",
+		homeHeroDirect1606: "Apt. 1606 • 16. Etage",
+		homeCompareRowCleaningFee: "Reinigungsgebühr (COP)",
+		homeCompare1707CleaningFee: "100.000 COP (pauschal)",
+		homeCompare1606CleaningFee: "80.000 COP (pauschal)",
+		homeCompare1707RateNote: "Ganzjähriger Standardtarif",
+		homeCompare1606RateNote: "Hochsaison 550.000 COP (15. Dez. – 15. Jan.)",
+		homeSharedRulesTitle:
+			"Inklusive & Gemeinsame Hausregeln (Beide Apartments)",
+		homeTrustPaymentsTitle: "Sichere Direktbuchung über Mercado Pago",
+		homeTrustPaymentsDesc:
+			"Zahlen Sie sicher in kolumbianischen Pesos (COP) per Kredit-/Debitkarte, PSE-Überweisung oder Bargeld-Gutschein (Efecty) — sofortige Bestätigung ohne Plattformaufschläge.",
+		homeTrustRntTitle:
+			"Offiziell lizenzierter Tourismusanbieter in Kolumbien (RNT)",
+		homeTrustRntDesc:
+			"Das Registro Nacional de Turismo (RNT) ist die offizielle Lizenz des kolumbianischen Handelsministeriums für geprüfte, legale Ferienunterkünfte (RNT #268781 & RNT #270413).",
+		faq6RegistryLink: "Gästeregistrierung ausfüllen",
+		faq6GuideLink: "Gäste-Guide öffnen",
+		footerPropertiesLabel: "Unterkünfte",
+		footerStayingGuestsLabel: "Bestätigte Gäste",
+		footerLegalLabel: "Rechtliches & RNT",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -4141,17 +4283,18 @@ export const dict = {
 		seo1606Title: "サンタマルタ・プラヤサルグエロ 1606 | OceanViewFlats",
 		seo1606Description:
 			"サンタマルタ・プラヤサルグエロのOceanViewFlats 1606を直接予約。16階ビーチフロントでカップルや家族に最適。900Mbps Wi-Fi、プール、美しい夕日。",
-		homeWelcome: "OceanViewFlatsへようこそ",
-		homeSubtitle: "サンタマルタで最高のビーチフロント滞在を見つけましょう。",
+		homeWelcome: "サンタマルタ・プラヤサルグエロのビーチフロント滞在",
+		homeSubtitle:
+			"ビーチまで徒歩1ブロック。16階・17階のオーシャンビュー物件2室を、オーナーのManuel Enriqueから直接ご予約いただけます。",
 		homeHeroValueProp:
-			"仲介手数料0% • 公式COP建てお見積り • オンライン即時予約",
+			"直接予約で15〜20%お得 • 明朗なCOP料金 • 安全なオンライン決済",
 		homeHeroCta: "ビーチフロント物件を見る",
 		homeFeaturedPropertiesTitle: "おすすめのビーチフロント物件",
 		homeMultiPropertyNote:
 			"7–12名様のグループや大家族でのご旅行ですか？オーシャンビューフラット 1707（17階）と 1606（16階）は Edificio Salguero Sunset 内のわずか1階違いに位置しています。2部屋同時の直接予約、または複数物件での滞在についてお気軽にお問い合わせください。",
 		homeCtaTitle: "直接予約のお手続き・事前のご質問はこちら",
 		homeCtaSub:
-			"上の物件カードを選択すると、OTA手数料0%の公式COP建て見積もりを計算し、カード・PSE・現金バウチャー（Efecty）で即座にオンライン予約を完了できます。事前のご質問や7–12名様での2部屋同時滞在のご相談は、お問い合わせページまたはWhatsAppよりお気軽にご連絡ください。",
+			"上の物件を選択して明朗なCOP料金を確認し、仲介手数料なしでカード・PSE・Efectyにてオンライン予約できます。特別なご要望や7–12名様での2部屋滞在は、お問い合わせページまたはWhatsAppよりご相談ください。",
 		homeCtaWhatsApp: "WhatsAppで相談する",
 		homeCard1707Badge: "17階 • RNT #268781",
 		homeCard1606Badge: "16階 • RNT #270413",
@@ -4663,7 +4806,7 @@ export const dict = {
 		// #302 homepage comparison table & Playa Salguero location
 		homeCompareTitle: "ビーチフロント物件の比較",
 		homeCompareSubtitle:
-			"1707号室と1606号室を、階数、RNT登録番号、コロンビア・ペソ（COP）の基本宿泊料金、ベッド構成、館内規定ごとに一覧で比較できます。",
+			"1707号室と1606号室を、階数、COP建て宿泊料金、清掃費、ベッド構成、駐車区画、RNT登録番号ごとに一覧で比較できます。",
 		homeCompareCaption:
 			"サンタマルタ・プラヤ・サルグエロのEdificio Salguero Sunsetにあるオーシャンビューフラット1707（17階）とオーシャンビューフラット1606（16階）の仕様比較。",
 		homeCompareColFeature: "項目",
@@ -4678,7 +4821,7 @@ export const dict = {
 		homeCompare1707Rate: "1泊 450,000 COP〜",
 		homeCompare1606Rate: "1泊 350,000 COP〜（繁忙期 550,000 COP）",
 		homeCompareRowMinStay: "最低宿泊数",
-		homeCompare1707MinStay: "2泊〜",
+		homeCompare1707MinStay: "2泊〜（通年）",
 		homeCompare1606MinStay: "2泊〜（繁忙期 12月15日〜1月15日は4泊〜）",
 		homeCompareRowBeds: "寝室・ベッド構成",
 		homeCompare1707Beds:
@@ -4842,6 +4985,32 @@ export const dict = {
 		guideTopicBeachComparison: "プラヤ・サルグエロ vs エル・ロダデロ",
 		guideTopicDayTrips: "プラヤ・サルグエロ発の日帰りモデルコース",
 		propertyGuidesHubCta: "すべてのサンタマルタ現地ガイド",
+		// #319 homepage overhaul, mobile drawer, trust cues & reorganized footer
+		skipToMainContent: "メインコンテンツへスキップ",
+		navMenuOpenAriaLabel: "ナビゲーションメニューを開く",
+		navMenuCloseAriaLabel: "ナビゲーションメニューを閉じる",
+		navMenuLabel: "メニュー",
+		navLangAriaLabel: "言語を選択",
+		navGuestGuide: "ゲストガイド",
+		homeHeroDirect1707: "1707号室 • 17階",
+		homeHeroDirect1606: "1606号室 • 16階",
+		homeCompareRowCleaningFee: "清掃費（COP）",
+		homeCompare1707CleaningFee: "100,000 COP（1滞在あたり定額）",
+		homeCompare1606CleaningFee: "80,000 COP（1滞在あたり定額）",
+		homeCompare1707RateNote: "通年標準料金",
+		homeCompare1606RateNote: "繁忙期 550,000 COP（12月15日〜1月15日）",
+		homeSharedRulesTitle: "両物件共通の設備・館内規定",
+		homeTrustPaymentsTitle: "Mercado Pagoによる安全な直接決済",
+		homeTrustPaymentsDesc:
+			"クレジットカード／デビットカード、PSE銀行振込、または現金バウチャー（Efecty）でコロンビア・ペソ（COP）にて安全にお支払い。仲介手数料なしで即時確定します。",
+		homeTrustRntTitle: "コロンビア政府公認の観光登録事業者（RNT）",
+		homeTrustRntDesc:
+			"国家観光登録（RNT）はコロンビア商工観光省が発行する公式ライセンスであり、適法かつ検証済みの宿泊運営を証明します（RNT #268781・RNT #270413）。",
+		faq6RegistryLink: "宿泊者名簿（ゲスト登録）を入力",
+		faq6GuideLink: "ゲストガイドを開く",
+		footerPropertiesLabel: "物件一覧",
+		footerStayingGuestsLabel: "ご予約済みのお客様",
+		footerLegalLabel: "法的情報・RNT",
 	},
 };
 

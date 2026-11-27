@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import {
 	AIRBNB_URLS,
-	HOME_EXPERIENCE_CARDS,
+	HOME_PROPERTY_CARDS,
 	PROPERTY_REVIEWS,
 	type PropertyId,
 	type PropertyReviewMeta,
@@ -689,58 +689,65 @@ test("#308 Property 1606 renders all 4 synced Airbnb Guest Reviews most-recent f
 	}
 });
 
-test("#307 #308 Homepage #experiences features curated quotes for both Properties and keeps homepage JSON-LD and llms.txt free of duplicated Guest Reviews across all 6 locales", () => {
+test("#307 #308 #319 Homepage #properties showcase features verified 5-star curated Guest Reviews with dates and Airbnb links for both Properties while keeping homepage JSON-LD and llms.txt free of duplicated Guest Reviews across all 6 locales", () => {
 	// Explicit homepage curation config for both Properties
-	const card1707Config = HOME_EXPERIENCE_CARDS.find(
-		(card) => card.propertyId === "1707",
-	);
-	assert.ok(card1707Config, "HOME_EXPERIENCE_CARDS must include Property 1707");
-	assert.equal(card1707Config.reviewTextKey, "review1707_2Text");
-	assert.equal(card1707Config.reviewAuthorKey, "review1707_2Author");
+	const card1707Config = HOME_PROPERTY_CARDS.find((card) => card.id === "1707");
+	assert.ok(card1707Config, "HOME_PROPERTY_CARDS must include Property 1707");
+	assert.equal(card1707Config.curatedReview.textKey, "review1707_2Text");
+	assert.equal(card1707Config.curatedReview.authorKey, "review1707_2Author");
+	assert.equal(card1707Config.curatedReview.datePublished, "2026-10-11");
 
-	const card1606Config = HOME_EXPERIENCE_CARDS.find(
-		(card) => card.propertyId === "1606",
-	);
-	assert.ok(card1606Config, "HOME_EXPERIENCE_CARDS must include Property 1606");
-	assert.equal(card1606Config.reviewTextKey, "review1Text");
-	assert.equal(card1606Config.reviewAuthorKey, "review1Author");
+	const card1606Config = HOME_PROPERTY_CARDS.find((card) => card.id === "1606");
+	assert.ok(card1606Config, "HOME_PROPERTY_CARDS must include Property 1606");
+	assert.equal(card1606Config.curatedReview.textKey, "review1Text");
+	assert.equal(card1606Config.curatedReview.authorKey, "review1Author");
+	assert.equal(card1606Config.curatedReview.datePublished, "2026-04-06");
 
 	for (const lang of LOCALES) {
 		const homeFile = lang === "en" ? "index.html" : `${lang}.html`;
 		const html = getHomeHtml(lang);
 		const t = dict[lang];
-		const experiencesSection = extractSectionById(html, "experiences");
+		const propertiesSection = extractSectionById(html, "properties");
 
-		const card1707Match = experiencesSection.match(
-			/<a[^>]*href="[^"]*Oceanview1707[^"]*"[^>]*>[\s\S]*?<\/a>/i,
+		const card1707Html = extractArticleById(
+			propertiesSection,
+			"home-card-1707",
 		);
-		assert.ok(
-			card1707Match,
-			`Homepage ${homeFile} #experiences must include the Property 1707 card`,
+		const card1707Stars = card1707Html.match(/\blucide-star\b/g) ?? [];
+		assert.equal(
+			card1707Stars.length,
+			5,
+			`Homepage ${homeFile} Property 1707 card must render 5 star icons`,
 		);
-		const card1707Html = card1707Match[0];
 		assert.ok(
 			card1707Html.includes(t.review1707_2Text) &&
 				card1707Html.includes("Julian Alfredo") &&
+				card1707Html.includes(t.reviewVerifiedGuest) &&
+				/<time[^>]*\bdatetime="2026-10-11"/i.test(card1707Html) &&
+				card1707Html.includes(AIRBNB_URLS["1707"]) &&
+				card1707Html.includes(t.reviewViewOnAirbnb) &&
 				!STAR_EMOJI_PATTERN.test(card1707Html),
-			`Homepage ${homeFile} #experiences Property 1707 card must feature Julian Alfredo's localized Guest Review without star emojis`,
+			`Homepage ${homeFile} #properties Property 1707 card must feature Julian Alfredo's verified 5-star Guest Review, date, and Airbnb link without star emojis`,
 		);
 
-		const card1606Match = experiencesSection.match(
-			/<a[^>]*href="[^"]*Oceanview1606[^"]*"[^>]*>[\s\S]*?<\/a>/i,
+		const card1606Html = extractArticleById(
+			propertiesSection,
+			"home-card-1606",
+		);
+		const card1606Stars = card1606Html.match(/\blucide-star\b/g) ?? [];
+		assert.equal(
+			card1606Stars.length,
+			5,
+			`Homepage ${homeFile} Property 1606 card must render 5 star icons`,
 		);
 		assert.ok(
-			card1606Match,
-			`Homepage ${homeFile} #experiences must include the Property 1606 card`,
-		);
-		const card1606Html = card1606Match[0];
-		assert.ok(
-			card1606Html.includes(t.review1Text),
-			`Homepage ${homeFile} Property 1606 card must retain Lina Marcela's curated review body`,
-		);
-		assert.ok(
-			card1606Html.includes("Lina Marcela"),
-			`Homepage ${homeFile} Property 1606 card must display author "Lina Marcela" in Latin script`,
+			card1606Html.includes(t.review1Text) &&
+				card1606Html.includes("Lina Marcela") &&
+				card1606Html.includes(t.reviewVerifiedGuest) &&
+				/<time[^>]*\bdatetime="2026-04-06"/i.test(card1606Html) &&
+				card1606Html.includes(AIRBNB_URLS["1606"]) &&
+				card1606Html.includes(t.reviewViewOnAirbnb),
+			`Homepage ${homeFile} Property 1606 card must feature Lina Marcela's verified 5-star Guest Review, date, and Airbnb link`,
 		);
 		assert.ok(
 			!card1606Html.includes("Rubiela Rubina") &&

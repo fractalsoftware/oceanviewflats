@@ -49,7 +49,11 @@ export default function NotFound({ lang, assetPrefix = "/" }: AppProps) {
 			/>
 
 			{/* Main 404 Section */}
-			<main className="flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className="flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden"
+			>
 				{/* Full-bleed Beach Background with blur & overlay */}
 				<div className="absolute inset-0 w-full h-full">
 					<img

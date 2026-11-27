@@ -29,7 +29,11 @@ export default function BookingPending({
 				assetPrefix={assetPrefix}
 			/>
 
-			<main className={BOOKING_PENDING_THEME.main}>
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className={BOOKING_PENDING_THEME.main}
+			>
 				{/* Ambient Background */}
 				<div className={BOOKING_PENDING_THEME.bgWrapper}>
 					<img

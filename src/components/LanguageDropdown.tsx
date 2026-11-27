@@ -1,6 +1,7 @@
 import { ChevronDown, Globe } from "lucide-react";
 import React from "react";
 import { CHROME_THEME, getChromeScrollState } from "../constants/theme";
+import { dict } from "../i18n/dict";
 import type { Lang } from "../types";
 
 interface LanguageDropdownProps {
@@ -9,13 +10,18 @@ interface LanguageDropdownProps {
 	englishHref?: string;
 }
 
-const LANGUAGES: { code: Lang; label: string; link: string }[] = [
-	{ code: "en", label: "English", link: "./" },
-	{ code: "es", label: "Español", link: "es.html" },
-	{ code: "fr", label: "Français", link: "fr.html" },
-	{ code: "it", label: "Italiano", link: "it.html" },
-	{ code: "de", label: "Deutsch", link: "de.html" },
-	{ code: "ja", label: "日本語", link: "ja.html" },
+const LANGUAGES: {
+	code: Lang;
+	shortCode: string;
+	label: string;
+	link: string;
+}[] = [
+	{ code: "en", shortCode: "EN", label: "English", link: "./" },
+	{ code: "es", shortCode: "ES", label: "Español", link: "es.html" },
+	{ code: "fr", shortCode: "FR", label: "Français", link: "fr.html" },
+	{ code: "it", shortCode: "IT", label: "Italiano", link: "it.html" },
+	{ code: "de", shortCode: "DE", label: "Deutsch", link: "de.html" },
+	{ code: "ja", shortCode: "JA", label: "日本語", link: "ja.html" },
 ];
 
 export const LanguageDropdown = ({
@@ -23,6 +29,7 @@ export const LanguageDropdown = ({
 	isScrolled,
 	englishHref = "./",
 }: LanguageDropdownProps) => {
+	const t = dict[currentLang];
 	const currentLangObj =
 		LANGUAGES.find((l) => l.code === currentLang) || LANGUAGES[0];
 	const otherLangs = LANGUAGES.filter((l) => l.code !== currentLang);
@@ -34,13 +41,22 @@ export const LanguageDropdown = ({
 				type="button"
 				className={CHROME_THEME.langToggle[scrollState]}
 				id="lang-toggle"
+				aria-label={`${t.navLangAriaLabel}: ${currentLangObj.label}`}
 				aria-haspopup="true"
 				aria-expanded="false"
 				aria-controls="lang-dropdown"
 			>
-				<Globe className={CHROME_THEME.langGlobeIcon} />
-				<span>{currentLangObj.label}</span>
-				<ChevronDown className={CHROME_THEME.langChevronIcon} />
+				<Globe className={CHROME_THEME.langGlobeIcon} aria-hidden="true" />
+				<span className={CHROME_THEME.langCodeMobile} aria-hidden="true">
+					{currentLangObj.shortCode}
+				</span>
+				<span className={CHROME_THEME.langLabelDesktop}>
+					{currentLangObj.label}
+				</span>
+				<ChevronDown
+					className={CHROME_THEME.langChevronIcon}
+					aria-hidden="true"
+				/>
 			</button>
 
 			{/* Dropdown Menu */}

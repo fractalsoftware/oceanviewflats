@@ -79,7 +79,11 @@ export default function DestinationGuidesHub({
 				</div>
 			</header>
 
-			<main className={DESTINATION_GUIDES_THEME.main}>
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className={DESTINATION_GUIDES_THEME.main}
+			>
 				<Breadcrumbs
 					lang={lang}
 					assetPrefix={assetPrefix}

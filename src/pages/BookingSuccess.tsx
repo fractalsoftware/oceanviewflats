@@ -41,7 +41,11 @@ export default function BookingSuccess({
 				assetPrefix={assetPrefix}
 			/>
 
-			<main className={BOOKING_SUCCESS_THEME.main}>
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className={BOOKING_SUCCESS_THEME.main}
+			>
 				{/* Ambient Background */}
 				<div className={BOOKING_SUCCESS_THEME.bgWrapper}>
 					<img

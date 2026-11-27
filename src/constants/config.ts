@@ -312,57 +312,12 @@ export const getOceanview1606Path = (
 	assetPrefix = "./",
 ): string => getPropertyPagePath("1606", lang, assetPrefix);
 
-export interface HomePropertyCardConfig {
-	id: "1707" | "1606";
-	cardDomId: string;
-	rateBadgeDomId: string;
-	imageKey: "1707" | "1606";
-	imageAltKey: "hero1707ImgAlt" | "hero1606ImgAlt";
-	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
-	rateKey: "homeCard1707Rate" | "homeCard1606Rate";
-	titleKey: "heroTitle" | "hero1606Title";
-	descKey: "nomadDesc" | "romanticDesc";
-	bedsKey: "statsBeds" | "stats1606Beds";
-	wifiKey: "homeCardWifi";
-	parkingKey: "homeCard1707Parking" | "homeCard1606Parking";
-}
-
-export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
-	{
-		id: "1707",
-		cardDomId: "home-card-1707",
-		rateBadgeDomId: "home-rate-badge-1707",
-		imageKey: "1707",
-		imageAltKey: "hero1707ImgAlt",
-		badgeKey: "homeCard1707Badge",
-		rateKey: "homeCard1707Rate",
-		titleKey: "heroTitle",
-		descKey: "nomadDesc",
-		bedsKey: "statsBeds",
-		wifiKey: "homeCardWifi",
-		parkingKey: "homeCard1707Parking",
-	},
-	{
-		id: "1606",
-		cardDomId: "home-card-1606",
-		rateBadgeDomId: "home-rate-badge-1606",
-		imageKey: "1606",
-		imageAltKey: "hero1606ImgAlt",
-		badgeKey: "homeCard1606Badge",
-		rateKey: "homeCard1606Rate",
-		titleKey: "hero1606Title",
-		descKey: "romanticDesc",
-		bedsKey: "stats1606Beds",
-		wifiKey: "homeCardWifi",
-		parkingKey: "homeCard1606Parking",
-	},
-];
-
 export interface HomeFaqItemConfig {
 	id: string;
 	qKey: "faqQ1" | "faqQ2" | "faqQ3" | "faqQ4" | "faqQ5" | "faqQ6";
 	aKey: "faqA1" | "faqA2" | "faqA3" | "faqA4" | "faqA5" | "faqA6";
 	defaultOpen: boolean;
+	showFulfillmentLinks?: boolean;
 }
 
 export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
@@ -371,7 +326,13 @@ export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
 	{ id: "faq-3", qKey: "faqQ3", aKey: "faqA3", defaultOpen: true },
 	{ id: "faq-4", qKey: "faqQ4", aKey: "faqA4", defaultOpen: false },
 	{ id: "faq-5", qKey: "faqQ5", aKey: "faqA5", defaultOpen: false },
-	{ id: "faq-6", qKey: "faqQ6", aKey: "faqA6", defaultOpen: false },
+	{
+		id: "faq-6",
+		qKey: "faqQ6",
+		aKey: "faqA6",
+		defaultOpen: false,
+		showFulfillmentLinks: true,
+	},
 ];
 
 export interface RegistryGuestSlotConfig {
@@ -476,88 +437,7 @@ export const getHeroImageSrcSet = (
 		.join(", ");
 };
 
-export interface HomeExperienceFeatureConfig {
-	iconId: "wifi" | "users" | "heart";
-	iconThemeKey: "editorialFeatureIconSky" | "editorialFeatureIconRose";
-	titleKey:
-		| "homeExpNomad"
-		| "homeExp1707FamilyTitle"
-		| "homeExpRomantic"
-		| "homeExpFamily";
-	descKey:
-		| "homeExpNomadDesc"
-		| "homeExp1707FamilyDesc"
-		| "homeExpRomanticDesc"
-		| "homeExpFamilyDesc";
-}
-
-export interface HomeExperienceCardConfig {
-	propertyId: "1707" | "1606";
-	imageSrc: string;
-	imageWidth: number;
-	imageHeight: number;
-	imageAltKey: "nomadImgAlt" | "romanticImgAlt";
-	titleKey: "heroTitle" | "hero1606Title";
-	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
-	features: readonly HomeExperienceFeatureConfig[];
-	reviewTextKey: PropertyReviewMeta["textKey"];
-	reviewAuthorKey: PropertyReviewMeta["authorKey"];
-}
-
-export const HOME_EXPERIENCE_CARDS: readonly HomeExperienceCardConfig[] = [
-	{
-		propertyId: "1707",
-		imageSrc: IMAGES["1707"].nomad,
-		imageWidth: IMAGE_DIMENSIONS["1707"].nomad.width,
-		imageHeight: IMAGE_DIMENSIONS["1707"].nomad.height,
-		imageAltKey: "nomadImgAlt",
-		titleKey: "heroTitle",
-		badgeKey: "homeCard1707Badge",
-		features: [
-			{
-				iconId: "wifi",
-				iconThemeKey: "editorialFeatureIconSky",
-				titleKey: "homeExpNomad",
-				descKey: "homeExpNomadDesc",
-			},
-			{
-				iconId: "users",
-				iconThemeKey: "editorialFeatureIconSky",
-				titleKey: "homeExp1707FamilyTitle",
-				descKey: "homeExp1707FamilyDesc",
-			},
-		],
-		reviewTextKey: "review1707_2Text",
-		reviewAuthorKey: "review1707_2Author",
-	},
-	{
-		propertyId: "1606",
-		imageSrc: IMAGES["1606"].romantic,
-		imageWidth: IMAGE_DIMENSIONS["1606"].romantic.width,
-		imageHeight: IMAGE_DIMENSIONS["1606"].romantic.height,
-		imageAltKey: "romanticImgAlt",
-		titleKey: "hero1606Title",
-		badgeKey: "homeCard1606Badge",
-		features: [
-			{
-				iconId: "heart",
-				iconThemeKey: "editorialFeatureIconRose",
-				titleKey: "homeExpRomantic",
-				descKey: "homeExpRomanticDesc",
-			},
-			{
-				iconId: "users",
-				iconThemeKey: "editorialFeatureIconRose",
-				titleKey: "homeExpFamily",
-				descKey: "homeExpFamilyDesc",
-			},
-		],
-		reviewTextKey: "review1Text",
-		reviewAuthorKey: "review1Author",
-	},
-];
-
-// #302 Homepage Property Comparison & Playa Salguero Proximity Configs
+// #302 & #319 Homepage Differentiating Property Comparison Rows + Shared Building Rules
 export interface HomeComparisonRowConfig {
 	id: string;
 	labelKey:
@@ -565,40 +445,31 @@ export interface HomeComparisonRowConfig {
 		| "homeCompareRowRnt"
 		| "homeCompareRowIdealFor"
 		| "homeCompareRowRate"
+		| "homeCompareRowCleaningFee"
 		| "homeCompareRowMinStay"
 		| "homeCompareRowBeds"
-		| "homeCompareRowOccupancy"
-		| "homeCompareRowWifi"
-		| "homeCompareRowParking"
-		| "homeCompareRowCheckInOut"
-		| "homeCompareRowBuildingRegistrationFee"
-		| "homeCompareRowPoolMaintenance";
+		| "homeCompareRowParking";
 	val1707Key:
 		| "homeCompare1707Floor"
 		| "rnt1707"
 		| "homeCompare1707IdealFor"
-		| "homeCompare1707Rate"
+		| "homeCard1707Rate"
+		| "homeCompare1707CleaningFee"
 		| "homeCompare1707MinStay"
 		| "homeCompare1707Beds"
-		| "statsGuests"
-		| "homeCompareWifiValue"
-		| "homeCompare1707Parking"
-		| "homeCompareCheckInOutValue"
-		| "homeCompareBuildingRegistrationFeeValue"
-		| "homeComparePoolMaintenanceValue";
+		| "homeCompare1707Parking";
 	val1606Key:
 		| "homeCompare1606Floor"
 		| "rnt1606"
 		| "homeCompare1606IdealFor"
-		| "homeCompare1606Rate"
+		| "homeCard1606Rate"
+		| "homeCompare1606CleaningFee"
 		| "homeCompare1606MinStay"
 		| "homeCompare1606Beds"
-		| "statsGuests"
-		| "homeCompareWifiValue"
-		| "homeCompare1606Parking"
-		| "homeCompareCheckInOutValue"
-		| "homeCompareBuildingRegistrationFeeValue"
-		| "homeComparePoolMaintenanceValue";
+		| "homeCompare1606Parking";
+	isLiveRate?: boolean;
+	note1707Key?: "homeCompare1707RateNote";
+	note1606Key?: "homeCompare1606RateNote";
 }
 
 export const HOME_PROPERTY_COMPARISON_ROWS: readonly HomeComparisonRowConfig[] =
@@ -624,8 +495,17 @@ export const HOME_PROPERTY_COMPARISON_ROWS: readonly HomeComparisonRowConfig[] =
 		{
 			id: "nightly-rate",
 			labelKey: "homeCompareRowRate",
-			val1707Key: "homeCompare1707Rate",
-			val1606Key: "homeCompare1606Rate",
+			val1707Key: "homeCard1707Rate",
+			val1606Key: "homeCard1606Rate",
+			isLiveRate: true,
+			note1707Key: "homeCompare1707RateNote",
+			note1606Key: "homeCompare1606RateNote",
+		},
+		{
+			id: "cleaning-fee",
+			labelKey: "homeCompareRowCleaningFee",
+			val1707Key: "homeCompare1707CleaningFee",
+			val1606Key: "homeCompare1606CleaningFee",
 		},
 		{
 			id: "min-stay",
@@ -640,40 +520,60 @@ export const HOME_PROPERTY_COMPARISON_ROWS: readonly HomeComparisonRowConfig[] =
 			val1606Key: "homeCompare1606Beds",
 		},
 		{
-			id: "max-occupancy",
-			labelKey: "homeCompareRowOccupancy",
-			val1707Key: "statsGuests",
-			val1606Key: "statsGuests",
-		},
-		{
-			id: "wifi",
-			labelKey: "homeCompareRowWifi",
-			val1707Key: "homeCompareWifiValue",
-			val1606Key: "homeCompareWifiValue",
-		},
-		{
 			id: "parking",
 			labelKey: "homeCompareRowParking",
 			val1707Key: "homeCompare1707Parking",
 			val1606Key: "homeCompare1606Parking",
 		},
+	];
+
+export interface HomeSharedBuildingRuleConfig {
+	id:
+		| "max-occupancy"
+		| "wifi"
+		| "check-in-out"
+		| "building-registration-fee"
+		| "pool-maintenance";
+	labelKey:
+		| "homeCompareRowOccupancy"
+		| "homeCompareRowWifi"
+		| "homeCompareRowCheckInOut"
+		| "homeCompareRowBuildingRegistrationFee"
+		| "homeCompareRowPoolMaintenance";
+	valueKey:
+		| "statsGuests"
+		| "homeCompareWifiValue"
+		| "homeCompareCheckInOutValue"
+		| "homeCompareBuildingRegistrationFeeValue"
+		| "homeComparePoolMaintenanceValue";
+}
+
+export const HOME_SHARED_BUILDING_RULES: readonly HomeSharedBuildingRuleConfig[] =
+	[
+		{
+			id: "max-occupancy",
+			labelKey: "homeCompareRowOccupancy",
+			valueKey: "statsGuests",
+		},
+		{
+			id: "wifi",
+			labelKey: "homeCompareRowWifi",
+			valueKey: "homeCompareWifiValue",
+		},
 		{
 			id: "check-in-out",
 			labelKey: "homeCompareRowCheckInOut",
-			val1707Key: "homeCompareCheckInOutValue",
-			val1606Key: "homeCompareCheckInOutValue",
+			valueKey: "homeCompareCheckInOutValue",
 		},
 		{
 			id: "building-registration-fee",
 			labelKey: "homeCompareRowBuildingRegistrationFee",
-			val1707Key: "homeCompareBuildingRegistrationFeeValue",
-			val1606Key: "homeCompareBuildingRegistrationFeeValue",
+			valueKey: "homeCompareBuildingRegistrationFeeValue",
 		},
 		{
 			id: "pool-maintenance",
 			labelKey: "homeCompareRowPoolMaintenance",
-			val1707Key: "homeComparePoolMaintenanceValue",
-			val1606Key: "homeComparePoolMaintenanceValue",
+			valueKey: "homeComparePoolMaintenanceValue",
 		},
 	];
 
@@ -960,6 +860,118 @@ export const PROPERTY_REVIEWS: Record<
 		},
 	],
 };
+
+export interface HomePropertyHighlightConfig {
+	iconId: "wifi" | "users" | "heart";
+	titleKey:
+		| "homeExpNomad"
+		| "homeExp1707FamilyTitle"
+		| "homeExpRomantic"
+		| "homeExpFamily";
+	descKey:
+		| "homeExpNomadDesc"
+		| "homeExp1707FamilyDesc"
+		| "homeExpRomanticDesc"
+		| "homeExpFamilyDesc";
+}
+
+export interface HomePropertyCardConfig {
+	id: PropertyId;
+	cardDomId: string;
+	rateBadgeDomId: string;
+	imageKey: PropertyId;
+	imageAltKey: "hero1707ImgAlt" | "hero1606ImgAlt";
+	lifestyleImageSrc: string;
+	lifestyleImageWidth: number;
+	lifestyleImageHeight: number;
+	lifestyleImageAltKey: "nomadImgAlt" | "romanticImgAlt";
+	badgeKey: "homeCard1707Badge" | "homeCard1606Badge";
+	rateKey: "homeCard1707Rate" | "homeCard1606Rate";
+	titleKey: "heroTitle" | "hero1606Title";
+	descKey: "nomadDesc" | "romanticDesc";
+	bedsKey: "statsBeds" | "stats1606Beds";
+	wifiKey: "homeCardWifi";
+	parkingKey: "homeCard1707Parking" | "homeCard1606Parking";
+	highlights: readonly HomePropertyHighlightConfig[];
+	curatedReview: PropertyReviewMeta;
+	airbnbUrl: string;
+}
+
+const getCuratedHomeReview = (
+	propertyId: PropertyId,
+	reviewId: string,
+): PropertyReviewMeta => {
+	const found = PROPERTY_REVIEWS[propertyId].find((rev) => rev.id === reviewId);
+	const review = found ?? PROPERTY_REVIEWS[propertyId][0];
+	return { ...review, id: `home-${review.id}` };
+};
+
+export const HOME_PROPERTY_CARDS: readonly HomePropertyCardConfig[] = [
+	{
+		id: "1707",
+		cardDomId: "home-card-1707",
+		rateBadgeDomId: "home-rate-badge-1707",
+		imageKey: "1707",
+		imageAltKey: "hero1707ImgAlt",
+		lifestyleImageSrc: IMAGES["1707"].nomad,
+		lifestyleImageWidth: IMAGE_DIMENSIONS["1707"].nomad.width,
+		lifestyleImageHeight: IMAGE_DIMENSIONS["1707"].nomad.height,
+		lifestyleImageAltKey: "nomadImgAlt",
+		badgeKey: "homeCard1707Badge",
+		rateKey: "homeCard1707Rate",
+		titleKey: "heroTitle",
+		descKey: "nomadDesc",
+		bedsKey: "statsBeds",
+		wifiKey: "homeCardWifi",
+		parkingKey: "homeCard1707Parking",
+		highlights: [
+			{
+				iconId: "wifi",
+				titleKey: "homeExpNomad",
+				descKey: "homeExpNomadDesc",
+			},
+			{
+				iconId: "users",
+				titleKey: "homeExp1707FamilyTitle",
+				descKey: "homeExp1707FamilyDesc",
+			},
+		],
+		curatedReview: getCuratedHomeReview("1707", "review-1707-2"),
+		airbnbUrl: AIRBNB_URLS["1707"],
+	},
+	{
+		id: "1606",
+		cardDomId: "home-card-1606",
+		rateBadgeDomId: "home-rate-badge-1606",
+		imageKey: "1606",
+		imageAltKey: "hero1606ImgAlt",
+		lifestyleImageSrc: IMAGES["1606"].romantic,
+		lifestyleImageWidth: IMAGE_DIMENSIONS["1606"].romantic.width,
+		lifestyleImageHeight: IMAGE_DIMENSIONS["1606"].romantic.height,
+		lifestyleImageAltKey: "romanticImgAlt",
+		badgeKey: "homeCard1606Badge",
+		rateKey: "homeCard1606Rate",
+		titleKey: "hero1606Title",
+		descKey: "romanticDesc",
+		bedsKey: "stats1606Beds",
+		wifiKey: "homeCardWifi",
+		parkingKey: "homeCard1606Parking",
+		highlights: [
+			{
+				iconId: "heart",
+				titleKey: "homeExpRomantic",
+				descKey: "homeExpRomanticDesc",
+			},
+			{
+				iconId: "users",
+				titleKey: "homeExpFamily",
+				descKey: "homeExpFamilyDesc",
+			},
+		],
+		curatedReview: getCuratedHomeReview("1606", "review-1606-1"),
+		airbnbUrl: AIRBNB_URLS["1606"],
+	},
+];
 
 export type GalleryAltKey =
 	| "gallery1707_1"

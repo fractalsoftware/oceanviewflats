@@ -2,17 +2,22 @@ import {
 	ArrowRight,
 	Building2,
 	Calendar as CalendarIcon,
+	CheckCircle2,
 	ChevronDown,
 	Compass,
+	CreditCard,
+	ExternalLink,
+	FileCheck,
 	Heart,
 	Landmark,
+	Mail,
 	MapPin,
 	MessageCircle,
-	MessageSquare,
 	Percent,
 	Plane,
 	ShieldCheck,
 	Sparkles,
+	Star,
 	Trees,
 	Users,
 	Waves,
@@ -25,13 +30,15 @@ import {
 	DATA_CONTROLLER,
 	getContactPagePath,
 	getDestinationGuidesHubPath,
+	getGuidePagePath,
 	getHeroImageSrcSet,
 	getPropertyPagePath,
+	getRegistryPagePath,
 	HERO_IMAGE_SIZES,
-	HOME_EXPERIENCE_CARDS,
 	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
 	HOME_PROPERTY_COMPARISON_ROWS,
+	HOME_SHARED_BUILDING_RULES,
 	IMAGE_DIMENSIONS,
 	IMAGES,
 	PLAYA_SALGUERO_LANDMARKS,
@@ -39,8 +46,10 @@ import {
 import { HOME_CARD_THEMES, HOME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
 import type { AppProps } from "../types";
+import { formatLocalizedIsoDate } from "../utils/date";
+import { clampReviewRating } from "../utils/reviews";
 
-const EXPERIENCE_FEATURE_ICONS = {
+const HIGHLIGHT_ICONS = {
 	wifi: Wifi,
 	users: Users,
 	heart: Heart,
@@ -54,10 +63,46 @@ const LANDMARK_ICONS = {
 	trees: Trees,
 } as const;
 
+const renderComparisonCell = (
+	t: (typeof dict)[keyof typeof dict],
+	cell: {
+		propertyId: "1707" | "1606";
+		valueKey:
+			| (typeof HOME_PROPERTY_COMPARISON_ROWS)[number]["val1707Key"]
+			| (typeof HOME_PROPERTY_COMPARISON_ROWS)[number]["val1606Key"];
+		noteKey?:
+			| (typeof HOME_PROPERTY_COMPARISON_ROWS)[number]["note1707Key"]
+			| (typeof HOME_PROPERTY_COMPARISON_ROWS)[number]["note1606Key"];
+		isLiveRate?: boolean;
+	},
+) => {
+	if (!cell.isLiveRate) {
+		return t[cell.valueKey];
+	}
+	return (
+		<>
+			<span
+				id={`home-compare-rate-${cell.propertyId}`}
+				data-compare-rate={cell.propertyId}
+				className={HOME_THEME.compareRatePrimary}
+			>
+				{t[cell.valueKey]}
+			</span>
+			{cell.noteKey && (
+				<span className={HOME_THEME.compareRateNote}>{t[cell.noteKey]}</span>
+			)}
+		</>
+	);
+};
+
 export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const t = dict[lang];
 	const contactHref = getContactPagePath(lang, assetPrefix);
 	const destinationGuidesHref = getDestinationGuidesHubPath(lang, assetPrefix);
+	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
+	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
+	const registryHref = getRegistryPagePath(lang, assetPrefix);
+	const guideHref = getGuidePagePath(lang, assetPrefix);
 
 	return (
 		<div className={HOME_THEME.pageWrapper}>
@@ -70,7 +115,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				assetPrefix={assetPrefix}
 			/>
 
-			{/* Hero Section */}
+			{/* Sunlit Coastal Hero Section */}
 			<header className={HOME_THEME.heroHeader}>
 				<div className={HOME_THEME.heroMediaWrapper}>
 					<img
@@ -84,7 +129,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 						fetchPriority="high"
 						loading="eager"
 					/>
-					<div className={HOME_THEME.heroOverlay}></div>
+					<div className={HOME_THEME.heroOverlay} aria-hidden="true" />
 				</div>
 				<div className={HOME_THEME.heroContent}>
 					<div className={HOME_THEME.heroLocationBadge}>
@@ -97,18 +142,38 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					<h1 className={HOME_THEME.heroTitle}>{t.homeWelcome}</h1>
 					<p className={HOME_THEME.heroSubtitle}>{t.homeSubtitle}</p>
 					<p className={HOME_THEME.heroValueProp}>{t.homeHeroValueProp}</p>
-					<a href="#properties" className={HOME_THEME.heroCtaBtn}>
-						<CalendarIcon
-							className={HOME_THEME.heroCtaIcon}
-							aria-hidden="true"
-						/>
-						<span>{t.homeHeroCta}</span>
-					</a>
+					<div className={HOME_THEME.heroCtaGroup}>
+						<a href="#properties" className={HOME_THEME.heroCtaBtn}>
+							<CalendarIcon
+								className={HOME_THEME.heroCtaIcon}
+								aria-hidden="true"
+							/>
+							<span>{t.homeHeroCta}</span>
+						</a>
+						<div className={HOME_THEME.heroQuickLinksRow}>
+							<a
+								id="hero-direct-1707"
+								href={property1707Href}
+								className={HOME_THEME.heroQuickLinkBtn}
+							>
+								<span>{t.homeHeroDirect1707}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+							<a
+								id="hero-direct-1606"
+								href={property1606Href}
+								className={HOME_THEME.heroQuickLinkBtn}
+							>
+								<span>{t.homeHeroDirect1606}</span>
+								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
+							</a>
+						</div>
+					</div>
 				</div>
 			</header>
 
-			<main className={HOME_THEME.main}>
-				{/* Properties Section */}
+			<main id="main-content" tabIndex={-1} className={HOME_THEME.main}>
+				{/* Consolidated Beachfront Properties Showcase + Verified Guest Reviews */}
 				<section id="properties" className={HOME_THEME.propertiesSection}>
 					<h2 className={HOME_THEME.propertiesHeading}>
 						{t.homeFeaturedPropertiesTitle}
@@ -117,11 +182,13 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 						{HOME_PROPERTY_CARDS.map((card) => {
 							const cardTheme = HOME_CARD_THEMES[card.id];
 							const cardHref = getPropertyPagePath(card.id, lang, assetPrefix);
+							const review = card.curatedReview;
+							const starCount = clampReviewRating(review.ratingValue);
+
 							return (
-								<a
+								<article
 									key={card.id}
 									id={card.cardDomId}
-									href={cardHref}
 									className={cardTheme.card}
 								>
 									<div className={cardTheme.cardMedia}>
@@ -134,54 +201,182 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											loading="lazy"
 											decoding="async"
 										/>
-										<div className={cardTheme.cardOverlay}></div>
+										<div className={cardTheme.cardOverlay} aria-hidden="true" />
 										<span className={cardTheme.cardBadge}>
 											{t[card.badgeKey]}
 										</span>
 										<div className={cardTheme.cardHeaderContent}>
-											<p className={cardTheme.cardLocation}>{t.heroLocation}</p>
 											<h3 className={cardTheme.cardTitle}>
-												{t[card.titleKey]}
+												<a
+													href={cardHref}
+													className={cardTheme.cardHeadingLink}
+												>
+													{t[card.titleKey]}
+												</a>
 											</h3>
 										</div>
 									</div>
+
 									<div className={cardTheme.cardBody}>
 										<div>
-											<span
-												id={card.rateBadgeDomId}
-												data-property-rate={card.id}
-												className={cardTheme.rateBadge}
-											>
-												{t[card.rateKey]}
-											</span>
-											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
-											<div className={cardTheme.cardSpecsList}>
-												<span className={cardTheme.cardSpecHighlight}>
-													{t[card.bedsKey]}
-												</span>
-												<span className={cardTheme.cardSpecPill}>
-													{t.statsBaths}
-												</span>
-												<span className={cardTheme.cardSpecPill}>
-													{t.statsGuests}
-												</span>
-												<span className={cardTheme.cardSpecPill}>
-													{t[card.wifiKey]}
-												</span>
-												<span className={cardTheme.cardSpecPill}>
-													{t[card.parkingKey]}
+											<div className={cardTheme.rateRow}>
+												<span
+													id={card.rateBadgeDomId}
+													data-property-rate={card.id}
+													className={cardTheme.rateBadge}
+												>
+													{t[card.rateKey]}
 												</span>
 											</div>
+											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
+
+											{/* Scannable Inline Spec Bar */}
+											<ul className={cardTheme.cardSpecBar}>
+												<li className={cardTheme.cardSpecHighlight}>
+													{t[card.bedsKey]}
+												</li>
+												<li
+													className={cardTheme.cardSpecDivider}
+													aria-hidden="true"
+												>
+													•
+												</li>
+												<li className={cardTheme.cardSpecItem}>
+													{t.statsBaths}
+												</li>
+												<li
+													className={cardTheme.cardSpecDivider}
+													aria-hidden="true"
+												>
+													•
+												</li>
+												<li className={cardTheme.cardSpecItem}>
+													{t.statsGuests}
+												</li>
+												<li
+													className={cardTheme.cardSpecDivider}
+													aria-hidden="true"
+												>
+													•
+												</li>
+												<li className={cardTheme.cardSpecItem}>
+													{t[card.wifiKey]}
+												</li>
+												<li
+													className={cardTheme.cardSpecDivider}
+													aria-hidden="true"
+												>
+													•
+												</li>
+												<li className={cardTheme.cardSpecItem}>
+													{t[card.parkingKey]}
+												</li>
+											</ul>
+
+											{/* Consolidated Lifestyle Photo & Highlights */}
+											<div className={cardTheme.lifestyleStrip}>
+												<div className={cardTheme.lifestyleThumbWrapper}>
+													<img
+														src={`${assetPrefix}${card.lifestyleImageSrc}`}
+														alt={t[card.lifestyleImageAltKey]}
+														width={card.lifestyleImageWidth}
+														height={card.lifestyleImageHeight}
+														className={cardTheme.lifestyleThumbImg}
+														loading="lazy"
+														decoding="async"
+													/>
+												</div>
+												<ul className={cardTheme.highlightsList}>
+													{card.highlights.map((highlight) => {
+														const HighlightIcon =
+															HIGHLIGHT_ICONS[highlight.iconId];
+														return (
+															<li
+																key={highlight.titleKey}
+																className={cardTheme.highlightItem}
+															>
+																<HighlightIcon
+																	className={cardTheme.highlightIcon}
+																	aria-hidden="true"
+																/>
+																<div>
+																	<p className={cardTheme.highlightTitle}>
+																		{t[highlight.titleKey]}
+																	</p>
+																	<p className={cardTheme.highlightDesc}>
+																		{t[highlight.descKey]}
+																	</p>
+																</div>
+															</li>
+														);
+													})}
+												</ul>
+											</div>
+
+											{/* Verified 5-Star Guest Review with Date & Outbound Airbnb Link */}
+											<div id={review.id} className={cardTheme.reviewBox}>
+												<div
+													className={cardTheme.reviewStarsRow}
+													aria-hidden="true"
+												>
+													{Array.from({ length: starCount }, (_, index) => (
+														<Star
+															key={`${review.id}-star-${index}`}
+															className={cardTheme.reviewStarIcon}
+															aria-hidden="true"
+														/>
+													))}
+												</div>
+												<blockquote className={cardTheme.reviewQuote}>
+													{t[review.textKey]}
+												</blockquote>
+												<div className={cardTheme.reviewMetaRow}>
+													<div className={cardTheme.reviewAuthorGroup}>
+														<span className={cardTheme.reviewAuthorName}>
+															{t[review.authorKey]}
+														</span>
+														<span className={cardTheme.reviewVerifiedBadge}>
+															<CheckCircle2
+																className={cardTheme.reviewIconSm}
+																aria-hidden="true"
+															/>
+															<span>{t.reviewVerifiedGuest}</span>
+														</span>
+														<time
+															dateTime={review.datePublished}
+															className={cardTheme.reviewDate}
+														>
+															{formatLocalizedIsoDate(
+																review.datePublished,
+																lang,
+															)}
+														</time>
+													</div>
+													<a
+														href={card.airbnbUrl}
+														target="_blank"
+														rel="noopener noreferrer"
+														className={cardTheme.reviewAirbnbLink}
+													>
+														<span>{t.reviewViewOnAirbnb}</span>
+														<ExternalLink
+															className={cardTheme.reviewIconSm}
+															aria-hidden="true"
+														/>
+													</a>
+												</div>
+											</div>
 										</div>
-										<div className={cardTheme.cardCtaRow}>
+
+										<a href={cardHref} className={cardTheme.cardCtaBtn}>
 											<span>{t.homeCardCta}</span>
 											<ArrowRight
 												className={cardTheme.cardCtaIcon}
 												aria-hidden="true"
 											/>
-										</div>
+										</a>
 									</div>
-								</a>
+								</article>
 							);
 						})}
 					</div>
@@ -193,7 +388,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					>
 						<div className={HOME_THEME.multiPropertyContent}>
 							<div className={HOME_THEME.multiPropertyIconBox}>
-								<Users className={HOME_THEME.iconLg} aria-hidden="true" />
+								<Users className={HOME_THEME.iconMd} aria-hidden="true" />
 							</div>
 							<p className={HOME_THEME.multiPropertyText}>
 								{t.homeMultiPropertyNote}
@@ -206,7 +401,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 					</div>
 				</section>
 
-				{/* Property Side-by-Side Comparison Table Section */}
+				{/* Focused Differentiating Comparison Table + Shared Building Rules */}
 				<section id="compare-properties" className={HOME_THEME.compareSection}>
 					<div className={HOME_THEME.compareContainer}>
 						<div className={HOME_THEME.compareHeader}>
@@ -254,20 +449,58 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												{t[row.labelKey]}
 											</th>
 											<td className={HOME_THEME.compareCell}>
-												{t[row.val1707Key]}
+												{renderComparisonCell(t, {
+													propertyId: "1707",
+													valueKey: row.val1707Key,
+													noteKey: row.note1707Key,
+													isLiveRate: row.isLiveRate,
+												})}
 											</td>
 											<td className={HOME_THEME.compareCell}>
-												{t[row.val1606Key]}
+												{renderComparisonCell(t, {
+													propertyId: "1606",
+													valueKey: row.val1606Key,
+													noteKey: row.note1606Key,
+													isLiveRate: row.isLiveRate,
+												})}
 											</td>
 										</tr>
 									))}
 								</tbody>
 							</table>
 						</div>
+
+						{/* Shared Building Policies Companion Block */}
+						<div
+							id="home-shared-building-rules"
+							className={HOME_THEME.sharedRulesBox}
+						>
+							<div className={HOME_THEME.sharedRulesHeader}>
+								<Building2
+									className={HOME_THEME.sharedRulesIcon}
+									aria-hidden="true"
+								/>
+								<h3 className={HOME_THEME.sharedRulesTitle}>
+									{t.homeSharedRulesTitle}
+								</h3>
+							</div>
+							<dl className={HOME_THEME.sharedRulesGrid}>
+								{HOME_SHARED_BUILDING_RULES.map((rule) => (
+									<div key={rule.id} className={HOME_THEME.sharedRulesItem}>
+										<dt className={HOME_THEME.sharedRulesTerm}>
+											{t[rule.labelKey]}
+										</dt>
+										<dd className={HOME_THEME.sharedRulesValue}>
+											{t[rule.valueKey]}
+										</dd>
+									</div>
+								))}
+							</dl>
+						</div>
 					</div>
 				</section>
 
-				{/* Why Book Direct Section */}
+				{/* Editorial Why Book Direct + Direct Reservation Trust Strip + Host Card */}
 				<section id="why-book-direct" className={HOME_THEME.directSection}>
 					<div className={HOME_THEME.directContainer}>
 						<div className={HOME_THEME.directHeader}>
@@ -275,150 +508,101 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							<p className={HOME_THEME.directSubtitle}>{t.directSubtitle}</p>
 						</div>
 
-						<div className={HOME_THEME.directGrid}>
-							<div className={HOME_THEME.directCard}>
-								<div className={HOME_THEME.directIconEmerald}>
-									<Percent className={HOME_THEME.iconLg} aria-hidden="true" />
+						<ul className={HOME_THEME.directGrid}>
+							<li className={HOME_THEME.directEditorialItem}>
+								<div className={HOME_THEME.directItemHeader}>
+									<Percent
+										className={HOME_THEME.directIconEmerald}
+										aria-hidden="true"
+									/>
+									<h3 className={HOME_THEME.directCardTitle}>
+										{t.directReason1Title}
+									</h3>
 								</div>
-								<h3 className={HOME_THEME.directCardTitle}>
-									{t.directReason1Title}
-								</h3>
 								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason1Desc}
 								</p>
-							</div>
+							</li>
 
-							<div className={HOME_THEME.directCard}>
-								<div className={HOME_THEME.directIconCoral}>
-									<Sparkles className={HOME_THEME.iconLg} aria-hidden="true" />
+							<li className={HOME_THEME.directEditorialItem}>
+								<div className={HOME_THEME.directItemHeader}>
+									<Sparkles
+										className={HOME_THEME.directIconCoral}
+										aria-hidden="true"
+									/>
+									<h3 className={HOME_THEME.directCardTitle}>
+										{t.directReason2Title}
+									</h3>
 								</div>
-								<h3 className={HOME_THEME.directCardTitle}>
-									{t.directReason2Title}
-								</h3>
 								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason2Desc}
 								</p>
-							</div>
+							</li>
 
-							<div className={HOME_THEME.directCard}>
-								<div className={HOME_THEME.directIconSky}>
+							<li className={HOME_THEME.directEditorialItem}>
+								<div className={HOME_THEME.directItemHeader}>
 									<MessageCircle
-										className={HOME_THEME.iconLg}
+										className={HOME_THEME.directIconSky}
 										aria-hidden="true"
 									/>
+									<h3 className={HOME_THEME.directCardTitle}>
+										{t.directReason3Title}
+									</h3>
 								</div>
-								<h3 className={HOME_THEME.directCardTitle}>
-									{t.directReason3Title}
-								</h3>
 								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason3Desc}
 								</p>
-							</div>
+							</li>
 
-							<div className={HOME_THEME.directCard}>
-								<div className={HOME_THEME.directIconEmerald}>
+							<li className={HOME_THEME.directEditorialItem}>
+								<div className={HOME_THEME.directItemHeader}>
 									<ShieldCheck
-										className={HOME_THEME.iconLg}
+										className={HOME_THEME.directIconEmerald}
 										aria-hidden="true"
 									/>
+									<h3 className={HOME_THEME.directCardTitle}>
+										{t.directReason4Title}
+									</h3>
 								</div>
-								<h3 className={HOME_THEME.directCardTitle}>
-									{t.directReason4Title}
-								</h3>
 								<p className={HOME_THEME.directCardDesc}>
 									{t.directReason4Desc}
 								</p>
+							</li>
+						</ul>
+
+						{/* Direct Reservation Payment & Colombian RNT Trust Strip */}
+						<div id="home-trust-strip" className={HOME_THEME.trustStripGrid}>
+							<div className={HOME_THEME.trustStripCardEmerald}>
+								<CreditCard
+									className={HOME_THEME.trustStripIconEmerald}
+									aria-hidden="true"
+								/>
+								<div>
+									<h3 className={HOME_THEME.trustStripTitle}>
+										{t.homeTrustPaymentsTitle}
+									</h3>
+									<p className={HOME_THEME.trustStripDesc}>
+										{t.homeTrustPaymentsDesc}
+									</p>
+								</div>
+							</div>
+							<div className={HOME_THEME.trustStripCardSlate}>
+								<ShieldCheck
+									className={HOME_THEME.trustStripIconSlate}
+									aria-hidden="true"
+								/>
+								<div>
+									<h3 className={HOME_THEME.trustStripTitle}>
+										{t.homeTrustRntTitle}
+									</h3>
+									<p className={HOME_THEME.trustStripDesc}>
+										{t.homeTrustRntDesc}
+									</p>
+								</div>
 							</div>
 						</div>
-					</div>
-				</section>
 
-				{/* Editorial Lifestyle & Host Showcase Section */}
-				<section id="experiences" className={HOME_THEME.editorialSection}>
-					<div className={HOME_THEME.editorialContainer}>
-						<div className={HOME_THEME.editorialHeader}>
-							<h2 className={HOME_THEME.editorialTitle}>{t.homeExpTitle}</h2>
-						</div>
-
-						<div className={HOME_THEME.editorialGrid}>
-							{HOME_EXPERIENCE_CARDS.map((card) => {
-								const cardHref = getPropertyPagePath(
-									card.propertyId,
-									lang,
-									assetPrefix,
-								);
-								return (
-									<a
-										key={card.propertyId}
-										href={cardHref}
-										className={HOME_THEME.editorialCard}
-									>
-										<div className={HOME_THEME.editorialCardMedia}>
-											<img
-												src={`${assetPrefix}${card.imageSrc}`}
-												alt={t[card.imageAltKey]}
-												width={card.imageWidth}
-												height={card.imageHeight}
-												className={HOME_THEME.editorialCardImage}
-												loading="lazy"
-												decoding="async"
-											/>
-											<span className={HOME_THEME.experiencesCardBadge}>
-												{t[card.titleKey]} • {t[card.badgeKey]}
-											</span>
-										</div>
-										<div className={HOME_THEME.editorialCardBody}>
-											<div className={HOME_THEME.editorialFeatureList}>
-												{card.features.map((feature) => {
-													const FeatureIcon =
-														EXPERIENCE_FEATURE_ICONS[feature.iconId];
-													return (
-														<div
-															key={feature.titleKey}
-															className={HOME_THEME.editorialFeatureItem}
-														>
-															<div className={HOME_THEME[feature.iconThemeKey]}>
-																<FeatureIcon
-																	className={HOME_THEME.iconMd}
-																	aria-hidden="true"
-																/>
-															</div>
-															<div>
-																<h3
-																	className={HOME_THEME.editorialFeatureTitle}
-																>
-																	{t[feature.titleKey]}
-																</h3>
-																<p className={HOME_THEME.editorialFeatureDesc}>
-																	{t[feature.descKey]}
-																</p>
-															</div>
-														</div>
-													);
-												})}
-											</div>
-											<div className={HOME_THEME.editorialReviewBox}>
-												<p className={HOME_THEME.editorialReviewText}>
-													{t[card.reviewTextKey]}
-												</p>
-												<p className={HOME_THEME.editorialReviewAuthor}>
-													— {t[card.reviewAuthorKey]}
-												</p>
-											</div>
-											<div className={HOME_THEME.editorialCardCta}>
-												<span>{t.homeCardCta}</span>
-												<ArrowRight
-													className={HOME_THEME.iconSm}
-													aria-hidden="true"
-												/>
-											</div>
-										</div>
-									</a>
-								);
-							})}
-						</div>
-
-						{/* Host & Data Controller Showcase Card */}
+						{/* Host & Data Controller Showcase Card with Direct Contact Actions */}
 						<div id="home-host-card" className={HOME_THEME.hostCard}>
 							<div className={HOME_THEME.hostAvatarWrapper}>
 								<img
@@ -431,7 +615,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									decoding="async"
 								/>
 							</div>
-							<div>
+							<div className={HOME_THEME.hostBody}>
 								<div className={HOME_THEME.hostHeaderRow}>
 									<h3 className={HOME_THEME.hostName}>{t.hostName}</h3>
 									<span className={HOME_THEME.hostRoleBadge}>
@@ -439,21 +623,55 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									</span>
 								</div>
 								<p className={HOME_THEME.hostBio}>{t.hostBio}</p>
-								<span className={HOME_THEME.hostRntBadge}>
-									<ShieldCheck
-										className={HOME_THEME.iconSm}
-										aria-hidden="true"
-									/>
-									<span>
-										{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
+								<div className={HOME_THEME.hostBadgesRow}>
+									<span className={HOME_THEME.hostControllerBadge}>
+										<FileCheck
+											className={HOME_THEME.iconSm}
+											aria-hidden="true"
+										/>
+										<span>
+											{t.hostDataControllerLabel}: {DATA_CONTROLLER.name}
+										</span>
 									</span>
-								</span>
+									<span className={HOME_THEME.hostRntBadge}>
+										<ShieldCheck
+											className={HOME_THEME.iconSm}
+											aria-hidden="true"
+										/>
+										<span>
+											{t.rntTitle}: {t.rnt1707} • {t.rnt1606}
+										</span>
+									</span>
+								</div>
+								<div className={HOME_THEME.hostActionsRow}>
+									<a
+										id="home-host-whatsapp"
+										href={DATA_CONTROLLER.whatsappHref}
+										target="_blank"
+										rel="noopener noreferrer"
+										className={HOME_THEME.hostWhatsAppBtn}
+									>
+										<MessageCircle
+											className={HOME_THEME.iconSm}
+											aria-hidden="true"
+										/>
+										<span>{t.homeCtaWhatsApp}</span>
+									</a>
+									<a
+										id="home-host-email"
+										href={`mailto:${DATA_CONTROLLER.email}`}
+										className={HOME_THEME.hostEmailBtn}
+									>
+										<Mail className={HOME_THEME.iconSm} aria-hidden="true" />
+										<span>{DATA_CONTROLLER.email}</span>
+									</a>
+								</div>
 							</div>
 						</div>
 					</div>
 				</section>
 
-				{/* Playa Salguero Location & Santa Marta Proximity Section */}
+				{/* Playa Salguero Location & Balanced 3x2 Santa Marta Proximity Grid */}
 				<section id="location" className={HOME_THEME.locationSection}>
 					<div className={HOME_THEME.locationContainer}>
 						<div className={HOME_THEME.locationHeader}>
@@ -475,12 +693,12 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								return (
 									<li key={landmark.id} className={HOME_THEME.locationCard}>
 										<div className={HOME_THEME.locationCardTop}>
-											<div className={HOME_THEME.locationIconBox}>
+											<span className={HOME_THEME.locationIconBox}>
 												<LandmarkIcon
 													className={HOME_THEME.iconMd}
 													aria-hidden="true"
 												/>
-											</div>
+											</span>
 											<span className={HOME_THEME.locationProximityBadge}>
 												{t[landmark.proximityKey]}
 											</span>
@@ -494,35 +712,39 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									</li>
 								);
 							})}
-						</ul>
 
-						{/* Contextual Santa Marta Destination Guides Hub Callout */}
-						<div
-							id="home-destination-guides-callout"
-							className={HOME_THEME.locationGuidesBanner}
-						>
-							<div className={HOME_THEME.locationGuidesContent}>
-								<div className={HOME_THEME.locationGuidesIconBox}>
-									<Compass className={HOME_THEME.iconLg} aria-hidden="true" />
-								</div>
+							{/* 6th Card: Contextual Santa Marta Destination Guides Hub Callout */}
+							<li
+								id="home-destination-guides-callout"
+								className={HOME_THEME.locationGuidesCard}
+							>
 								<div>
-									<p className={HOME_THEME.locationGuidesEyebrow}>
-										{t.homeLocationGuidesEyebrow}
-									</p>
+									<div className={HOME_THEME.locationGuidesTop}>
+										<Compass
+											className={HOME_THEME.locationGuidesIcon}
+											aria-hidden="true"
+										/>
+										<p className={HOME_THEME.locationGuidesEyebrow}>
+											{t.homeLocationGuidesEyebrow}
+										</p>
+									</div>
 									<p className={HOME_THEME.locationGuidesText}>
 										{t.homeLocationGuidesDesc}
 									</p>
 								</div>
-							</div>
-							<a
-								id="home-destination-guides-link"
-								href={destinationGuidesHref}
-								className={HOME_THEME.locationGuidesCta}
-							>
-								<span>{t.homeLocationGuidesCta}</span>
-								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
-							</a>
-						</div>
+								<a
+									id="home-destination-guides-link"
+									href={destinationGuidesHref}
+									className={HOME_THEME.locationGuidesCta}
+								>
+									<span>{t.homeLocationGuidesCta}</span>
+									<ArrowRight
+										className={HOME_THEME.iconSm}
+										aria-hidden="true"
+									/>
+								</a>
+							</li>
+						</ul>
 					</div>
 				</section>
 
@@ -546,6 +768,35 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								</summary>
 								<div className={HOME_THEME.faqAnswerWrapper}>
 									<p className={HOME_THEME.faqAnswer}>{t[item.aKey]}</p>
+									{item.showFulfillmentLinks && (
+										<div
+											id="faq-fulfillment-links"
+											className={HOME_THEME.faqLinksRow}
+										>
+											<a
+												id="faq-registry-link"
+												href={registryHref}
+												className={HOME_THEME.faqActionLinkPrimary}
+											>
+												<span>{t.faq6RegistryLink}</span>
+												<ArrowRight
+													className={HOME_THEME.iconSm}
+													aria-hidden="true"
+												/>
+											</a>
+											<a
+												id="faq-guide-link"
+												href={guideHref}
+												className={HOME_THEME.faqActionLinkSecondary}
+											>
+												<span>{t.faq6GuideLink}</span>
+												<ArrowRight
+													className={HOME_THEME.iconSm}
+													aria-hidden="true"
+												/>
+											</a>
+										</div>
+									)}
 								</div>
 							</details>
 						))}
@@ -556,12 +807,6 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				<section className={HOME_THEME.ctaSection}>
 					<div className={HOME_THEME.ctaCard}>
 						<div className={HOME_THEME.ctaContent}>
-							<div className={HOME_THEME.ctaIconBox}>
-								<MessageSquare
-									className={HOME_THEME.iconXl}
-									aria-hidden="true"
-								/>
-							</div>
 							<h2 className={HOME_THEME.ctaTitle}>{t.homeCtaTitle}</h2>
 							<p className={HOME_THEME.ctaSubtitle}>{t.homeCtaSub}</p>
 							<div className={HOME_THEME.ctaActionsRow}>

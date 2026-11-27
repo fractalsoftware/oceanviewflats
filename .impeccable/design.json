@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 2,
-	"generatedAt": "2026-11-05T00:00:00.000Z",
+	"generatedAt": "2026-11-26T23:59:00.000Z",
 	"title": "Design System: OceanViewFlats",
 	"extensions": {
 		"colorMeta": {
@@ -30,6 +30,21 @@
 					"#DC2626",
 					"#FF424D",
 					"#F87171",
+					"#FCA5A5",
+					"#FEF2F2"
+				]
+			},
+			"coral-horizon-ink": {
+				"role": "primary",
+				"displayName": "Coral Horizon Ink",
+				"canonical": "#B91C1C",
+				"tonalRamp": [
+					"#450A0A",
+					"#7F1D1D",
+					"#991B1B",
+					"#B91C1C",
+					"#DC2626",
+					"#EF4444",
 					"#FCA5A5",
 					"#FEF2F2"
 				]
@@ -79,6 +94,21 @@
 					"#FFF1F2"
 				]
 			},
+			"salguero-sunset-rose-light": {
+				"role": "secondary",
+				"displayName": "Salguero Sunset Rose Light",
+				"canonical": "#FB7185",
+				"tonalRamp": [
+					"#4C0519",
+					"#881337",
+					"#BE123C",
+					"#E11D48",
+					"#F43F5E",
+					"#FB7185",
+					"#FDA4AF",
+					"#FFF1F2"
+				]
+			},
 			"rose-wash": {
 				"role": "secondary",
 				"displayName": "Rose Wash",
@@ -113,6 +143,51 @@
 				"role": "tertiary",
 				"displayName": "Clearance Emerald Deep",
 				"canonical": "#047857",
+				"tonalRamp": [
+					"#022C22",
+					"#064E3B",
+					"#065F46",
+					"#047857",
+					"#059669",
+					"#34D399",
+					"#A7F3D0",
+					"#ECFDF5"
+				]
+			},
+			"clearance-emerald-light": {
+				"role": "tertiary",
+				"displayName": "Clearance Emerald Light",
+				"canonical": "#34D399",
+				"tonalRamp": [
+					"#022C22",
+					"#064E3B",
+					"#047857",
+					"#059669",
+					"#10B981",
+					"#34D399",
+					"#A7F3D0",
+					"#ECFDF5"
+				]
+			},
+			"clearance-emerald-tint": {
+				"role": "tertiary",
+				"displayName": "Clearance Emerald Tint",
+				"canonical": "#6EE7B7",
+				"tonalRamp": [
+					"#022C22",
+					"#064E3B",
+					"#047857",
+					"#059669",
+					"#10B981",
+					"#34D399",
+					"#6EE7B7",
+					"#ECFDF5"
+				]
+			},
+			"clearance-emerald-night": {
+				"role": "tertiary",
+				"displayName": "Clearance Emerald Night",
+				"canonical": "#022C22",
 				"tonalRamp": [
 					"#022C22",
 					"#064E3B",
@@ -173,6 +248,21 @@
 				"role": "tertiary",
 				"displayName": "Nomad Sky",
 				"canonical": "#0EA5E9",
+				"tonalRamp": [
+					"#082F49",
+					"#0C4A6E",
+					"#0369A1",
+					"#0284C7",
+					"#0EA5E9",
+					"#38BDF8",
+					"#BAE6FD",
+					"#F0F9FF"
+				]
+			},
+			"nomad-sky-light": {
+				"role": "tertiary",
+				"displayName": "Nomad Sky Light",
+				"canonical": "#38BDF8",
 				"tonalRamp": [
 					"#082F49",
 					"#0C4A6E",
@@ -540,7 +630,7 @@
 	],
 	"narrative": {
 		"northStar": "The Sunlit Coastal Concierge",
-		"overview": "OceanViewFlats pairs the luminous warmth of 16th- and 17th-floor Caribbean beachfront living at Edificio Salguero Sunset with the calm, unmistakable precision of a private hotel concierge. Every surface balances two responsibilities: inspiring direct bookings through expansive photography and transparent Colombian Peso (`COP`) pricing, and guiding arriving international guests through mandatory statutory check-in (`Guest Registry`) and smart-lock entry (`Guest Guide`) while they are often in transit on mobile devices.\n\nThe system is luminous, hospitable, and reassuringly structured. Generous white cards float above soft coastal-mist canvases (`#F8FAFC`), punctuated by deep architectural night bands (`#0F172A` and `#1C1917`) that frame remote-work, family, and sunset experiences. Rather than hiding regulatory requirements or building surcharges in fine print, the visual hierarchy elevates them into clear, high-trust callout cards with semantic color coding—turning Colombian Law 1581 consent, minor guardian attestations, and front-desk clearance into a smooth hospitality ritual.\n\nThe visual world explicitly rejects hidden-fee OTA clutter, sterile corporate hotel templates, dark-mode-everywhere SaaS clichés, and kitschy tropical clipart. Every visual element is centralized in `src/constants/theme.ts` so React page templates remain 100% style-agnostic and ship as zero-hydration static HTML across six languages (`en`, `es`, `fr`, `it`, `de`, `ja`).",
+		"overview": "OceanViewFlats pairs the luminous warmth of 16th- and 17th-floor Caribbean beachfront living at Edificio Salguero Sunset with the calm, unmistakable precision of a private hotel concierge. Every surface balances two responsibilities: inspiring direct bookings through expansive photography and transparent Colombian Peso (`COP`) pricing, and guiding arriving international guests through mandatory statutory check-in (`Guest Registry`) and smart-lock entry (`Guest Guide`) while they are often in transit on mobile devices.\n\nThe system is luminous, hospitable, and reassuringly structured. Generous white cards float above soft coastal-mist canvases (`#F8FAFC`), punctuated by deep architectural night bands (`#0F172A` and `#1C1917`) that frame remote-work, family, and sunset experiences. Rather than hiding regulatory requirements or building surcharges in fine print, the visual hierarchy elevates them into clear, high-trust callout cards with semantic color coding—turning Colombian Law 1581 consent, minor guardian attestations, and front-desk clearance into a smooth hospitality ritual.\n\nThe visual world explicitly rejects hidden-fee OTA clutter, sterile corporate hotel templates, dark-mode-everywhere SaaS clichés, and kitschy tropical clipart. Every visual token is defined in `src/style.css` and centralized into semantic class maps in `src/constants/theme.ts` so React page templates remain 100% style-agnostic and ship as zero-hydration static HTML across six languages (`en`, `es`, `fr`, `it`, `de`, `ja`).",
 		"keyCharacteristics": [
 			"Dual-Property Atmospheric Tuning: Global pages and Property 1707 pair Coral Horizon with cool Deep Caribbean Slate neutrals, while Property 1606 shifts to Salguero Sunset Rose over warm Travertine Stone neutrals.",
 			"Tactile, Travel-Ready Affordances: Generous pill CTAs (9999px), large-radius cards (24px), and high-contrast inputs (12px) ensure effortless tap accuracy for older travelers and guests checking in from airport taxis or the building lobby.",
@@ -550,7 +640,7 @@
 		"rules": [
 			{
 				"name": "The Property Temperature Rule",
-				"body": "Property 1707 and global operational surfaces always pair Coral Horizon with cool Slate neutrals; Property 1606 always pairs Salguero Sunset Rose with warm Travertine Stone neutrals. Never mix cool slate borders into a Property 1606 card or rose accents into Property 1707.",
+				"body": "On dedicated property pages (/Oceanview1707, /Oceanview1606) and homepage showcase cards (#home-card-1707, #home-card-1606), Property 1707 pairs Coral Horizon and Nomad Sky cues with cool Slate neutrals, while Property 1606 pairs Salguero Sunset Rose cues with warm Travertine Stone neutrals—resolved strictly through centralized theme maps (THEMES, HOME_CARD_THEMES). Primary Coral Horizon filled pills with white text use WCAG AA+ coral-horizon-accessible (#DC2626, hover coral-horizon-ink #B91C1C), and the scrolled navigation brand wordmark uses coral-horizon-ink (#B91C1C, hover coral-horizon-ink-deep #991B1B).",
 				"section": "colors"
 			},
 			{
@@ -575,7 +665,7 @@
 			},
 			{
 				"name": "The Frosted Chrome Rule",
-				"body": "Translucent backdrop-blur-md surfaces are reserved strictly for the scrolled fixed Navigation bar (bg-white/90), hero location/status badges (bg-white/20 or bg-amber-500/10), and dark hero photo overlays (backdrop-blur-[2px]). Never apply backdrop blur to form cards or reading panels.",
+				"body": "Translucent backdrop-filter: blur(12px) surfaces are reserved strictly for the scrolled fixed Navigation bar (90% translucent white, rgba(255, 255, 255, 0.90)), hero location/status badges (20% translucent white rgba(255, 255, 255, 0.20) or 10% translucent amber rgba(245, 158, 11, 0.10)), and subtle dark hero photo overlays (backdrop-filter: blur(2px)). Never apply backdrop blur to form cards or reading panels.",
 				"section": "elevation"
 			}
 		],
