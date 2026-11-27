@@ -973,11 +973,16 @@ test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coasta
 
 test("#331 Homepage renders editorial tabular-nums Nightly Rates with localized reference-currency cue, muted proximity tags, uniform >=44px Guest Review footers, and verified Location map link across all 6 locales", () => {
 	const distDir = path.join(process.cwd(), "dist");
+	const htmlEntities: Record<string, string> = {
+		"&#x27;": "'",
+		"&quot;": '"',
+		"&amp;": "&",
+	};
 	const decodeHtmlEntities = (s: string) =>
-		s
-			.replace(/&#x27;/g, "'")
-			.replace(/&amp;/g, "&")
-			.replace(/&quot;/g, '"');
+		s.replace(
+			/&#x27;|&quot;|&amp;/g,
+			(entity) => htmlEntities[entity] ?? entity,
+		);
 	const homeSource = fs.readFileSync(
 		path.join(process.cwd(), "src", "pages", "Home.tsx"),
 		"utf-8",
