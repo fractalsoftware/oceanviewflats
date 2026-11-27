@@ -144,6 +144,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 												href="https://wa.me/573108155234"
 												target="_blank"
 												rel="noopener noreferrer"
+												data-analytics-whatsapp="contact_sidebar"
 												className="text-emerald-600 hover:text-emerald-700 transition-colors font-semibold flex items-center space-x-1"
 											>
 												<span>WhatsApp</span>

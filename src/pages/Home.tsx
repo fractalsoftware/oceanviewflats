@@ -359,6 +359,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 															href={card.airbnbUrl}
 															target="_blank"
 															rel="noopener noreferrer"
+															data-analytics-airbnb-review={`home_card_${card.id}`}
 															className={cardTheme.reviewAirbnbLink}
 														>
 															<span>{t.reviewViewOnAirbnb}</span>
@@ -626,6 +627,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 											href={DATA_CONTROLLER.whatsappHref}
 											target="_blank"
 											rel="noopener noreferrer"
+											data-analytics-whatsapp="home_host"
 											className={HOME_THEME.hostWhatsAppBtn}
 										>
 											<MessageCircle
@@ -802,6 +804,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									href={DATA_CONTROLLER.whatsappHref}
 									target="_blank"
 									rel="noopener noreferrer"
+									data-analytics-whatsapp="home_cta"
 									className={HOME_THEME.ctaWhatsAppBtn}
 								>
 									<MessageCircle
