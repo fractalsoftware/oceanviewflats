@@ -889,18 +889,18 @@ test("Shared chrome across all 6 locales renders accessible #lang-toggle button,
 				`${label} #lang-toggle must include aria-haspopup="true" and aria-expanded="false"`,
 			);
 			assert.ok(
-				langToggleMatch[0].includes("min-h-[40px]") &&
-					langToggleMatch[0].includes("min-w-[40px]"),
-				`${label} #lang-toggle must enforce >= 40px x 40px touch target`,
+				langToggleMatch[0].includes("min-h-[44px]") &&
+					langToggleMatch[0].includes("min-w-[44px]"),
+				`${label} #lang-toggle must enforce >= 44px x 44px touch target`,
 			);
 
-			// 2. #nav-contact enforces >=40px x 40px touch target
+			// 2. #nav-contact enforces >=44px x 44px touch target
 			const navContactMatch = html.match(/<a[^>]*id="nav-contact"[^>]*>/);
 			assert.ok(navContactMatch, `${label} must render #nav-contact`);
 			assert.ok(
-				navContactMatch[0].includes("min-h-[40px]") &&
-					navContactMatch[0].includes("min-w-[40px]"),
-				`${label} #nav-contact must enforce >= 40px x 40px touch target`,
+				navContactMatch[0].includes("min-h-[44px]") &&
+					navContactMatch[0].includes("min-w-[44px]"),
+				`${label} #nav-contact must enforce >= 44px x 44px touch target`,
 			);
 
 			// 3. Closed #lang-dropdown has invisible class (visibility: hidden) so collapsed links are not keyboard-focusable, and AA hover contrast
@@ -1804,33 +1804,16 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 	sandbox.document.dispatchEvent("DOMContentLoaded");
 
 	assert.equal(
-		navbar.classList.contains("bg-white/90") &&
-			navbar.classList.contains("backdrop-blur-md") &&
-			navbar.classList.contains("shadow-sm") &&
-			navbar.classList.contains("py-3") &&
-			!navbar.classList.contains("bg-transparent") &&
-			!navbar.classList.contains("py-5"),
-		true,
-		"#navbar must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+		navbar.getAttribute("data-scrolled"),
+		"true",
+		"#navbar must immediately set data-scrolled='true' on DOMContentLoaded when window.scrollY > 50",
 	);
 	assert.equal(
-		navLogo.classList.contains("text-coral-horizon-ink") &&
-			!navLogo.classList.contains("text-white"),
-		true,
-		"#nav-logo must immediately receive WCAG AA+ scrolled classes (text-coral-horizon-ink) on DOMContentLoaded when window.scrollY > 50",
-	);
-	assert.equal(
-		langToggle.classList.contains("bg-slate-100") &&
-			langToggle.classList.contains("text-slate-700") &&
-			!langToggle.classList.contains("text-white"),
-		true,
-		"#lang-toggle must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
-	);
-	assert.equal(
-		navContact.classList.contains("text-slate-600") &&
-			!navContact.classList.contains("text-white"),
-		true,
-		"#nav-contact must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+		navLogo.classList.contains("text-coral-horizon-ink") ||
+			langToggle.classList.contains("bg-slate-100") ||
+			navContact.classList.contains("text-slate-600"),
+		false,
+		"main.js must not mutate individual link color classes on scroll (declarative CSS via data-scrolled)",
 	);
 	assert.equal(
 		navBook.classList.contains("text-white") &&
@@ -1839,11 +1822,14 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 		"#nav-book must preserve high-contrast white text on its solid Coral Horizon pill when scrolled",
 	);
 
-	// Verify scrolling back to top (scrollY = 0) restores transparent classes
+	// Verify scrolling back to top (scrollY = 0) restores data-scrolled="false"
 	sandbox.window.scrollY = 0;
 	sandbox.window.dispatchEvent("scroll");
-	assert.equal(navbar.classList.contains("bg-transparent"), true);
-	assert.equal(navLogo.classList.contains("text-white"), true);
+	assert.equal(
+		navbar.getAttribute("data-scrolled"),
+		"false",
+		"#navbar must set data-scrolled='false' when scrolled back to top",
+	);
 
 	// 3. Verify #lang-toggle-group focusout closes #lang-dropdown when relatedTarget is outside the group
 	langToggle.dispatchEvent("click");
@@ -5034,9 +5020,9 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 				mobileToggleMatch[0].includes('type="button"') &&
 					mobileToggleMatch[0].includes('aria-expanded="false"') &&
 					mobileToggleMatch[0].includes('aria-controls="mobile-nav-drawer"') &&
-					mobileToggleMatch[0].includes("min-h-[40px]") &&
-					mobileToggleMatch[0].includes("min-w-[40px]"),
-				`${label} #mobile-nav-toggle must enforce button semantics, aria-expanded, aria-controls, and >=40px tap target`,
+					mobileToggleMatch[0].includes("min-h-[44px]") &&
+					mobileToggleMatch[0].includes("min-w-[44px]"),
+				`${label} #mobile-nav-toggle must enforce button semantics, aria-expanded, aria-controls, and >=44px tap target`,
 			);
 
 			const drawerMatch = html.match(
@@ -5066,14 +5052,14 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 				`${label} #mobile-nav-drawer must group Contact under Staying Guests alongside Guest Registry and Guest Guide`,
 			);
 
-			// 4. Decorative brand & attribution SVGs hidden from screen readers + #nav-logo >=40px tap target
+			// 4. Decorative brand & attribution SVGs hidden from screen readers + #nav-logo >=44px tap target
 			const navLogoMatch = html.match(
 				/<a[^>]*id="nav-logo"[^>]*>[\s\S]*?<\/a>/,
 			);
 			assert.ok(
 				navLogoMatch?.[0].includes('aria-hidden="true"') &&
-					navLogoMatch[0].includes("min-h-[40px]"),
-				`${label} #nav-logo must enforce min-h-[40px] tap target and aria-hidden="true" on decorative SVG`,
+					navLogoMatch[0].includes("min-h-[44px]"),
+				`${label} #nav-logo must enforce min-h-[44px] tap target and aria-hidden="true" on decorative SVG`,
 			);
 
 			// 5. Reorganized 4-group global Footer with relative links, aria-hidden SVGs, and rounded-lg focus rings
@@ -5544,6 +5530,570 @@ test("#319 main.js mobile navigation drawer toggles cleanly, restores focus on E
 	await new Promise((r) => setTimeout(r, 15));
 	assert.equal(fallbackBadge1707.textContent, "From 450,000 COP / night");
 	assert.equal(fallbackCompare1707.textContent, "From 450,000 COP / night");
+});
+
+test("#329 Shared chrome across all 6 locales and depths exposes desktop staying-guest check-in disclosure, aria-current='page', >=44px tap targets, and declarative data-scrolled CSS tokens", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const css = fs.readFileSync(path.join(distDir, "css", "style.css"), "utf-8");
+
+	// 1. Declarative CSS rules for data-scrolled and non-color aria-current="page" indicators
+	assert.ok(
+		/#navbar\[data-scrolled=["']?true["']?\]/.test(css) &&
+			css.includes("backdrop-filter:blur(12px)") &&
+			css.includes("var(--color-coral-horizon-ink)") &&
+			css.includes("var(--color-slate-body)") &&
+			css.includes("var(--color-slate-surface)"),
+		"Compiled CSS must style #navbar[data-scrolled='true'] declaratively via registered design-system tokens",
+	);
+	assert.ok(
+		/\[aria-current=["']?page["']?\]/.test(css) &&
+			css.includes("border-block-end:") &&
+			css.includes("border-inline-start:") &&
+			css.includes("forced-colors:active"),
+		"Compiled CSS must provide non-color visual indicators for aria-current='page' with forced-colors adaptation",
+	);
+
+	// 2. Verify main.js no longer swaps per-element navbar color classes manually
+	const mainJs = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+	const syncScrollBlockMatch = mainJs.match(
+		/function syncNavbarScrollState\(\)\s*\{[\s\S]*?\n\}/,
+	);
+	assert.ok(
+		syncScrollBlockMatch,
+		"main.js must define syncNavbarScrollState()",
+	);
+	assert.ok(
+		syncScrollBlockMatch[0].includes('setAttribute("data-scrolled"') &&
+			!syncScrollBlockMatch[0].includes("classList"),
+		"syncNavbarScrollState() must toggle only data-scrolled on #navbar without mutating individual element classLists",
+	);
+
+	// 3. Verify all 6 locales across root (depth 0), depth 1, and depth 2 pages
+	const locales = [
+		{
+			code: "en",
+			suffix: "",
+			homeFile: "index.html",
+			checkinLabel: "Check-in",
+			registryLabel: "Guest Registry",
+			guideLabel: "Guest Guide",
+		},
+		{
+			code: "es",
+			suffix: "es.html",
+			homeFile: "es.html",
+			checkinLabel: "Check-in",
+			registryLabel: "Registro de Huéspedes",
+			guideLabel: "Guía del Huésped",
+		},
+		{
+			code: "fr",
+			suffix: "fr.html",
+			homeFile: "fr.html",
+			checkinLabel: "Arrivée",
+			registryLabel: "Registre des Voyageurs",
+			guideLabel: "Guide de l&#x27;Invité",
+		},
+		{
+			code: "it",
+			suffix: "it.html",
+			homeFile: "it.html",
+			checkinLabel: "Check-in",
+			registryLabel: "Registro degli Ospiti",
+			guideLabel: "Guida dell&#x27;Ospite",
+		},
+		{
+			code: "de",
+			suffix: "de.html",
+			homeFile: "de.html",
+			checkinLabel: "Check-in",
+			registryLabel: "Gästeregistrierung",
+			guideLabel: "Gäste-Guide",
+		},
+		{
+			code: "ja",
+			suffix: "ja.html",
+			homeFile: "ja.html",
+			checkinLabel: "チェックイン",
+			registryLabel: "宿泊者名簿登録",
+			guideLabel: "ゲストガイド",
+		},
+	] as const;
+
+	for (const locale of locales) {
+		const pageMatrix = [
+			{
+				file: locale.homeFile,
+				prefix: "./",
+				activeDesktopId: "nav-logo",
+				activeCheckinId: null,
+				expectCheckinParentActive: false,
+			},
+			{
+				file: `registry/${locale.suffix || "index.html"}`,
+				prefix: "../",
+				activeDesktopId: null,
+				activeCheckinId: "nav-checkin-registry",
+				expectCheckinParentActive: true,
+			},
+			{
+				file: `guide/${locale.suffix || "index.html"}`,
+				prefix: "../",
+				activeDesktopId: null,
+				activeCheckinId: "nav-checkin-guide",
+				expectCheckinParentActive: true,
+			},
+			{
+				file: `contact/${locale.suffix || "index.html"}`,
+				prefix: "../",
+				activeDesktopId: "nav-contact",
+				activeCheckinId: null,
+				expectCheckinParentActive: false,
+			},
+			{
+				file: `santa-marta/${locale.suffix || "index.html"}`,
+				prefix: "../",
+				activeDesktopId: "nav-guides",
+				activeCheckinId: null,
+				expectCheckinParentActive: false,
+			},
+			{
+				file: `santa-marta/digital-nomad-remote-work/${locale.suffix || "index.html"}`,
+				prefix: "../../",
+				activeDesktopId: "nav-guides",
+				activeCheckinId: null,
+				expectCheckinParentActive: false,
+			},
+		] as const;
+
+		for (const page of pageMatrix) {
+			const html = fs.readFileSync(path.join(distDir, page.file), "utf-8");
+			const navMatch = html.match(/<nav[^>]*id="navbar"[^>]*>[\s\S]*?<\/nav>/);
+			assert.ok(navMatch, `${page.file} must render <nav id="navbar">`);
+			const navHtml = navMatch[0];
+
+			// data-scrolled initial state
+			assert.ok(
+				/<nav[^>]*id="navbar"[^>]*data-scrolled="false"/.test(navHtml) ||
+					/<nav[^>]*data-scrolled="false"[^>]*id="navbar"/.test(navHtml),
+				`${page.file} #navbar must initialize data-scrolled="false"`,
+			);
+
+			// Zero ARIA application-menu roles inside primary navigation landmark
+			assert.ok(
+				!navHtml.includes('role="menu"') &&
+					!navHtml.includes('role="menuitem"') &&
+					!navHtml.includes('role="menubar"') &&
+					!navHtml.includes('aria-haspopup="menu"'),
+				`${page.file} <nav id="navbar"> must not use ARIA application-menu roles`,
+			);
+
+			// Desktop staying-guest check-in disclosure button & menu
+			const checkinBtnMatch = navHtml.match(
+				/<button[^>]*id="nav-checkin-toggle"[^>]*>[\s\S]*?<\/button>/,
+			);
+			assert.ok(
+				checkinBtnMatch,
+				`${page.file} must render #nav-checkin-toggle button`,
+			);
+			assert.ok(
+				checkinBtnMatch[0].includes('type="button"') &&
+					checkinBtnMatch[0].includes('aria-expanded="false"') &&
+					checkinBtnMatch[0].includes('aria-controls="nav-checkin-menu"') &&
+					checkinBtnMatch[0].includes("min-h-[44px]") &&
+					checkinBtnMatch[0].includes("min-w-[44px]") &&
+					checkinBtnMatch[0].includes(`>${locale.checkinLabel}<`),
+				`${page.file} #nav-checkin-toggle must include localized "${locale.checkinLabel}", aria-expanded/aria-controls, and >=44px tap target`,
+			);
+			assert.equal(
+				checkinBtnMatch[0].includes('data-active="true"'),
+				page.expectCheckinParentActive,
+				`${page.file} #nav-checkin-toggle data-active must match staying-guest active state`,
+			);
+
+			const expectedRegistryHref = `${page.prefix}registry/${locale.suffix}`;
+			const expectedGuideHref = `${page.prefix}guide/${locale.suffix}`;
+
+			const checkinMenuMatch = navHtml.match(
+				/<div[^>]*id="nav-checkin-menu"[^>]*>[\s\S]*?<\/ul>[\s\S]*?<\/div>[\s\S]*?<\/div>/,
+			);
+			assert.ok(checkinMenuMatch, `${page.file} must render #nav-checkin-menu`);
+			assert.ok(
+				checkinMenuMatch[0].includes("hidden") &&
+					checkinMenuMatch[0].includes(
+						`id="nav-checkin-registry" href="${expectedRegistryHref}"`,
+					) &&
+					checkinMenuMatch[0].includes(
+						`id="nav-checkin-guide" href="${expectedGuideHref}"`,
+					) &&
+					checkinMenuMatch[0].includes(`>${locale.registryLabel}<`) &&
+					checkinMenuMatch[0].includes(`>${locale.guideLabel}<`),
+				`${page.file} #nav-checkin-menu must be hidden by default and expose relative localized links to Guest Registry (${expectedRegistryHref}) and Guest Guide (${expectedGuideHref})`,
+			);
+
+			// Active aria-current="page" checks
+			for (const id of ["nav-logo", "nav-guides", "nav-contact"] as const) {
+				const linkMatch = navHtml.match(new RegExp(`<a[^>]*id="${id}"[^>]*>`));
+				assert.ok(linkMatch, `${page.file} must render #${id}`);
+				assert.equal(
+					linkMatch[0].includes('aria-current="page"'),
+					page.activeDesktopId === id,
+					`${page.file} #${id} aria-current="page" mismatch`,
+				);
+			}
+
+			for (const id of ["nav-checkin-registry", "nav-checkin-guide"] as const) {
+				const linkMatch = navHtml.match(new RegExp(`<a[^>]*id="${id}"[^>]*>`));
+				assert.ok(linkMatch, `${page.file} must render #${id}`);
+				assert.equal(
+					linkMatch[0].includes('aria-current="page"'),
+					page.activeCheckinId === id,
+					`${page.file} #${id} aria-current="page" mismatch`,
+				);
+				assert.ok(
+					linkMatch[0].includes("min-h-[44px]"),
+					`${page.file} #${id} must enforce min-h-[44px] tap target`,
+				);
+			}
+
+			// >=44px tap targets across all nav and footer interactive controls (zero legacy min-h-[40px])
+			assert.ok(
+				!navHtml.includes("min-h-[40px]") && !navHtml.includes("min-w-[40px]"),
+				`${page.file} navbar must upgrade all interactive tap targets to >=44px (no min-h-[40px]/min-w-[40px])`,
+			);
+
+			const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
+			assert.ok(footerMatch, `${page.file} must render <footer>`);
+			const footerLinks = footerMatch[0].match(/<a\b[^>]*>/g) || [];
+			assert.ok(
+				footerLinks.length >= 11,
+				`${page.file} footer must contain all navigation & legal links`,
+			);
+			for (const footerAnchor of footerLinks) {
+				assert.ok(
+					footerAnchor.includes("min-h-[44px]"),
+					`${page.file} every footer link must enforce min-h-[44px], got: ${footerAnchor}`,
+				);
+			}
+
+			// #ovf-page-config exposes localized check-in aria labels (with WCAG 2.5.3 Label in Name)
+			const configMatch = html.match(
+				/<script id="ovf-page-config" type="application\/json">([\s\S]*?)<\/script>/,
+			);
+			assert.ok(configMatch, `${page.file} must embed #ovf-page-config`);
+			const parsedConfig = JSON.parse(configMatch[1]) as {
+				i18n: Record<string, string>;
+			};
+			assert.ok(
+				parsedConfig.i18n.navStayingGuestsOpenAriaLabel?.includes(
+					locale.checkinLabel,
+				) &&
+					parsedConfig.i18n.navStayingGuestsCloseAriaLabel?.includes(
+						locale.checkinLabel,
+					),
+				`${page.file} #ovf-page-config must include localized navStayingGuestsOpenAriaLabel & navStayingGuestsCloseAriaLabel containing "${locale.checkinLabel}"`,
+			);
+		}
+	}
+});
+
+test("#329 main.js desktop staying-guest check-in disclosure handles click, Escape focus restoration, outside click, focusout, and mutual dismissal with #lang-dropdown", () => {
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		relatedTarget?: MockNode | null;
+		key?: string;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		hidden: boolean;
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (cls: string) => boolean;
+		};
+		getAttribute: (name: string) => string | null;
+		setAttribute: (name: string, val: string) => void;
+		removeAttribute: (name: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		focus: () => void;
+		isFocused: () => boolean;
+		resetFocus: () => void;
+		appendChild: (child: MockNode) => MockNode;
+		contains: (target: unknown) => boolean;
+		querySelector: (sel: string) => MockNode | null;
+		querySelectorAll: (sel: string) => MockNode[];
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs: Record<string, string> = { ...initialAttrs };
+		const listeners: Record<string, Listener[]> = {};
+		const children: MockNode[] = [];
+		let focused = false;
+		const node: MockNode = {
+			id,
+			tagName,
+			hidden: initialClasses.includes("hidden"),
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (cls: string) => classes.has(cls),
+			},
+			getAttribute: (name: string) => attrs[name] ?? null,
+			setAttribute: (name: string, val: string) => {
+				attrs[name] = val;
+			},
+			removeAttribute: (name: string) => {
+				delete attrs[name];
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			focus: () => {
+				focused = true;
+			},
+			isFocused: () => focused,
+			resetFocus: () => {
+				focused = false;
+			},
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+			contains: (target: unknown) => {
+				if (target === node) return true;
+				return children.some((c) => c === target || c.contains(target));
+			},
+			querySelector: () => children[0] || null,
+			querySelectorAll: (sel: string) =>
+				sel === "a" ? children.filter((c) => c.tagName === "A") : [],
+		};
+		return node;
+	};
+
+	const navbar = createMockNode("navbar", "NAV", [], {
+		"data-scrolled": "false",
+	});
+	const checkinGroup = createMockNode("nav-checkin-group", "DIV");
+	const checkinToggle = createMockNode("nav-checkin-toggle", "BUTTON", [], {
+		type: "button",
+		"aria-expanded": "false",
+		"aria-controls": "nav-checkin-menu",
+		"aria-label": "Arrivée — Registre des Voyageurs et Guide de l'Invité",
+	});
+	const checkinMenu = createMockNode("nav-checkin-menu", "DIV", ["hidden"], {
+		hidden: "",
+	});
+	const registryLink = createMockNode("nav-checkin-registry", "A", [], {
+		href: "./registry/fr.html",
+	});
+	const guideLink = createMockNode("nav-checkin-guide", "A", [], {
+		href: "./guide/fr.html",
+	});
+	checkinMenu.appendChild(registryLink);
+	checkinMenu.appendChild(guideLink);
+	checkinGroup.appendChild(checkinToggle);
+	checkinGroup.appendChild(checkinMenu);
+
+	const langToggleGroup = createMockNode("lang-toggle-group", "DIV");
+	const langToggle = createMockNode("lang-toggle", "BUTTON", [], {
+		type: "button",
+		"aria-expanded": "false",
+		"aria-controls": "lang-dropdown",
+	});
+	const langDropdown = createMockNode("lang-dropdown", "DIV", [
+		"opacity-0",
+		"invisible",
+	]);
+	langToggleGroup.appendChild(langToggle);
+	langToggleGroup.appendChild(langDropdown);
+
+	const outsideNode = createMockNode("main-content", "MAIN");
+
+	const elementsById = new Map<string, MockNode>([
+		["navbar", navbar],
+		["nav-checkin-group", checkinGroup],
+		["nav-checkin-toggle", checkinToggle],
+		["nav-checkin-menu", checkinMenu],
+		["lang-toggle-group", langToggleGroup],
+		["lang-toggle", langToggle],
+		["lang-dropdown", langDropdown],
+	]);
+
+	const docListeners: Record<string, Listener[]> = {};
+	const winListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const translations: Record<string, string> = {
+		navStayingGuestsOpenAriaLabel:
+			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
+		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 75,
+			location: { search: "", pathname: "/fr.html" },
+			addEventListener: (evt: string, fn: Listener) => {
+				winListeners[evt] = winListeners[evt] || [];
+				winListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of winListeners[evt] || []) fn(payload);
+			},
+			getPageConfig: () => ({
+				lang: "fr",
+				assetPrefix: "./",
+				apiBase: "./api/",
+			}),
+			t: (key: string, _params?: Record<string, string>, fallback?: string) =>
+				translations[key] ?? fallback ?? key,
+		},
+		document: {
+			documentElement: { lang: "fr" },
+			createElement: () => ({ ...scriptStub }),
+			getElementsByTagName: () => [scriptStub],
+			getElementById: (id: string) => elementsById.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		localStorage: { getItem: () => null, setItem: () => {} },
+		console,
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+
+	// 1. data-scrolled syncs on DOMContentLoaded even without #nav-logo in DOM
+	assert.equal(navbar.getAttribute("data-scrolled"), "true");
+	sandbox.window.scrollY = 0;
+	sandbox.window.dispatchEvent("scroll");
+	assert.equal(navbar.getAttribute("data-scrolled"), "false");
+
+	// 2. Opening #lang-dropdown first, then opening #nav-checkin-toggle closes #lang-dropdown
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+
+	checkinToggle.dispatchEvent("click");
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(checkinMenu.classList.contains("hidden"), false);
+	assert.equal(checkinMenu.hidden, false);
+	assert.equal(
+		checkinToggle.getAttribute("aria-label"),
+		"Fermer le menu Arrivée",
+	);
+	assert.equal(
+		langToggle.getAttribute("aria-expanded"),
+		"false",
+		"Opening #nav-checkin-toggle must close an open #lang-dropdown",
+	);
+
+	// 3. Escape closes #nav-checkin-menu and restores focus to #nav-checkin-toggle
+	checkinToggle.resetFocus();
+	let escapePrevented = false;
+	sandbox.document.dispatchEvent("keydown", {
+		key: "Escape",
+		preventDefault: () => {
+			escapePrevented = true;
+		},
+	});
+	assert.equal(escapePrevented, true);
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(checkinMenu.classList.contains("hidden"), true);
+	assert.equal(checkinMenu.hidden, true);
+	assert.equal(
+		checkinToggle.getAttribute("aria-label"),
+		"Arrivée — Registre des Voyageurs et Guide de l'Invité",
+	);
+	assert.equal(
+		checkinToggle.isFocused(),
+		true,
+		"Escape must restore focus to #nav-checkin-toggle",
+	);
+
+	// 4. Outside click dismisses without stealing focus
+	checkinToggle.dispatchEvent("click");
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
+	checkinToggle.resetFocus();
+	sandbox.document.dispatchEvent("click", { target: outsideNode });
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(checkinMenu.classList.contains("hidden"), true);
+	assert.equal(checkinToggle.isFocused(), false);
+
+	// 5. focusout inside #nav-checkin-group keeps menu open; focusout outside closes it
+	checkinToggle.dispatchEvent("click");
+	checkinGroup.dispatchEvent("focusout", { relatedTarget: registryLink });
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(checkinMenu.classList.contains("hidden"), false);
+
+	checkinGroup.dispatchEvent("focusout", { relatedTarget: outsideNode });
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(checkinMenu.classList.contains("hidden"), true);
+
+	// 6. Clicking a link inside #nav-checkin-menu closes it, and opening #lang-toggle closes #nav-checkin-menu
+	checkinToggle.dispatchEvent("click");
+	guideLink.dispatchEvent("click");
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "false");
+
+	checkinToggle.dispatchEvent("click");
+	assert.equal(checkinToggle.getAttribute("aria-expanded"), "true");
+	langToggle.dispatchEvent("click");
+	assert.equal(langToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(
+		checkinToggle.getAttribute("aria-expanded"),
+		"false",
+		"Opening #lang-toggle must close an open #nav-checkin-menu",
+	);
 });
 
 test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coastal coral token, and returning-Guest check-in cue across all 6 locales", () => {

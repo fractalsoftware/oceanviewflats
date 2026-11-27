@@ -45,6 +45,7 @@ export default function DestinationGuidesHub({
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="guides"
 			/>
 
 			<header className={DESTINATION_GUIDES_THEME.heroHeader}>

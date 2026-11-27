@@ -89,6 +89,170 @@
 	white-space: nowrap;
 }
 
+/* State-driven fixed navbar chrome (#329) */
+#navbar {
+	background-color: transparent;
+	padding-block: 1.25rem;
+}
+
+#navbar[data-scrolled="true"] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-pure-white) 92%,
+		transparent
+	);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.06);
+	padding-block: 0.75rem;
+}
+
+#navbar #nav-logo {
+	color: var(--color-pure-white);
+}
+
+#navbar #nav-logo:hover {
+	color: color-mix(in srgb, var(--color-pure-white) 80%, transparent);
+}
+
+#navbar[data-scrolled="true"] #nav-logo {
+	color: var(--color-coral-horizon-ink);
+}
+
+#navbar[data-scrolled="true"] #nav-logo:hover {
+	color: var(--color-coral-horizon-ink-deep);
+}
+
+#navbar #nav-guides,
+#navbar #nav-checkin-toggle,
+#navbar #nav-contact {
+	color: var(--color-pure-white);
+}
+
+#navbar #nav-guides:hover,
+#navbar #nav-checkin-toggle:hover,
+#navbar #nav-contact:hover {
+	color: color-mix(in srgb, var(--color-pure-white) 80%, transparent);
+}
+
+#navbar[data-scrolled="true"] #nav-guides,
+#navbar[data-scrolled="true"] #nav-checkin-toggle,
+#navbar[data-scrolled="true"] #nav-contact {
+	color: var(--color-slate-body);
+}
+
+#navbar[data-scrolled="true"] #nav-guides:hover,
+#navbar[data-scrolled="true"] #nav-checkin-toggle:hover,
+#navbar[data-scrolled="true"] #nav-contact:hover {
+	color: var(--color-salguero-sunset-rose-deep);
+}
+
+#navbar #lang-toggle {
+	background-color: color-mix(
+		in srgb,
+		var(--color-pure-white) 20%,
+		transparent
+	);
+	color: var(--color-pure-white);
+	backdrop-filter: blur(4px);
+}
+
+#navbar #lang-toggle:hover {
+	background-color: color-mix(
+		in srgb,
+		var(--color-pure-white) 30%,
+		transparent
+	);
+}
+
+#navbar[data-scrolled="true"] #lang-toggle {
+	background-color: var(--color-slate-surface);
+	color: var(--color-slate-ink);
+	backdrop-filter: none;
+}
+
+#navbar[data-scrolled="true"] #lang-toggle:hover {
+	background-color: var(--color-slate-border);
+}
+
+#navbar #mobile-nav-toggle {
+	color: var(--color-pure-white);
+}
+
+#navbar #mobile-nav-toggle:hover {
+	background-color: color-mix(
+		in srgb,
+		var(--color-pure-white) 20%,
+		transparent
+	);
+}
+
+#navbar[data-scrolled="true"] #mobile-nav-toggle {
+	color: var(--color-slate-ink);
+}
+
+#navbar[data-scrolled="true"] #mobile-nav-toggle:hover {
+	background-color: var(--color-slate-surface);
+}
+
+#nav-checkin-toggle[aria-expanded="true"] .ovf-checkin-chevron {
+	transform: rotate(180deg);
+}
+
+/* Non-color active destination indicators for aria-current="page" (#329) */
+#navbar #nav-logo[aria-current="page"],
+#navbar #nav-guides[aria-current="page"],
+#navbar #nav-contact[aria-current="page"],
+#navbar #nav-checkin-toggle[data-active="true"] {
+	position: relative;
+	font-weight: 700;
+}
+
+#navbar #nav-logo[aria-current="page"]::after,
+#navbar #nav-guides[aria-current="page"]::after,
+#navbar #nav-contact[aria-current="page"]::after,
+#navbar #nav-checkin-toggle[data-active="true"]::after {
+	content: "";
+	position: absolute;
+	inset-inline: 0.5rem;
+	inset-block-end: 0.375rem;
+	block-size: 0;
+	border-block-end: 2px solid currentColor;
+	border-radius: 9999px;
+	pointer-events: none;
+}
+
+#navbar #nav-logo[aria-current="page"]::after {
+	inset-inline: 0;
+}
+
+#navbar[data-scrolled="true"] #nav-guides[aria-current="page"],
+#navbar[data-scrolled="true"] #nav-contact[aria-current="page"],
+#navbar[data-scrolled="true"] #nav-checkin-toggle[data-active="true"] {
+	color: var(--color-coral-horizon-ink);
+}
+
+#nav-checkin-menu a[aria-current="page"],
+#mobile-nav-drawer a[aria-current="page"] {
+	background-color: var(--color-coral-wash);
+	color: var(--color-coral-horizon-ink);
+	font-weight: 700;
+	border-inline-start: 3px solid var(--color-coral-horizon-ink);
+}
+
+@media (forced-colors: active) {
+	#navbar #nav-logo[aria-current="page"]::after,
+	#navbar #nav-guides[aria-current="page"]::after,
+	#navbar #nav-contact[aria-current="page"]::after,
+	#navbar #nav-checkin-toggle[data-active="true"]::after {
+		border-block-end-color: LinkText;
+	}
+
+	#nav-checkin-menu a[aria-current="page"],
+	#mobile-nav-drawer a[aria-current="page"] {
+		border-inline-start-color: LinkText;
+	}
+}
+
 .ovf-compare-wrapper {
 	container-type: inline-size;
 }

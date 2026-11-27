@@ -86,88 +86,18 @@ function buildSafeAirbnbBookingUrl(rawUrl, checkInDate, checkOutDate) {
 	}
 }
 
-// Simple scroll effect for navbar
+// State-driven scroll effect for navbar (#329)
 function syncNavbarScrollState() {
 	const nav = document.getElementById("navbar");
-	const logo = document.getElementById("nav-logo");
-	const toggle = document.getElementById("lang-toggle");
-	const guides = document.getElementById("nav-guides");
-	const contact = document.getElementById("nav-contact");
-	const mobileMenuToggle = document.getElementById("mobile-nav-toggle");
-	if (!nav || !logo || !toggle) return;
-
-	if (window.scrollY > 50) {
-		nav.classList.add("bg-white/90", "backdrop-blur-md", "shadow-sm", "py-3");
-		nav.classList.remove("bg-transparent", "py-5");
-		logo.classList.add(
-			"text-coral-horizon-ink",
-			"hover:text-coral-horizon-ink-deep",
-		);
-		logo.classList.remove("text-white", "hover:text-white/80");
-		toggle.classList.add(
-			"bg-slate-100",
-			"hover:bg-slate-200",
-			"text-slate-700",
-		);
-		toggle.classList.remove(
-			"bg-white/20",
-			"hover:bg-white/30",
-			"text-white",
-			"backdrop-blur-sm",
-		);
-		if (guides) {
-			guides.classList.add("text-slate-600", "hover:text-rose-700");
-			guides.classList.remove("text-white", "hover:text-white/80");
-		}
-		if (contact) {
-			contact.classList.add("text-slate-600", "hover:text-rose-700");
-			contact.classList.remove("text-white", "hover:text-white/80");
-		}
-		if (mobileMenuToggle) {
-			mobileMenuToggle.classList.add("text-slate-700", "hover:bg-slate-100");
-			mobileMenuToggle.classList.remove("text-white", "hover:bg-white/20");
-		}
-	} else {
-		nav.classList.remove(
-			"bg-white/90",
-			"backdrop-blur-md",
-			"shadow-sm",
-			"py-3",
-		);
-		nav.classList.add("bg-transparent", "py-5");
-		logo.classList.remove(
-			"text-coral-horizon-ink",
-			"hover:text-coral-horizon-ink-deep",
-		);
-		logo.classList.add("text-white", "hover:text-white/80");
-		toggle.classList.remove(
-			"bg-slate-100",
-			"hover:bg-slate-200",
-			"text-slate-700",
-		);
-		toggle.classList.add(
-			"bg-white/20",
-			"hover:bg-white/30",
-			"text-white",
-			"backdrop-blur-sm",
-		);
-		if (guides) {
-			guides.classList.remove("text-slate-600", "hover:text-rose-700");
-			guides.classList.add("text-white", "hover:text-white/80");
-		}
-		if (contact) {
-			contact.classList.remove("text-slate-600", "hover:text-rose-700");
-			contact.classList.add("text-white", "hover:text-white/80");
-		}
-		if (mobileMenuToggle) {
-			mobileMenuToggle.classList.remove("text-slate-700", "hover:bg-slate-100");
-			mobileMenuToggle.classList.add("text-white", "hover:bg-white/20");
-		}
-	}
+	if (!nav || typeof nav.setAttribute !== "function") return;
+	nav.setAttribute("data-scrolled", window.scrollY > 50 ? "true" : "false");
 }
 
 window.addEventListener("scroll", syncNavbarScrollState);
 document.addEventListener("DOMContentLoaded", syncNavbarScrollState);
+
+let closeOpenLangDropdown = null;
+let closeOpenCheckinMenu = null;
 
 // Delegated Matomo CTA tracking for Destination Guide -> Property links (#311)
 document.addEventListener("click", (e) => {
@@ -247,6 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function openLangDropdown() {
+		if (typeof closeOpenCheckinMenu === "function") {
+			closeOpenCheckinMenu(false);
+		}
 		dropdownMenu.classList.remove("hidden", "opacity-0", "invisible");
 		dropdownMenu.classList.add("opacity-100", "visible");
 		if (langToggle) {
@@ -264,6 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 	}
+
+	closeOpenLangDropdown = closeLangDropdown;
 
 	const handleToggleClick = (e) => {
 		if (e && typeof e.stopPropagation === "function") {
@@ -327,6 +262,131 @@ document.addEventListener("DOMContentLoaded", () => {
 			!langToggleGroup.contains(relatedTarget)
 		) {
 			closeLangDropdown(false);
+		}
+	});
+});
+
+// Accessible Desktop Staying-Guest Check-in Disclosure Menu (#329)
+document.addEventListener("DOMContentLoaded", () => {
+	const checkinGroup = document.getElementById("nav-checkin-group");
+	const checkinToggle = document.getElementById("nav-checkin-toggle");
+	const checkinMenu = document.getElementById("nav-checkin-menu");
+	if (!checkinGroup || !checkinToggle || !checkinMenu) return;
+
+	const openLabel = translateKey(
+		"navStayingGuestsOpenAriaLabel",
+		{},
+		checkinToggle.getAttribute("aria-label") || "",
+	);
+	const closeLabel = translateKey(
+		"navStayingGuestsCloseAriaLabel",
+		{},
+		openLabel,
+	);
+
+	function isCheckinMenuOpen() {
+		return (
+			checkinToggle.getAttribute("aria-expanded") === "true" &&
+			!checkinMenu.classList.contains("hidden")
+		);
+	}
+
+	function openCheckinMenu() {
+		if (typeof closeOpenLangDropdown === "function") {
+			closeOpenLangDropdown(false);
+		}
+		checkinMenu.classList.remove("hidden");
+		if (typeof checkinMenu.removeAttribute === "function") {
+			checkinMenu.removeAttribute("hidden");
+		}
+		checkinMenu.hidden = false;
+		checkinToggle.setAttribute("aria-expanded", "true");
+		if (closeLabel) {
+			checkinToggle.setAttribute("aria-label", closeLabel);
+		}
+	}
+
+	function closeCheckinMenu(restoreFocus = false) {
+		checkinMenu.classList.add("hidden");
+		if (typeof checkinMenu.setAttribute === "function") {
+			checkinMenu.setAttribute("hidden", "");
+		}
+		checkinMenu.hidden = true;
+		checkinToggle.setAttribute("aria-expanded", "false");
+		if (openLabel) {
+			checkinToggle.setAttribute("aria-label", openLabel);
+		}
+		if (restoreFocus && typeof checkinToggle.focus === "function") {
+			checkinToggle.focus();
+		}
+	}
+
+	closeOpenCheckinMenu = closeCheckinMenu;
+
+	checkinToggle.addEventListener("click", (e) => {
+		if (e && typeof e.stopPropagation === "function") {
+			e.stopPropagation();
+		}
+		if (isCheckinMenuOpen()) {
+			closeCheckinMenu(false);
+		} else {
+			openCheckinMenu();
+		}
+	});
+
+	if (typeof checkinMenu.querySelectorAll === "function") {
+		const menuLinks = checkinMenu.querySelectorAll("a");
+		menuLinks.forEach((link) => {
+			link.addEventListener("click", () => {
+				closeCheckinMenu(false);
+			});
+		});
+	}
+
+	function isInsideCheckinControl(node) {
+		if (!node) return false;
+		return (
+			node === checkinGroup ||
+			node === checkinToggle ||
+			node === checkinMenu ||
+			(typeof checkinGroup.contains === "function" &&
+				checkinGroup.contains(node)) ||
+			(typeof checkinToggle.contains === "function" &&
+				checkinToggle.contains(node)) ||
+			(typeof checkinMenu.contains === "function" && checkinMenu.contains(node))
+		);
+	}
+
+	document.addEventListener("click", (e) => {
+		const target = e && e.target ? e.target : null;
+		if (isCheckinMenuOpen() && !isInsideCheckinControl(target)) {
+			closeCheckinMenu(false);
+		}
+	});
+
+	const handleCheckinKeydown = (e) => {
+		if (e && (e.key === "Escape" || e.key === "Esc")) {
+			if (isCheckinMenuOpen()) {
+				if (typeof e.preventDefault === "function") {
+					e.preventDefault();
+				}
+				closeCheckinMenu(true);
+			}
+		}
+	};
+
+	document.addEventListener("keydown", handleCheckinKeydown);
+	checkinToggle.addEventListener("keydown", handleCheckinKeydown);
+	checkinMenu.addEventListener("keydown", handleCheckinKeydown);
+
+	checkinGroup.addEventListener("focusout", (e) => {
+		const relatedTarget = e && e.relatedTarget ? e.relatedTarget : null;
+		if (
+			isCheckinMenuOpen() &&
+			relatedTarget &&
+			!isInsideCheckinControl(relatedTarget)
+		) {
+			closeCheckinMenu(false);
 		}
 	});
 });

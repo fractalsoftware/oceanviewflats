@@ -816,6 +816,10 @@ export const dict = {
 		footerPropertiesLabel: "Properties",
 		footerStayingGuestsLabel: "Staying Guests",
 		footerLegalLabel: "Legal & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel: "Check-in — Guest Registry & Guest Guide",
+		navStayingGuestsCloseAriaLabel: "Close Check-in menu",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Already booked?",
 		homeHeroReturningGuestRegistry: "Guest Registry",
@@ -1669,6 +1673,11 @@ export const dict = {
 		footerPropertiesLabel: "Propiedades",
 		footerStayingGuestsLabel: "Huéspedes Confirmados",
 		footerLegalLabel: "Legal y RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Registro de Huéspedes y Guía del Huésped",
+		navStayingGuestsCloseAriaLabel: "Cerrar menú de Check-in",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "¿Ya tienes reserva?",
 		homeHeroReturningGuestRegistry: "Registro de Huéspedes",
@@ -2531,6 +2540,11 @@ export const dict = {
 		footerPropertiesLabel: "Appartements",
 		footerStayingGuestsLabel: "Voyageurs Confirmés",
 		footerLegalLabel: "Mentions Légales & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Arrivée",
+		navStayingGuestsOpenAriaLabel:
+			"Arrivée — Registre des Voyageurs et Guide de l'Invité",
+		navStayingGuestsCloseAriaLabel: "Fermer le menu Arrivée",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Déjà réservé ?",
 		homeHeroReturningGuestRegistry: "Registre des Voyageurs",
@@ -3382,6 +3396,11 @@ export const dict = {
 		footerPropertiesLabel: "Appartamenti",
 		footerStayingGuestsLabel: "Ospiti Confermati",
 		footerLegalLabel: "Note Legali e RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Registro degli Ospiti e Guida dell'Ospite",
+		navStayingGuestsCloseAriaLabel: "Chiudi il menu Check-in",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Hai già prenotato?",
 		homeHeroReturningGuestRegistry: "Registro degli Ospiti",
@@ -4241,6 +4260,11 @@ export const dict = {
 		footerPropertiesLabel: "Unterkünfte",
 		footerStayingGuestsLabel: "Bestätigte Gäste",
 		footerLegalLabel: "Rechtliches & RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "Check-in",
+		navStayingGuestsOpenAriaLabel:
+			"Check-in — Gästeregistrierung und Gäste-Guide",
+		navStayingGuestsCloseAriaLabel: "Check-in-Menü schließen",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "Bereits gebucht?",
 		homeHeroReturningGuestRegistry: "Gästeregistrierung",
@@ -5084,6 +5108,11 @@ export const dict = {
 		footerPropertiesLabel: "物件一覧",
 		footerStayingGuestsLabel: "ご予約済みのお客様",
 		footerLegalLabel: "法的情報・RNT",
+		// #329 desktop staying-guest check-in disclosure
+		navStayingGuests: "チェックイン",
+		navStayingGuestsOpenAriaLabel:
+			"チェックイン — 宿泊者名簿登録・ゲストガイド",
+		navStayingGuestsCloseAriaLabel: "チェックインメニューを閉じる",
 		// #330 hero returning-Guest check-in cue
 		homeHeroReturningGuestPrompt: "ご予約済みですか？",
 		homeHeroReturningGuestRegistry: "宿泊者名簿登録",

@@ -42,6 +42,7 @@ export default function Guide({ lang, assetPrefix = "../" }: AppProps) {
 				lang={lang}
 				showBookButton={false}
 				assetPrefix={assetPrefix}
+				currentPage="guide"
 			/>
 
 			{/* Hero Header */}

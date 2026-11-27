@@ -627,7 +627,7 @@ test("#311 Navigation, Footer, Home, and Property pages provide 1-click relative
 	}
 });
 
-test("#311 main.js syncs #nav-guides on scroll and tracks Destination Guide -> Property CTA clicks in Matomo safely", () => {
+test("#311 #329 main.js syncs #navbar data-scrolled on scroll and tracks Destination Guide -> Property CTA clicks in Matomo safely", () => {
 	const mainJsSource = fs.readFileSync(
 		path.join(PUBLIC_DIR, "js", "main.js"),
 		"utf-8",
@@ -635,45 +635,15 @@ test("#311 main.js syncs #nav-guides on scroll and tracks Destination Guide -> P
 
 	type Listener = (event?: Record<string, unknown>) => void;
 
-	const createClassList = (initial: string[]) => {
-		const set = new Set<string>(initial);
-		return {
-			add: (...cls: string[]) => {
-				for (const c of cls) set.add(c);
-			},
-			remove: (...cls: string[]) => {
-				for (const c of cls) set.delete(c);
-			},
-			contains: (cls: string) => set.has(cls),
-		};
+	const navAttrs: Record<string, string> = { "data-scrolled": "false" };
+	const nav = {
+		getAttribute: (name: string) => navAttrs[name] ?? null,
+		setAttribute: (name: string, value: string) => {
+			navAttrs[name] = value;
+		},
 	};
 
-	const nav = { classList: createClassList(["bg-transparent", "py-5"]) };
-	const logo = {
-		classList: createClassList(["text-white", "hover:text-white/80"]),
-	};
-	const toggle = {
-		classList: createClassList([
-			"bg-white/20",
-			"hover:bg-white/30",
-			"text-white",
-			"backdrop-blur-sm",
-		]),
-	};
-	const guides = {
-		classList: createClassList(["text-white", "hover:text-white/80"]),
-	};
-	const contact = {
-		classList: createClassList(["text-white", "hover:text-white/80"]),
-	};
-
-	const elementsById = new Map<string, unknown>([
-		["navbar", nav],
-		["nav-logo", logo],
-		["lang-toggle", toggle],
-		["nav-guides", guides],
-		["nav-contact", contact],
-	]);
+	const elementsById = new Map<string, unknown>([["navbar", nav]]);
 
 	const winListeners: Record<string, Listener[]> = {};
 	const docListeners: Record<string, Listener[]> = {};
@@ -714,18 +684,15 @@ test("#311 main.js syncs #nav-guides on scroll and tracks Destination Guide -> P
 	vm.createContext(sandbox);
 	vm.runInContext(mainJsSource, sandbox);
 
-	// 1. Scroll down > 50px -> #nav-guides transitions to dark scrolled palette
+	// 1. Scroll down > 50px -> #navbar transitions to data-scrolled="true"
 	sandbox.window.scrollY = 120;
 	for (const fn of winListeners.scroll || []) fn();
-	assert.equal(guides.classList.contains("text-slate-600"), true);
-	assert.equal(guides.classList.contains("hover:text-rose-700"), true);
-	assert.equal(guides.classList.contains("text-white"), false);
+	assert.equal(nav.getAttribute("data-scrolled"), "true");
 
-	// 2. Scroll back to top -> #nav-guides restores white top palette
+	// 2. Scroll back to top -> #navbar restores data-scrolled="false"
 	sandbox.window.scrollY = 0;
 	for (const fn of winListeners.scroll || []) fn();
-	assert.equal(guides.classList.contains("text-white"), true);
-	assert.equal(guides.classList.contains("text-slate-600"), false);
+	assert.equal(nav.getAttribute("data-scrolled"), "false");
 
 	// 3. Delegated click on nested child inside Destination Guide CTA pushes Matomo trackEvent
 	const ctaAnchor = {

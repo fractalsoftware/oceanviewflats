@@ -35,6 +35,7 @@ export default function Oceanview1606({ lang, assetPrefix = "./" }: AppProps) {
 				isScrolled={isScrolled}
 				lang={lang}
 				assetPrefix={assetPrefix}
+				currentPage="1606"
 			/>
 			<Hero lang={lang} propertyId="1606" assetPrefix={assetPrefix} />
 			<main id="main-content" tabIndex={-1}>
