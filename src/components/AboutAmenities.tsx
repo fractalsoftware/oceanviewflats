@@ -173,6 +173,7 @@ export const AboutAmenities = ({
 							href={DATA_CONTROLLER.whatsappHref}
 							target="_blank"
 							rel="noopener noreferrer"
+							data-analytics-whatsapp="property_host"
 							className={theme.aboutHostWhatsAppBtn}
 						>
 							<MessageCircle

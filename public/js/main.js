@@ -170,6 +170,259 @@ function bindDisclosure({ group, toggle, panel }) {
 	return { isOpen, open, close };
 }
 
+// Analytics facade helpers (null-safe for isolated unit tests without analytics.js)
+const ANALYTICS_MACHINE_CODE_RE = /^[a-z0-9][a-z0-9_-]{1,63}$/i;
+
+function getAnalyticsFacade() {
+	return window.ovfAnalytics && typeof window.ovfAnalytics === "object"
+		? window.ovfAnalytics
+		: null;
+}
+
+function trackAnalyticsEvent(category, action, name, value) {
+	const analytics = getAnalyticsFacade();
+	if (!analytics || typeof analytics.trackEvent !== "function") return false;
+	return analytics.trackEvent(category, action, name, value);
+}
+
+function trackAnalyticsGoal(goalKey, customRevenue) {
+	const analytics = getAnalyticsFacade();
+	if (!analytics || typeof analytics.trackGoal !== "function") return false;
+	const goalId =
+		analytics.GOALS && typeof analytics.GOALS[goalKey] === "number"
+			? analytics.GOALS[goalKey]
+			: goalKey;
+	return analytics.trackGoal(goalId, customRevenue);
+}
+
+function advanceAnalyticsFunnelStage(stage) {
+	const analytics = getAnalyticsFacade();
+	if (!analytics || typeof analytics.advanceFunnelStage !== "function") {
+		return false;
+	}
+	return analytics.advanceFunnelStage(stage);
+}
+
+function sanitizeAnalyticsSlug(raw, fallback) {
+	if (typeof raw !== "string") return fallback;
+	const slug = raw
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "_")
+		.replace(/^_+|_+$/g, "")
+		.slice(0, 64);
+	return slug || fallback;
+}
+
+function normalizeKnownServerCode(rawCode) {
+	if (typeof rawCode !== "string") return null;
+	const trimmed = rawCode.trim();
+	if (!ANALYTICS_MACHINE_CODE_RE.test(trimmed)) return null;
+	const slug = sanitizeAnalyticsSlug(trimmed, "");
+	if (!slug) return null;
+	if (slug.includes("captcha")) return "captcha_error";
+	if (slug.includes("privacy") || slug.includes("consent")) {
+		return "privacy_consent";
+	}
+	if (
+		slug.includes("conflict") ||
+		slug.includes("overlap") ||
+		slug === "dates_unavailable"
+	) {
+		return "date_conflict";
+	}
+	if (slug.includes("rate_limit") || slug === "too_many_requests") {
+		return "rate_limited";
+	}
+	if (slug.includes("min_stay") || slug.includes("minimum_stay")) {
+		return "min_stay_error";
+	}
+	return slug;
+}
+
+function classifyLocalizedErrorText(rawText) {
+	if (typeof rawText !== "string" || !rawText.trim()) return null;
+	const text = rawText.toLowerCase();
+	if (
+		text.includes("captcha") ||
+		text.includes("security check") ||
+		text.includes("security verification") ||
+		text.includes("verification challenge") ||
+		text.includes("comprobación de seguridad") ||
+		text.includes("verificación de seguridad") ||
+		text.includes("desafío de verificación") ||
+		text.includes("vérification de sécurité") ||
+		text.includes("défi de vérification") ||
+		text.includes("question de sécurité") ||
+		text.includes("verifica di sicurezza") ||
+		text.includes("sotto-verifica") ||
+		text.includes("sfida di verifica") ||
+		text.includes("sicherheitsprüfung") ||
+		text.includes("sicherheitsfrage") ||
+		text.includes("セキュリティ") ||
+		text.includes("認証要請")
+	) {
+		return "captcha_error";
+	}
+	if (
+		text.includes("privacy") ||
+		text.includes("personal data") ||
+		text.includes("datos personales") ||
+		text.includes("données personnelles") ||
+		text.includes("dati personali") ||
+		text.includes("personenbezogener daten") ||
+		text.includes("個人情報")
+	) {
+		return "privacy_consent";
+	}
+	if (
+		text.includes("overlap") ||
+		text.includes("airbnb") ||
+		text.includes("already locked") ||
+		text.includes("maintenance") ||
+		text.includes("conflict") ||
+		text.includes("coinciden") ||
+		text.includes("ya están reservadas") ||
+		text.includes("chevauchent") ||
+		text.includes("déjà bloquées") ||
+		text.includes("coincidono") ||
+		text.includes("già bloccate") ||
+		text.includes("überschneiden") ||
+		text.includes("blockiert") ||
+		text.includes("重複") ||
+		text.includes("既に直接予約")
+	) {
+		return "date_conflict";
+	}
+	if (
+		text.includes("minimum stay") ||
+		text.includes("estadía mínima") ||
+		text.includes("séjour minimum") ||
+		text.includes("soggiorno minimo") ||
+		text.includes("mindestaufenthalt") ||
+		text.includes("最低宿泊日数")
+	) {
+		return "min_stay_error";
+	}
+	if (
+		text.includes("too many") ||
+		text.includes("rate limit") ||
+		text.includes("demasiadas") ||
+		text.includes("trop de") ||
+		text.includes("troppe") ||
+		text.includes("zu viele") ||
+		text.includes("多すぎ")
+	) {
+		return "rate_limited";
+	}
+	return null;
+}
+
+function classifyHoldFailureCode(response, result) {
+	const structuredCode =
+		result && typeof result === "object"
+			? normalizeKnownServerCode(result.error_code || result.code || "")
+			: null;
+	if (structuredCode) return structuredCode;
+
+	const status =
+		response && typeof response.status === "number" ? response.status : 0;
+	if (status === 409) return "date_conflict";
+	if (status === 429) return "rate_limited";
+	if (status === 422) return "min_stay_error";
+	if (status >= 500) return "server_error";
+
+	const localizedClass = classifyLocalizedErrorText(
+		result && typeof result === "object"
+			? result.error || result.message || ""
+			: "",
+	);
+	if (localizedClass) return localizedClass;
+
+	return "validation_error";
+}
+
+function classifyPaymentFailureCode(response, result) {
+	if (result && typeof result === "object") {
+		if (
+			typeof result.status_detail === "string" &&
+			ANALYTICS_MACHINE_CODE_RE.test(result.status_detail.trim())
+		) {
+			return sanitizeAnalyticsSlug(result.status_detail, "payment_declined");
+		}
+		const structuredCode = normalizeKnownServerCode(
+			result.error_code || result.code || "",
+		);
+		if (structuredCode) return structuredCode;
+		if (result.status === "rejected") {
+			return "payment_declined";
+		}
+	}
+
+	const status =
+		response && typeof response.status === "number" ? response.status : 0;
+	if (status === 409) return "date_conflict";
+	if (status === 429) return "rate_limited";
+	if (status === 422) return "min_stay_error";
+	if (status >= 500) return "server_error";
+
+	const localizedClass = classifyLocalizedErrorText(
+		result && typeof result === "object"
+			? result.error || result.message || ""
+			: "",
+	);
+	if (localizedClass) return localizedClass;
+
+	return "payment_declined";
+}
+
+function classifyBrickErrorCode(error) {
+	if (error && typeof error === "object") {
+		const candidate =
+			typeof error.cause === "string"
+				? error.cause.trim()
+				: typeof error.code === "string"
+					? error.code.trim()
+					: "";
+		if (candidate && ANALYTICS_MACHINE_CODE_RE.test(candidate)) {
+			return sanitizeAnalyticsSlug(candidate, "brick_init_error");
+		}
+	}
+	return "brick_init_error";
+}
+
+function normalizePaymentMethod(selectedPaymentMethod, formData) {
+	const rawSelected =
+		typeof selectedPaymentMethod === "string"
+			? selectedPaymentMethod.trim().toLowerCase()
+			: "";
+	const rawFormMethod =
+		formData && typeof formData.payment_method_id === "string"
+			? formData.payment_method_id.trim().toLowerCase()
+			: "";
+
+	if (rawSelected === "pse" || rawFormMethod === "pse") return "pse";
+	if (rawSelected === "efecty" || rawFormMethod === "efecty") return "efecty";
+	if (rawSelected === "credit_card") return "credit_card";
+	if (rawSelected === "debit_card") return "debit_card";
+	if (rawSelected === "bank_transfer") {
+		return rawFormMethod && ANALYTICS_MACHINE_CODE_RE.test(rawFormMethod)
+			? sanitizeAnalyticsSlug(rawFormMethod, "bank_transfer")
+			: "bank_transfer";
+	}
+	if (rawSelected === "ticket") {
+		return rawFormMethod && ANALYTICS_MACHINE_CODE_RE.test(rawFormMethod)
+			? sanitizeAnalyticsSlug(rawFormMethod, "ticket")
+			: "ticket";
+	}
+
+	const candidate = rawSelected || rawFormMethod;
+	if (candidate && ANALYTICS_MACHINE_CODE_RE.test(candidate)) {
+		return sanitizeAnalyticsSlug(candidate, "unknown");
+	}
+	return "unknown";
+}
+
 // Delegated Matomo CTA tracking for Destination Guide -> Property links (#311, #345)
 // and Homepage / Discovery CTAs (#345)
 document.addEventListener("click", (e) => {
@@ -209,13 +462,8 @@ document.addEventListener("click", (e) => {
 	if (discoveryCta && typeof discoveryCta.getAttribute === "function") {
 		const placement = discoveryCta.getAttribute("data-analytics-cta");
 		const ctaTarget = discoveryCta.getAttribute("data-analytics-target");
-		if (
-			placement &&
-			ctaTarget &&
-			window.ovfAnalytics &&
-			typeof window.ovfAnalytics.trackEvent === "function"
-		) {
-			window.ovfAnalytics.trackEvent(
+		if (placement && ctaTarget) {
+			trackAnalyticsEvent(
 				"Discovery",
 				"CTA Click",
 				`${placement}:${ctaTarget}`,
@@ -261,16 +509,40 @@ document.addEventListener("click", (e) => {
 
 			if (!isOpen || wasOpen) return;
 
-			if (
-				window.ovfAnalytics &&
-				typeof window.ovfAnalytics.trackEvent === "function"
-			) {
-				window.ovfAnalytics.trackEvent("FAQ", "Open", faqId);
-			}
+			trackAnalyticsEvent("FAQ", "Open", faqId);
 		},
 		true,
 	);
 })();
+
+// Unified delegated Matomo tracking for public WhatsApp CTAs (Goal 4) (#343)
+document.addEventListener("click", (e) => {
+	const target = e?.target ?? null;
+	if (!target || typeof target.closest !== "function") return;
+	const whatsappLink = target.closest("[data-analytics-whatsapp]");
+	if (!whatsappLink || typeof whatsappLink.getAttribute !== "function") return;
+	const placement = sanitizeAnalyticsSlug(
+		whatsappLink.getAttribute("data-analytics-whatsapp"),
+		"",
+	);
+	if (!placement) return;
+	trackAnalyticsEvent("Contact", "WhatsApp Click", placement);
+	trackAnalyticsGoal("WHATSAPP_CONTACT");
+});
+
+// Delegated Matomo tracking for Airbnb review-verification links (non-Goal trust event) (#343)
+document.addEventListener("click", (e) => {
+	const target = e?.target ?? null;
+	if (!target || typeof target.closest !== "function") return;
+	const reviewLink = target.closest("[data-analytics-airbnb-review]");
+	if (!reviewLink || typeof reviewLink.getAttribute !== "function") return;
+	const placement = sanitizeAnalyticsSlug(
+		reviewLink.getAttribute("data-analytics-airbnb-review"),
+		"",
+	);
+	if (!placement) return;
+	trackAnalyticsEvent("Trust", "Airbnb Review Verification Click", placement);
+});
 
 // Language Dropdown Mobile & Keyboard Toggle
 document.addEventListener("DOMContentLoaded", () => {
@@ -1438,6 +1710,32 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function resolveAuthoritativeTotalCop(explicitAmount) {
+		if (
+			typeof explicitAmount === "number" &&
+			Number.isFinite(explicitAmount) &&
+			explicitAmount >= 0
+		) {
+			return Math.round(explicitAmount);
+		}
+		if (
+			lastQuoteDetails &&
+			typeof lastQuoteDetails.totalCOP === "number" &&
+			Number.isFinite(lastQuoteDetails.totalCOP) &&
+			lastQuoteDetails.totalCOP >= 0
+		) {
+			return Math.round(lastQuoteDetails.totalCOP);
+		}
+		const hiddenTotalEl = document.getElementById("form-total-price-cop");
+		if (hiddenTotalEl && hiddenTotalEl.value) {
+			const parsed = parseFloat(hiddenTotalEl.value);
+			if (Number.isFinite(parsed) && parsed >= 0) {
+				return Math.round(parsed);
+			}
+		}
+		return undefined;
+	}
+
 	async function initPaymentBrick(
 		publicKey,
 		totalAmount,
@@ -1450,6 +1748,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				await loadMercadoPagoSDK();
 			} catch (err) {
 				console.error("Failed to load MercadoPago SDK:", err);
+				trackAnalyticsEvent(
+					"Booking Funnel",
+					"Payment Brick Error",
+					"sdk_load_error",
+				);
 				const msgBox = document.getElementById("booking-form-message");
 				if (msgBox) {
 					msgBox.textContent = t(
@@ -1462,7 +1765,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				const btnSubmit = document.getElementById("btn-direct-submit");
 				const btnSubmitText = document.getElementById("btn-direct-submit-text");
-				const formEl = document.getElementById("direct-booking-form");
 				const msgSubmitDefault = t("dbSubmit", {}, "Send Booking Request");
 				if (btnSubmit) btnSubmit.disabled = false;
 				if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
@@ -1470,29 +1772,37 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 
-		if (!mpInstance) {
-			mpInstance = new window.MercadoPago(publicKey, { locale: "es-CO" });
-		}
-
-		if (paymentBrickController) {
-			try {
-				await paymentBrickController.unmount();
-			} catch (unmountErr) {
-				console.warn("Unmount failed or container already empty:", unmountErr);
-			}
-		}
-
-		const bricksBuilder = mpInstance.bricks();
-		const container = document.getElementById("payment-brick-container");
-		if (container) {
-			container.classList.remove("hidden");
-		}
-
-		const propertyId = window.location.pathname.includes("1606")
-			? "1606"
-			: "1707";
+		const brickPropertyId =
+			pageConfig.analytics &&
+			(pageConfig.analytics.propertyId === "1606" ||
+				pageConfig.analytics.propertyId === "1707")
+				? pageConfig.analytics.propertyId
+				: window.location.pathname.includes("1606")
+					? "1606"
+					: "1707";
 
 		try {
+			if (!mpInstance) {
+				mpInstance = new window.MercadoPago(publicKey, { locale: "es-CO" });
+			}
+
+			if (paymentBrickController) {
+				try {
+					await paymentBrickController.unmount();
+				} catch (unmountErr) {
+					console.warn(
+						"Unmount failed or container already empty:",
+						unmountErr,
+					);
+				}
+			}
+
+			const bricksBuilder = mpInstance.bricks();
+			const container = document.getElementById("payment-brick-container");
+			if (container) {
+				container.classList.remove("hidden");
+			}
+
 			paymentBrickController = await bricksBuilder.create(
 				"payment",
 				"payment-brick-container",
@@ -1526,6 +1836,12 @@ document.addEventListener("DOMContentLoaded", () => {
 					callbacks: {
 						onReady: () => {
 							console.log("Payment Brick mounted successfully.");
+							advanceAnalyticsFunnelStage("payment_brick_ready");
+							trackAnalyticsEvent(
+								"Booking Funnel",
+								"Payment Brick Ready",
+								brickPropertyId,
+							);
 							const btnSubmit = document.getElementById("btn-direct-submit");
 							if (btnSubmit) btnSubmit.style.display = "none"; // Hide old submit button permanently
 						},
@@ -1537,7 +1853,8 @@ document.addEventListener("DOMContentLoaded", () => {
 									reservationUid,
 									guestEmail,
 									guestName,
-									propertyId,
+									brickPropertyId,
+									totalAmount,
 								)
 									.then(resolve)
 									.catch(reject);
@@ -1545,12 +1862,22 @@ document.addEventListener("DOMContentLoaded", () => {
 						},
 						onError: (error) => {
 							console.error("Payment Brick initialization error:", error);
+							trackAnalyticsEvent(
+								"Booking Funnel",
+								"Payment Brick Error",
+								classifyBrickErrorCode(error),
+							);
 						},
 					},
 				},
 			);
 		} catch (brickErr) {
 			console.error("Error creating Payment Brick:", brickErr);
+			trackAnalyticsEvent(
+				"Booking Funnel",
+				"Payment Brick Error",
+				classifyBrickErrorCode(brickErr),
+			);
 		}
 	}
 
@@ -1561,7 +1888,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		guestEmail,
 		guestName,
 		propertyId,
+		authoritativeTotalAmount,
 	) {
+		const paymentMethod = normalizePaymentMethod(
+			selectedPaymentMethod,
+			formData,
+		);
+		advanceAnalyticsFunnelStage("payment_submitted");
+		trackAnalyticsEvent("Booking Funnel", "Payment Submitted", paymentMethod);
+
 		const privacyCheckboxEl = document.getElementById(
 			"booking-privacy-consent",
 		);
@@ -1596,13 +1931,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		bookingPaymentToken = "";
 
 		const msgBox = document.getElementById("booking-form-message");
-		const formEl = document.getElementById("direct-booking-form");
 		const msgDeclined = t(
 			"dbDeclined",
 			{},
 			"Your payment was declined. Please try another payment option or verify your details.",
 		);
 
+		let paymentFailureTracked = false;
 		try {
 			const paymentEndpoint = `${resolveApiBase(pageConfig)}payment.php`;
 			const response = await fetch(paymentEndpoint, {
@@ -1616,17 +1951,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			const result = await response.json();
 
 			if (response.ok && result.success) {
-				// Track Successful Direct Booking Conversion (Goal 5)
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Booking",
-						"Transparent Payment Success",
-						propertyId,
-					]);
-					window._paq.push(["trackGoal", 5]);
-				}
-
 				if (result.reservation_code && typeof sessionStorage !== "undefined") {
 					try {
 						sessionStorage.setItem(
@@ -1692,8 +2016,20 @@ document.addEventListener("DOMContentLoaded", () => {
 						? sanitizeTrustedPaymentUrl(result.external_resource_url)
 						: null;
 
-				// Route dynamically based on status and method
+				// Route dynamically based on status and method, splitting Instant vs Asynchronous Settlement (#343)
 				if (result.status === "approved") {
+					const revenueCop = resolveAuthoritativeTotalCop(
+						authoritativeTotalAmount,
+					);
+					advanceAnalyticsFunnelStage("confirmed");
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Direct Reservation Confirmed",
+						`${propertyId}:${paymentMethod}`,
+						revenueCop,
+					);
+					trackAnalyticsGoal("DIRECT_RESERVATION_CONFIRMED", revenueCop);
+
 					const params = new URLSearchParams({
 						id: String(result.payment_id || ""),
 						code: String(result.reservation_code || ""),
@@ -1701,9 +2037,24 @@ document.addEventListener("DOMContentLoaded", () => {
 					});
 					window.location.href = `${assetPrefix}${successPage}?${params.toString()}`;
 				} else if (safePseUrl) {
+					// Asynchronous Settlement (PSE): emit non-Goal pending event, never Goal 5
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"PSE Redirect Initiated",
+						propertyId,
+					);
 					// Redirection for bank payment authorization (strict HTTPS allowlist)
 					window.location.href = safePseUrl;
-				} else if (selectedPaymentMethod === "efecty") {
+				} else if (
+					selectedPaymentMethod === "efecty" ||
+					paymentMethod === "efecty"
+				) {
+					// Asynchronous Settlement (Cash Voucher): emit non-Goal pending event, never Goal 5
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Cash Voucher Issued",
+						propertyId,
+					);
 					// Redirection to booking-pending page, passing Efecty voucher print parameters
 					const params = new URLSearchParams({
 						id: String(result.payment_id || ""),
@@ -1716,6 +2067,12 @@ document.addEventListener("DOMContentLoaded", () => {
 					});
 					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
 				} else {
+					// Generic Asynchronous Settlement pending fallback: never Goal 5
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Payment Pending",
+						`${propertyId}:${paymentMethod}`,
+					);
 					// Standard pending screen fallback
 					const params = new URLSearchParams({
 						id: String(result.payment_id || ""),
@@ -1725,11 +2082,21 @@ document.addEventListener("DOMContentLoaded", () => {
 					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
 				}
 			} else {
+				const failureCode = classifyPaymentFailureCode(response, result);
+				paymentFailureTracked = true;
+				trackAnalyticsEvent("Booking Funnel", "Payment Failed", failureCode);
 				loadBookingCaptcha();
 				throw new Error(result.error || msgDeclined);
 			}
 		} catch (err) {
 			console.error("Transparent Payment Error:", err);
+			if (!paymentFailureTracked) {
+				trackAnalyticsEvent(
+					"Booking Funnel",
+					"Payment Failed",
+					"network_error",
+				);
+			}
 			if (msgBox) {
 				msgBox.textContent = err.message || msgDeclined;
 				msgBox.className =
@@ -1786,6 +2153,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					msgBox.className =
 						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
 				}
+				trackAnalyticsEvent(
+					"Booking Funnel",
+					"Hold Failed",
+					"validation_error",
+				);
 				return;
 			}
 
@@ -1795,12 +2167,14 @@ document.addEventListener("DOMContentLoaded", () => {
 					msgBox.className =
 						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
 				}
+				trackAnalyticsEvent("Booking Funnel", "Hold Failed", "privacy_consent");
 				return;
 			}
 
 			if (btnSubmit) btnSubmit.disabled = true;
 			if (btnSubmitText) btnSubmitText.textContent = msgVerifying;
 
+			let holdSucceeded = false;
 			try {
 				const formData = new URLSearchParams(new FormData(directFormElement));
 				formData.append("lang", lang || document.documentElement.lang || "en");
@@ -1816,6 +2190,15 @@ document.addEventListener("DOMContentLoaded", () => {
 				const result = await response.json();
 
 				if (response.ok && result.success) {
+					holdSucceeded = true;
+					advanceAnalyticsFunnelStage("hold_created");
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Pending Reservation Created",
+						propertyId,
+					);
+					trackAnalyticsGoal("PENDING_RESERVATION_CREATED");
+
 					if (msgBox) {
 						msgBox.textContent = msgSecured;
 						msgBox.className =
@@ -1840,6 +2223,11 @@ document.addEventListener("DOMContentLoaded", () => {
 						name,
 					);
 				} else {
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Hold Failed",
+						classifyHoldFailureCode(response, result),
+					);
 					if (msgBox) {
 						msgBox.textContent = result.error || msgNetworkError;
 						msgBox.className =
@@ -1851,6 +2239,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			} catch (err) {
 				console.error("Error submitting direct booking inquiry:", err);
+				if (!holdSucceeded) {
+					trackAnalyticsEvent("Booking Funnel", "Hold Failed", "network_error");
+				}
 				if (msgBox) {
 					msgBox.textContent = msgNetworkError;
 					msgBox.className =
@@ -1885,37 +2276,16 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				return;
 			}
-			if (window._paq) {
-				const propId = window.location.pathname.includes("1606")
-					? "1606"
-					: "1707";
-				window._paq.push([
-					"trackEvent",
-					"Booking",
-					"Redirect to Airbnb",
-					propId,
-				]);
-				window._paq.push(["trackGoal", 3]);
-			}
-		});
-	}
-
-	// Matomo Tracking for WhatsApp direct booking click (Goal 4)
-	const btnWhatsapp = document.getElementById("whatsapp-booking-link");
-	if (btnWhatsapp) {
-		btnWhatsapp.addEventListener("click", () => {
-			if (window._paq) {
-				const propId = window.location.pathname.includes("1606")
-					? "1606"
-					: "1707";
-				window._paq.push([
-					"trackEvent",
-					"Contact",
-					"WhatsApp Booking Click",
-					propId,
-				]);
-				window._paq.push(["trackGoal", 4]);
-			}
+			const propId =
+				pageConfig.analytics &&
+				(pageConfig.analytics.propertyId === "1606" ||
+					pageConfig.analytics.propertyId === "1707")
+					? pageConfig.analytics.propertyId
+					: window.location.pathname.includes("1606")
+						? "1606"
+						: "1707";
+			trackAnalyticsEvent("Booking", "Redirect to Airbnb", propId);
+			trackAnalyticsGoal("AIRBNB_REDIRECT");
 		});
 	}
 
@@ -1936,22 +2306,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			: fallback !== undefined
 				? fallback
 				: key;
-
-	// Matomo Tracking for WhatsApp Sidebar Link (Goal 4)
-	const whatsappContactLink = document.getElementById("whatsapp-contact-link");
-	if (whatsappContactLink) {
-		whatsappContactLink.addEventListener("click", () => {
-			if (window._paq) {
-				window._paq.push([
-					"trackEvent",
-					"Contact",
-					"WhatsApp Sidebar Click",
-					"Contact Page",
-				]);
-				window._paq.push(["trackGoal", 4]);
-			}
-		});
-	}
 
 	const btnSubmit = document.getElementById("submit-button");
 	const txtSubmit = document.getElementById("submit-text");

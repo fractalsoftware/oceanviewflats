@@ -347,6 +347,7 @@ export const BookingSection = ({
 								href="https://wa.me/573108155234"
 								target="_blank"
 								rel="noopener noreferrer"
+								data-analytics-whatsapp="property_booking"
 								className="w-full flex items-center justify-center space-x-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 py-3 rounded-xl font-semibold transition-colors mb-3 text-sm"
 							>
 								<svg

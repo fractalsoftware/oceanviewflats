@@ -84,6 +84,7 @@ export const ReviewsSection = ({
 						href={theme.airbnbUrl}
 						target="_blank"
 						rel="noopener noreferrer"
+						data-analytics-airbnb-review="property_reviews"
 						className={theme.reviewAttributionLink}
 					>
 						<span>{t.reviewViewOnAirbnb}</span>
