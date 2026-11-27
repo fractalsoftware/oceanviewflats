@@ -727,8 +727,50 @@ test("#345 automatic locale redirect handoff: lang-detect.js writes one-time ses
 			["trackEvent", "Language", "Auto Redirect", "en->es"],
 		]);
 
-		// 6. Second pageview (empty sessionStorage) sets direct_locale and emits NO Auto Redirect event
+		// 6. Second pageview in the SAME session preserves auto_redirected (never resets to direct_locale) and emits NO duplicate Auto Redirect event
+		assert.equal(
+			landed.sessionStore.get("ovf_lang_acquisition"),
+			"auto_redirected",
+			`[${pair.label}] analytics.js must persist auto_redirected in sessionStorage`,
+		);
 		const secondLoad = runEngagementSandbox({
+			analyticsPath: pair.analytics,
+			pageConfig: {
+				pageId: "Oceanview1707",
+				lang: "es",
+				analytics: {
+					pageType: "property",
+					propertyId: "1707",
+					enableEngagementTracking: true,
+				},
+			},
+			href: "https://www.oceanviewflats.com/Oceanview1707/es.html",
+			sessionStorageInit: Object.fromEntries(landed.sessionStore.entries()),
+		});
+		const secondDim4 = secondLoad.paq.find(
+			(cmd) => cmd[0] === "setCustomDimension" && cmd[1] === 4,
+		);
+		const secondTrackIdx = secondLoad.paq.findIndex(
+			(cmd) => cmd[0] === "trackPageView",
+		);
+		const secondDim4Idx = secondLoad.paq.findIndex(
+			(cmd) => cmd[0] === "setCustomDimension" && cmd[1] === 4,
+		);
+		assert.ok(secondDim4Idx > -1 && secondDim4Idx < secondTrackIdx);
+		assert.deepEqual(JSON.parse(JSON.stringify(secondDim4)), [
+			"setCustomDimension",
+			4,
+			"auto_redirected",
+		]);
+		assert.equal(
+			secondLoad.paq.some(
+				(cmd) => cmd[0] === "trackEvent" && cmd[2] === "Auto Redirect",
+			),
+			false,
+		);
+
+		// 6b. Fresh session (empty sessionStorage) defaults to direct_locale and emits NO Auto Redirect event
+		const freshDirect = runEngagementSandbox({
 			analyticsPath: pair.analytics,
 			pageConfig: {
 				pageId: "home",
@@ -740,18 +782,17 @@ test("#345 automatic locale redirect handoff: lang-detect.js writes one-time ses
 				},
 			},
 			href: "https://www.oceanviewflats.com/es.html",
-			sessionStorageInit: Object.fromEntries(landed.sessionStore.entries()),
 		});
-		const secondDim4 = secondLoad.paq.find(
+		const freshDim4 = freshDirect.paq.find(
 			(cmd) => cmd[0] === "setCustomDimension" && cmd[1] === 4,
 		);
-		assert.deepEqual(JSON.parse(JSON.stringify(secondDim4)), [
+		assert.deepEqual(JSON.parse(JSON.stringify(freshDim4)), [
 			"setCustomDimension",
 			4,
 			"direct_locale",
 		]);
 		assert.equal(
-			secondLoad.paq.some(
+			freshDirect.paq.some(
 				(cmd) => cmd[0] === "trackEvent" && cmd[2] === "Auto Redirect",
 			),
 			false,
@@ -881,6 +922,11 @@ test("#345 manual language switcher sets Language Acquisition = manual_switched 
 	frLink.click();
 
 	assert.equal(enRun.localStore.get("lang-pref"), "fr");
+	assert.equal(
+		enRun.sessionStore.get("ovf_lang_acquisition"),
+		"manual_switched",
+		"Manual language switch must persist manual_switched in sessionStorage",
+	);
 	const afterClick = JSON.parse(
 		JSON.stringify(enRun.paq.slice(beforeClickLen)),
 	);
@@ -888,6 +934,43 @@ test("#345 manual language switcher sets Language Acquisition = manual_switched 
 		["setCustomDimension", 4, "manual_switched"],
 		["trackEvent", "Language", "Manual Switch", "en->fr"],
 	]);
+
+	// Destination localized page in the same session MUST preserve manual_switched (never reset to direct_locale)
+	const destFrRun = runEngagementSandbox({
+		pageConfig: {
+			pageId: "Oceanview1707",
+			lang: "fr",
+			analytics: {
+				pageType: "property",
+				propertyId: "1707",
+				enableEngagementTracking: true,
+			},
+		},
+		href: "https://www.oceanviewflats.com/Oceanview1707/fr.html",
+		sessionStorageInit: Object.fromEntries(enRun.sessionStore.entries()),
+	});
+	const destDim4Idx = destFrRun.paq.findIndex(
+		(cmd) => cmd[0] === "setCustomDimension" && cmd[1] === 4,
+	);
+	const destTrackIdx = destFrRun.paq.findIndex(
+		(cmd) => cmd[0] === "trackPageView",
+	);
+	assert.ok(destDim4Idx > -1 && destDim4Idx < destTrackIdx);
+	assert.deepEqual(JSON.parse(JSON.stringify(destFrRun.paq[destDim4Idx])), [
+		"setCustomDimension",
+		4,
+		"manual_switched",
+	]);
+	assert.equal(
+		destFrRun.paq.some(
+			(cmd) =>
+				cmd[0] === "setCustomDimension" &&
+				cmd[1] === 4 &&
+				cmd[2] === "direct_locale",
+		),
+		false,
+		"Destination localized page after manual switch must NOT overwrite Dimension 4 with direct_locale",
+	);
 
 	// Case 2: Localized 404 (/404/es.html) switching back to English (/404.html) via data-lang-target="en"
 	const en404Link = createLangLink("/404.html", "en");

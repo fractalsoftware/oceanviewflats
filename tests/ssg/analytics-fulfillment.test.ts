@@ -1156,6 +1156,16 @@ test("#346 Guest Registry emits only allowlisted English machine codes on Submis
 			forbiddenFragment: "Respuesta incorrecta",
 		},
 		{
+			expectedCode: "captcha_error",
+			status: 400,
+			body: {
+				success: false,
+				error:
+					"Security check failed. Please refresh the calendar section and try again.",
+			},
+			forbiddenFragment: "Security check failed",
+		},
+		{
 			expectedCode: "validation_error",
 			status: 400,
 			body: {

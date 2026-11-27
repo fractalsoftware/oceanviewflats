@@ -43,6 +43,8 @@
 	const HEARTBEAT_INTERVAL_SECONDS = 15;
 	const SCROLL_MILESTONES = Object.freeze([25, 50, 75, 90]);
 	const LANG_REDIRECT_STORAGE_KEY = "ovf_lang_redirect";
+	const LANG_ACQUISITION_STORAGE_KEY = "ovf_lang_acquisition";
+	const FUNNEL_STAGE_STORAGE_KEY = "ovf_funnel_stage";
 	const LANG_REDIRECT_PATTERN = /^(en|es|fr|it|de|ja)->(en|es|fr|it|de|ja)$/;
 	const LANGUAGE_ACQUISITION_MODES = Object.freeze({
 		DIRECT_LOCALE: "direct_locale",
@@ -217,6 +219,53 @@
 		return resolved;
 	};
 
+	const readSessionStorage = (key) => {
+		try {
+			if (
+				typeof sessionStorage === "undefined" ||
+				typeof sessionStorage.getItem !== "function"
+			) {
+				return null;
+			}
+			const raw = sessionStorage.getItem(key);
+			return typeof raw === "string" ? raw : null;
+		} catch (_) {
+			return null;
+		}
+	};
+
+	const writeSessionStorage = (key, value) => {
+		try {
+			if (
+				typeof sessionStorage === "undefined" ||
+				typeof sessionStorage.setItem !== "function"
+			) {
+				return;
+			}
+			sessionStorage.setItem(key, value);
+		} catch (_) {
+			// Gracefully ignore unavailable or restricted sessionStorage
+		}
+	};
+
+	const readPersistedFunnelStage = () => {
+		const raw = readSessionStorage(FUNNEL_STAGE_STORAGE_KEY);
+		if (raw === null) {
+			return null;
+		}
+		const trimmed = raw.trim();
+		return Object.hasOwn(FUNNEL_STAGES, trimmed) ? trimmed : null;
+	};
+
+	const readPersistedLanguageAcquisition = () => {
+		const raw = readSessionStorage(LANG_ACQUISITION_STORAGE_KEY);
+		if (raw === null) {
+			return null;
+		}
+		const trimmed = raw.trim();
+		return VALID_LANGUAGE_MODES.has(trimmed) ? trimmed : null;
+	};
+
 	const context = resolveContext();
 	let currentFunnelStage = null;
 	let currentFunnelRank = 0;
@@ -231,6 +280,7 @@
 		}
 		currentFunnelStage = stage;
 		currentFunnelRank = nextRank;
+		writeSessionStorage(FUNNEL_STAGE_STORAGE_KEY, stage);
 		getPaq().push(["setCustomDimension", DIMENSIONS.FUNNEL_STAGE, stage]);
 		return true;
 	};
@@ -239,6 +289,7 @@
 		if (typeof mode !== "string" || !VALID_LANGUAGE_MODES.has(mode)) {
 			return false;
 		}
+		writeSessionStorage(LANG_ACQUISITION_STORAGE_KEY, mode);
 		getPaq().push([
 			"setCustomDimension",
 			DIMENSIONS.LANGUAGE_ACQUISITION,
@@ -258,6 +309,9 @@
 		}
 		if (dimensionId === DIMENSIONS.FUNNEL_STAGE) {
 			return advanceFunnelStage(value);
+		}
+		if (dimensionId === DIMENSIONS.LANGUAGE_ACQUISITION) {
+			return setLanguageAcquisition(value);
 		}
 		getPaq().push(["setCustomDimension", dimensionId, value]);
 		return true;
@@ -433,14 +487,24 @@
 
 		// Initial Visit-scoped Custom Dimensions (4-5)
 		const redirectTransition = consumeLangRedirectMarker();
-		setLanguageAcquisition(
-			redirectTransition
-				? LANGUAGE_ACQUISITION_MODES.AUTO_REDIRECTED
-				: LANGUAGE_ACQUISITION_MODES.DIRECT_LOCALE,
-		);
+		const persistedAcquisition = readPersistedLanguageAcquisition();
+		const resolvedAcquisition = redirectTransition
+			? LANGUAGE_ACQUISITION_MODES.AUTO_REDIRECTED
+			: persistedAcquisition === LANGUAGE_ACQUISITION_MODES.AUTO_REDIRECTED ||
+					persistedAcquisition === LANGUAGE_ACQUISITION_MODES.MANUAL_SWITCHED
+				? persistedAcquisition
+				: LANGUAGE_ACQUISITION_MODES.DIRECT_LOCALE;
+		setLanguageAcquisition(resolvedAcquisition);
+
 		const initialStage =
 			context.pageType === "property" ? "property_viewed" : "discovery";
-		advanceFunnelStage(initialStage);
+		const persistedStage = readPersistedFunnelStage();
+		const resolvedStage =
+			persistedStage &&
+			FUNNEL_STAGES[persistedStage] > FUNNEL_STAGES[initialStage]
+				? persistedStage
+				: initialStage;
+		advanceFunnelStage(resolvedStage);
 
 		// Standard Matomo 404 document title before trackPageView
 		if (context.pageType === "404") {
@@ -480,6 +544,8 @@
 		HEARTBEAT_INTERVAL_SECONDS,
 		SCROLL_MILESTONES,
 		LANG_REDIRECT_STORAGE_KEY,
+		LANG_ACQUISITION_STORAGE_KEY,
+		FUNNEL_STAGE_STORAGE_KEY,
 		LANGUAGE_ACQUISITION_MODES,
 		trackEvent,
 		trackGoal,

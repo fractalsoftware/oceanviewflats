@@ -211,37 +211,73 @@ export interface PageAnalyticsConfig {
 	enableEngagementTracking: boolean;
 }
 
+const DEFAULT_PAGE_ANALYTICS_CONFIG: PageAnalyticsConfig = {
+	pageType: "404",
+	propertyId: "portfolio",
+	enableEngagementTracking: false,
+};
+
+const PROPERTY_1707_ANALYTICS: PageAnalyticsConfig = {
+	pageType: "property",
+	propertyId: "1707",
+	enableEngagementTracking: true,
+};
+
+const PROPERTY_1606_ANALYTICS: PageAnalyticsConfig = {
+	pageType: "property",
+	propertyId: "1606",
+	enableEngagementTracking: true,
+};
+
+const BOOKING_RESULT_ANALYTICS: PageAnalyticsConfig = {
+	pageType: "booking_result",
+	propertyId: "portfolio",
+	enableEngagementTracking: false,
+};
+
+const STATIC_PAGE_ANALYTICS_MAP: Record<string, PageAnalyticsConfig> = {
+	home: {
+		pageType: "home",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	Oceanview1707: PROPERTY_1707_ANALYTICS,
+	oceanview1707: PROPERTY_1707_ANALYTICS,
+	Oceanview1606: PROPERTY_1606_ANALYTICS,
+	oceanview1606: PROPERTY_1606_ANALYTICS,
+	"destination-guides": {
+		pageType: "destination_hub",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	contact: {
+		pageType: "contact",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	privacy: {
+		pageType: "privacy",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	registry: {
+		pageType: "registry",
+		propertyId: "portfolio",
+		enableEngagementTracking: false,
+	},
+	guide: {
+		pageType: "guide",
+		propertyId: "portfolio",
+		enableEngagementTracking: false,
+	},
+	"booking-success": BOOKING_RESULT_ANALYTICS,
+	"booking-failure": BOOKING_RESULT_ANALYTICS,
+	"booking-pending": BOOKING_RESULT_ANALYTICS,
+};
+
 export const getPageAnalyticsConfig = (pageId: string): PageAnalyticsConfig => {
-	if (pageId === "home") {
-		return {
-			pageType: "home",
-			propertyId: "portfolio",
-			enableEngagementTracking: true,
-		};
-	}
-
-	if (pageId === "Oceanview1707" || pageId === "oceanview1707") {
-		return {
-			pageType: "property",
-			propertyId: "1707",
-			enableEngagementTracking: true,
-		};
-	}
-
-	if (pageId === "Oceanview1606" || pageId === "oceanview1606") {
-		return {
-			pageType: "property",
-			propertyId: "1606",
-			enableEngagementTracking: true,
-		};
-	}
-
-	if (pageId === "destination-guides") {
-		return {
-			pageType: "destination_hub",
-			propertyId: "portfolio",
-			enableEngagementTracking: true,
-		};
+	if (Object.hasOwn(STATIC_PAGE_ANALYTICS_MAP, pageId)) {
+		return { ...STATIC_PAGE_ANALYTICS_MAP[pageId] };
 	}
 
 	if (pageId.startsWith("destination-guide-")) {
@@ -253,63 +289,7 @@ export const getPageAnalyticsConfig = (pageId: string): PageAnalyticsConfig => {
 		};
 	}
 
-	if (pageId === "contact") {
-		return {
-			pageType: "contact",
-			propertyId: "portfolio",
-			enableEngagementTracking: true,
-		};
-	}
-
-	if (pageId === "privacy") {
-		return {
-			pageType: "privacy",
-			propertyId: "portfolio",
-			enableEngagementTracking: true,
-		};
-	}
-
-	if (pageId === "registry") {
-		return {
-			pageType: "registry",
-			propertyId: "portfolio",
-			enableEngagementTracking: false,
-		};
-	}
-
-	if (pageId === "guide") {
-		return {
-			pageType: "guide",
-			propertyId: "portfolio",
-			enableEngagementTracking: false,
-		};
-	}
-
-	if (
-		pageId === "booking-success" ||
-		pageId === "booking-failure" ||
-		pageId === "booking-pending"
-	) {
-		return {
-			pageType: "booking_result",
-			propertyId: "portfolio",
-			enableEngagementTracking: false,
-		};
-	}
-
-	if (pageId === "404") {
-		return {
-			pageType: "404",
-			propertyId: "portfolio",
-			enableEngagementTracking: false,
-		};
-	}
-
-	return {
-		pageType: "404",
-		propertyId: "portfolio",
-		enableEngagementTracking: false,
-	};
+	return { ...DEFAULT_PAGE_ANALYTICS_CONFIG };
 };
 
 export const getClientExtraConfigForPage = (

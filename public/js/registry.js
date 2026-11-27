@@ -41,12 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	function trackRegistryCompletedGoal() {
 		const analytics = window.ovfAnalytics;
 		if (analytics && typeof analytics.trackGoal === "function") {
-			const goalId =
-				analytics.GOALS &&
-				typeof analytics.GOALS.GUEST_REGISTRY_COMPLETED === "number"
-					? analytics.GOALS.GUEST_REGISTRY_COMPLETED
-					: 7;
-			analytics.trackGoal(goalId);
+			analytics.trackGoal("GUEST_REGISTRY_COMPLETED");
 		}
 	}
 
@@ -92,6 +87,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (statusCode >= 500) return "server_error";
 
 		const errorParts = [];
+		if (result && typeof result.error === "string") {
+			errorParts.push(result.error);
+		}
 		if (result && typeof result.message === "string") {
 			errorParts.push(result.message);
 		}

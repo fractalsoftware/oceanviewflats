@@ -604,7 +604,7 @@ export const dict = {
 			"Matomo is initialized in strictly cookieless mode (disableCookies). Zero analytics, advertising, or cross-site tracking cookies are stored in your browser.",
 		privacyAnalyticsIpTitle: "Automatic IP Address Anonymization",
 		privacyAnalyticsIpDesc:
-			"Visitor IP addresses are anonymized automatically before analytics data is stored, preventing aggregate site statistics from being linked back to an individual household or device.",
+			"Site Visitor IP addresses are anonymized automatically before analytics data is stored, preventing aggregate site statistics from being linked back to an individual household or device.",
 		privacyAnalyticsZeroPiiTitle: "Zero Personal Data (PII) Collected",
 		privacyAnalyticsZeroPiiDesc:
 			"Analytics never records names, email addresses, phone numbers, identification documents, payment details, or exact stay dates—only anonymized, aggregated metrics such as language, page visited, and bucketed demand signals.",

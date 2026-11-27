@@ -108,43 +108,9 @@ function trackAnalyticsEvent(category, action, name, value) {
 function trackAnalyticsGoal(goalKeyOrId, customRevenue) {
 	const analytics = getAnalyticsFacade();
 	if (analytics && typeof analytics.trackGoal === "function") {
-		const resolvedGoal =
-			typeof goalKeyOrId === "string" &&
-			analytics.GOALS &&
-			Object.hasOwn(analytics.GOALS, goalKeyOrId)
-				? analytics.GOALS[goalKeyOrId]
-				: goalKeyOrId;
-		return analytics.trackGoal(resolvedGoal, customRevenue);
+		return analytics.trackGoal(goalKeyOrId, customRevenue);
 	}
-	if (!window._paq || typeof window._paq.push !== "function") {
-		return false;
-	}
-	const fallbackGoals = {
-		CONTACT_GENERAL: 1,
-		CONTACT_DATED: 2,
-		AIRBNB_REDIRECT: 3,
-		WHATSAPP_CONTACT: 4,
-		DIRECT_RESERVATION_CONFIRMED: 5,
-		PENDING_RESERVATION_CREATED: 6,
-		GUEST_REGISTRY_COMPLETED: 7,
-	};
-	const resolvedId =
-		typeof goalKeyOrId === "string" && Object.hasOwn(fallbackGoals, goalKeyOrId)
-			? fallbackGoals[goalKeyOrId]
-			: goalKeyOrId;
-	if (!Number.isInteger(resolvedId)) {
-		return false;
-	}
-	if (
-		typeof customRevenue === "number" &&
-		Number.isFinite(customRevenue) &&
-		customRevenue >= 0
-	) {
-		window._paq.push(["trackGoal", resolvedId, customRevenue]);
-	} else {
-		window._paq.push(["trackGoal", resolvedId]);
-	}
-	return true;
+	return false;
 }
 
 function advanceAnalyticsFunnelStage(stage) {
@@ -153,6 +119,30 @@ function advanceAnalyticsFunnelStage(stage) {
 		return analytics.advanceFunnelStage(stage);
 	}
 	return false;
+}
+
+function resolvePagePropertyId(pageConfig, defaultPropertyId = "1707") {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.getContext === "function") {
+		const ctxProperty = analytics.getContext().propertyId;
+		if (ctxProperty === "1707" || ctxProperty === "1606") {
+			return ctxProperty;
+		}
+	}
+	const cfg =
+		pageConfig && typeof pageConfig === "object"
+			? pageConfig
+			: typeof window.getPageConfig === "function"
+				? window.getPageConfig() || {}
+				: {};
+	const cfgProperty = cfg.analytics?.propertyId;
+	if (cfgProperty === "1707" || cfgProperty === "1606") {
+		return cfgProperty;
+	}
+	const pathname = window.location?.pathname || "";
+	if (pathname.includes("1606")) return "1606";
+	if (pathname.includes("1707")) return "1707";
+	return defaultPropertyId;
 }
 
 function parseCalendarDateParts(input) {
@@ -252,10 +242,10 @@ function classifyContactErrorCode(response, result) {
 			: "";
 	if (explicitCode) {
 		if (explicitCode.includes("rate")) return "rate_limited";
-		if (explicitCode.includes("captcha")) return "captcha_error";
 		if (explicitCode.includes("privacy") || explicitCode.includes("consent")) {
 			return "privacy_consent";
 		}
+		if (explicitCode.includes("captcha")) return "captcha_error";
 		if (explicitCode.includes("date")) return "invalid_date_range";
 		if (explicitCode.includes("valid")) return "validation_error";
 		if (explicitCode.includes("server")) return "server_error";
@@ -269,24 +259,57 @@ function classifyContactErrorCode(response, result) {
 	if (status >= 500) {
 		return "server_error";
 	}
-	if (status === 400) {
-		const rawText =
-			result && typeof (result.error || result.message) === "string"
-				? String(result.error || result.message).toLowerCase()
-				: "";
-		if (
-			rawText.includes("privac") ||
+
+	const rawText =
+		result && typeof (result.error || result.message) === "string"
+			? String(result.error || result.message).toLowerCase()
+			: "";
+
+	if (
+		rawText &&
+		(rawText.includes("privac") ||
+			rawText.includes("consent") ||
+			rawText.includes("personal data") ||
 			rawText.includes("datos personales") ||
 			rawText.includes("données personnelles") ||
 			rawText.includes("dati personali") ||
+			rawText.includes("personenbezogener") ||
 			rawText.includes("datenschutz") ||
-			rawText.includes("個人情報") ||
-			rawText.includes("consent")
-		) {
-			return "privacy_consent";
-		}
+			rawText.includes("autorización") ||
+			rawText.includes("autorisation") ||
+			rawText.includes("autorizzazione") ||
+			rawText.includes("個人情報"))
+	) {
+		return "privacy_consent";
+	}
+
+	if (
+		rawText &&
+		(rawText.includes("captcha") ||
+			rawText.includes("security check") ||
+			rawText.includes("security verification") ||
+			rawText.includes("security question") ||
+			rawText.includes("verification challenge") ||
+			rawText.includes("comprobación de seguridad") ||
+			rawText.includes("verificación de seguridad") ||
+			rawText.includes("desafío de verificación") ||
+			rawText.includes("pregunta de verificación") ||
+			rawText.includes("vérification de sécurité") ||
+			rawText.includes("défi de vérification") ||
+			rawText.includes("question de sécurité") ||
+			rawText.includes("verifica di sicurezza") ||
+			rawText.includes("sotto-verifica") ||
+			rawText.includes("sfida di verifica") ||
+			rawText.includes("domanda di verifica") ||
+			rawText.includes("sicherheitsprüfung") ||
+			rawText.includes("sicherheitsfrage") ||
+			rawText.includes("セキュリティ") ||
+			rawText.includes("認証要請") ||
+			rawText.includes("認証問題"))
+	) {
 		return "captcha_error";
 	}
+
 	if (status === 200) {
 		return result ? "validation_error" : "server_error";
 	}
@@ -631,24 +654,11 @@ document.addEventListener("click", (e) => {
 		const propertyId = ctaLink.getAttribute("data-guide-cta-property");
 		const slug = ctaLink.getAttribute("data-guide-slug");
 		if (propertyId && slug) {
-			if (
-				window.ovfAnalytics &&
-				typeof window.ovfAnalytics.trackEvent === "function"
-			) {
-				window.ovfAnalytics.trackEvent(
-					"DestinationGuide",
-					"PropertyCTA",
-					`${slug}:${propertyId}`,
-				);
-			} else {
-				const paq = (window._paq = window._paq || []);
-				paq.push([
-					"trackEvent",
-					"DestinationGuide",
-					"PropertyCTA",
-					`${slug}:${propertyId}`,
-				]);
-			}
+			trackAnalyticsEvent(
+				"DestinationGuide",
+				"PropertyCTA",
+				`${slug}:${propertyId}`,
+			);
 		}
 		return;
 	}
@@ -794,23 +804,20 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (typeof localStorage !== "undefined") {
 				localStorage.setItem("lang-pref", clickedLang);
 			}
-			if (window.ovfAnalytics) {
+			const analytics = getAnalyticsFacade();
+			if (analytics) {
 				const fromLang =
-					(typeof window.ovfAnalytics.getContext === "function" &&
-						window.ovfAnalytics.getContext().lang) ||
+					(typeof analytics.getContext === "function" &&
+						analytics.getContext().lang) ||
 					(typeof window.getPageConfig === "function" &&
 						window.getPageConfig()?.lang) ||
 					currentLang ||
 					"en";
-				if (typeof window.ovfAnalytics.setLanguageAcquisition === "function") {
-					window.ovfAnalytics.setLanguageAcquisition("manual_switched");
+				if (typeof analytics.setLanguageAcquisition === "function") {
+					analytics.setLanguageAcquisition("manual_switched");
 				}
-				if (
-					clickedLang &&
-					clickedLang !== fromLang &&
-					typeof window.ovfAnalytics.trackEvent === "function"
-				) {
-					window.ovfAnalytics.trackEvent(
+				if (clickedLang && clickedLang !== fromLang) {
+					trackAnalyticsEvent(
 						"Language",
 						"Manual Switch",
 						`${fromLang}->${clickedLang}`,
@@ -1250,15 +1257,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	const txtReady = btnBook.getAttribute("data-text-ready");
 	const txtDefault = btnBook.getAttribute("data-text-default");
 
-	// Retrieve property ID from pageConfig analytics metadata or page path (defaults to 1707 if not 1606)
-	const propertyId =
-		pageConfig.analytics &&
-		(pageConfig.analytics.propertyId === "1606" ||
-			pageConfig.analytics.propertyId === "1707")
-			? pageConfig.analytics.propertyId
-			: window.location.pathname.includes("1606")
-				? "1606"
-				: "1707";
+	// Retrieve property ID from analytics context, pageConfig metadata, or page path (defaults to 1707 if not 1606)
+	const propertyId = resolvePagePropertyId(pageConfig);
 
 	// Fetch live blocked dates from local caching proxy
 	async function fetchBlockedDates() {
@@ -2057,14 +2057,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 
-		const brickPropertyId =
-			pageConfig.analytics &&
-			(pageConfig.analytics.propertyId === "1606" ||
-				pageConfig.analytics.propertyId === "1707")
-				? pageConfig.analytics.propertyId
-				: window.location.pathname.includes("1606")
-					? "1606"
-					: "1707";
+		const brickPropertyId = resolvePagePropertyId(pageConfig);
 
 		try {
 			if (!mpInstance) {
@@ -2579,14 +2572,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				return;
 			}
-			const propId =
-				pageConfig.analytics &&
-				(pageConfig.analytics.propertyId === "1606" ||
-					pageConfig.analytics.propertyId === "1707")
-					? pageConfig.analytics.propertyId
-					: window.location.pathname.includes("1606")
-						? "1606"
-						: "1707";
+			const propId = resolvePagePropertyId(pageConfig);
 			trackAnalyticsEvent("Booking", "Redirect to Airbnb", propId);
 			trackAnalyticsGoal("AIRBNB_REDIRECT");
 		});
@@ -2877,38 +2863,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	const imagesData = [];
 	const viewedPhotoIndices = new Set();
 
-	const resolveGalleryPropertyId = () => {
-		if (
-			window.ovfAnalytics &&
-			typeof window.ovfAnalytics.getContext === "function"
-		) {
-			const ctxProperty = window.ovfAnalytics.getContext().propertyId;
-			if (ctxProperty === "1707" || ctxProperty === "1606") {
-				return ctxProperty;
-			}
-		}
-		if (typeof window.getPageConfig === "function") {
-			const cfgProperty = window.getPageConfig()?.analytics?.propertyId;
-			if (cfgProperty === "1707" || cfgProperty === "1606") {
-				return cfgProperty;
-			}
-		}
-		const pathname = window.location?.pathname || "";
-		if (pathname.includes("1606")) return "1606";
-		if (pathname.includes("1707")) return "1707";
-		return "portfolio";
-	};
-
 	const trackGalleryEvent = (action, name, value) => {
-		if (
-			window.ovfAnalytics &&
-			typeof window.ovfAnalytics.trackEvent === "function"
-		) {
-			window.ovfAnalytics.trackEvent("Gallery", action, name, value);
-		}
+		trackAnalyticsEvent("Gallery", action, name, value);
 	};
 
-	const galleryPropertyId = resolveGalleryPropertyId();
+	const galleryPropertyId = resolvePagePropertyId(null, "portfolio");
 
 	// Parse image configurations from HTML attributes
 	triggers.forEach((trigger) => {

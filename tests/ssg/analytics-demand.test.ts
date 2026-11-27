@@ -1398,3 +1398,100 @@ test("#344 standalone main.js (without analytics.js) and minified dist/js/main.j
 		),
 	);
 });
+
+test("#339 Contact Form classifies EN and DE HTTP 400 privacy-consent rejections as privacy_consent (never captcha_error)", async () => {
+	const cases = [
+		{
+			status: 400,
+			body: {
+				success: false,
+				error: "You must authorize personal data processing to continue.",
+			},
+			expectedCode: "privacy_consent",
+		},
+		{
+			status: 400,
+			body: {
+				success: false,
+				error:
+					"Please accept the Personal Data Processing Policy before sending your inquiry.",
+			},
+			expectedCode: "privacy_consent",
+		},
+		{
+			status: 400,
+			body: {
+				success: false,
+				error:
+					"Sie müssen der Verarbeitung personenbezogener Daten zustimmen, um fortzufahren.",
+			},
+			expectedCode: "privacy_consent",
+		},
+		{
+			status: 400,
+			body: {
+				success: false,
+				error:
+					"Bitte akzeptieren Sie die Richtlinie zur Verarbeitung personenbezogener Daten, bevor Sie Ihre Anfrage senden.",
+			},
+			expectedCode: "privacy_consent",
+		},
+		{
+			status: 400,
+			body: {
+				success: false,
+				error:
+					"Security check failed. Please refresh the calendar section and try again.",
+			},
+			expectedCode: "captcha_error",
+		},
+		{
+			status: 400,
+			body: {
+				success: false,
+				error: "Falsche Antwort auf die Sicherheitsfrage.",
+			},
+			expectedCode: "captcha_error",
+		},
+		{
+			status: 400,
+			body: {
+				success: false,
+				error: "Invalid request payload.",
+			},
+			expectedCode: "validation_error",
+		},
+	];
+
+	let idx = 0;
+	const harness = await createContactHarness({
+		lang: "en",
+		fixedNow: "2026-11-27T12:00:00",
+		postHandler: async () => {
+			const next = cases[idx++];
+			assert.ok(next, "Unexpected extra POST request");
+			return {
+				ok: false,
+				status: next.status,
+				json: async () => next.body,
+			};
+		},
+	});
+
+	const startLen = harness.paq.length;
+	for (let i = 0; i < cases.length; i++) {
+		harness.fillValidBaseFields();
+		await harness.form.dispatchEvent("submit");
+	}
+
+	const emitted = harness.getPaq().slice(startLen);
+	assert.deepEqual(
+		emitted,
+		cases.map((tc) => [
+			"trackEvent",
+			"Contact Form",
+			"Submission Failure",
+			tc.expectedCode,
+		]),
+	);
+});

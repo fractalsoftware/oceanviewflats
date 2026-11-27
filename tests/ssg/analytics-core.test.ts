@@ -29,6 +29,8 @@ interface AnalyticsVmOptions {
 	href?: string;
 	referrer?: string;
 	docLang?: string;
+	sessionStore?: Map<string, string>;
+	throwingSessionStorage?: boolean;
 }
 
 interface OvfAnalyticsApi {
@@ -39,6 +41,9 @@ interface OvfAnalyticsApi {
 	FUNNEL_STAGES: Record<string, number>;
 	ALLOWED_QUERY_PARAMS: readonly string[];
 	ALLOWED_QUERY_PREFIXES: readonly string[];
+	LANG_REDIRECT_STORAGE_KEY: string;
+	LANG_ACQUISITION_STORAGE_KEY: string;
+	FUNNEL_STAGE_STORAGE_KEY: string;
 	LANGUAGE_ACQUISITION_MODES: Record<string, string>;
 	trackEvent: (
 		category: string,
@@ -111,9 +116,33 @@ function runAnalyticsInVm(options: AnalyticsVmOptions = {}) {
 		location: locationObj,
 	};
 
+	const sessionStore = options.sessionStore ?? new Map<string, string>();
+	const sessionStorageMock = options.throwingSessionStorage
+		? {
+				getItem: () => {
+					throw new Error("SecurityError: sessionStorage disabled");
+				},
+				setItem: () => {
+					throw new Error("SecurityError: sessionStorage disabled");
+				},
+				removeItem: () => {
+					throw new Error("SecurityError: sessionStorage disabled");
+				},
+			}
+		: {
+				getItem: (key: string) => sessionStore.get(key) ?? null,
+				setItem: (key: string, value: string) => {
+					sessionStore.set(key, String(value));
+				},
+				removeItem: (key: string) => {
+					sessionStore.delete(key);
+				},
+			};
+
 	const sandbox = {
 		window: win,
 		location: locationObj,
+		sessionStorage: sessionStorageMock,
 		document: {
 			documentElement: { lang: options.docLang ?? "en" },
 			referrer: options.referrer ?? "",
@@ -155,6 +184,7 @@ function runAnalyticsInVm(options: AnalyticsVmOptions = {}) {
 		paq: JSON.parse(JSON.stringify(paq)) as unknown[][],
 		rawPaq: paq,
 		insertedScripts,
+		sessionStore,
 	};
 }
 
@@ -847,4 +877,188 @@ test("#340 public facade helpers (trackEvent, trackGoal, setCustomDimension, set
 		["setCustomDimension", 4, "manual_switched"],
 		["setCustomDimension", 3, "1606"],
 	]);
+});
+
+test("#339 Funnel Stage (Dimension 5) persists monotonically in sessionStorage across navigations and never downgrades", () => {
+	const sharedSession = new Map<string, string>();
+
+	// 1. Landing on homepage starts at discovery
+	const homeRun = runAnalyticsInVm({
+		sessionStore: sharedSession,
+		pageConfig: {
+			pageId: "home",
+			lang: "en",
+			analytics: {
+				pageType: "home",
+				propertyId: "portfolio",
+				enableEngagementTracking: true,
+			},
+		},
+		href: "https://www.oceanviewflats.com/",
+	});
+	assert.equal(homeRun.window.ovfAnalytics?.getFunnelStage(), "discovery");
+	assert.equal(sharedSession.get("ovf_funnel_stage"), "discovery");
+
+	// 2. Navigating to Property 1707 upgrades to property_viewed and advances to confirmed
+	const propRun = runAnalyticsInVm({
+		sessionStore: sharedSession,
+		pageConfig: {
+			pageId: "Oceanview1707",
+			lang: "en",
+			analytics: {
+				pageType: "property",
+				propertyId: "1707",
+				enableEngagementTracking: true,
+			},
+		},
+		href: "https://www.oceanviewflats.com/Oceanview1707/",
+	});
+	assert.equal(
+		propRun.window.ovfAnalytics?.getFunnelStage(),
+		"property_viewed",
+	);
+	assert.equal(
+		propRun.window.ovfAnalytics?.advanceFunnelStage("confirmed"),
+		true,
+	);
+	assert.equal(sharedSession.get("ovf_funnel_stage"), "confirmed");
+
+	// 3. Navigating to booking-success, booking-pending, registry, guide, or home MUST keep confirmed before trackPageView
+	const postCheckoutPages = [
+		{
+			pageId: "booking-success",
+			pageType: "booking_result",
+			href: "https://www.oceanviewflats.com/booking-success/",
+		},
+		{
+			pageId: "booking-pending",
+			pageType: "booking_result",
+			href: "https://www.oceanviewflats.com/booking-pending/",
+		},
+		{
+			pageId: "registry",
+			pageType: "registry",
+			href: "https://www.oceanviewflats.com/registry/",
+		},
+		{
+			pageId: "guide",
+			pageType: "guide",
+			href: "https://www.oceanviewflats.com/guide/",
+		},
+		{
+			pageId: "home",
+			pageType: "home",
+			href: "https://www.oceanviewflats.com/",
+		},
+	];
+
+	for (const next of postCheckoutPages) {
+		const navRun = runAnalyticsInVm({
+			sessionStore: sharedSession,
+			pageConfig: {
+				pageId: next.pageId,
+				lang: "en",
+				analytics: {
+					pageType: next.pageType,
+					propertyId: "portfolio",
+					enableEngagementTracking: next.pageType === "home",
+				},
+			},
+			href: next.href,
+		});
+
+		const dim5Idx = navRun.paq.findIndex(
+			(cmd) => cmd[0] === "setCustomDimension" && cmd[1] === 5,
+		);
+		const trackIdx = navRun.paq.findIndex((cmd) => cmd[0] === "trackPageView");
+		assert.ok(
+			dim5Idx > -1 && dim5Idx < trackIdx,
+			`${next.pageId} must queue Dimension 5 before trackPageView`,
+		);
+		assert.deepEqual(navRun.paq[dim5Idx], [
+			"setCustomDimension",
+			5,
+			"confirmed",
+		]);
+		assert.equal(
+			navRun.window.ovfAnalytics?.getFunnelStage(),
+			"confirmed",
+			`${next.pageId} must never downgrade Funnel Stage back to discovery`,
+		);
+		assert.equal(
+			navRun.window.ovfAnalytics?.advanceFunnelStage("property_viewed"),
+			false,
+		);
+	}
+
+	// 4. Tampered sessionStorage value and throwing sessionStorage degrade safely
+	const tamperedSession = new Map<string, string>([
+		["ovf_funnel_stage", "invalid_stage"],
+	]);
+	const tamperedRun = runAnalyticsInVm({
+		sessionStore: tamperedSession,
+		pageConfig: {
+			pageId: "Oceanview1606",
+			lang: "en",
+			analytics: {
+				pageType: "property",
+				propertyId: "1606",
+				enableEngagementTracking: true,
+			},
+		},
+		href: "https://www.oceanviewflats.com/Oceanview1606/",
+	});
+	assert.equal(
+		tamperedRun.window.ovfAnalytics?.getFunnelStage(),
+		"property_viewed",
+	);
+	assert.equal(tamperedSession.get("ovf_funnel_stage"), "property_viewed");
+
+	assert.doesNotThrow(() => {
+		const throwingRun = runAnalyticsInVm({
+			throwingSessionStorage: true,
+			pageConfig: {
+				pageId: "home",
+				lang: "en",
+				analytics: {
+					pageType: "home",
+					propertyId: "portfolio",
+					enableEngagementTracking: true,
+				},
+			},
+			href: "https://www.oceanviewflats.com/",
+		});
+		assert.equal(
+			throwingRun.window.ovfAnalytics?.getFunnelStage(),
+			"discovery",
+		);
+	});
+});
+
+test("#339 US 35 public/js/main.js and public/js/registry.js contain zero duplicated numeric Goal ID maps", () => {
+	const mainSource = fs.readFileSync(
+		path.join(PUBLIC_DIR, "js", "main.js"),
+		"utf-8",
+	);
+	const registrySource = fs.readFileSync(
+		path.join(PUBLIC_DIR, "js", "registry.js"),
+		"utf-8",
+	);
+
+	assert.ok(
+		!mainSource.includes("fallbackGoals"),
+		"public/js/main.js must not duplicate numeric Goal IDs in a fallbackGoals map",
+	);
+	assert.ok(
+		!/CONTACT_GENERAL\s*:\s*1/.test(mainSource),
+		"public/js/main.js must not hardcode numeric Goal ID mappings",
+	);
+	assert.ok(
+		!/GUEST_REGISTRY_COMPLETED[\s\S]{0,80}:\s*7/.test(registrySource),
+		"public/js/registry.js must not hardcode a numeric : 7 Goal fallback",
+	);
+	assert.ok(
+		registrySource.includes('trackGoal("GUEST_REGISTRY_COMPLETED")'),
+		"public/js/registry.js must pass the canonical goal key to window.ovfAnalytics.trackGoal",
+	);
 });
