@@ -589,6 +589,9 @@ export const BUILDING_LOCATION = {
 	longitude: -74.2313921,
 } as const;
 
+export const BUILDING_MAP_URL =
+	`https://maps.google.com/?q=${BUILDING_LOCATION.latitude},${BUILDING_LOCATION.longitude}` as const;
+
 export interface PlayaSalgueroLandmarkConfig {
 	id:
 		| "playa-salguero-beach"

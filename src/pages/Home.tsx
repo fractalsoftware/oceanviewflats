@@ -27,6 +27,7 @@ import React from "react";
 import { Footer } from "../components/Footer";
 import { Navigation } from "../components/Navigation";
 import {
+	BUILDING_MAP_URL,
 	DATA_CONTROLLER,
 	getContactPagePath,
 	getDestinationGuidesHubPath,
@@ -227,6 +228,9 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												>
 													{t[card.rateKey]}
 												</span>
+												<p className={cardTheme.rateCurrencyNote}>
+													{t.homeRateCurrencyNote}
+												</p>
 											</div>
 											<p className={cardTheme.cardDesc}>{t[card.descKey]}</p>
 
@@ -330,8 +334,8 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 												<blockquote className={cardTheme.reviewQuote}>
 													{t[review.textKey]}
 												</blockquote>
-												<div className={cardTheme.reviewMetaRow}>
-													<div className={cardTheme.reviewAuthorGroup}>
+												<div className={cardTheme.reviewFooter}>
+													<div className={cardTheme.reviewMetaRow}>
 														<span className={cardTheme.reviewAuthorName}>
 															{t[review.authorKey]}
 														</span>
@@ -352,18 +356,20 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 															)}
 														</time>
 													</div>
-													<a
-														href={card.airbnbUrl}
-														target="_blank"
-														rel="noopener noreferrer"
-														className={cardTheme.reviewAirbnbLink}
-													>
-														<span>{t.reviewViewOnAirbnb}</span>
-														<ExternalLink
-															className={cardTheme.reviewIconSm}
-															aria-hidden="true"
-														/>
-													</a>
+													<div className={cardTheme.reviewLinkRow}>
+														<a
+															href={card.airbnbUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className={cardTheme.reviewAirbnbLink}
+														>
+															<span>{t.reviewViewOnAirbnb}</span>
+															<ExternalLink
+																className={cardTheme.reviewIconSm}
+																aria-hidden="true"
+															/>
+														</a>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -675,10 +681,26 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				<section id="location" className={HOME_THEME.locationSection}>
 					<div className={HOME_THEME.locationContainer}>
 						<div className={HOME_THEME.locationHeader}>
-							<p className={HOME_THEME.locationAddressBadge}>
-								<Building2 className={HOME_THEME.iconSm} aria-hidden="true" />
-								<span>{t.homeLocationAddress}</span>
-							</p>
+							<div className={HOME_THEME.locationAddressRow}>
+								<p className={HOME_THEME.locationAddressBadge}>
+									<Building2 className={HOME_THEME.iconSm} aria-hidden="true" />
+									<span>{t.homeLocationAddress}</span>
+								</p>
+								<a
+									id="home-location-map-link"
+									href={BUILDING_MAP_URL}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={HOME_THEME.locationMapLink}
+								>
+									<MapPin className={HOME_THEME.iconSm} aria-hidden="true" />
+									<span>{t.homeLocationMapLink}</span>
+									<ExternalLink
+										className={HOME_THEME.locationMapExternalIcon}
+										aria-hidden="true"
+									/>
+								</a>
+							</div>
 							<h2 className={HOME_THEME.locationTitle}>
 								{t.homeLocationTitle}
 							</h2>
