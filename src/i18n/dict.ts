@@ -820,6 +820,10 @@ export const dict = {
 		homeHeroReturningGuestPrompt: "Already booked?",
 		homeHeroReturningGuestRegistry: "Guest Registry",
 		homeHeroReturningGuestGuide: "Guest Guide",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Paid in COP · USD reference estimate on the property page",
+		homeLocationMapLink: "View on Google Maps",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -1662,6 +1666,10 @@ export const dict = {
 		homeHeroReturningGuestPrompt: "¿Ya tienes reserva?",
 		homeHeroReturningGuestRegistry: "Registro de Huéspedes",
 		homeHeroReturningGuestGuide: "Guía del Huésped",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Se paga en COP · Estimado referencial en USD en la página del apartamento",
+		homeLocationMapLink: "Ver en Google Maps",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -2513,6 +2521,10 @@ export const dict = {
 		homeHeroReturningGuestPrompt: "Déjà réservé ?",
 		homeHeroReturningGuestRegistry: "Registre des Voyageurs",
 		homeHeroReturningGuestGuide: "Guide de l'Invité",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Réglé en COP · Estimation indicative en EUR sur la page du logement",
+		homeLocationMapLink: "Voir sur Google Maps",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -3352,6 +3364,10 @@ export const dict = {
 		homeHeroReturningGuestPrompt: "Hai già prenotato?",
 		homeHeroReturningGuestRegistry: "Registro degli Ospiti",
 		homeHeroReturningGuestGuide: "Guida dell'Ospite",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Pagamento in COP · Stima indicativa in EUR nella pagina dell'appartamento",
+		homeLocationMapLink: "Apri su Google Maps",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -4200,6 +4216,10 @@ export const dict = {
 		homeHeroReturningGuestPrompt: "Bereits gebucht?",
 		homeHeroReturningGuestRegistry: "Gästeregistrierung",
 		homeHeroReturningGuestGuide: "Gäste-Guide",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"Zahlung in COP · EUR-Richtwert im Buchungsrechner der Unterkunft",
+		homeLocationMapLink: "Auf Google Maps ansehen",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -5031,6 +5051,10 @@ export const dict = {
 		homeHeroReturningGuestPrompt: "ご予約済みですか？",
 		homeHeroReturningGuestRegistry: "宿泊者名簿登録",
 		homeHeroReturningGuestGuide: "ゲストガイド",
+		// #331 editorial nightly rate currency cue & location map link
+		homeRateCurrencyNote:
+			"COP決済・物件ページの料金計算ツールでJPY参考額を表示",
+		homeLocationMapLink: "Google マップで見る",
 	},
 };
 

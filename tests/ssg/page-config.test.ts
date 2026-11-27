@@ -3,6 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import vm from "node:vm";
+import {
+	AIRBNB_URLS,
+	BUILDING_MAP_URL,
+	LANGUAGES,
+	PLAYA_SALGUERO_LANDMARKS,
+} from "../../src/constants/config";
+import { dict } from "../../src/i18n/dict";
 import { baseTemplate } from "../../src/templates/base";
 
 const noopMercadoPago = () => {};
@@ -5749,6 +5756,184 @@ test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coasta
 					!cueMatch[0].includes("Guest Registry") &&
 					!cueMatch[0].includes("Guest Guide"),
 				`${locale.file} #hero-returning-guest-cue must not leak English copy`,
+			);
+		}
+	}
+});
+
+test("#331 Homepage renders editorial tabular-nums Nightly Rates with localized reference-currency cue, muted proximity tags, uniform >=44px Guest Review footers, and verified Location map link across all 6 locales", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const decodeHtmlEntities = (s: string) =>
+		s
+			.replace(/&#x27;/g, "'")
+			.replace(/&amp;/g, "&")
+			.replace(/&quot;/g, '"');
+	const homeSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "Home.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		!homeSource.includes('className="'),
+		"Home.tsx must remain 100% style-agnostic with zero inline className strings",
+	);
+
+	for (const lang of LANGUAGES) {
+		const homeFile = lang === "en" ? "index.html" : `${lang}.html`;
+		const html = fs.readFileSync(path.join(distDir, homeFile), "utf-8");
+		const t = dict[lang];
+
+		// 1. Editorial tabular-nums Nightly Rates (no solid dark pill container) + sibling localized reference-currency cue
+		for (const property of [
+			{
+				id: "1707",
+				cardId: "home-card-1707",
+				badgeId: "home-rate-badge-1707",
+				expectedRate: t.homeCard1707Rate,
+				airbnbUrl: AIRBNB_URLS["1707"],
+				reviewId: "home-review-1707-2",
+				author: "Julian Alfredo",
+				datePublished: "2026-10-11",
+			},
+			{
+				id: "1606",
+				cardId: "home-card-1606",
+				badgeId: "home-rate-badge-1606",
+				expectedRate: t.homeCard1606Rate,
+				airbnbUrl: AIRBNB_URLS["1606"],
+				reviewId: "home-review-1606-1",
+				author: "Lina Marcela",
+				datePublished: "2026-04-06",
+			},
+		] as const) {
+			const cardMatch = html.match(
+				new RegExp(
+					`<article[^>]*id="${property.cardId}"[^>]*>[\\s\\S]*?<\\/article>`,
+				),
+			);
+			assert.ok(cardMatch, `${homeFile} must render #${property.cardId}`);
+			const cardHtml = cardMatch[0];
+
+			const rateSpanMatch = cardHtml.match(
+				new RegExp(
+					`<span[^>]*id="${property.badgeId}"[^>]*>([\\s\\S]*?)<\\/span>`,
+				),
+			);
+			assert.ok(
+				rateSpanMatch,
+				`${homeFile} #${property.cardId} must preserve #${property.badgeId} hydration target`,
+			);
+			const rateSpanTag = rateSpanMatch[0];
+			assert.equal(
+				rateSpanMatch[1],
+				property.expectedRate,
+				`${homeFile} #${property.badgeId} innerText must remain exact for live hydration`,
+			);
+			assert.ok(
+				rateSpanTag.includes("tabular-nums"),
+				`${homeFile} #${property.badgeId} must use tabular-nums editorial pricing typography`,
+			);
+			assert.ok(
+				!rateSpanTag.includes("bg-slate-900") &&
+					!rateSpanTag.includes("bg-stone-900") &&
+					!rateSpanTag.includes("rounded-full"),
+				`${homeFile} #${property.badgeId} must not use solid dark pill button styling`,
+			);
+			assert.ok(
+				decodeHtmlEntities(cardHtml).includes(t.homeRateCurrencyNote),
+				`${homeFile} #${property.cardId} must display localized reference-currency cue`,
+			);
+			assert.ok(
+				!cardHtml.includes("Settlement Currency"),
+				`${homeFile} #${property.cardId} must not leak internal jargon "Settlement Currency"`,
+			);
+
+			// 2. Uniform 2-row Guest Review footer: metadata row separated from dedicated >=44px Airbnb verification row
+			const reviewMatch = cardHtml.match(
+				new RegExp(
+					`<div[^>]*id="${property.reviewId}"[^>]*>[\\s\\S]*?<\\/blockquote>([\\s\\S]*?)<\\/div><\\/div><\\/div><a href=`,
+				),
+			);
+			assert.ok(
+				reviewMatch,
+				`${homeFile} #${property.cardId} must render curated review #${property.reviewId}`,
+			);
+			const reviewFooterHtml = reviewMatch[1];
+			assert.ok(
+				decodeHtmlEntities(reviewFooterHtml).includes(property.author) &&
+					decodeHtmlEntities(reviewFooterHtml).includes(
+						t.reviewVerifiedGuest,
+					) &&
+					new RegExp(
+						`<time[^>]*\\bdatetime="${property.datePublished}"`,
+						"i",
+					).test(reviewFooterHtml),
+				`${homeFile} #${property.reviewId} footer must include Latin-script author, Verified Guest badge, and <time datetime>`,
+			);
+
+			const airbnbLinkMatch = reviewFooterHtml.match(
+				/<a[^>]*target="_blank"[^>]*>[\s\S]*?<\/a>/,
+			);
+			assert.ok(
+				airbnbLinkMatch,
+				`${homeFile} #${property.reviewId} must render outbound Airbnb verification link`,
+			);
+			assert.ok(
+				airbnbLinkMatch[0].includes(`href="${property.airbnbUrl}"`) &&
+					airbnbLinkMatch[0].includes('rel="noopener noreferrer"') &&
+					airbnbLinkMatch[0].includes("min-h-[44px]") &&
+					decodeHtmlEntities(airbnbLinkMatch[0]).includes(t.reviewViewOnAirbnb),
+				`${homeFile} #${property.reviewId} Airbnb verification link must point to Property ${property.id} listing with >=44px tap target height`,
+			);
+			// Metadata row and Airbnb link row must be distinct sibling containers (not sharing a single flex-wrap row)
+			assert.ok(
+				/<time[^>]*>[\s\S]*?<\/time><\/div><div[^>]*><a[^>]*href=/.test(
+					reviewFooterHtml,
+				),
+				`${homeFile} #${property.reviewId} must separate author/date metadata row from the dedicated Airbnb verification link row`,
+			);
+		}
+
+		// 3. Muted non-button proximity tags + verified BUILDING_MAP_URL link in #location
+		const locationMatch = html.match(
+			/<section[^>]*id="location"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(locationMatch, `${homeFile} must render #location`);
+		const locationHtml = locationMatch[0];
+
+		for (const landmark of PLAYA_SALGUERO_LANDMARKS) {
+			const proximityText = t[landmark.proximityKey];
+			const escapedProximity = proximityText.replace(
+				/[.*+?^${}()|[\]\\]/g,
+				"\\$&",
+			);
+			const badgeMatch = locationHtml.match(
+				new RegExp(`<span[^>]*>${escapedProximity}<\\/span>`),
+			);
+			assert.ok(
+				badgeMatch,
+				`${homeFile} #location must render proximity tag for ${landmark.id}`,
+			);
+			assert.ok(
+				badgeMatch[0].includes("bg-slate-100") &&
+					badgeMatch[0].includes("text-slate-700") &&
+					!badgeMatch[0].includes("bg-slate-900") &&
+					!badgeMatch[0].includes("rounded-full"),
+				`${homeFile} #location proximity tag for ${landmark.id} must be a muted non-button tag (not a solid dark pill)`,
+			);
+		}
+
+		assert.ok(
+			locationHtml.includes('id="home-location-map-link"') &&
+				locationHtml.includes(`href="${BUILDING_MAP_URL}"`) &&
+				locationHtml.includes(t.homeLocationMapLink),
+			`${homeFile} #location must render localized direct map link to BUILDING_MAP_URL`,
+		);
+
+		// 4. Zero untranslated English leakage for #331 strings in non-English locales
+		if (lang !== "en") {
+			assert.ok(
+				!html.includes("Paid in COP") && !html.includes("View on Google Maps"),
+				`${homeFile} must not leak untranslated English #331 strings`,
 			);
 		}
 	}

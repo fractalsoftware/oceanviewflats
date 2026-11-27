@@ -4,10 +4,12 @@ import path from "node:path";
 import test from "node:test";
 import {
 	BUILDING_LOCATION,
+	BUILDING_MAP_URL,
 	HOME_PROPERTY_COMPARISON_ROWS,
 	HOME_SHARED_BUILDING_RULES,
 	PLAYA_SALGUERO_LANDMARKS,
 } from "../../src/constants/config";
+import { dict } from "../../src/i18n/dict";
 
 const DIST_DIR = path.join(process.cwd(), "dist");
 
@@ -208,6 +210,8 @@ const UNTRANSLATED_ENGLISH_TOKENS = [
 	"Tayrona National Park",
 	"~2 min walk",
 	"by car",
+	"View on Google Maps",
+	"Paid in COP",
 ] as const;
 
 test("Homepage renders semantic HTML comparison <table> for 8 differentiating attributes (including Cleaning Fees & live rate targets) plus companion shared building rules callout across all 6 locales (#302 #319)", () => {
@@ -339,12 +343,17 @@ test("Homepage renders semantic HTML comparison <table> for 8 differentiating at
 	}
 });
 
-test("Homepage renders localized Playa Salguero & Santa Marta proximity section with Edificio Salguero Sunset and all 5 landmarks across all 6 locales (#302)", () => {
+test("Homepage renders localized Playa Salguero & Santa Marta proximity section with Edificio Salguero Sunset, direct map link, and all 5 landmarks across all 6 locales (#302 #331)", () => {
 	assert.equal(BUILDING_LOCATION.name, "Edificio Salguero Sunset");
+	assert.equal(
+		BUILDING_MAP_URL,
+		`https://maps.google.com/?q=${BUILDING_LOCATION.latitude},${BUILDING_LOCATION.longitude}`,
+	);
 	assert.equal(PLAYA_SALGUERO_LANDMARKS.length, 5);
 
 	for (const locale of LOCALE_EXPECTATIONS) {
 		const html = fs.readFileSync(path.join(DIST_DIR, locale.file), "utf-8");
+		const t = dict[locale.code];
 		const sectionMatch = html.match(
 			/<section[^>]*id="location"[^>]*>[\s\S]*?<\/section>/,
 		);
@@ -357,6 +366,22 @@ test("Homepage renders localized Playa Salguero & Santa Marta proximity section 
 		assert.ok(
 			sectionHtml.includes("<h2") && sectionHtml.includes(locale.locationTitle),
 			`${locale.file} #location must render localized <h2> title`,
+		);
+
+		const mapLinkMatch = sectionHtml.match(
+			/<a[^>]*id="home-location-map-link"[^>]*>[\s\S]*?<\/a>/,
+		);
+		assert.ok(
+			mapLinkMatch,
+			`${locale.file} #location must render #home-location-map-link`,
+		);
+		assert.ok(
+			mapLinkMatch[0].includes(`href="${BUILDING_MAP_URL}"`) &&
+				mapLinkMatch[0].includes('target="_blank"') &&
+				mapLinkMatch[0].includes('rel="noopener noreferrer"') &&
+				mapLinkMatch[0].includes("min-h-[44px]") &&
+				mapLinkMatch[0].includes(t.homeLocationMapLink),
+			`${locale.file} #home-location-map-link must point to verified BUILDING_MAP_URL with >=44px tap target and localized label`,
 		);
 
 		const landmarkHeadings = sectionHtml.match(/<h3[^>]*>/g) || [];
