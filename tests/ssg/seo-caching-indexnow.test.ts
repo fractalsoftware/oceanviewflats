@@ -28,6 +28,7 @@ test("All compiled HTML pages append deterministic 8-char SHA-256 ?v=<hash> to c
 		"css/style.css",
 		"js/lang-detect.js",
 		"js/page-config.js",
+		"js/analytics.js",
 		"js/main.js",
 		"js/registry.js",
 		"js/guide.js",
@@ -84,6 +85,12 @@ test("All compiled HTML pages append deterministic 8-char SHA-256 ?v=<hash> to c
 				),
 				`${filename} must reference versioned page-config.js`,
 			);
+			assert.ok(
+				html.includes(
+					`<script src="${expectedPrefix}js/analytics.js?v=${expectedHashes["js/analytics.js"]}"></script>`,
+				),
+				`${filename} must reference versioned analytics.js`,
+			);
 
 			// Page-specific scripts versioned with matching relative prefix
 			for (const script of page.scripts) {
@@ -137,6 +144,7 @@ test("baseTemplate deterministically applies assetVersions across assetPrefix de
 		"css/style.css": "11111111",
 		"js/lang-detect.js": "22222222",
 		"js/page-config.js": "33333333",
+		"js/analytics.js": "66666666",
 		"js/main.js": "44444444",
 		"js/registry.js": "55555555",
 	});
@@ -144,6 +152,7 @@ test("baseTemplate deterministically applies assetVersions across assetPrefix de
 		"css/style.css": "aaaaaaaa",
 		"js/lang-detect.js": "22222222",
 		"js/page-config.js": "33333333",
+		"js/analytics.js": "cccccccc",
 		"js/main.js": "bbbbbbbb",
 		"js/registry.js": "55555555",
 	});
@@ -151,10 +160,12 @@ test("baseTemplate deterministically applies assetVersions across assetPrefix de
 	assert.ok(htmlV1.includes('href="../../css/style.css?v=11111111"'));
 	assert.ok(htmlV1.includes('src="../../js/lang-detect.js?v=22222222" defer'));
 	assert.ok(htmlV1.includes('src="../../js/page-config.js?v=33333333"'));
+	assert.ok(htmlV1.includes('src="../../js/analytics.js?v=66666666"'));
 	assert.ok(htmlV1.includes('src="../../js/main.js?v=44444444"'));
 	assert.ok(htmlV1.includes('src="../../js/registry.js?v=55555555"'));
 
 	assert.ok(htmlV2.includes('href="../../css/style.css?v=aaaaaaaa"'));
+	assert.ok(htmlV2.includes('src="../../js/analytics.js?v=cccccccc"'));
 	assert.ok(htmlV2.includes('src="../../js/main.js?v=bbbbbbbb"'));
 });
 
