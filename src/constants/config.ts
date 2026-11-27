@@ -323,14 +323,14 @@ export interface HomeFaqItemConfig {
 export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
 	{ id: "faq-1", qKey: "faqQ1", aKey: "faqA1", defaultOpen: false },
 	{ id: "faq-2", qKey: "faqQ2", aKey: "faqA2", defaultOpen: false },
-	{ id: "faq-3", qKey: "faqQ3", aKey: "faqA3", defaultOpen: true },
+	{ id: "faq-3", qKey: "faqQ3", aKey: "faqA3", defaultOpen: false },
 	{ id: "faq-4", qKey: "faqQ4", aKey: "faqA4", defaultOpen: false },
 	{ id: "faq-5", qKey: "faqQ5", aKey: "faqA5", defaultOpen: false },
 	{
 		id: "faq-6",
 		qKey: "faqQ6",
 		aKey: "faqA6",
-		defaultOpen: false,
+		defaultOpen: true,
 		showFulfillmentLinks: true,
 	},
 ];

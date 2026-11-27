@@ -208,6 +208,8 @@ const UNTRANSLATED_ENGLISH_TOKENS = [
 	"Tayrona National Park",
 	"~2 min walk",
 	"by car",
+	"Check Dates &amp; Book Flat 1707",
+	"Check Dates &amp; Book Flat 1606",
 ] as const;
 
 test("Homepage renders semantic HTML comparison <table> for 8 differentiating attributes (including Cleaning Fees & live rate targets) plus companion shared building rules callout across all 6 locales (#302 #319)", () => {
@@ -289,10 +291,21 @@ test("Homepage renders semantic HTML comparison <table> for 8 differentiating at
 			`${locale.file} comparison table must expose #home-compare-rate-1707 and #home-compare-rate-1606 hydration targets`,
 		);
 
-		// Companion shared building rules callout
+		// Companion shared building rules callout & direct Property CTAs (#332)
 		assert.ok(
 			sectionHtml.includes('id="home-shared-building-rules"'),
 			`${locale.file} #compare-properties must render #home-shared-building-rules companion callout`,
+		);
+		const propertySuffix = locale.code === "en" ? "" : `${locale.code}.html`;
+		assert.ok(
+			sectionHtml.includes('id="home-compare-ctas"') &&
+				sectionHtml.includes(
+					`id="home-compare-cta-1707" href="./Oceanview1707/${propertySuffix}"`,
+				) &&
+				sectionHtml.includes(
+					`id="home-compare-cta-1606" href="./Oceanview1606/${propertySuffix}"`,
+				),
+			`${locale.file} #compare-properties must render localized relative-path CTAs for Property 1707 and Property 1606`,
 		);
 
 		// Verify all reconciled facts (8 differentiating + 5 shared) appear inside #compare-properties
