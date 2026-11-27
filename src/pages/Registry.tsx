@@ -75,7 +75,11 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</header>
 
-			<main className="flex-grow w-full py-12 px-6 max-w-5xl mx-auto">
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className="flex-grow w-full py-12 px-6 max-w-5xl mx-auto"
+			>
 				{/* Main layout grid */}
 				<div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 					{/* Left Panel: Stay Details & Legal Trust */}

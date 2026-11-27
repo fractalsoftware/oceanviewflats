@@ -74,7 +74,11 @@ export default function Guide({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</header>
 
-			<main className="flex-grow w-full py-12 px-6 max-w-6xl mx-auto space-y-8">
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className="flex-grow w-full py-12 px-6 max-w-6xl mx-auto space-y-8"
+			>
 				{/* Mandatory Registry Link Button Card - Critical High Priority Callout Banner */}
 				<section
 					id="guide-registry-banner"

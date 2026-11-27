@@ -35,7 +35,7 @@ export default function Oceanview1707({ lang, assetPrefix = "./" }: AppProps) {
 				assetPrefix={assetPrefix}
 			/>
 			<Hero lang={lang} propertyId="1707" assetPrefix={assetPrefix} />
-			<main>
+			<main id="main-content" tabIndex={-1}>
 				<Breadcrumbs
 					lang={lang}
 					assetPrefix={assetPrefix}

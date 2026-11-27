@@ -113,6 +113,8 @@ export const getClientDictionaryForPage = (
 		contactSubmitting: t.contactSubmitting || "",
 		contactSubmit: t.contactSubmit || "",
 		contactDateError: t.contactDateError || "",
+		navMenuOpenAriaLabel: t.navMenuOpenAriaLabel || "",
+		navMenuCloseAriaLabel: t.navMenuCloseAriaLabel || "",
 	};
 
 	if (pageId === "home") {

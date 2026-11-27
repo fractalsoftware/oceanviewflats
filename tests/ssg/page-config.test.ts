@@ -1397,17 +1397,17 @@ test("Homepage Hero and Property 1707 / 1606 showcase cards render localized val
 			`${locale.file} #properties must display the 7–12 Guest multi-property family stay note in Edificio Salguero Sunset`,
 		);
 
-		// 7. No line-clamp-2 truncation on localized descriptions, and unified 1707/1606 card color scheme + WCAG AA contrast tokens used inside #properties
+		// 7. No line-clamp-2 truncation on localized descriptions, and subtle Property Temperature tokens (cool slate/sky on 1707, warm travertine/rose on 1606) with WCAG AA+ contrast
 		assert.ok(
 			!propSectionHtml.includes("line-clamp-2"),
 			`${locale.file} property cards must not truncate descriptions with line-clamp-2`,
 		);
 		assert.ok(
-			propSectionHtml.includes("text-[#B91C1C]") &&
-				!propSectionHtml.includes("text-[#FF5A5F]") &&
-				!propSectionHtml.includes("text-rose-600") &&
-				!propSectionHtml.includes("bg-stone-50"),
-			`${locale.file} property cards must share the 1707 color scheme with text-[#B91C1C] CTA and neutral spec pills`,
+			propSectionHtml.includes("border-sky-300") &&
+				propSectionHtml.includes("border-rose-300") &&
+				propSectionHtml.includes("bg-stone-50/70") &&
+				!propSectionHtml.includes("text-[#FF5A5F]"),
+			`${locale.file} property cards must express subtle Property Temperature differentiation (1707 cool slate/sky vs 1606 warm travertine/rose) without low-contrast text-[#FF5A5F]`,
 		);
 	}
 
@@ -1498,31 +1498,25 @@ test("Homepage Why Book Direct, Editorial Lifestyle & Host Showcase, Progressive
 			`${locale.file} #why-book-direct must use cohesive palette without amber/purple icon boxes`,
 		);
 
-		// 2. Editorial Lifestyle & Host Showcase section renders real photography and Host Manuel Enrique with RNT badges
-		const expMatch = html.match(
-			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		// 2. Consolidated Property Showcase & Trust/Host Band render real lifestyle photography and Host Manuel Enrique with RNT badges + direct contact links (no redundant #experiences band)
+		assert.ok(
+			!html.includes('id="experiences"'),
+			`${locale.file} must consolidate #experiences into #properties without a redundant third Property pitch`,
 		);
 		assert.ok(
-			expMatch,
-			`${locale.file} must render <section id="experiences">`,
-		);
-		const expHtml = expMatch[0];
-		assert.ok(
-			expHtml.includes("./images/1707-balcony-working-nomad.webp") &&
-				expHtml.includes("./images/1606-romantic-experiences.webp") &&
-				expHtml.includes("./images/host-image.webp"),
-			`${locale.file} #experiences must showcase 1707-balcony-working-nomad.webp, 1606-romantic-experiences.webp, and host-image.webp`,
+			html.includes("./images/1707-balcony-working-nomad.webp") &&
+				html.includes("./images/1606-romantic-experiences.webp") &&
+				html.includes("./images/host-image.webp"),
+			`${locale.file} homepage must showcase 1707-balcony-working-nomad.webp, 1606-romantic-experiences.webp, and host-image.webp`,
 		);
 		assert.ok(
-			expHtml.includes('id="home-host-card"') &&
-				expHtml.includes("Manuel Enrique") &&
-				expHtml.includes("268781") &&
-				expHtml.includes("270413"),
-			`${locale.file} #experiences must render #home-host-card with Manuel Enrique and both RNT numbers`,
-		);
-		assert.ok(
-			!expHtml.includes("mt-10"),
-			`${locale.file} #experiences must not have an exposed mt-10 gap`,
+			directHtml.includes('id="home-host-card"') &&
+				directHtml.includes("Manuel Enrique") &&
+				directHtml.includes("268781") &&
+				directHtml.includes("270413") &&
+				directHtml.includes('id="home-host-whatsapp"') &&
+				directHtml.includes('id="home-host-email"'),
+			`${locale.file} #why-book-direct must render #home-host-card with Manuel Enrique, both RNT numbers, and direct WhatsApp & Email actions`,
 		);
 
 		// 3. Progressive-Disclosure FAQ section uses 6 native <details>/<summary> accordions (first open) with COP, 20,000 COP, and 0XXXXXX# disclosures
@@ -1813,10 +1807,10 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 		"#navbar must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
 	);
 	assert.equal(
-		navLogo.classList.contains("text-[#FF5A5F]") &&
+		navLogo.classList.contains("text-coral-horizon-ink") &&
 			!navLogo.classList.contains("text-white"),
 		true,
-		"#nav-logo must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+		"#nav-logo must immediately receive WCAG AA+ scrolled classes (text-coral-horizon-ink) on DOMContentLoaded when window.scrollY > 50",
 	);
 	assert.equal(
 		langToggle.classList.contains("bg-slate-100") &&
@@ -1832,10 +1826,10 @@ test("Compiled CSS binds --font-sans to Inter and main.js syncs scrolled navbar 
 		"#nav-contact must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
 	);
 	assert.equal(
-		navBook.classList.contains("text-slate-600") &&
-			!navBook.classList.contains("text-white"),
+		navBook.classList.contains("text-white") &&
+			!navBook.classList.contains("text-slate-600"),
 		true,
-		"#nav-book must immediately receive scrolled classes on DOMContentLoaded when window.scrollY > 50",
+		"#nav-book must preserve high-contrast white text on its solid Coral Horizon pill when scrolled",
 	);
 
 	// Verify scrolling back to top (scrollY = 0) restores transparent classes
@@ -1974,20 +1968,21 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 		);
 
 		const card1707Match = propSectionHtml.match(
-			/<a[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/a>/,
+			/<article[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/article>/,
 		);
 		const card1606Match = propSectionHtml.match(
-			/<a[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/a>/,
+			/<article[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/article>/,
 		);
 		assert.ok(
 			card1707Match && card1606Match,
-			`${locale.file} must render both #home-card-1707 and #home-card-1606`,
+			`${locale.file} must render both <article id="home-card-1707"> and <article id="home-card-1606">`,
 		);
 		assert.ok(
 			card1707Match[0].includes(locale.expected1707Rate) &&
 				card1707Match[0].includes("900 Mbps") &&
-				card1707Match[0].includes(locale.expectedWifi),
-			`${locale.file} #home-card-1707 must display "${locale.expected1707Rate}" and "${locale.expectedWifi}"`,
+				card1707Match[0].includes(locale.expectedWifi) &&
+				card1707Match[0].includes(locale.expectedExp1707FamilyTitle),
+			`${locale.file} #home-card-1707 must display "${locale.expected1707Rate}", "${locale.expectedWifi}", and consolidated highlight "${locale.expectedExp1707FamilyTitle}"`,
 		);
 		assert.ok(
 			card1606Match[0].includes(locale.expected1606Rate) &&
@@ -1996,36 +1991,11 @@ test("Homepage renders visible #properties heading, starting COP nightly rates, 
 			`${locale.file} #home-card-1606 must display "${locale.expected1606Rate}" and "${locale.expectedWifi}"`,
 		);
 
-		// 2. #experiences cards display target Property identity badges (1707 and 1606) and render 2 balanced feature items per card
-		const expMatch = html.match(
-			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
-		);
-		assert.ok(expMatch, `${locale.file} must render #experiences`);
-		const expHtml = expMatch[0];
+		// 2. Consolidated Property cards retain exact 2 highlights per Property without redundant #experiences band
 		assert.ok(
-			expHtml.includes(locale.expectedExp1707Badge) &&
-				expHtml.includes(locale.expectedExp1606Badge),
-			`${locale.file} #experiences must display Property identity badges "${locale.expectedExp1707Badge}" and "${locale.expectedExp1606Badge}"`,
+			!html.includes('id="experiences"'),
+			`${locale.file} must not render redundant #experiences section`,
 		);
-		assert.ok(
-			expHtml.includes(locale.expectedExp1707FamilyTitle),
-			`${locale.file} #experiences 1707 card must include 2nd family/group feature "${locale.expectedExp1707FamilyTitle}"`,
-		);
-		const expCardMatches = expHtml.match(
-			/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>[\s\S]*?<\/a>/g,
-		);
-		assert.ok(
-			expCardMatches && expCardMatches.length === 2,
-			`${locale.file} #experiences must render 2 property lifestyle cards`,
-		);
-		for (const expCardHtml of expCardMatches) {
-			const h3Matches = expCardHtml.match(/<h3[^>]*>/g) || [];
-			assert.equal(
-				h3Matches.length,
-				2,
-				`${locale.file} each #experiences card must render 2 balanced feature items (<h3> headings)`,
-			);
-		}
 
 		// 3. #faq pre-opens #faq-3 (faqQ3) by default and leaves #faq-1 closed
 		const faq1Match = html.match(/<details[^>]*id="faq-1"[^>]*>/);
@@ -2157,25 +2127,25 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. #why-book-direct Card 4 uses Clearance Emerald (bg-emerald-50 text-emerald-700) and never decorative Rose
+		// 1. #why-book-direct uses Clearance Emerald inline editorial icons (text-emerald-700) on Reasons 1 & 4 without boxed 48px stacked icon tiles or decorative Rose
 		const directMatch = html.match(
 			/<section[^>]*id="why-book-direct"[^>]*>[\s\S]*?<\/section>/,
 		);
 		assert.ok(directMatch, `${locale.file} must render #why-book-direct`);
 		const directHtml = directMatch[0];
-		const emeraldBadges =
-			directHtml.match(/bg-emerald-50 text-emerald-700/g) || [];
+		const emeraldIcons = directHtml.match(/w-5 h-5 text-emerald-700/g) || [];
 		assert.equal(
-			emeraldBadges.length,
+			emeraldIcons.length,
 			2,
-			`${locale.file} #why-book-direct must use Clearance Emerald (bg-emerald-50 text-emerald-700) on both Card 1 and Card 4`,
+			`${locale.file} #why-book-direct must use inline Clearance Emerald (text-emerald-700) on both Reason 1 and Reason 4`,
 		);
 		assert.ok(
-			!directHtml.includes("bg-rose-50 text-rose-700"),
-			`${locale.file} #why-book-direct Card 4 must not use decorative Rose (bg-rose-50 text-rose-700)`,
+			!directHtml.includes("w-12 h-12") &&
+				!directHtml.includes("bg-rose-50 text-rose-700"),
+			`${locale.file} #why-book-direct must omit 48px stacked icon tiles and decorative Rose`,
 		);
 
-		// 2. #faq-2 discloses the per-person reception fee and Tuesday pool maintenance, and #faq-6 is structured into numbered steps
+		// 2. #faq-2 discloses the per-person reception fee and Tuesday pool maintenance, and #faq-6 is structured into numbered steps with direct Guest Registry & Guest Guide links
 		const faq2Match = html.match(
 			/<details[^>]*id="faq-2"[^>]*>[\s\S]*?<\/details>/,
 		);
@@ -2199,45 +2169,49 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 				faq6Html.includes("1581") &&
 				faq6Html.includes("679") &&
 				faq6Html.includes("0XXXXXX#") &&
-				faq6Html.includes("20,000 COP"),
-			`${locale.file} #faq-6 must structure check-in, Guest Registry (Law 1581 & Law 679), 0XXXXXX# PIN, and 20,000 COP reception fee into numbered steps`,
+				faq6Html.includes("20,000 COP") &&
+				faq6Html.includes('id="faq-registry-link"') &&
+				faq6Html.includes('id="faq-guide-link"'),
+			`${locale.file} #faq-6 must structure check-in, Guest Registry (Law 1581 & Law 679), 0XXXXXX# PIN, 20,000 COP reception fee, and direct Guest Registry & Guest Guide links`,
 		);
 
-		// 3. #experiences renders verified guest reviews (Julian Alfredo on 1707, Lina Marcela on 1606) and descriptive image alts
-		const expMatch = html.match(
-			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
+		// 3. #properties renders verified guest reviews (Julian Alfredo on 1707, Lina Marcela on 1606) and descriptive lifestyle image alts
+		const propMatch = html.match(
+			/<section[^>]*id="properties"[^>]*>[\s\S]*?<\/section>/,
 		);
-		assert.ok(expMatch, `${locale.file} must render #experiences`);
-		const expHtml = expMatch[0];
-		const expCardMatches = expHtml.match(
-			/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>[\s\S]*?<\/a>/g,
+		assert.ok(propMatch, `${locale.file} must render #properties`);
+		const propHtml = propMatch[0];
+		const card1707HtmlMatch = propHtml.match(
+			/<article[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/article>/,
+		);
+		const card1606HtmlMatch = propHtml.match(
+			/<article[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/article>/,
 		);
 		assert.ok(
-			expCardMatches && expCardMatches.length === 2,
-			`${locale.file} #experiences must render 2 property lifestyle cards`,
+			card1707HtmlMatch && card1606HtmlMatch,
+			`${locale.file} #properties must render both Property showcase articles`,
 		);
-		const [card1707Html, card1606Html] = expCardMatches;
+		const card1707Html = card1707HtmlMatch[0];
+		const card1606Html = card1606HtmlMatch[0];
 
 		assert.ok(
 			card1707Html.includes(`alt="${locale.expectedNomadAlt}"`),
-			`${locale.file} #experiences 1707 card image must use descriptive alt="${locale.expectedNomadAlt}"`,
+			`${locale.file} #properties 1707 card lifestyle image must use descriptive alt="${locale.expectedNomadAlt}"`,
 		);
 		assert.ok(
 			card1707Html.includes(locale.expected1707ReviewSnippet) &&
-				card1707Html.includes(locale.expected1707ReviewAuthor) &&
-				card1707Html.includes("border-t border-slate-700/80"),
-			`${locale.file} #experiences 1707 card must render Julian Alfredo's verified Guest Review`,
+				card1707Html.includes(locale.expected1707ReviewAuthor),
+			`${locale.file} #properties 1707 card must render Julian Alfredo's verified Guest Review`,
 		);
 
 		assert.ok(
 			card1606Html.includes(`alt="${locale.expectedRomanticAlt}"`),
-			`${locale.file} #experiences 1606 card image must use descriptive alt="${locale.expectedRomanticAlt}"`,
+			`${locale.file} #properties 1606 card lifestyle image must use descriptive alt="${locale.expectedRomanticAlt}"`,
 		);
 		assert.ok(
 			card1606Html.includes(locale.expected1606ReviewSnippet) &&
-				card1606Html.includes(locale.expected1606ReviewAuthor) &&
-				card1606Html.includes("border-t border-slate-700/80"),
-			`${locale.file} #experiences 1606 card must render Lina Marcela's verified review`,
+				card1606Html.includes(locale.expected1606ReviewAuthor),
+			`${locale.file} #properties 1606 card must render Lina Marcela's verified Guest Review`,
 		);
 	}
 });
@@ -2286,33 +2260,29 @@ test("Homepage highlights bed-capacity pills on #home-card-1707 and #home-card-1
 	for (const locale of locales) {
 		const html = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
 
-		// 1. #home-card-1707 and #home-card-1606 render cardSpecHighlight (bg-rose-50 border-rose-200 text-slate-900 font-bold) on the bedroom/bed count pill
+		// 1. #home-card-1707 and #home-card-1606 render semantic <article> containers with bold bed-capacity inline spec items and accessible stretched-link heading/CTA links
 		const card1707Match = html.match(
-			/<a[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/a>/,
+			/<article[^>]*id="home-card-1707"[^>]*>[\s\S]*?<\/article>/,
 		);
 		const card1606Match = html.match(
-			/<a[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/a>/,
+			/<article[^>]*id="home-card-1606"[^>]*>[\s\S]*?<\/article>/,
 		);
 		assert.ok(
 			card1707Match && card1606Match,
-			`${locale.file} must render #home-card-1707 and #home-card-1606`,
+			`${locale.file} must render <article id="home-card-1707"> and <article id="home-card-1606">`,
 		);
 		const card1707Html = card1707Match[0];
 		const card1606Html = card1606Match[0];
 
-		const highlightPillRegex1707 = new RegExp(
-			`<span[^>]*class="[^"]*bg-rose-50[^"]*border-rose-200[^"]*text-slate-900[^"]*font-bold[^"]*"[^>]*>${locale.expected1707Beds}<\\/span>`,
-		);
-		const highlightPillRegex1606 = new RegExp(
-			`<span[^>]*class="[^"]*bg-rose-50[^"]*border-rose-200[^"]*text-slate-900[^"]*font-bold[^"]*"[^>]*>${locale.expected1606Beds}<\\/span>`,
+		assert.ok(
+			card1707Html.includes(locale.expected1707Beds) &&
+				card1707Html.includes("font-bold text-slate-900"),
+			`${locale.file} #home-card-1707 must highlight "${locale.expected1707Beds}" in its inline spec bar`,
 		);
 		assert.ok(
-			highlightPillRegex1707.test(card1707Html),
-			`${locale.file} #home-card-1707 must highlight "${locale.expected1707Beds}" with bg-rose-50 border-rose-200 text-slate-900 font-bold`,
-		);
-		assert.ok(
-			highlightPillRegex1606.test(card1606Html),
-			`${locale.file} #home-card-1606 must highlight "${locale.expected1606Beds}" with bg-rose-50 border-rose-200 text-slate-900 font-bold`,
+			card1606Html.includes(locale.expected1606Beds) &&
+				card1606Html.includes("font-bold text-stone-900"),
+			`${locale.file} #home-card-1606 must highlight "${locale.expected1606Beds}" in its inline spec bar`,
 		);
 
 		// 2. #nav-book is visible on mobile viewports (uses inline-flex without hidden md:inline-flex) and includes focus-visible:ring-4
@@ -2325,13 +2295,11 @@ test("Homepage highlights bed-capacity pills on #home-card-1707 and #home-card-1
 			`${locale.file} #nav-book must use inline-flex without hidden md:inline-flex and include focus-visible:ring-4`,
 		);
 
-		// 3. Primary interactive homepage elements include focus-visible:ring-4, and Hero CTA icon uses text-[#FF5A5F]
-		const card1707OpenTag = card1707Html.match(/^<a[^>]*>/)?.[0] || "";
-		const card1606OpenTag = card1606Html.match(/^<a[^>]*>/)?.[0] || "";
+		// 3. Primary interactive homepage elements include focus-visible:ring-4, and Hero CTA uses Coral Horizon AA+ surface
 		assert.ok(
-			card1707OpenTag.includes("focus-visible:ring-4") &&
-				card1606OpenTag.includes("focus-visible:ring-4"),
-			`${locale.file} #home-card-1707 and #home-card-1606 must include focus-visible:ring-4`,
+			card1707Html.includes("focus-visible:ring-4") &&
+				card1606Html.includes("focus-visible:ring-4"),
+			`${locale.file} #home-card-1707 and #home-card-1606 interactive links must include focus-visible:ring-4`,
 		);
 
 		const headerMatch = html.match(/<header[\s\S]*?<\/header>/);
@@ -2344,8 +2312,8 @@ test("Homepage highlights bed-capacity pills on #home-card-1707 and #home-card-1
 			`${locale.file} Hero CTA must include focus-visible:ring-4`,
 		);
 		assert.ok(
-			headerMatch[0].includes("text-[#FF5A5F]"),
-			`${locale.file} Hero CTA icon must use text-[#FF5A5F] per DESIGN.md`,
+			heroCtaMatch?.[0].includes("bg-coral-horizon-accessible"),
+			`${locale.file} Hero primary CTA must use WCAG AA+ Coral Horizon token (bg-coral-horizon-accessible)`,
 		);
 
 		const multiPropMatch = html.match(
@@ -2355,21 +2323,6 @@ test("Homepage highlights bed-capacity pills on #home-card-1707 and #home-card-1
 			multiPropMatch?.[0].includes("focus-visible:ring-4"),
 			`${locale.file} #home-multi-property-note CTA must include focus-visible:ring-4`,
 		);
-
-		const expMatch = html.match(
-			/<section[^>]*id="experiences"[^>]*>[\s\S]*?<\/section>/,
-		);
-		assert.ok(expMatch, `${locale.file} must render #experiences`);
-		const expCardTags =
-			expMatch[0].match(/<a[^>]*href="[^"]*Oceanview1(707|606)[^"]*"[^>]*>/g) ||
-			[];
-		assert.equal(expCardTags.length, 2);
-		for (const tag of expCardTags) {
-			assert.ok(
-				tag.includes("focus-visible:ring-4"),
-				`${locale.file} #experiences card must include focus-visible:ring-4`,
-			);
-		}
 
 		const faqSummaries = html.match(/<summary[^>]*>/g) || [];
 		assert.equal(faqSummaries.length, 6);
@@ -4981,4 +4934,602 @@ test("BookingPending 6-locale zero-hydration SSG markup, centralized BOOKING_PEN
 		false,
 		"#",
 	);
+});
+
+test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, compact mobile locale toggle, accessible mobile drawer, reorganized Footer, plain-language Hero, Direct Reservation trust strip, Host actions, and balanced Location grid", () => {
+	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{
+			code: "en",
+			shortCode: "EN",
+			file: "index.html",
+			nested: "Oceanview1707/index.html",
+			suffix: "",
+		},
+		{
+			code: "es",
+			shortCode: "ES",
+			file: "es.html",
+			nested: "Oceanview1707/es.html",
+			suffix: "es.html",
+		},
+		{
+			code: "fr",
+			shortCode: "FR",
+			file: "fr.html",
+			nested: "Oceanview1707/fr.html",
+			suffix: "fr.html",
+		},
+		{
+			code: "it",
+			shortCode: "IT",
+			file: "it.html",
+			nested: "Oceanview1707/it.html",
+			suffix: "it.html",
+		},
+		{
+			code: "de",
+			shortCode: "DE",
+			file: "de.html",
+			nested: "Oceanview1707/de.html",
+			suffix: "de.html",
+		},
+		{
+			code: "ja",
+			shortCode: "JA",
+			file: "ja.html",
+			nested: "Oceanview1707/ja.html",
+			suffix: "ja.html",
+		},
+	] as const;
+
+	for (const locale of locales) {
+		const rootHtml = fs.readFileSync(path.join(distDir, locale.file), "utf-8");
+		const nestedHtml = fs.readFileSync(
+			path.join(distDir, locale.nested),
+			"utf-8",
+		);
+
+		for (const [label, html, prefix] of [
+			[locale.file, rootHtml, "./"],
+			[locale.nested, nestedHtml, "../"],
+		] as const) {
+			// 1. Skip link targeting #main-content
+			assert.ok(
+				html.includes('id="skip-to-content"') &&
+					html.includes('href="#main-content"') &&
+					html.includes('<main id="main-content"'),
+				`${label} must render #skip-to-content targeting <main id="main-content">`,
+			);
+
+			// 2. Compact 2-letter locale toggle with contextual aria-label
+			const langToggleMatch = html.match(
+				/<button[^>]*id="lang-toggle"[^>]*>[\s\S]*?<\/button>/,
+			);
+			assert.ok(langToggleMatch, `${label} must render #lang-toggle`);
+			assert.ok(
+				langToggleMatch[0].includes('aria-label="') &&
+					langToggleMatch[0].includes(`>${locale.shortCode}<`),
+				`${label} #lang-toggle must include contextual aria-label and compact mobile short code "${locale.shortCode}"`,
+			);
+
+			// 3. Accessible mobile navigation drawer toggle and labeled relative links
+			const mobileToggleMatch = html.match(
+				/<button[^>]*id="mobile-nav-toggle"[^>]*>/,
+			);
+			assert.ok(mobileToggleMatch, `${label} must render #mobile-nav-toggle`);
+			assert.ok(
+				mobileToggleMatch[0].includes('type="button"') &&
+					mobileToggleMatch[0].includes('aria-expanded="false"') &&
+					mobileToggleMatch[0].includes('aria-controls="mobile-nav-drawer"') &&
+					mobileToggleMatch[0].includes("min-h-[40px]") &&
+					mobileToggleMatch[0].includes("min-w-[40px]"),
+				`${label} #mobile-nav-toggle must enforce button semantics, aria-expanded, aria-controls, and >=40px tap target`,
+			);
+
+			const drawerMatch = html.match(
+				/<div[^>]*id="mobile-nav-drawer"[^>]*>[\s\S]*?<\/nav>/,
+			);
+			assert.ok(drawerMatch, `${label} must render #mobile-nav-drawer`);
+			const drawerHtml = drawerMatch[0];
+			assert.ok(
+				drawerHtml.includes("hidden") &&
+					drawerHtml.includes(
+						`href="${prefix}Oceanview1707/${locale.suffix}"`,
+					) &&
+					drawerHtml.includes(
+						`href="${prefix}Oceanview1606/${locale.suffix}"`,
+					) &&
+					drawerHtml.includes(`href="${prefix}santa-marta/${locale.suffix}"`) &&
+					drawerHtml.includes(`href="${prefix}contact/${locale.suffix}"`) &&
+					drawerHtml.includes(`href="${prefix}registry/${locale.suffix}"`) &&
+					drawerHtml.includes(`href="${prefix}guide/${locale.suffix}"`),
+				`${label} #mobile-nav-drawer must be hidden by default and include relative links to 1707, 1606, Destination Guides, Contact, Guest Registry, and Guest Guide`,
+			);
+
+			// Contact is grouped under Staying Guests (after registry & guide links), matching Footer.tsx
+			assert.ok(
+				drawerHtml.indexOf(`href="${prefix}guide/${locale.suffix}"`) <
+					drawerHtml.indexOf(`href="${prefix}contact/${locale.suffix}"`),
+				`${label} #mobile-nav-drawer must group Contact under Staying Guests alongside Guest Registry and Guest Guide`,
+			);
+
+			// 4. Decorative brand & attribution SVGs hidden from screen readers + #nav-logo >=40px tap target
+			const navLogoMatch = html.match(
+				/<a[^>]*id="nav-logo"[^>]*>[\s\S]*?<\/a>/,
+			);
+			assert.ok(
+				navLogoMatch?.[0].includes('aria-hidden="true"') &&
+					navLogoMatch[0].includes("min-h-[40px]"),
+				`${label} #nav-logo must enforce min-h-[40px] tap target and aria-hidden="true" on decorative SVG`,
+			);
+
+			// 5. Reorganized 4-group global Footer with relative links, aria-hidden SVGs, and rounded-lg focus rings
+			const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
+			assert.ok(footerMatch, `${label} must render <footer>`);
+			const footerHtml = footerMatch[0];
+			assert.ok(
+				footerHtml.includes(
+					`id="footer-property-1707-link" href="${prefix}Oceanview1707/${locale.suffix}"`,
+				) &&
+					footerHtml.includes(
+						`id="footer-property-1606-link" href="${prefix}Oceanview1606/${locale.suffix}"`,
+					) &&
+					footerHtml.includes(
+						`id="footer-registry-link" href="${prefix}registry/${locale.suffix}"`,
+					) &&
+					footerHtml.includes(
+						`id="footer-guide-link" href="${prefix}guide/${locale.suffix}"`,
+					) &&
+					footerHtml.includes(
+						`id="footer-contact-link" href="${prefix}contact/${locale.suffix}"`,
+					) &&
+					footerHtml.includes(
+						`id="footer-guides-hub-link" href="${prefix}santa-marta/${locale.suffix}"`,
+					) &&
+					footerHtml.includes(
+						`id="footer-privacy-link" href="${prefix}privacy/${locale.suffix}"`,
+					),
+				`${label} Footer must include relative links for Properties, Staying Guests, Destination Guides, and Legal`,
+			);
+			assert.ok(
+				!footerHtml.includes("rounded-sm") && footerHtml.includes("rounded-lg"),
+				`${label} Footer links must align with DESIGN.md rounded-lg (8px minimum) focus radius`,
+			);
+			const footerSvgs = footerHtml.match(/<svg\b[^>]*>/g) || [];
+			assert.ok(
+				footerSvgs.length >= 2,
+				`${label} Footer must include brand and attribution SVGs`,
+			);
+			for (const svgTag of footerSvgs) {
+				assert.ok(
+					svgTag.includes('aria-hidden="true"'),
+					`${label} decorative Footer SVG must include aria-hidden="true"`,
+				);
+			}
+		}
+
+		// 6. Homepage-specific checks: plain-language Hero, no external/Mercado Pago SDK scripts, Trust Strip, Host Actions, FAQ #6 links, balanced Location grid
+		const homepageScriptSrcs = [
+			...rootHtml.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi),
+		].map((match) => match[1]);
+		assert.ok(
+			homepageScriptSrcs.length > 0,
+			`${locale.file} homepage must include local runtime scripts`,
+		);
+		for (const scriptSrc of homepageScriptSrcs) {
+			const scriptOrigin = new URL(scriptSrc, "https://oceanviewflats.com/")
+				.origin;
+			assert.equal(
+				scriptOrigin,
+				"https://oceanviewflats.com",
+				`${locale.file} homepage must only load first-party scripts and never eager third-party payment SDKs (found ${scriptSrc})`,
+			);
+		}
+		const rootBodyMatch = rootHtml.match(/<body>([\s\S]*?)<\/body>/i);
+		assert.ok(rootBodyMatch, `${locale.file} must contain <body>`);
+		const rootBodyHtml = rootBodyMatch[1];
+		assert.ok(
+			!rootBodyHtml.includes("Welcome to OceanViewFlats") &&
+				!rootBodyHtml.includes("0% OTA Commission") &&
+				!rootBodyHtml.includes("Authoritative COP Quotes") &&
+				!rootBodyHtml.includes("Settlement Currency"),
+			`${locale.file} visible homepage copy must avoid internal domain jargon and generic welcome heading`,
+		);
+		assert.ok(
+			rootHtml.includes(
+				`id="hero-direct-1707" href="./Oceanview1707/${locale.suffix}"`,
+			) &&
+				rootHtml.includes(
+					`id="hero-direct-1606" href="./Oceanview1606/${locale.suffix}"`,
+				),
+			`${locale.file} Hero must offer direct quick-entry links to Property 1707 and Property 1606`,
+		);
+		assert.ok(
+			rootHtml.includes('id="home-trust-strip"') &&
+				rootHtml.includes("Mercado Pago") &&
+				rootHtml.includes("PSE") &&
+				rootHtml.includes("Efecty") &&
+				rootHtml.includes("RNT #268781") &&
+				rootHtml.includes("RNT #270413"),
+			`${locale.file} must render #home-trust-strip with Mercado Pago rails and RNT licensing explanation`,
+		);
+		assert.ok(
+			rootHtml.includes('id="home-host-whatsapp"') &&
+				rootHtml.includes('id="home-host-email"') &&
+				rootHtml.includes("Manuel Enrique Herrera") &&
+				rootHtml.includes("bg-slate-700"),
+			`${locale.file} #home-host-card must display Manuel Enrique Herrera, direct WhatsApp/Email buttons, and avatar placeholder`,
+		);
+		assert.ok(
+			rootHtml.includes(
+				`id="faq-registry-link" href="./registry/${locale.suffix}"`,
+			) &&
+				rootHtml.includes(
+					`id="faq-guide-link" href="./guide/${locale.suffix}"`,
+				),
+			`${locale.file} FAQ #6 must link directly to localized Guest Registry and Guest Guide`,
+		);
+
+		// Balanced 6-item #location grid (5 landmarks + 6th Destination Guides callout)
+		const locationMatch = rootHtml.match(
+			/<section[^>]*id="location"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(locationMatch, `${locale.file} must render #location`);
+		const locationListItems = locationMatch[0].match(/<li\b[^>]*>/g) || [];
+		assert.equal(
+			locationListItems.length,
+			6,
+			`${locale.file} #location grid must contain 6 balanced <li> cards (5 landmarks + Destination Guides callout)`,
+		);
+	}
+
+	// 7. Compiled CSS includes responsive comparison table container query & balanced/pretty text wrapping
+	const compiledCss = fs.readFileSync(
+		path.join(distDir, "css", "style.css"),
+		"utf-8",
+	);
+	assert.ok(
+		compiledCss.includes("container-type:inline-size") ||
+			compiledCss.includes("container-type: inline-size"),
+		"dist/css/style.css must define container-type: inline-size for mobile comparison table",
+	);
+	assert.ok(
+		compiledCss.includes("text-wrap:balance") ||
+			compiledCss.includes("text-wrap: balance"),
+		"dist/css/style.css must enable text-wrap: balance on headings",
+	);
+	assert.ok(
+		compiledCss.includes("text-wrap:pretty") ||
+			compiledCss.includes("text-wrap: pretty"),
+		"dist/css/style.css must enable text-wrap: pretty on body paragraphs",
+	);
+});
+
+test("#319 main.js mobile navigation drawer toggles cleanly, restores focus on Escape, dismisses on outside click/focusout, and synchronizes live Nightly Rates across both showcase badges and comparison cells", async () => {
+	const mainJsCode = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+
+	interface MockEvent {
+		target?: MockNode;
+		relatedTarget?: MockNode | null;
+		key?: string;
+		preventDefault?: () => void;
+		stopPropagation?: () => void;
+	}
+	type Listener = (e?: MockEvent) => void;
+	interface MockNode {
+		id: string;
+		tagName: string;
+		hidden: boolean;
+		textContent: string;
+		classList: {
+			add: (...cls: string[]) => void;
+			remove: (...cls: string[]) => void;
+			contains: (c: string) => boolean;
+		};
+		getAttribute: (k: string) => string | null;
+		setAttribute: (k: string, v: string) => void;
+		removeAttribute: (k: string) => void;
+		addEventListener: (evt: string, fn: Listener) => void;
+		dispatchEvent: (evt: string, payload?: MockEvent) => void;
+		focus: () => void;
+		blur: () => void;
+		isFocused: () => boolean;
+		appendChild: (child: MockNode) => MockNode;
+		contains: (target: unknown) => boolean;
+		querySelector: (sel: string) => MockNode | null;
+		querySelectorAll: (sel: string) => MockNode[];
+	}
+
+	const createMockNode = (
+		id: string,
+		tagName: string,
+		initialClasses: string[] = [],
+		initialAttrs: Record<string, string> = {},
+	): MockNode => {
+		const classes = new Set<string>(initialClasses);
+		const attrs = new Map<string, string>(Object.entries(initialAttrs));
+		const listeners: Record<string, Listener[]> = {};
+		const children: MockNode[] = [];
+		let focused = false;
+
+		const node: MockNode = {
+			id,
+			tagName,
+			hidden: initialClasses.includes("hidden"),
+			textContent: "",
+			classList: {
+				add: (...cls: string[]) => {
+					for (const c of cls) classes.add(c);
+				},
+				remove: (...cls: string[]) => {
+					for (const c of cls) classes.delete(c);
+				},
+				contains: (c: string) => classes.has(c),
+			},
+			getAttribute: (k: string) => attrs.get(k) ?? null,
+			setAttribute: (k: string, v: string) => {
+				attrs.set(k, v);
+			},
+			removeAttribute: (k: string) => {
+				attrs.delete(k);
+			},
+			addEventListener: (evt: string, fn: Listener) => {
+				listeners[evt] = listeners[evt] || [];
+				listeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of listeners[evt] || []) {
+					fn({
+						target: node,
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+			focus: () => {
+				focused = true;
+			},
+			blur: () => {
+				focused = false;
+			},
+			isFocused: () => focused,
+			appendChild: (child: MockNode) => {
+				children.push(child);
+				return child;
+			},
+			contains: (target: unknown) => {
+				if (target === node) return true;
+				return children.some((c) => c === target || c.contains?.(target));
+			},
+			querySelector: () => children[0] || null,
+			querySelectorAll: (sel: string) =>
+				sel === "a" ? children.filter((c) => c.tagName === "A") : [],
+		};
+		return node;
+	};
+
+	const navbar = createMockNode("navbar", "NAV", ["bg-transparent", "py-5"]);
+	const mobileToggle = createMockNode(
+		"mobile-nav-toggle",
+		"BUTTON",
+		["text-white"],
+		{
+			"aria-expanded": "false",
+			"aria-label": "Open navigation menu",
+		},
+	);
+	const mobileDrawer = createMockNode("mobile-nav-drawer", "DIV", ["hidden"]);
+	const mobileClose = createMockNode("mobile-nav-close", "BUTTON", [], {
+		"aria-label": "Close navigation menu",
+	});
+	const drawerLink1707 = createMockNode("drawer-link-1707", "A", [], {
+		href: "./Oceanview1707/",
+	});
+	mobileDrawer.appendChild(mobileClose);
+	mobileDrawer.appendChild(drawerLink1707);
+	navbar.appendChild(mobileToggle);
+	navbar.appendChild(mobileDrawer);
+
+	const badge1707 = createMockNode("home-rate-badge-1707", "SPAN");
+	badge1707.textContent = "Ab 450.000 COP / Nacht";
+	const badge1606 = createMockNode("home-rate-badge-1606", "SPAN");
+	badge1606.textContent = "Ab 350.000 COP / Nacht";
+	const compare1707 = createMockNode("home-compare-rate-1707", "SPAN");
+	compare1707.textContent = "Ab 450.000 COP / Nacht";
+	const compare1606 = createMockNode("home-compare-rate-1606", "SPAN");
+	compare1606.textContent = "Ab 350.000 COP / Nacht";
+	const outsideNode = createMockNode("outside", "MAIN");
+
+	const elementsById = new Map<string, MockNode>([
+		["navbar", navbar],
+		["mobile-nav-toggle", mobileToggle],
+		["mobile-nav-drawer", mobileDrawer],
+		["mobile-nav-close", mobileClose],
+		["home-rate-badge-1707", badge1707],
+		["home-rate-badge-1606", badge1606],
+		["home-compare-rate-1707", compare1707],
+		["home-compare-rate-1606", compare1606],
+	]);
+
+	const docListeners: Record<string, Listener[]> = {};
+	const scriptStub = {
+		async: false,
+		src: "",
+		parentNode: { insertBefore: () => {} },
+	};
+
+	const translations: Record<string, string> = {
+		navMenuOpenAriaLabel: "Navigationsmenü öffnen",
+		navMenuCloseAriaLabel: "Navigationsmenü schließen",
+		homeCardRateFormat: "Ab {rate} COP / Nacht",
+	};
+
+	const sandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			location: { search: "", pathname: "/de.html" },
+			addEventListener: () => {},
+			getPageConfig: () => ({
+				lang: "de",
+				assetPrefix: "./",
+				apiBase: "./api/",
+			}),
+			t: (key: string, params?: Record<string, string>, fallback?: string) => {
+				let val = translations[key] ?? fallback ?? key;
+				if (params) {
+					for (const [k, v] of Object.entries(params)) {
+						val = val.split(`{${k}}`).join(v);
+					}
+				}
+				return val;
+			},
+		},
+		document: {
+			documentElement: { lang: "de" },
+			createElement: () => ({ ...scriptStub }),
+			getElementsByTagName: () => [scriptStub],
+			getElementById: (id: string) => elementsById.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				docListeners[evt] = docListeners[evt] || [];
+				docListeners[evt].push(fn);
+			},
+			dispatchEvent: (evt: string, payload: MockEvent = {}) => {
+				for (const fn of docListeners[evt] || []) {
+					fn({
+						preventDefault: () => {},
+						stopPropagation: () => {},
+						...payload,
+					});
+				}
+			},
+		},
+		fetch: async () => ({
+			ok: true,
+			json: async () => ({
+				success: true,
+				data: {
+					properties: {
+						"1707": { current_nightly_rate_cop: 480000 },
+						"1606": { current_nightly_rate_cop: 390000 },
+					},
+				},
+			}),
+		}),
+		localStorage: {
+			getItem: () => null,
+			setItem: () => {},
+		},
+		console,
+	};
+
+	vm.createContext(sandbox);
+	vm.runInContext(mainJsCode, sandbox);
+	sandbox.document.dispatchEvent("DOMContentLoaded");
+	await new Promise((r) => setTimeout(r, 15));
+
+	// 1. Synchronized live Nightly Rate hydration updates both showcase badges and comparison cells in German locale formatting
+	assert.equal(badge1707.textContent, "Ab 480.000 COP / Nacht");
+	assert.equal(compare1707.textContent, "Ab 480.000 COP / Nacht");
+	assert.equal(badge1606.textContent, "Ab 390.000 COP / Nacht");
+	assert.equal(compare1606.textContent, "Ab 390.000 COP / Nacht");
+
+	// 2. Mobile drawer opens on trigger click, sets aria-expanded="true", updates localized aria-label, and focuses close button
+	mobileToggle.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "true");
+	assert.equal(
+		mobileToggle.getAttribute("aria-label"),
+		"Navigationsmenü schließen",
+	);
+	assert.equal(mobileDrawer.classList.contains("hidden"), false);
+	assert.equal(mobileClose.isFocused(), true);
+
+	// 3. Escape closes drawer and restores focus to #mobile-nav-toggle
+	mobileToggle.blur();
+	sandbox.document.dispatchEvent("keydown", { key: "Escape" });
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(
+		mobileToggle.getAttribute("aria-label"),
+		"Navigationsmenü öffnen",
+	);
+	assert.equal(mobileDrawer.classList.contains("hidden"), true);
+	assert.equal(
+		mobileToggle.isFocused(),
+		true,
+		"Escape key must restore focus to #mobile-nav-toggle",
+	);
+
+	// 4. Re-open and click outside -> closes drawer
+	mobileToggle.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "true");
+	sandbox.document.dispatchEvent("click", { target: outsideNode });
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(mobileDrawer.classList.contains("hidden"), true);
+
+	// 5. Re-open and focusout to external element -> closes drawer
+	mobileToggle.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "true");
+	navbar.dispatchEvent("focusout", { relatedTarget: outsideNode });
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(mobileDrawer.classList.contains("hidden"), true);
+
+	// 6. Re-open and click a drawer link -> closes drawer
+	mobileToggle.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "true");
+	drawerLink1707.dispatchEvent("click");
+	assert.equal(mobileToggle.getAttribute("aria-expanded"), "false");
+	assert.equal(mobileDrawer.classList.contains("hidden"), true);
+
+	// 7. Network failure during rate hydration preserves build-time showcase & comparison fallback values
+	const fallbackBadge1707 = createMockNode("home-rate-badge-1707", "SPAN");
+	fallbackBadge1707.textContent = "From 450,000 COP / night";
+	const fallbackCompare1707 = createMockNode("home-compare-rate-1707", "SPAN");
+	fallbackCompare1707.textContent = "From 450,000 COP / night";
+	const fallbackElements = new Map<string, MockNode>([
+		["home-rate-badge-1707", fallbackBadge1707],
+		["home-compare-rate-1707", fallbackCompare1707],
+	]);
+	const fallbackDocListeners: Record<string, Listener[]> = {};
+	const fallbackSandbox = {
+		window: {
+			_paq: [] as unknown[],
+			scrollY: 0,
+			location: { search: "", pathname: "/index.html" },
+			addEventListener: () => {},
+			getPageConfig: () => ({
+				lang: "en",
+				assetPrefix: "./",
+				apiBase: "./api/",
+			}),
+			t: (key: string) => key,
+		},
+		document: {
+			documentElement: { lang: "en" },
+			createElement: () => ({ ...scriptStub }),
+			getElementsByTagName: () => [scriptStub],
+			getElementById: (id: string) => fallbackElements.get(id) || null,
+			addEventListener: (evt: string, fn: Listener) => {
+				fallbackDocListeners[evt] = fallbackDocListeners[evt] || [];
+				fallbackDocListeners[evt].push(fn);
+			},
+		},
+		fetch: async () => {
+			throw new Error("Offline");
+		},
+		localStorage: { getItem: () => null, setItem: () => {} },
+		console: { error: () => {}, warn: () => {} },
+	};
+	vm.createContext(fallbackSandbox);
+	vm.runInContext(mainJsCode, fallbackSandbox);
+	for (const fn of fallbackDocListeners.DOMContentLoaded || []) {
+		fn();
+	}
+	await new Promise((r) => setTimeout(r, 15));
+	assert.equal(fallbackBadge1707.textContent, "From 450,000 COP / night");
+	assert.equal(fallbackCompare1707.textContent, "From 450,000 COP / night");
 });

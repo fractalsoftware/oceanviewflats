@@ -15,6 +15,14 @@ _paq.push(["enableLinkTracking"]);
 	s.parentNode.insertBefore(g, s);
 })();
 
+function translateKey(key, params, fallback) {
+	return window.t
+		? window.t(key, params, fallback)
+		: fallback !== undefined
+			? fallback
+			: key;
+}
+
 // Trusted HTTPS hostname allowlist sanitizer for external payment/voucher redirects (Mercado Pago / PSE / Efecty)
 function sanitizeTrustedPaymentUrl(rawUrl) {
 	if (typeof rawUrl !== "string" || !rawUrl.trim()) {
@@ -85,13 +93,16 @@ function syncNavbarScrollState() {
 	const toggle = document.getElementById("lang-toggle");
 	const guides = document.getElementById("nav-guides");
 	const contact = document.getElementById("nav-contact");
-	const bookBtn = document.getElementById("nav-book");
+	const mobileMenuToggle = document.getElementById("mobile-nav-toggle");
 	if (!nav || !logo || !toggle) return;
 
 	if (window.scrollY > 50) {
 		nav.classList.add("bg-white/90", "backdrop-blur-md", "shadow-sm", "py-3");
 		nav.classList.remove("bg-transparent", "py-5");
-		logo.classList.add("text-[#FF5A5F]", "hover:text-[#FF424D]");
+		logo.classList.add(
+			"text-coral-horizon-ink",
+			"hover:text-coral-horizon-ink-deep",
+		);
 		logo.classList.remove("text-white", "hover:text-white/80");
 		toggle.classList.add(
 			"bg-slate-100",
@@ -112,9 +123,9 @@ function syncNavbarScrollState() {
 			contact.classList.add("text-slate-600", "hover:text-rose-700");
 			contact.classList.remove("text-white", "hover:text-white/80");
 		}
-		if (bookBtn) {
-			bookBtn.classList.add("text-slate-600", "hover:text-rose-700");
-			bookBtn.classList.remove("text-white", "hover:text-white/80");
+		if (mobileMenuToggle) {
+			mobileMenuToggle.classList.add("text-slate-700", "hover:bg-slate-100");
+			mobileMenuToggle.classList.remove("text-white", "hover:bg-white/20");
 		}
 	} else {
 		nav.classList.remove(
@@ -124,7 +135,10 @@ function syncNavbarScrollState() {
 			"py-3",
 		);
 		nav.classList.add("bg-transparent", "py-5");
-		logo.classList.remove("text-[#FF5A5F]", "hover:text-[#FF424D]");
+		logo.classList.remove(
+			"text-coral-horizon-ink",
+			"hover:text-coral-horizon-ink-deep",
+		);
 		logo.classList.add("text-white", "hover:text-white/80");
 		toggle.classList.remove(
 			"bg-slate-100",
@@ -145,9 +159,9 @@ function syncNavbarScrollState() {
 			contact.classList.remove("text-slate-600", "hover:text-rose-700");
 			contact.classList.add("text-white", "hover:text-white/80");
 		}
-		if (bookBtn) {
-			bookBtn.classList.remove("text-slate-600", "hover:text-rose-700");
-			bookBtn.classList.add("text-white", "hover:text-white/80");
+		if (mobileMenuToggle) {
+			mobileMenuToggle.classList.remove("text-slate-700", "hover:bg-slate-100");
+			mobileMenuToggle.classList.add("text-white", "hover:bg-white/20");
 		}
 	}
 }
@@ -313,6 +327,144 @@ document.addEventListener("DOMContentLoaded", () => {
 			!langToggleGroup.contains(relatedTarget)
 		) {
 			closeLangDropdown(false);
+		}
+	});
+});
+
+// Accessible Mobile Navigation Drawer (#319)
+document.addEventListener("DOMContentLoaded", () => {
+	const mobileToggle = document.getElementById("mobile-nav-toggle");
+	const mobileDrawer = document.getElementById("mobile-nav-drawer");
+	if (!mobileToggle || !mobileDrawer) return;
+
+	const mobileClose = document.getElementById("mobile-nav-close");
+	const navbar = document.getElementById("navbar");
+
+	const openLabel = translateKey(
+		"navMenuOpenAriaLabel",
+		{},
+		mobileToggle.getAttribute("aria-label") || "",
+	);
+	const closeLabel = translateKey(
+		"navMenuCloseAriaLabel",
+		{},
+		(mobileClose && mobileClose.getAttribute("aria-label")) || openLabel,
+	);
+
+	function isDrawerOpen() {
+		return (
+			mobileToggle.getAttribute("aria-expanded") === "true" &&
+			!mobileDrawer.classList.contains("hidden")
+		);
+	}
+
+	function openDrawer() {
+		mobileDrawer.classList.remove("hidden");
+		if (typeof mobileDrawer.removeAttribute === "function") {
+			mobileDrawer.removeAttribute("hidden");
+		}
+		mobileDrawer.hidden = false;
+		mobileToggle.setAttribute("aria-expanded", "true");
+		if (closeLabel) {
+			mobileToggle.setAttribute("aria-label", closeLabel);
+		}
+		const firstFocusable =
+			mobileClose ||
+			(typeof mobileDrawer.querySelector === "function"
+				? mobileDrawer.querySelector("a, button")
+				: null);
+		if (firstFocusable && typeof firstFocusable.focus === "function") {
+			firstFocusable.focus();
+		}
+	}
+
+	function closeDrawer(restoreFocus = false) {
+		mobileDrawer.classList.add("hidden");
+		if (typeof mobileDrawer.setAttribute === "function") {
+			mobileDrawer.setAttribute("hidden", "");
+		}
+		mobileDrawer.hidden = true;
+		mobileToggle.setAttribute("aria-expanded", "false");
+		if (openLabel) {
+			mobileToggle.setAttribute("aria-label", openLabel);
+		}
+		if (restoreFocus && typeof mobileToggle.focus === "function") {
+			mobileToggle.focus();
+		}
+	}
+
+	mobileToggle.addEventListener("click", (e) => {
+		if (e && typeof e.stopPropagation === "function") {
+			e.stopPropagation();
+		}
+		if (isDrawerOpen()) {
+			closeDrawer(false);
+		} else {
+			openDrawer();
+		}
+	});
+
+	if (mobileClose) {
+		mobileClose.addEventListener("click", (e) => {
+			if (e && typeof e.stopPropagation === "function") {
+				e.stopPropagation();
+			}
+			closeDrawer(true);
+		});
+	}
+
+	if (typeof mobileDrawer.querySelectorAll === "function") {
+		const drawerLinks = mobileDrawer.querySelectorAll("a");
+		drawerLinks.forEach((link) => {
+			link.addEventListener("click", () => {
+				closeDrawer(false);
+			});
+		});
+	}
+
+	function isInsideDrawerControl(node) {
+		if (!node) return false;
+		return (
+			node === mobileToggle ||
+			node === mobileDrawer ||
+			(typeof mobileToggle.contains === "function" &&
+				mobileToggle.contains(node)) ||
+			(typeof mobileDrawer.contains === "function" &&
+				mobileDrawer.contains(node))
+		);
+	}
+
+	document.addEventListener("click", (e) => {
+		const target = e && e.target ? e.target : null;
+		if (isDrawerOpen() && !isInsideDrawerControl(target)) {
+			closeDrawer(false);
+		}
+	});
+
+	const handleDrawerKeydown = (e) => {
+		if (e && (e.key === "Escape" || e.key === "Esc")) {
+			if (isDrawerOpen()) {
+				if (typeof e.preventDefault === "function") {
+					e.preventDefault();
+				}
+				closeDrawer(true);
+			}
+		}
+	};
+
+	document.addEventListener("keydown", handleDrawerKeydown);
+	mobileToggle.addEventListener("keydown", handleDrawerKeydown);
+	mobileDrawer.addEventListener("keydown", handleDrawerKeydown);
+
+	const focusOutTarget = navbar || mobileDrawer;
+	focusOutTarget.addEventListener("focusout", (e) => {
+		const relatedTarget = e && e.relatedTarget ? e.relatedTarget : null;
+		if (
+			isDrawerOpen() &&
+			relatedTarget &&
+			!isInsideDrawerControl(relatedTarget)
+		) {
+			closeDrawer(false);
 		}
 	});
 });
@@ -486,19 +638,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 });
 
-// Home Page Property Card Rate Hydration
+// Home Page Property Card & Comparison Table Rate Hydration
 document.addEventListener("DOMContentLoaded", () => {
 	const badge1707 = document.getElementById("home-rate-badge-1707");
 	const badge1606 = document.getElementById("home-rate-badge-1606");
-	if (!badge1707 && !badge1606) return;
+	const compare1707 = document.getElementById("home-compare-rate-1707");
+	const compare1606 = document.getElementById("home-compare-rate-1606");
+	if (!badge1707 && !badge1606 && !compare1707 && !compare1606) return;
 
 	const pageConfig = (window.getPageConfig && window.getPageConfig()) || {};
-	const t = (key, params, fallback) =>
-		window.t
-			? window.t(key, params, fallback)
-			: fallback !== undefined
-				? fallback
-				: key;
 	const lang =
 		pageConfig.lang ||
 		(document.documentElement && document.documentElement.lang) ||
@@ -525,21 +673,29 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (result && result.success && result.data && result.data.properties) {
 				["1707", "1606"].forEach((propId) => {
 					const badgeEl = document.getElementById(`home-rate-badge-${propId}`);
+					const compareEl = document.getElementById(
+						`home-compare-rate-${propId}`,
+					);
 					const propInfo = result.data.properties[propId];
 					const rateVal =
 						propInfo &&
 						(propInfo.current_nightly_rate_cop ||
 							propInfo.currentNightlyRate ||
 							propInfo.default_nightly_rate_cop);
-					if (badgeEl && rateVal) {
+					if ((badgeEl || compareEl) && rateVal) {
 						const formattedRate = formatRateNumber(rateVal, lang);
-						const localizedBadge = t(
+						const localizedBadge = translateKey(
 							"homeCardRateFormat",
 							{ rate: formattedRate },
 							"",
 						);
 						if (localizedBadge) {
-							badgeEl.textContent = localizedBadge;
+							if (badgeEl) {
+								badgeEl.textContent = localizedBadge;
+							}
+							if (compareEl) {
+								compareEl.textContent = localizedBadge;
+							}
 						}
 					}
 				});

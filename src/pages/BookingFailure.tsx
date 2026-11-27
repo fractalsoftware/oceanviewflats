@@ -39,7 +39,11 @@ export default function BookingFailure({ lang, assetPrefix = "/" }: AppProps) {
 				assetPrefix={assetPrefix}
 			/>
 
-			<main className="flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className="flex-grow relative flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden"
+			>
 				{/* Ambient Background */}
 				<div className="absolute inset-0 w-full h-full">
 					<img

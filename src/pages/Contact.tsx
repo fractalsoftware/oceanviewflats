@@ -65,7 +65,11 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</header>
 
-			<main className="flex-grow w-full py-12 px-6 max-w-6xl mx-auto">
+			<main
+				id="main-content"
+				tabIndex={-1}
+				className="flex-grow w-full py-12 px-6 max-w-6xl mx-auto"
+			>
 				<Breadcrumbs
 					lang={lang}
 					assetPrefix={assetPrefix}
