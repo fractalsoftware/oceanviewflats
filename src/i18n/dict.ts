@@ -515,7 +515,7 @@ export const dict = {
 		privacySubtitle:
 			"Política de Tratamiento de Datos Personales (PTDP) — Statutory Notice, Processing Purposes, and ARCO Rights",
 		privacyVersionLabel: "Policy Version",
-		privacyEffectiveDate: "Effective October 2026",
+		privacyEffectiveDate: "Effective November 2026",
 		privacyControllerTitle:
 			"1. Identification of the Data Controller (Responsable del Tratamiento)",
 		privacyControllerIntro:
@@ -594,6 +594,26 @@ export const dict = {
 			"Smart-lock door codes are generated using cryptographically random digits and never encode personal identification numbers.",
 		privacyRetentionDesc:
 			"In accordance with the Principle of Temporality (Decree 1377 Art. 11), personal identification and guest registry records of concluded stays are automatically redacted 90 days after check-out (or immediately upon an approved ARCO suppression claim), while preserving anonymized financial and occupancy aggregates required for tax compliance.",
+		privacyAnalyticsTitle:
+			"8. Privacy-First Site Visitor Analytics (Cookieless Matomo)",
+		privacyAnalyticsIntro:
+			"To understand how Site Visitors explore our Properties, availability calendar, and Destination Guides—and to diagnose booking or language friction—OceanViewFlats operates a self-hosted instance of Matomo Analytics (stats.fractalserver.com). We do not use Google Analytics, Meta Pixel, third-party advertising trackers, or external data brokers.",
+		privacyAnalyticsCookielessTitle:
+			"Strictly Cookieless (Zero Tracking Cookies)",
+		privacyAnalyticsCookielessDesc:
+			"Matomo is initialized in strictly cookieless mode (disableCookies). Zero analytics, advertising, or cross-site tracking cookies are stored in your browser.",
+		privacyAnalyticsIpTitle: "Automatic IP Address Anonymization",
+		privacyAnalyticsIpDesc:
+			"Visitor IP addresses are anonymized automatically before analytics data is stored, preventing aggregate site statistics from being linked back to an individual household or device.",
+		privacyAnalyticsZeroPiiTitle: "Zero Personal Data (PII) Collected",
+		privacyAnalyticsZeroPiiDesc:
+			"Analytics never records names, email addresses, phone numbers, identification documents, payment details, or exact stay dates—only anonymized, aggregated metrics such as language, page visited, and bucketed demand signals.",
+		privacyAnalyticsSanitizationTitle:
+			"Strict Query-Parameter & Referrer Sanitization",
+		privacyAnalyticsSanitizationDesc:
+			"Before any pageview is recorded, private Reservation UID lookup codes and sensitive query parameters are automatically stripped from both tracked URLs and referrer URLs; only anonymous campaign tags (UTM/MTM) are preserved.",
+		privacyAnalyticsCallout:
+			"All analytics data remains exclusively on OceanViewFlats' self-hosted Matomo server (stats.fractalserver.com), is never sold or shared with third-party marketing platforms, and is used solely to improve website usability, multilingual accuracy, and direct reservation reliability.",
 		// #299 OG image alt
 		ogHomeImageAlt:
 			"OceanViewFlats beachfront sunset view in Playa Salguero, Santa Marta",
@@ -1357,7 +1377,7 @@ export const dict = {
 		privacySubtitle:
 			"Aviso de Privacidad, Finalidades del Tratamiento y Procedimiento para el Ejercicio de Derechos ARCO",
 		privacyVersionLabel: "Versión de la Política",
-		privacyEffectiveDate: "Vigente desde Octubre de 2026",
+		privacyEffectiveDate: "Vigente desde Noviembre de 2026",
 		privacyControllerTitle: "1. Identificación del Responsable del Tratamiento",
 		privacyControllerIntro:
 			"En cumplimiento de la Ley Estatutaria 1581 de 2012 y el Decreto Reglamentario 1377 de 2013 (compilado en el Decreto Único 1074 de 2015), se informa a los Titulares que el Responsable del Tratamiento de los datos personales recolectados es:",
@@ -1435,6 +1455,26 @@ export const dict = {
 			"Los códigos PIN de cerraduras inteligentes se generan de forma criptográficamente aleatoria y nunca contienen dígitos del documento de identidad del huésped.",
 		privacyRetentionDesc:
 			"En cumplimiento del Principio de Temporalidad (Decreto 1377 Art. 11), los datos de identificación personal de las reservas concluidas son objeto de supresión y anonimización automática a los 90 días posteriores a la fecha de check-out (o de inmediato ante un reclamo de supresión procedente), conservando únicamente los registros contables y financieros agregados exigidos por la ley.",
+		privacyAnalyticsTitle:
+			"8. Analítica Web Respetuosa con la Privacidad (Matomo sin Cookies)",
+		privacyAnalyticsIntro:
+			"Para comprender cómo los visitantes exploran nuestras propiedades, el calendario de disponibilidad y las guías de destino —y para detectar fallos en la reserva o en el idioma— OceanViewFlats opera una instancia autohospedada de Matomo Analytics (stats.fractalserver.com). No utilizamos Google Analytics, Meta Pixel, rastreadores publicitarios de terceros ni intermediarios de datos.",
+		privacyAnalyticsCookielessTitle:
+			"Operación Estrictamente sin Cookies (Cero Cookies de Rastreo)",
+		privacyAnalyticsCookielessDesc:
+			"Matomo se ejecuta en modo estrictamente sin cookies (disableCookies). No se almacena ninguna cookie de analítica, publicidad ni seguimiento entre sitios en su navegador.",
+		privacyAnalyticsIpTitle: "Anonimización Automática de Direcciones IP",
+		privacyAnalyticsIpDesc:
+			"Las direcciones IP de los visitantes se anonimizan automáticamente antes de guardar cualquier estadística, impidiendo vincular el tráfico agregado con un hogar o dispositivo individual.",
+		privacyAnalyticsZeroPiiTitle: "Cero Recolección de Datos Personales (PII)",
+		privacyAnalyticsZeroPiiDesc:
+			"La analítica nunca registra nombres, correos electrónicos, teléfonos, documentos de identidad, datos de pago ni fechas exactas de estadía; únicamente recopila métricas anónimas y agregadas como idioma, página visitada y rangos generales de demanda.",
+		privacyAnalyticsSanitizationTitle:
+			"Saneamiento Estricto de Parámetros URL y Referentes",
+		privacyAnalyticsSanitizationDesc:
+			"Antes de registrar cualquier vista de página, los códigos privados de consulta de reserva y los parámetros sensibles se eliminan automáticamente tanto de la URL visitada como del referente; solo se conservan etiquetas anónimas de campaña (UTM/MTM).",
+		privacyAnalyticsCallout:
+			"Todos los datos analíticos permanecen exclusivamente en el servidor autohospedado de Matomo de OceanViewFlats (stats.fractalserver.com), nunca se venden ni comparten con plataformas publicitarias externas y se utilizan únicamente para mejorar la navegación, la precisión multilingüe y la confiabilidad de la reserva directa.",
 		// #299 OG image alt
 		ogHomeImageAlt:
 			"Vista al atardecer frente al mar de OceanViewFlats en Playa Salguero, Santa Marta",
@@ -2206,7 +2246,7 @@ export const dict = {
 		privacySubtitle:
 			"Política de Tratamiento de Datos Personales (PTDP) — Avis Légal, Finalités et Droits ARCO",
 		privacyVersionLabel: "Version de la Politique",
-		privacyEffectiveDate: "En vigueur depuis octobre 2026",
+		privacyEffectiveDate: "En vigueur depuis novembre 2026",
 		privacyControllerTitle:
 			"1. Identification du Responsable du Traitement (Responsable del Tratamiento)",
 		privacyControllerIntro:
@@ -2287,6 +2327,27 @@ export const dict = {
 			"Les codes PIN de serrure connectée sont générés de manière aléatoire et ne contiennent jamais de chiffres issus des pièces d'identité.",
 		privacyRetentionDesc:
 			"Conformément au Principe de Temporalité (Décret 1377 Art. 11), les données d'identification personnelle des séjours terminés sont automatiquement anonymisées et purgées 90 jours après la date de départ (ou immédiatement sur demande ARCO de suppression), tout en conservant les données comptables et financières agrégées requises par la loi.",
+		privacyAnalyticsTitle:
+			"8. Analyse d'Audience Respectueuse de la Vie Privée (Matomo sans Cookies)",
+		privacyAnalyticsIntro:
+			"Pour comprendre comment les visiteurs explorent nos propriétés, le calendrier de disponibilité et nos guides de destination — et pour identifier toute difficulté de réservation ou de langue — OceanViewFlats exploite une instance auto-hébergée de Matomo Analytics (stats.fractalserver.com). Nous n'utilisons ni Google Analytics, ni Meta Pixel, ni traceurs publicitaires tiers, ni courtiers en données.",
+		privacyAnalyticsCookielessTitle:
+			"Fonctionnement Strictement sans Cookies (Zéro Cookie de Suivi)",
+		privacyAnalyticsCookielessDesc:
+			"Matomo est initialisé en mode strictement sans cookies (disableCookies). Aucun cookie d'analyse, de publicité ou de suivi intersites n'est enregistré dans votre navigateur.",
+		privacyAnalyticsIpTitle: "Anonymisation Automatique des Adresses IP",
+		privacyAnalyticsIpDesc:
+			"Les adresses IP des visiteurs sont automatiquement anonymisées avant tout enregistrement, empêchant de relier les statistiques agrégées à un foyer ou à un appareil particulier.",
+		privacyAnalyticsZeroPiiTitle:
+			"Aucune Collecte de Données Personnelles (PII)",
+		privacyAnalyticsZeroPiiDesc:
+			"L'outil d'analyse n'enregistre jamais de noms, adresses e-mail, numéros de téléphone, pièces d'identité, informations de paiement ou dates exactes de séjour — uniquement des indicateurs anonymes et agrégés tels que la langue, la page consultée et des tranches générales de demande.",
+		privacyAnalyticsSanitizationTitle:
+			"Assainissement Strict des Paramètres d'URL et des Référents",
+		privacyAnalyticsSanitizationDesc:
+			"Avant l'enregistrement d'une page vue, les codes privés de consultation de réservation et les paramètres sensibles sont automatiquement supprimés des URL suivies et des référents ; seules les balises anonymes de campagne (UTM/MTM) sont conservées.",
+		privacyAnalyticsCallout:
+			"Toutes les données statistiques restent exclusivement hébergées sur le serveur Matomo auto-hébergé d'OceanViewFlats (stats.fractalserver.com), ne sont jamais vendues ni partagées avec des régies publicitaires externes et servent uniquement à améliorer la navigation, la qualité multilingue et la fiabilité de la réservation directe.",
 		// #299 OG image alt
 		ogHomeImageAlt:
 			"Coucher de soleil en bord de mer depuis OceanViewFlats à Playa Salguero, Santa Marta",
@@ -3054,7 +3115,7 @@ export const dict = {
 		privacySubtitle:
 			"Política de Tratamiento de Datos Personales (PTDP) — Informativa Legale, Finalità e Diritti ARCO",
 		privacyVersionLabel: "Versione della Politica",
-		privacyEffectiveDate: "In vigore da ottobre 2026",
+		privacyEffectiveDate: "In vigore da novembre 2026",
 		privacyControllerTitle:
 			"1. Identificazione del Titolare del Trattamento (Responsable del Tratamiento)",
 		privacyControllerIntro:
@@ -3133,6 +3194,26 @@ export const dict = {
 			"I codici PIN della serratura smart sono generati in modo crittograficamente casuale e non contengono mai cifre del documento d'identità.",
 		privacyRetentionDesc:
 			"In conformità al Principio di Temporalità (Decreto 1377 Art. 11), i dati identificativi personali dei soggiorni conclusi vengono automaticamente oscurati e cancellati 90 giorni dopo la data di check-out (o immediatamente su richiesta ARCO di cancellazione), conservando solo i dati contabili e finanziari aggregati richiesti dalla legge.",
+		privacyAnalyticsTitle:
+			"8. Analisi del Traffico Rispettosa della Privacy (Matomo senza Cookie)",
+		privacyAnalyticsIntro:
+			"Per comprendere come i visitatori esplorano le nostre proprietà, il calendario delle disponibilità e le guide sulla destinazione — e per individuare eventuali ostacoli di prenotazione o di lingua — OceanViewFlats utilizza un'istanza self-hosted di Matomo Analytics (stats.fractalserver.com). Non utilizziamo Google Analytics, Meta Pixel, tracker pubblicitari di terze parti o broker di dati.",
+		privacyAnalyticsCookielessTitle:
+			"Funzionamento Rigorosamente senza Cookie (Zero Cookie di Tracciamento)",
+		privacyAnalyticsCookielessDesc:
+			"Matomo viene eseguito in modalità rigorosamente cookieless (disableCookies). Nessun cookie analitico, pubblicitario o di tracciamento cross-site viene salvato nel tuo browser.",
+		privacyAnalyticsIpTitle: "Anonimizzazione Automatica degli Indirizzi IP",
+		privacyAnalyticsIpDesc:
+			"Gli indirizzi IP dei visitatori vengono anonimizzati automaticamente prima della memorizzazione, impedendo di ricondurre le statistiche aggregate a un singolo nucleo familiare o dispositivo.",
+		privacyAnalyticsZeroPiiTitle: "Zero Raccolta di Dati Personali (PII)",
+		privacyAnalyticsZeroPiiDesc:
+			"Le analisi non registrano mai nomi, indirizzi email, numeri di telefono, documenti d'identità, dati di pagamento o date esatte di soggiorno, ma solo metriche anonime e aggregate come lingua, pagina visitata e fasce anonimizzate di domanda.",
+		privacyAnalyticsSanitizationTitle:
+			"Pulizia Rigorosa di Parametri URL e Referrer",
+		privacyAnalyticsSanitizationDesc:
+			"Prima che qualsiasi visualizzazione di pagina venga registrata, i codici privati di consultazione della prenotazione e i parametri sensibili vengono rimossi automaticamente sia dagli URL tracciati sia dai referrer; vengono conservati solo i tag anonimi di campagna (UTM/MTM).",
+		privacyAnalyticsCallout:
+			"Tutti i dati analitici risiedono esclusivamente sul server Matomo self-hosted di OceanViewFlats (stats.fractalserver.com), non vengono mai venduti né condivisi con piattaforme pubblicitarie esterne e sono utilizzati unicamente per migliorare l'usabilità del sito, la qualità multilingue e l'affidabilità della prenotazione diretta.",
 		// #299 OG image alt
 		ogHomeImageAlt:
 			"Tramonto fronte mare da OceanViewFlats a Playa Salguero, Santa Marta",
@@ -3903,7 +3984,7 @@ export const dict = {
 		privacySubtitle:
 			"Política de Tratamiento de Datos Personales (PTDP) — Gesetzlicher Hinweis, Verarbeitungszwecke und ARCO-Rechte",
 		privacyVersionLabel: "Richtlinienversion",
-		privacyEffectiveDate: "Gültig ab Oktober 2026",
+		privacyEffectiveDate: "Gültig ab November 2026",
 		privacyControllerTitle:
 			"1. Identifizierung des Verantwortlichen (Responsable del Tratamiento)",
 		privacyControllerIntro:
@@ -3983,6 +4064,27 @@ export const dict = {
 			"Smart-Lock-Türcodes werden kryptografisch zufällig generiert und enthalten niemals Ziffern Ihrer Ausweisnummer.",
 		privacyRetentionDesc:
 			"Gemäß dem Grundsatz der zeitlichen Begrenzung (Dekret 1377 Art. 11) werden personenbezogene Identifikationsdaten abgeschlossener Aufenthalte 90 Tage nach dem Check-out automatisch anonymisiert und gelöscht (oder sofort nach einem berechtigten ARCO-Löschungsantrag), wobei die gesetzlich vorgeschriebenen Finanz- und Buchhaltungsdaten erhalten bleiben.",
+		privacyAnalyticsTitle:
+			"8. Datenschutzfreundliche Webanalyse (Matomo ohne Cookies)",
+		privacyAnalyticsIntro:
+			"Um zu verstehen, wie Besucher unsere Unterkünfte, den Verfügbarkeitskalender und die Reiseleitfäden erkunden — und um Buchungs- oder Sprachhürden zu erkennen — betreibt OceanViewFlats eine selbst gehostete Instanz von Matomo Analytics (stats.fractalserver.com). Wir verwenden weder Google Analytics noch Meta Pixel, Werbe-Tracker von Drittanbietern oder Datenbroker.",
+		privacyAnalyticsCookielessTitle:
+			"Strikt ohne Cookies (Keine Tracking-Cookies)",
+		privacyAnalyticsCookielessDesc:
+			"Matomo läuft im strikt cookiefreien Modus (disableCookies). Es werden keinerlei Analyse-, Werbe- oder websiteübergreifende Tracking-Cookies in Ihrem Browser gespeichert.",
+		privacyAnalyticsIpTitle: "Automatische IP-Adressen-Anonymisierung",
+		privacyAnalyticsIpDesc:
+			"Die IP-Adressen der Besucher werden vor der Speicherung automatisch anonymisiert, sodass aggregierte Seitenstatistiken nicht auf einzelne Haushalte oder Geräte zurückgeführt werden können.",
+		privacyAnalyticsZeroPiiTitle:
+			"Keine Erhebung personenbezogener Daten (PII)",
+		privacyAnalyticsZeroPiiDesc:
+			"Die Webanalyse speichert niemals Namen, E-Mail-Adressen, Telefonnummern, Ausweisdokumente, Zahlungsdaten oder exakte Aufenthaltsdaten — sondern ausschließlich anonyme, aggregierte Kennzahlen wie Sprache, aufgerufene Seite und gruppierte Nachfragesignale.",
+		privacyAnalyticsSanitizationTitle:
+			"Strikte Bereinigung von URL-Parametern & Referrern",
+		privacyAnalyticsSanitizationDesc:
+			"Bevor ein Seitenaufruf erfasst wird, werden private Reservierungscodes und sensible Abfrageparameter automatisch aus aufgerufenen URLs sowie Referrer-URLs entfernt; lediglich anonyme Kampagnenparameter (UTM/MTM) bleiben erhalten.",
+		privacyAnalyticsCallout:
+			"Alle Analysedaten verbleiben ausschließlich auf dem selbst gehosteten Matomo-Server von OceanViewFlats (stats.fractalserver.com), werden niemals verkauft oder mit externen Werbeplattformen geteilt und dienen allein der Verbesserung der Benutzerfreundlichkeit, der Mehrsprachigkeit und der Zuverlässigkeit der Direktbuchung.",
 		// #299 OG image alt
 		ogHomeImageAlt:
 			"Sonnenuntergang am Strand bei OceanViewFlats in Playa Salguero, Santa Marta",
@@ -4747,7 +4849,7 @@ export const dict = {
 		privacySubtitle:
 			"Política de Tratamiento de Datos Personales (PTDP) — 法定通知、処理目的、およびARCO権利手続き",
 		privacyVersionLabel: "ポリシーバージョン",
-		privacyEffectiveDate: "2026年10月発効",
+		privacyEffectiveDate: "2026年11月発効",
 		privacyControllerTitle:
 			"1. データ管理者（Responsable del Tratamiento）の特定",
 		privacyControllerIntro:
@@ -4823,6 +4925,26 @@ export const dict = {
 			"スマートロックの暗証番号は暗号論的乱数により生成され、身分証明書番号の数字が含まれることはありません。",
 		privacyRetentionDesc:
 			"一時性の原則（政令第1377号第11条）に従い、終了した宿泊の個人識別データはチェックアウト日から90日後に自動的に匿名化・消去されます（またはARCO削除請求の承認時に即時消去されます）。なお、税務・会計法規で求められる集計財務記録は保持されます。",
+		privacyAnalyticsTitle:
+			"8. プライバシー重視のサイト訪問者分析（Cookieレス Matomo）",
+		privacyAnalyticsIntro:
+			"サイト訪問者が物件情報、空室カレンダー、および観光ガイドをどのように閲覧しているかを把握し、予約手続きや言語切り替えの課題を改善するため、OceanViewFlatsはセルフホスト型のMatomo Analytics（stats.fractalserver.com）を運用しています。Google Analytics、Meta Pixel、第三者広告トラッカー、またはデータブローカーは一切使用していません。",
+		privacyAnalyticsCookielessTitle:
+			"完全なCookieレス運用（トラッキングCookieゼロ）",
+		privacyAnalyticsCookielessDesc:
+			"Matomoは完全なCookieレスモード（disableCookies）で動作します。分析用・広告用・クロスサイト追跡用のCookieはお客様のブラウザに一切保存されません。",
+		privacyAnalyticsIpTitle: "IPアドレスの自動匿名化",
+		privacyAnalyticsIpDesc:
+			"訪問者のIPアドレスは統計データが保存される前に自動的に匿名化されるため、集計されたトラフィック傾向が特定の世帯や端末に結び付けられることはありません。",
+		privacyAnalyticsZeroPiiTitle: "個人情報（PII）を一切収集しない設計",
+		privacyAnalyticsZeroPiiDesc:
+			"分析データには氏名、メールアドレス、電話番号、本人確認書類、決済情報、および具体的な宿泊日程は一切記録されません。言語、閲覧ページ、および匿名化された需要区分などの集計指標のみを扱います。",
+		privacyAnalyticsSanitizationTitle:
+			"URLクエリパラメータおよびリファラーの厳格なサニタイズ",
+		privacyAnalyticsSanitizationDesc:
+			"ページビューが記録される前に、非公開の予約照会コードや機密性の高いクエリパラメータは閲覧URLおよびリファラーURLの双方から自動的に除去され、匿名のキャンペーンタグ（UTM/MTM）のみが保持されます。",
+		privacyAnalyticsCallout:
+			"すべての分析データはOceanViewFlatsのセルフホスト型Matomoサーバー（stats.fractalserver.com）内のみに保管され、外部の広告プラットフォームへ販売または共有されることはありません。サイトの使いやすさ、多言語対応の精度、および直接予約の信頼性向上のためにのみ使用されます。",
 		// #299 OG image alt
 		ogHomeImageAlt:
 			"サンタマルタ・プラヤサルグエロのOceanViewFlatsから望むビーチフロントの夕日",

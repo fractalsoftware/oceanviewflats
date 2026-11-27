@@ -1477,7 +1477,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			privacy_policy_version:
 				privacyVersionEl && privacyVersionEl.value
 					? privacyVersionEl.value
-					: "2026-10",
+					: "2026-11",
 			captcha_challenge: document.getElementById("booking-captcha-challenge")
 				? document.getElementById("booking-captcha-challenge").value
 				: "",

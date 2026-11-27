@@ -1,5 +1,6 @@
 import {
 	Building,
+	ChartColumn,
 	CheckCircle2,
 	Clock,
 	FileText,
@@ -402,6 +403,66 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 							{t.privacyRetentionDesc}
 						</p>
 					</div>
+				</section>
+
+				{/* 8. Privacy-First Site Visitor Analytics (Cookieless Matomo) */}
+				<section id="site-analytics" className={theme.privacySectionCard}>
+					<div className={theme.privacyAnalyticsHeader}>
+						<div className={theme.privacyAnalyticsIconBox}>
+							<ChartColumn
+								className={theme.privacyAnalyticsIcon}
+								aria-hidden="true"
+							/>
+						</div>
+						<h2 className={theme.privacyAnalyticsHeading}>
+							{t.privacyAnalyticsTitle}
+						</h2>
+					</div>
+					<p className={theme.privacyAnalyticsIntro}>
+						{t.privacyAnalyticsIntro}
+					</p>
+
+					<div className={theme.privacyAnalyticsGrid}>
+						<div className={theme.privacySubCard}>
+							<h3 className={theme.privacyAnalyticsSubCardTitle}>
+								{t.privacyAnalyticsCookielessTitle}
+							</h3>
+							<p className={theme.privacyAnalyticsSubCardDesc}>
+								{t.privacyAnalyticsCookielessDesc}
+							</p>
+						</div>
+
+						<div className={theme.privacySubCard}>
+							<h3 className={theme.privacyAnalyticsSubCardTitle}>
+								{t.privacyAnalyticsIpTitle}
+							</h3>
+							<p className={theme.privacyAnalyticsSubCardDesc}>
+								{t.privacyAnalyticsIpDesc}
+							</p>
+						</div>
+
+						<div className={theme.privacySubCard}>
+							<h3 className={theme.privacyAnalyticsSubCardTitle}>
+								{t.privacyAnalyticsZeroPiiTitle}
+							</h3>
+							<p className={theme.privacyAnalyticsSubCardDesc}>
+								{t.privacyAnalyticsZeroPiiDesc}
+							</p>
+						</div>
+
+						<div className={theme.privacySubCard}>
+							<h3 className={theme.privacyAnalyticsSubCardTitle}>
+								{t.privacyAnalyticsSanitizationTitle}
+							</h3>
+							<p className={theme.privacyAnalyticsSubCardDesc}>
+								{t.privacyAnalyticsSanitizationDesc}
+							</p>
+						</div>
+					</div>
+
+					<p className={theme.privacyAnalyticsCallout}>
+						{t.privacyAnalyticsCallout}
+					</p>
 				</section>
 			</main>
 
