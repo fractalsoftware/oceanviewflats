@@ -1530,9 +1530,19 @@ test("#333 Homepage renders warm sunlit coastal bottom CTA with Coral Horizon li
 			!rawHexUtilityRegex.test(html),
 			`${homeFile} compiled homepage HTML must contain zero arbitrary raw hex color utilities`,
 		);
+		const homepageScriptSrcs = [
+			...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi),
+		].map((match) => match[1]);
 		assert.ok(
-			!html.includes("sdk.mercadopago.com"),
-			`${homeFile} must not load third-party Mercado Pago SDK on homepage`,
+			homepageScriptSrcs.length > 0,
+			`${homeFile} homepage must include local runtime scripts`,
 		);
+		for (const scriptSrc of homepageScriptSrcs) {
+			assert.equal(
+				new URL(scriptSrc, "https://oceanviewflats.com/").origin,
+				"https://oceanviewflats.com",
+				`${homeFile} must only load first-party scripts and never third-party payment SDKs (found ${scriptSrc})`,
+			);
+		}
 	}
 });
