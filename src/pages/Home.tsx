@@ -30,10 +30,8 @@ import {
 	DATA_CONTROLLER,
 	getContactPagePath,
 	getDestinationGuidesHubPath,
-	getGuidePagePath,
 	getHeroImageSrcSet,
 	getPropertyPagePath,
-	getRegistryPagePath,
 	HERO_IMAGE_SIZES,
 	HOME_FAQ_ITEMS,
 	HOME_PROPERTY_CARDS,
@@ -101,8 +99,6 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 	const destinationGuidesHref = getDestinationGuidesHubPath(lang, assetPrefix);
 	const property1707Href = getPropertyPagePath("1707", lang, assetPrefix);
 	const property1606Href = getPropertyPagePath("1606", lang, assetPrefix);
-	const registryHref = getRegistryPagePath(lang, assetPrefix);
-	const guideHref = getGuidePagePath(lang, assetPrefix);
 
 	return (
 		<div className={HOME_THEME.pageWrapper}>
@@ -169,36 +165,6 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 							>
 								<span>{t.homeHeroDirect1606}</span>
 								<ArrowRight className={HOME_THEME.iconSm} aria-hidden="true" />
-							</a>
-						</div>
-					</div>
-					<div
-						id="hero-returning-guest-cue"
-						className={HOME_THEME.heroReturningGuestCue}
-					>
-						<span className={HOME_THEME.heroReturningGuestPrompt}>
-							{t.homeHeroReturningGuestPrompt}
-						</span>
-						<div className={HOME_THEME.heroReturningGuestLinks}>
-							<a
-								id="hero-returning-registry-link"
-								href={registryHref}
-								className={HOME_THEME.heroReturningGuestLink}
-							>
-								{t.homeHeroReturningGuestRegistry}
-							</a>
-							<span
-								className={HOME_THEME.heroReturningGuestDivider}
-								aria-hidden="true"
-							>
-								·
-							</span>
-							<a
-								id="hero-returning-guide-link"
-								href={guideHref}
-								className={HOME_THEME.heroReturningGuestLink}
-							>
-								{t.homeHeroReturningGuestGuide}
 							</a>
 						</div>
 					</div>
@@ -796,35 +762,6 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 								</summary>
 								<div className={HOME_THEME.faqAnswerWrapper}>
 									<p className={HOME_THEME.faqAnswer}>{t[item.aKey]}</p>
-									{item.showFulfillmentLinks && (
-										<div
-											id="faq-fulfillment-links"
-											className={HOME_THEME.faqLinksRow}
-										>
-											<a
-												id="faq-registry-link"
-												href={registryHref}
-												className={HOME_THEME.faqActionLinkPrimary}
-											>
-												<span>{t.faq6RegistryLink}</span>
-												<ArrowRight
-													className={HOME_THEME.iconSm}
-													aria-hidden="true"
-												/>
-											</a>
-											<a
-												id="faq-guide-link"
-												href={guideHref}
-												className={HOME_THEME.faqActionLinkSecondary}
-											>
-												<span>{t.faq6GuideLink}</span>
-												<ArrowRight
-													className={HOME_THEME.iconSm}
-													aria-hidden="true"
-												/>
-											</a>
-										</div>
-									)}
 								</div>
 							</details>
 						))}

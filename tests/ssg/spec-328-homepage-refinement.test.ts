@@ -925,7 +925,7 @@ test("#336 main.js runs cleanly with zero check-in DOM elements: language dropdo
 	);
 });
 
-test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coastal coral token, and returning-Guest check-in cue across all 6 locales", () => {
+test("#330 #337 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coastal coral token, and zero returning-Guest fulfillment cue across all 6 locales", () => {
 	const distDir = path.join(process.cwd(), "dist");
 
 	// 1. Verify WCAG AA+ warmer deep coastal coral token math (>= 4.5:1 against #FFFFFF)
@@ -997,54 +997,12 @@ test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coasta
 
 	// 3. Verify compiled Hero semantics across all 6 locales
 	const locales = [
-		{
-			lang: "en" as const,
-			file: "index.html",
-			suffix: "",
-			prompt: "Already booked?",
-			registryLabel: "Guest Registry",
-			guideLabel: "Guest Guide",
-		},
-		{
-			lang: "es" as const,
-			file: "es.html",
-			suffix: "es.html",
-			prompt: "¿Ya tienes reserva?",
-			registryLabel: "Registro de Huéspedes",
-			guideLabel: "Guía del Huésped",
-		},
-		{
-			lang: "fr" as const,
-			file: "fr.html",
-			suffix: "fr.html",
-			prompt: "Déjà réservé ?",
-			registryLabel: "Registre des Voyageurs",
-			guideLabel: "Guide de l&#x27;Invité",
-		},
-		{
-			lang: "it" as const,
-			file: "it.html",
-			suffix: "it.html",
-			prompt: "Hai già prenotato?",
-			registryLabel: "Registro degli Ospiti",
-			guideLabel: "Guida dell&#x27;Ospite",
-		},
-		{
-			lang: "de" as const,
-			file: "de.html",
-			suffix: "de.html",
-			prompt: "Bereits gebucht?",
-			registryLabel: "Gästeregistrierung",
-			guideLabel: "Gäste-Guide",
-		},
-		{
-			lang: "ja" as const,
-			file: "ja.html",
-			suffix: "ja.html",
-			prompt: "ご予約済みですか？",
-			registryLabel: "宿泊者名簿登録",
-			guideLabel: "ゲストガイド",
-		},
+		{ lang: "en" as const, file: "index.html", suffix: "" },
+		{ lang: "es" as const, file: "es.html", suffix: "es.html" },
+		{ lang: "fr" as const, file: "fr.html", suffix: "fr.html" },
+		{ lang: "it" as const, file: "it.html", suffix: "it.html" },
+		{ lang: "de" as const, file: "de.html", suffix: "de.html" },
+		{ lang: "ja" as const, file: "ja.html", suffix: "ja.html" },
 	];
 
 	for (const locale of locales) {
@@ -1110,38 +1068,16 @@ test("#330 sunlit coastal hero declutter, honest CTA hierarchy, warmer AA coasta
 			`${locale.file} Hero must preserve relative-path #hero-direct-1707 and #hero-direct-1606 links`,
 		);
 
-		// 3e. Subtle returning-Guest check-in cue below hero actions with localized relative links & >=44px tap targets
-		const cueMatch = headerHtml.match(
-			/<div[^>]*id="hero-returning-guest-cue"[\s\S]*?<\/div>\s*<\/div>/,
-		);
+		// 3e. #337 Hero omits returning-Guest check-in cue and any links to private /registry or /guide routes
 		assert.ok(
-			cueMatch,
-			`${locale.file} must render #hero-returning-guest-cue inside Hero`,
+			!headerHtml.includes("hero-returning-guest-cue") &&
+				!headerHtml.includes("hero-returning-registry-link") &&
+				!headerHtml.includes("hero-returning-guide-link") &&
+				!/<a\b[^>]*href=["'][^"']*(?:^|\/)(?:registry|guide)(?:\/|$|\?|#)/i.test(
+					headerHtml,
+				),
+			`${locale.file} Hero must omit #hero-returning-guest-cue and all links to /registry or /guide`,
 		);
-		assert.ok(
-			!cueMatch[0].includes("rounded-full") &&
-				!cueMatch[0].includes("bg-slate") &&
-				cueMatch[0].includes(locale.prompt) &&
-				cueMatch[0].includes(
-					`id="hero-returning-registry-link" href="./registry/${locale.suffix}"`,
-				) &&
-				cueMatch[0].includes(
-					`id="hero-returning-guide-link" href="./guide/${locale.suffix}"`,
-				) &&
-				cueMatch[0].includes(locale.registryLabel) &&
-				cueMatch[0].includes(locale.guideLabel) &&
-				cueMatch[0].includes("min-h-[44px]"),
-			`${locale.file} #hero-returning-guest-cue must render subtle unboxed localized links to Guest Registry and Guest Guide with >=44px tap targets`,
-		);
-
-		if (locale.lang !== "en") {
-			assert.ok(
-				!cueMatch[0].includes("Already booked?") &&
-					!cueMatch[0].includes("Guest Registry") &&
-					!cueMatch[0].includes("Guest Guide"),
-				`${locale.file} #hero-returning-guest-cue must not leak English copy`,
-			);
-		}
 	}
 });
 

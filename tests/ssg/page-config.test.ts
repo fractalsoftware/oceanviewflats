@@ -2136,7 +2136,7 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 			`${locale.file} #why-book-direct must omit 48px stacked icon tiles and decorative Rose`,
 		);
 
-		// 2. #faq-2 discloses the per-person reception fee and Tuesday pool maintenance, and #faq-6 is structured into numbered steps with direct Guest Registry & Guest Guide links
+		// 2. #faq-2 discloses the per-person reception fee and Tuesday pool maintenance, and #faq-6 is structured into numbered prose-only steps (#246 #337)
 		const faq2Match = html.match(
 			/<details[^>]*id="faq-2"[^>]*>[\s\S]*?<\/details>/,
 		);
@@ -2161,9 +2161,11 @@ test("Homepage aligns #why-book-direct Card 4 with Clearance Emerald, discloses 
 				faq6Html.includes("679") &&
 				faq6Html.includes("0XXXXXX#") &&
 				faq6Html.includes("20,000 COP") &&
-				faq6Html.includes('id="faq-registry-link"') &&
-				faq6Html.includes('id="faq-guide-link"'),
-			`${locale.file} #faq-6 must structure check-in, Guest Registry (Law 1581 & Law 679), 0XXXXXX# PIN, 20,000 COP reception fee, and direct Guest Registry & Guest Guide links`,
+				!faq6Html.includes('id="faq-fulfillment-links"') &&
+				!faq6Html.includes('id="faq-registry-link"') &&
+				!faq6Html.includes('id="faq-guide-link"') &&
+				!/<a\b/i.test(faq6Html),
+			`${locale.file} #faq-6 must structure check-in, Guest Registry (Law 1581 & Law 679), 0XXXXXX# PIN, and 20,000 COP reception fee as prose-only without public Guest Registry or Guest Guide links`,
 		);
 
 		// 3. #properties renders verified guest reviews (Julian Alfredo on 1707, Lina Marcela on 1606) and descriptive lifestyle image alts
@@ -5158,14 +5160,19 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 				rootHtml.includes("bg-slate-700"),
 			`${locale.file} #home-host-card must display Manuel Enrique Herrera, direct WhatsApp/Email buttons, and avatar placeholder`,
 		);
+		const faq6Match = rootHtml.match(
+			/<details[^>]*id="faq-6"[^>]*>[\s\S]*?<\/details>/,
+		);
+		assert.ok(faq6Match, `${locale.file} must render #faq-6`);
 		assert.ok(
-			rootHtml.includes(
-				`id="faq-registry-link" href="./registry/${locale.suffix}"`,
+			/\bopen(?:\s*=\s*["'][^"']*["'])?[\s>]/.test(
+				faq6Match[0].match(/<details[^>]*>/)?.[0] ?? "",
 			) &&
-				rootHtml.includes(
-					`id="faq-guide-link" href="./guide/${locale.suffix}"`,
-				),
-			`${locale.file} FAQ #6 must link directly to localized Guest Registry and Guest Guide`,
+				!faq6Match[0].includes('id="faq-fulfillment-links"') &&
+				!faq6Match[0].includes('id="faq-registry-link"') &&
+				!faq6Match[0].includes('id="faq-guide-link"') &&
+				!/<a\b/i.test(faq6Match[0]),
+			`${locale.file} FAQ #6 must stay open by default as prose-only without Guest Registry or Guest Guide action buttons`,
 		);
 
 		// Balanced 6-item #location grid (5 landmarks + 6th Destination Guides callout)

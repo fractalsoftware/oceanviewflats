@@ -317,7 +317,6 @@ export interface HomeFaqItemConfig {
 	qKey: "faqQ1" | "faqQ2" | "faqQ3" | "faqQ4" | "faqQ5" | "faqQ6";
 	aKey: "faqA1" | "faqA2" | "faqA3" | "faqA4" | "faqA5" | "faqA6";
 	defaultOpen: boolean;
-	showFulfillmentLinks?: boolean;
 }
 
 export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
@@ -331,7 +330,6 @@ export const HOME_FAQ_ITEMS: readonly HomeFaqItemConfig[] = [
 		qKey: "faqQ6",
 		aKey: "faqA6",
 		defaultOpen: true,
-		showFulfillmentLinks: true,
 	},
 ];
 

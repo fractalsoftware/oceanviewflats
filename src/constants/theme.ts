@@ -418,14 +418,6 @@ export const HOME_THEME = {
 		"flex flex-wrap items-center justify-center gap-2.5 sm:gap-3",
 	heroQuickLinkBtn:
 		"inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 sm:px-5 py-2.5 rounded-full bg-slate-950/60 hover:bg-slate-950/85 border border-white/35 backdrop-blur-md text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
-	heroReturningGuestCue:
-		"mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-sm text-slate-100 drop-shadow-sm",
-	heroReturningGuestPrompt: "text-slate-100 font-normal",
-	heroReturningGuestLinks:
-		"inline-flex flex-wrap items-center justify-center gap-x-1.5",
-	heroReturningGuestLink:
-		"inline-flex items-center min-h-[44px] px-1.5 font-semibold text-white underline decoration-white/60 underline-offset-4 hover:decoration-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50",
-	heroReturningGuestDivider: "text-white/60 select-none",
 	iconSm: "w-4 h-4 shrink-0",
 	iconMd: "w-5 h-5 shrink-0",
 	iconLg: "w-6 h-6 shrink-0",
@@ -595,11 +587,6 @@ export const HOME_THEME = {
 	faqAnswerWrapper:
 		"px-5 pb-5 sm:px-6 sm:pb-6 md:px-8 md:pb-8 pt-4 border-t border-slate-100",
 	faqAnswer: "text-slate-700 leading-relaxed max-w-[58ch] text-pretty",
-	faqLinksRow: "mt-4 flex flex-wrap items-center gap-3",
-	faqActionLinkPrimary:
-		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
-	faqActionLinkSecondary:
-		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	// #333 Warm Sunlit Coastal Bottom CTA (Coral Horizon light wash, visually distinct from dark global Footer below)
 	ctaSection: "py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto mb-8",
 	ctaCard:
