@@ -31,6 +31,118 @@ document.addEventListener("DOMContentLoaded", () => {
 				? fallback
 				: key;
 
+	function trackAnalyticsEvent(category, action, name, value) {
+		const analytics = window.ovfAnalytics;
+		if (analytics && typeof analytics.trackEvent === "function") {
+			analytics.trackEvent(category, action, name, value);
+		}
+	}
+
+	function trackRegistryCompletedGoal() {
+		const analytics = window.ovfAnalytics;
+		if (analytics && typeof analytics.trackGoal === "function") {
+			const goalId =
+				analytics.GOALS &&
+				typeof analytics.GOALS.GUEST_REGISTRY_COMPLETED === "number"
+					? analytics.GOALS.GUEST_REGISTRY_COMPLETED
+					: 7;
+			analytics.trackGoal(goalId);
+		}
+	}
+
+	function normalizePropertyId(rawValue) {
+		const text = String(rawValue || "");
+		if (text.includes("1707")) return "1707";
+		if (text.includes("1606")) return "1606";
+		return "portfolio";
+	}
+
+	function classifySubmissionFailure(statusCode, result) {
+		const explicitRaw =
+			result && typeof result === "object"
+				? result.error_code || result.status || ""
+				: "";
+		const explicit = String(explicitRaw).trim().toLowerCase();
+		if (
+			explicit === "captcha_error" ||
+			explicit === "invalid_captcha" ||
+			explicit === "captcha"
+		) {
+			return "captcha_error";
+		}
+		if (explicit === "already_completed") return "already_completed";
+		if (explicit === "concluded") return "concluded";
+		if (explicit === "not_found" || explicit === "unauthorized") {
+			return "not_found";
+		}
+		if (explicit === "rate_limited" || explicit === "too_many_requests") {
+			return "rate_limited";
+		}
+		if (explicit === "validation_error") return "validation_error";
+		if (
+			explicit === "server_error" ||
+			explicit === "error" ||
+			explicit === "service_unavailable"
+		) {
+			return "server_error";
+		}
+
+		if (statusCode === 429) return "rate_limited";
+		if (statusCode === 404) return "not_found";
+		if (statusCode >= 500) return "server_error";
+
+		const errorParts = [];
+		if (result && typeof result.message === "string") {
+			errorParts.push(result.message);
+		}
+		if (result && Array.isArray(result.errors)) {
+			for (const entry of result.errors) {
+				if (typeof entry === "string") {
+					errorParts.push(entry);
+				}
+			}
+		}
+		const combined = errorParts.join(" ").toLowerCase();
+
+		if (
+			/captcha|security check|verification challenge|security verification|security question|comprobación de seguridad|desafío de verificación|verificación de seguridad|pregunta de verificación|vérification de sécurité|défi de vérification|question de sécurité|sotto-verifica|sfida di verifica|verifica di sicurezza|domanda di verifica|sicherheitsprüfung|sicherheitsfrage|セキュリティ|認証要請|認証問題/.test(
+				combined,
+			)
+		) {
+			return "captcha_error";
+		}
+		if (
+			/already.*complet|ya.*complet|déjà.*complét|già.*complet|bereits.*abgeschlossen|既に.*完了/.test(
+				combined,
+			)
+		) {
+			return "already_completed";
+		}
+		if (
+			/conclud|finaliz|termin[ée]|conclus|abgeschlossen|終了/.test(combined)
+		) {
+			return "concluded";
+		}
+		if (
+			/not found|no confirmed reservation|no.*reservation.*match|no se encontr|introuvable|non trovat|nicht gefunden|見つかりません/.test(
+				combined,
+			)
+		) {
+			return "not_found";
+		}
+		if (
+			/rate limit|too many requests|demasiadas solicitudes|trop de requêtes|troppe richieste|zu viele anfragen|リクエストが多すぎ/.test(
+				combined,
+			)
+		) {
+			return "rate_limited";
+		}
+		if (statusCode === 400 || statusCode === 422) {
+			return "validation_error";
+		}
+		return "server_error";
+	}
+
 	const msgLoading = t("registryLookupLoading", {}, "Loading...");
 	const msgNotFound = t(
 		"registryLookupNotFound",
@@ -180,6 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	if (isUrlCheckOutConcluded) {
 		displayConcludedState(msgConcluded);
+		trackAnalyticsEvent("Guest Registry", "Lookup Failure", "concluded");
 		return;
 	}
 
@@ -373,13 +486,24 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 					form.classList.add("hidden");
 					successOverlay.classList.remove("hidden");
+					trackAnalyticsEvent(
+						"Guest Registry",
+						"Lookup Failure",
+						"already_completed",
+					);
 				}
 			} else if (
 				(res.status === 403 || !data.success) &&
 				data.status === "concluded"
 			) {
 				displayConcludedState(data.message || msgConcluded);
-			} else if (res.status === 404 || res.status === 403) {
+				trackAnalyticsEvent("Guest Registry", "Lookup Failure", "concluded");
+			} else if (
+				res.status === 404 ||
+				res.status === 403 ||
+				data.status === "not_found" ||
+				data.status === "unauthorized"
+			) {
 				if (!hiddenCheckIn.value) displayCheckIn.textContent = defaultDateMsg;
 				if (!hiddenCheckOut.value) displayCheckOut.textContent = defaultDateMsg;
 				if (!hiddenProperty.value) displayProperty.textContent = defaultPropMsg;
@@ -388,12 +512,20 @@ document.addEventListener("DOMContentLoaded", () => {
 				msgBox.className =
 					"p-5 rounded-2xl text-sm font-medium mb-6 bg-amber-50 text-amber-800 border border-amber-200";
 				msgBox.classList.remove("hidden");
+				trackAnalyticsEvent("Guest Registry", "Lookup Failure", "not_found");
+			} else if (!res.ok || !data.success) {
+				trackAnalyticsEvent(
+					"Guest Registry",
+					"Lookup Failure",
+					"network_error",
+				);
 			}
 		} catch (err) {
 			console.error("Error looking up reservation details:", err);
 			if (!hiddenCheckIn.value) displayCheckIn.textContent = defaultDateMsg;
 			if (!hiddenCheckOut.value) displayCheckOut.textContent = defaultDateMsg;
 			if (!hiddenProperty.value) displayProperty.textContent = defaultPropMsg;
+			trackAnalyticsEvent("Guest Registry", "Lookup Failure", "network_error");
 		}
 	}
 
@@ -705,6 +837,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		if (!isValid) {
+			trackAnalyticsEvent(
+				"Guest Registry",
+				"Validation Error",
+				"missing_required",
+			);
 			showMsg(defaultErrorMsg, false);
 			return;
 		}
@@ -724,6 +861,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					emailInput.removeEventListener("input", removeRed);
 				});
 			}
+			trackAnalyticsEvent(
+				"Guest Registry",
+				"Validation Error",
+				"email_or_phone",
+			);
 			showMsg(msgErrEmail, false);
 			return;
 		}
@@ -742,6 +884,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					phoneInput.removeEventListener("input", removeRed);
 				});
 			}
+			trackAnalyticsEvent(
+				"Guest Registry",
+				"Validation Error",
+				"email_or_phone",
+			);
 			showMsg(msgErrPhone || defaultErrorMsg, false);
 			return;
 		}
@@ -755,6 +902,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					cPhone.classList.remove("border-red-400");
 					cPhone.removeEventListener("input", removeRed);
 				});
+				trackAnalyticsEvent(
+					"Guest Registry",
+					"Validation Error",
+					"email_or_phone",
+				);
 				showMsg(msgErrPhone || defaultErrorMsg, false);
 				return;
 			}
@@ -766,6 +918,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			!privacyConsentCheckbox ||
 			!privacyConsentCheckbox.checked
 		) {
+			trackAnalyticsEvent(
+				"Guest Registry",
+				"Validation Error",
+				"privacy_consent",
+			);
 			showMsg(msgErrPrivacyConsent || defaultErrorMsg, false);
 			return;
 		}
@@ -776,6 +933,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			(hasMinorOccupant &&
 				(!minorGuardianCheckbox || !minorGuardianCheckbox.checked))
 		) {
+			trackAnalyticsEvent(
+				"Guest Registry",
+				"Validation Error",
+				"minor_guardian_consent",
+			);
 			showMsg(msgErrMinorConsent || defaultErrorMsg, false);
 			return;
 		}
@@ -862,28 +1024,27 @@ document.addEventListener("DOMContentLoaded", () => {
 					window.scrollTo({ top: 0, behavior: "smooth" });
 				}, 300);
 
-				// Send a custom Matomo conversion event if available
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Guest Registry",
-						"Submission Success",
-						`Property: ${propertyVal}, Guests: ${currentGuestCount}`,
-					]);
-					window._paq.push(["trackGoal", 5]); // Registry Completed Goal
-				}
+				// Emit PII-free Guest Registry completion event + Goal 7 via analytics facade (never Goal 5)
+				const normalizedProperty = normalizePropertyId(
+					hiddenProperty?.value || propertyVal,
+				);
+				trackAnalyticsEvent(
+					"Guest Registry",
+					"Submission Success",
+					normalizedProperty,
+					currentGuestCount,
+				);
+				trackRegistryCompletedGoal();
 			} else {
 				const errorVal = result.message || defaultErrorMsg;
 				showMsg(errorVal, false);
 
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Guest Registry",
-						"Submission Failure",
-						errorVal,
-					]);
-				}
+				const failureCode = classifySubmissionFailure(response.status, result);
+				trackAnalyticsEvent(
+					"Guest Registry",
+					"Submission Failure",
+					failureCode,
+				);
 
 				// Reset submit button state
 				btnSubmit.disabled = false;
@@ -896,6 +1057,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		} catch (err) {
 			console.error("Error submitting form:", err);
 			showMsg(defaultErrorMsg, false);
+			trackAnalyticsEvent(
+				"Guest Registry",
+				"Submission Failure",
+				"network_error",
+			);
 
 			btnSubmit.disabled = false;
 			txtSubmit.textContent =

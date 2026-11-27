@@ -44,6 +44,27 @@ document.addEventListener("DOMContentLoaded", () => {
 				? fallback
 				: key;
 
+	function trackAnalyticsEvent(category, action, name, value) {
+		const analytics = window.ovfAnalytics;
+		if (analytics && typeof analytics.trackEvent === "function") {
+			analytics.trackEvent(category, action, name, value);
+		}
+	}
+
+	const CREDENTIAL_TYPE_BY_BUTTON_ID = {
+		"btn-copy-door-code": "door_code",
+		"btn-copy-wifi-ssid": "wifi_ssid",
+		"btn-copy-wifi-pass": "wifi_password",
+		"btn-copy-parking-spot": "parking_spot",
+	};
+
+	const CREDENTIAL_TYPE_BY_TARGET_ID = {
+		"display-door-code": "door_code",
+		"display-wifi-ssid": "wifi_ssid",
+		"display-wifi-password": "wifi_password",
+		"display-parking-spot": "parking_spot",
+	};
+
 	const msgLocked = t(
 		"guideCredentialsLocked",
 		{},
@@ -453,6 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (isUrlCheckOutConcluded) {
 		// Defense-in-depth: Suppress prefilling guest name into greeting, mask stay dates, hide registry banner, disable copy triggers, and render concluded notification
 		displayConcludedState(msgConcluded);
+		trackAnalyticsEvent("Guest Guide", "Access State", "concluded");
 		return;
 	}
 
@@ -474,6 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (!reservationCode) {
 		// No reservation code provided: access remains locked
 		setLockedState(defaultRegistryUrl, msgNotFound);
+		trackAnalyticsEvent("Guest Guide", "Access State", "not_found");
 	} else {
 		const apiUrl = `${apiBase}guide-access.php?code=${encodeURIComponent(reservationCode)}&lang=${encodeURIComponent(lang)}`;
 
@@ -493,9 +516,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			.then(({ status, data }) => {
 				if (status === 403 && data.status === "concluded") {
 					displayConcludedState(data.message || msgConcluded);
+					trackAnalyticsEvent("Guest Guide", "Access State", "concluded");
 				} else if (status === 200 && data.verified && data.credentials) {
 					// Access granted: Registry verified and reservation confirmed
 					setUnlockedState(data.credentials, data.reservation);
+					trackAnalyticsEvent("Guest Guide", "Access State", "unlocked");
 				} else if (data.status === "registry_required") {
 					// Reservation valid and confirmed, but Guest Registry not yet submitted
 					if (data.reservation) {
@@ -518,15 +543,29 @@ document.addEventListener("DOMContentLoaded", () => {
 						}
 					}
 					setLockedState(dynamicRegUrl, data.message || msgLockedDesc);
+					trackAnalyticsEvent(
+						"Guest Guide",
+						"Access State",
+						"registry_required",
+					);
+				} else if (
+					status >= 500 ||
+					data.status === "error" ||
+					data.status === "service_unavailable"
+				) {
+					setLockedState(defaultRegistryUrl, msgLockedDesc);
+					trackAnalyticsEvent("Guest Guide", "Access State", "network_error");
 				} else {
 					// Unauthorized / cancelled / not found
 					setLockedState(defaultRegistryUrl, data.message || msgNotFound);
+					trackAnalyticsEvent("Guest Guide", "Access State", "not_found");
 				}
 			})
 			.catch((err) => {
 				console.error("Error verifying guide access:", err);
 				// On network failure, retain safe locked state
 				setLockedState(defaultRegistryUrl, msgLockedDesc);
+				trackAnalyticsEvent("Guest Guide", "Access State", "network_error");
 			});
 	}
 
@@ -562,6 +601,18 @@ document.addEventListener("DOMContentLoaded", () => {
 			navigator.clipboard
 				.writeText(textToCopy)
 				.then(() => {
+					const credentialType =
+						CREDENTIAL_TYPE_BY_BUTTON_ID[btn.id] ||
+						CREDENTIAL_TYPE_BY_TARGET_ID[targetId] ||
+						"";
+					if (credentialType) {
+						trackAnalyticsEvent(
+							"Guest Guide",
+							"Credential Copied",
+							credentialType,
+						);
+					}
+
 					if (copyAlert) {
 						copyAlertText.textContent = msgCopied;
 						copyAlert.classList.remove("opacity-0", "translate-y-24");
@@ -603,4 +654,20 @@ document.addEventListener("DOMContentLoaded", () => {
 				});
 		});
 	});
+
+	// 8. Unlock Registry CTA Telemetry (placement label only — zero URL/code/PII)
+	if (registryLink) {
+		registryLink.addEventListener("click", () => {
+			trackAnalyticsEvent("Guest Guide", "Unlock Registry Click", "banner");
+		});
+	}
+	if (credentialLockedBtn) {
+		credentialLockedBtn.addEventListener("click", () => {
+			trackAnalyticsEvent(
+				"Guest Guide",
+				"Unlock Registry Click",
+				"credential_card",
+			);
+		});
+	}
 });
