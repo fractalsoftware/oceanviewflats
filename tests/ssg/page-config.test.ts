@@ -9,6 +9,12 @@ import {
 	LANGUAGES,
 	PLAYA_SALGUERO_LANDMARKS,
 } from "../../src/constants/config";
+import {
+	BREADCRUMB_THEME,
+	CHROME_THEME,
+	HOME_CARD_THEMES,
+	HOME_THEME,
+} from "../../src/constants/theme";
 import { dict } from "../../src/i18n/dict";
 import { baseTemplate } from "../../src/templates/base";
 
@@ -6719,4 +6725,152 @@ test("#332 Distilled 3-pillar Direct Reservation & Host showcase, warm Santa Mar
 		compiledCss.includes("::-webkit-details-marker"),
 		"dist/css/style.css must emit ::-webkit-details-marker suppression for Safari FAQ disclosure parity",
 	);
+});
+
+test("#333 Homepage renders warm sunlit coastal bottom CTA with single-row desktop layout contract, >=44px tap targets, honest icon, and registered token hygiene across all 6 locales", () => {
+	const distDir = path.join(process.cwd(), "dist");
+
+	// 1. Registered design-token hygiene: zero ad-hoc raw hex color utilities across CHROME_THEME, BREADCRUMB_THEME, HOME_CARD_THEMES, and HOME_THEME
+	const rawHexUtilityRegex = /\[#[0-9a-fA-F]{3,8}\]/;
+	const inspectThemeTokens = (
+		name: string,
+		obj: Record<string, unknown>,
+	): void => {
+		for (const [key, value] of Object.entries(obj)) {
+			if (typeof value === "string") {
+				assert.ok(
+					!rawHexUtilityRegex.test(value),
+					`${name}.${key} must use registered @theme tokens instead of raw hex utilities, got: ${value}`,
+				);
+			} else if (value && typeof value === "object") {
+				inspectThemeTokens(`${name}.${key}`, value as Record<string, unknown>);
+			}
+		}
+	};
+	inspectThemeTokens("CHROME_THEME", CHROME_THEME);
+	inspectThemeTokens("BREADCRUMB_THEME", BREADCRUMB_THEME);
+	inspectThemeTokens("HOME_CARD_THEMES", HOME_CARD_THEMES);
+	inspectThemeTokens("HOME_THEME", HOME_THEME);
+
+	// 2. Verify Home.tsx remains 100% style-agnostic with zero inline className strings and zero React client hooks
+	const homeSource = fs.readFileSync(
+		path.join(process.cwd(), "src", "pages", "Home.tsx"),
+		"utf-8",
+	);
+	assert.ok(
+		!homeSource.includes('className="') &&
+			!/\buse(?:State|Effect|Ref|Memo|Callback|Reducer|Context)\b/.test(
+				homeSource,
+			),
+		"Home.tsx must remain 100% style-agnostic with zero inline className strings and zero React hooks",
+	);
+
+	// 3. Verify WCAG AA+ contrast math for warm sunlit bottom CTA surface & button pairs
+	const relativeLuminance = (hex: string): number => {
+		const clean = hex.replace("#", "");
+		const channels = [0, 2, 4].map((i) => {
+			const c = Number.parseInt(clean.slice(i, i + 2), 16) / 255;
+			return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+		});
+		return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+	};
+	const contrastRatio = (fg: string, bg: string): number => {
+		const l1 = Math.max(relativeLuminance(fg), relativeLuminance(bg));
+		const l2 = Math.min(relativeLuminance(fg), relativeLuminance(bg));
+		return (l1 + 0.05) / (l2 + 0.05);
+	};
+	// Worst-case warm surface stop (#FEF2F2 coral-wash) vs headline (#0F172A) and body (#475569)
+	assert.ok(contrastRatio("#0F172A", "#FEF2F2") >= 7.0);
+	assert.ok(contrastRatio("#475569", "#FEF2F2") >= 4.5);
+	// Primary Coral Horizon button (#FFFFFF on #C43E29), Secondary Contact (#0F172A on #FFFFFF), WhatsApp (#047857 on #FFFFFF and #ECFDF5)
+	assert.ok(contrastRatio("#FFFFFF", "#C43E29") >= 4.5);
+	assert.ok(contrastRatio("#0F172A", "#FFFFFF") >= 7.0);
+	assert.ok(contrastRatio("#047857", "#FFFFFF") >= 4.5);
+	assert.ok(contrastRatio("#047857", "#ECFDF5") >= 4.5);
+
+	// 4. Verify compiled bottom CTA surface, single-row desktop layout contract, honest icon, and zero raw hex utilities across all 6 locales
+	for (const lang of LANGUAGES) {
+		const homeFile = lang === "en" ? "index.html" : `${lang}.html`;
+		const suffix = lang === "en" ? "" : `${lang}.html`;
+		const html = fs.readFileSync(path.join(distDir, homeFile), "utf-8");
+		const t = dict[lang];
+
+		const ctaMatch = html.match(
+			/<section[^>]*id="cta"[^>]*>[\s\S]*?<\/section>/,
+		);
+		assert.ok(ctaMatch, `${homeFile} must render <section id="cta">`);
+		const ctaHtml = ctaMatch[0];
+
+		// Warm sunlit coastal surface visually distinct from the dark slate global Footer below
+		const ctaCardMatch = ctaHtml.match(/<div[^>]*id="home-cta-card"[^>]*>/);
+		assert.ok(ctaCardMatch, `${homeFile} must render #home-cta-card`);
+		assert.ok(
+			ctaCardMatch[0].includes("bg-travertine-mist") &&
+				ctaCardMatch[0].includes("border-travertine-border") &&
+				ctaCardMatch[0].includes("text-deep-caribbean-slate") &&
+				!ctaCardMatch[0].includes("bg-slate-900") &&
+				!ctaCardMatch[0].includes("border-slate-800"),
+			`${homeFile} #home-cta-card must render on a warm sunlit coastal light surface distinct from dark Footer`,
+		);
+
+		// Wide enough content wrapper for single balanced desktop row (not cramped max-w-3xl)
+		assert.ok(
+			ctaHtml.includes("max-w-5xl"),
+			`${homeFile} #cta content wrapper must allocate max-w-5xl so all 3 action pills align on a single desktop row`,
+		);
+
+		// Actions row & 3 buttons: primary coral CTA (no misleading calendar icon), secondary Contact, secondary WhatsApp
+		const primaryBtn = ctaHtml.match(
+			/<a[^>]*id="home-cta-primary"[^>]*>[\s\S]*?<\/a>/,
+		);
+		const contactBtn = ctaHtml.match(
+			/<a[^>]*id="home-cta-contact"[^>]*>[\s\S]*?<\/a>/,
+		);
+		const whatsappBtn = ctaHtml.match(
+			/<a[^>]*id="home-cta-whatsapp"[^>]*>[\s\S]*?<\/a>/,
+		);
+		assert.ok(
+			primaryBtn && contactBtn && whatsappBtn,
+			`${homeFile} #cta must render #home-cta-primary, #home-cta-contact, and #home-cta-whatsapp`,
+		);
+
+		assert.ok(
+			primaryBtn[0].includes('href="#properties"') &&
+				primaryBtn[0].includes("bg-coral-horizon-accessible") &&
+				primaryBtn[0].includes("min-h-[48px]") &&
+				!primaryBtn[0].includes("lucide-calendar") &&
+				primaryBtn[0].includes("lucide-arrow-up") &&
+				primaryBtn[0].includes(t.homeHeroCta),
+			`${homeFile} #home-cta-primary must link to #properties on coral-horizon-accessible with >=48px target, arrow-up icon, and zero calendar icon`,
+		);
+
+		assert.ok(
+			contactBtn[0].includes(`href="./contact/${suffix}"`) &&
+				contactBtn[0].includes("bg-pure-white") &&
+				contactBtn[0].includes("text-deep-caribbean-slate") &&
+				contactBtn[0].includes("min-h-[48px]") &&
+				contactBtn[0].includes(t.navContact),
+			`${homeFile} #home-cta-contact must use relative localized contact link and high-contrast light pill with >=48px target`,
+		);
+
+		assert.ok(
+			whatsappBtn[0].includes("bg-pure-white") &&
+				whatsappBtn[0].includes("text-clearance-emerald-deep") &&
+				whatsappBtn[0].includes("min-h-[48px]") &&
+				whatsappBtn[0].includes(t.homeCtaWhatsApp) &&
+				!whatsappBtn[0].includes("bg-emerald-700") &&
+				!whatsappBtn[0].includes("bg-rose-700"),
+			`${homeFile} #home-cta-whatsapp must use registered light-surface Clearance Emerald tokens without bg-emerald-700/bg-rose-700`,
+		);
+
+		// Zero arbitrary raw hex color utilities in compiled homepage HTML and zero payment SDK scripts
+		assert.ok(
+			!rawHexUtilityRegex.test(html),
+			`${homeFile} compiled homepage HTML must contain zero arbitrary raw hex color utilities`,
+		);
+		assert.ok(
+			!html.includes("sdk.mercadopago.com"),
+			`${homeFile} must not load third-party Mercado Pago SDK on homepage`,
+		);
+	}
 });

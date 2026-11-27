@@ -273,10 +273,10 @@ export const BREADCRUMB_THEME = {
 		container: "max-w-6xl mx-auto px-6 py-3",
 		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
 		item: "inline-flex items-center gap-1.5",
-		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
 		separator: "w-4 h-4 text-slate-400 shrink-0",
 		current:
-			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
 	},
 	warmBar: {
 		nav: "bg-stone-50 border-b border-stone-200/80",
@@ -293,10 +293,10 @@ export const BREADCRUMB_THEME = {
 		container: "w-full",
 		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
 		item: "inline-flex items-center gap-1.5",
-		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
 		separator: "w-4 h-4 text-slate-400 shrink-0",
 		current:
-			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
 	},
 } as const;
 
@@ -361,7 +361,7 @@ export const HOME_CARD_THEMES = {
 		reviewAirbnbLink:
 			"inline-flex items-center gap-1.5 min-h-[44px] py-2 -ml-1 px-1 text-xs font-semibold text-slate-700 hover:text-coral-horizon-ink underline underline-offset-4 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 		cardCtaBtn:
-			"mt-6 inline-flex items-center justify-between w-full min-h-[48px] px-6 py-3 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+			"mt-6 inline-flex items-center justify-between w-full min-h-[48px] px-6 py-3 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-sm md:text-base font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	},
 	"1606": {
 		...BASE_HOME_CARD_THEME,
@@ -454,11 +454,11 @@ export const HOME_THEME = {
 		"mt-10 bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6",
 	multiPropertyContent: "flex items-start gap-4",
 	multiPropertyIconBox:
-		"w-11 h-11 shrink-0 bg-red-50 text-[#B91C1C] rounded-2xl flex items-center justify-center",
+		"w-11 h-11 shrink-0 bg-coral-wash text-coral-horizon-ink rounded-2xl flex items-center justify-center",
 	multiPropertyText:
 		"text-sm md:text-base text-slate-700 leading-relaxed max-w-[58ch] text-pretty",
 	multiPropertyCta:
-		"shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold shadow-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	// #302 & #319 Homepage Differentiating Property Comparison Table + Shared Building Rules
 	compareSection:
 		"py-16 md:py-20 px-4 sm:px-6 bg-white border-t border-slate-200 scroll-mt-20",
@@ -469,7 +469,7 @@ export const HOME_THEME = {
 	compareSubtitle:
 		"text-base md:text-lg text-slate-700 leading-relaxed max-w-[58ch] mx-auto text-pretty",
 	compareTableWrapper:
-		"ovf-compare-wrapper rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5A5F]/40",
+		"ovf-compare-wrapper rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	compareTable:
 		"ovf-compare-table w-full border-separate border-spacing-0 text-left text-sm md:text-base",
 	compareCaption:
@@ -614,22 +614,23 @@ export const HOME_THEME = {
 		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	faqActionLinkSecondary:
 		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
-	ctaSection: "py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto mb-12",
+	// #333 Warm Sunlit Coastal Bottom CTA (visually distinct from dark global Footer below)
+	ctaSection: "py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto mb-8",
 	ctaCard:
-		"bg-slate-900 text-white text-center relative overflow-hidden rounded-3xl py-14 px-6 sm:px-8 md:px-16 shadow-2xl border border-slate-800",
-	ctaContent: "relative z-10 max-w-3xl mx-auto flex flex-col items-center",
+		"bg-travertine-mist bg-gradient-to-br from-amber-wash/75 via-travertine-mist to-coral-wash/50 text-deep-caribbean-slate text-center relative overflow-hidden rounded-3xl py-12 sm:py-14 px-5 sm:px-8 lg:px-12 shadow-md border border-travertine-border",
+	ctaContent: "relative z-10 max-w-5xl mx-auto flex flex-col items-center",
 	ctaTitle:
-		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white text-balance",
+		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-deep-caribbean-slate text-balance max-w-3xl",
 	ctaSubtitle:
-		"text-base md:text-lg text-slate-200 mb-8 leading-relaxed max-w-[58ch] text-pretty",
+		"text-base md:text-lg text-slate-body mb-8 leading-relaxed max-w-[58ch] text-pretty",
 	ctaActionsRow:
-		"flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 w-full sm:w-auto",
+		"flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3.5 w-full sm:w-auto",
 	ctaPrimaryBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white px-8 py-4 rounded-full font-bold text-base md:text-lg shadow-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60",
+		"w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[48px] bg-coral-horizon-accessible hover:bg-coral-horizon-ink border border-transparent text-pure-white px-6 sm:px-7 py-3.5 rounded-full font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	ctaSecondaryBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-slate-800/80 border border-slate-600 text-white hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
+		"w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[48px] bg-pure-white hover:bg-slate-surface border border-slate-300 hover:border-slate-400 text-deep-caribbean-slate hover:text-coral-horizon-ink px-6 py-3.5 rounded-full font-semibold text-sm md:text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	ctaWhatsAppBtn:
-		"w-full sm:w-auto inline-flex items-center justify-center gap-2.5 min-h-[48px] bg-slate-800/80 border border-[#047857] text-[#34D399] hover:bg-slate-800 px-7 py-3.5 rounded-full font-semibold text-base transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40",
+		"w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[48px] bg-pure-white hover:bg-emerald-wash border border-clearance-emerald-deep/40 hover:border-clearance-emerald-deep text-clearance-emerald-deep px-6 py-3.5 rounded-full font-semibold text-sm md:text-base shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-clearance-emerald/40",
 } as const;
 
 export const SHARED_BOOKING_STATUS_THEME = {

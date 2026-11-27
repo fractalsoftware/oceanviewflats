@@ -1,8 +1,8 @@
 import {
 	ArrowDown,
 	ArrowRight,
+	ArrowUp,
 	Building2,
-	Calendar as CalendarIcon,
 	CheckCircle2,
 	ChevronDown,
 	Compass,
@@ -832,20 +832,28 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				</section>
 
 				{/* Bottom Direct-Reservation & Inquiry CTA Section */}
-				<section className={HOME_THEME.ctaSection}>
-					<div className={HOME_THEME.ctaCard}>
+				<section id="cta" className={HOME_THEME.ctaSection}>
+					<div id="home-cta-card" className={HOME_THEME.ctaCard}>
 						<div className={HOME_THEME.ctaContent}>
 							<h2 className={HOME_THEME.ctaTitle}>{t.homeCtaTitle}</h2>
 							<p className={HOME_THEME.ctaSubtitle}>{t.homeCtaSub}</p>
-							<div className={HOME_THEME.ctaActionsRow}>
-								<a href="#properties" className={HOME_THEME.ctaPrimaryBtn}>
-									<CalendarIcon
+							<div id="home-cta-actions" className={HOME_THEME.ctaActionsRow}>
+								<a
+									id="home-cta-primary"
+									href="#properties"
+									className={HOME_THEME.ctaPrimaryBtn}
+								>
+									<span>{t.homeHeroCta}</span>
+									<ArrowUp
 										className={HOME_THEME.heroCtaIcon}
 										aria-hidden="true"
 									/>
-									<span>{t.homeHeroCta}</span>
 								</a>
-								<a href={contactHref} className={HOME_THEME.ctaSecondaryBtn}>
+								<a
+									id="home-cta-contact"
+									href={contactHref}
+									className={HOME_THEME.ctaSecondaryBtn}
+								>
 									<span>{t.navContact}</span>
 									<ArrowRight
 										className={HOME_THEME.iconMd}
@@ -853,6 +861,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 									/>
 								</a>
 								<a
+									id="home-cta-whatsapp"
 									href={DATA_CONTROLLER.whatsappHref}
 									target="_blank"
 									rel="noopener noreferrer"
