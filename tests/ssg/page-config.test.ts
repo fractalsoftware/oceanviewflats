@@ -5109,11 +5109,23 @@ test("#319 Shared chrome & Homepage overhaul across all 6 locales: skip link, co
 			}
 		}
 
-		// 6. Homepage-specific checks: plain-language Hero, no Mercado Pago SDK, Trust Strip, Host Actions, FAQ #6 links, balanced Location grid
+		// 6. Homepage-specific checks: plain-language Hero, no external/Mercado Pago SDK scripts, Trust Strip, Host Actions, FAQ #6 links, balanced Location grid
+		const homepageScriptSrcs = [
+			...rootHtml.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi),
+		].map((match) => match[1]);
 		assert.ok(
-			!rootHtml.includes("sdk.mercadopago.com"),
-			`${locale.file} homepage must never load third-party Mercado Pago SDK scripts`,
+			homepageScriptSrcs.length > 0,
+			`${locale.file} homepage must include local runtime scripts`,
 		);
+		for (const scriptSrc of homepageScriptSrcs) {
+			const scriptOrigin = new URL(scriptSrc, "https://oceanviewflats.com/")
+				.origin;
+			assert.equal(
+				scriptOrigin,
+				"https://oceanviewflats.com",
+				`${locale.file} homepage must only load first-party scripts and never eager third-party payment SDKs (found ${scriptSrc})`,
+			);
+		}
 		const rootBodyMatch = rootHtml.match(/<body>([\s\S]*?)<\/body>/i);
 		assert.ok(rootBodyMatch, `${locale.file} must contain <body>`);
 		const rootBodyHtml = rootBodyMatch[1];
