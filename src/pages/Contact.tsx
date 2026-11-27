@@ -419,7 +419,7 @@ export default function Contact({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="contact" />
 		</div>
 	);
 }

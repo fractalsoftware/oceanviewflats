@@ -143,7 +143,7 @@
 #navbar[data-scrolled="true"] #nav-guides:hover,
 #navbar[data-scrolled="true"] #nav-checkin-toggle:hover,
 #navbar[data-scrolled="true"] #nav-contact:hover {
-	color: var(--color-salguero-sunset-rose-deep);
+	color: var(--color-coral-horizon-ink);
 }
 
 #navbar #lang-toggle {
@@ -201,6 +201,7 @@
 /* Non-color active destination indicators for aria-current="page" (#329) */
 #navbar #nav-logo[aria-current="page"],
 #navbar #nav-guides[aria-current="page"],
+#navbar #nav-guides[data-active="true"],
 #navbar #nav-contact[aria-current="page"],
 #navbar #nav-checkin-toggle[data-active="true"] {
 	position: relative;
@@ -209,6 +210,7 @@
 
 #navbar #nav-logo[aria-current="page"]::after,
 #navbar #nav-guides[aria-current="page"]::after,
+#navbar #nav-guides[data-active="true"]::after,
 #navbar #nav-contact[aria-current="page"]::after,
 #navbar #nav-checkin-toggle[data-active="true"]::after {
 	content: "";
@@ -226,13 +228,25 @@
 }
 
 #navbar[data-scrolled="true"] #nav-guides[aria-current="page"],
+#navbar[data-scrolled="true"] #nav-guides[data-active="true"],
 #navbar[data-scrolled="true"] #nav-contact[aria-current="page"],
 #navbar[data-scrolled="true"] #nav-checkin-toggle[data-active="true"] {
 	color: var(--color-coral-horizon-ink);
 }
 
+footer a[aria-current="page"] {
+	color: var(--color-pure-white);
+	font-weight: 700;
+	text-decoration-line: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+	border-inline-start: 3px solid var(--color-coral-horizon);
+	padding-inline-start: 0.625rem;
+}
+
 #nav-checkin-menu a[aria-current="page"],
-#mobile-nav-drawer a[aria-current="page"] {
+#mobile-nav-drawer a[aria-current="page"],
+#mobile-nav-drawer a[data-active="true"] {
 	background-color: var(--color-coral-wash);
 	color: var(--color-coral-horizon-ink);
 	font-weight: 700;
@@ -240,15 +254,21 @@
 }
 
 @media (forced-colors: active) {
+	footer a[aria-current="page"] {
+		border-inline-start-color: LinkText;
+	}
+
 	#navbar #nav-logo[aria-current="page"]::after,
 	#navbar #nav-guides[aria-current="page"]::after,
+	#navbar #nav-guides[data-active="true"]::after,
 	#navbar #nav-contact[aria-current="page"]::after,
 	#navbar #nav-checkin-toggle[data-active="true"]::after {
 		border-block-end-color: LinkText;
 	}
 
 	#nav-checkin-menu a[aria-current="page"],
-	#mobile-nav-drawer a[aria-current="page"] {
+	#mobile-nav-drawer a[aria-current="page"],
+	#mobile-nav-drawer a[data-active="true"] {
 		border-inline-start-color: LinkText;
 	}
 }

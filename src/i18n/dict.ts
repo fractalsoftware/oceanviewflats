@@ -833,8 +833,8 @@ export const dict = {
 		homeDirectPillar1Desc:
 			"Skip the 15–20% booking fees added by third-party sites and pay the exact owner rate in COP—often saving enough for a sunset dinner or Tayrona day trip.",
 		homeHostOwnerBadge: "Owner & Local Host",
-		homeCompareCta1707: "Check Dates & Book Flat 1707",
-		homeCompareCta1606: "Check Dates & Book Flat 1606",
+		homeCompareCta1707: "Check Dates for Oceanview 1707",
+		homeCompareCta1606: "Check Dates for Oceanview 1606",
 	},
 	es: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Frente al Mar | OceanViewFlats",
@@ -1691,8 +1691,8 @@ export const dict = {
 		homeDirectPillar1Desc:
 			"Evita el 15–20% en comisiones que cobran las plataformas externas y paga el valor real en COP directamente al propietario, sin intermediarios.",
 		homeHostOwnerBadge: "Propietario y Anfitrión Local",
-		homeCompareCta1707: "Ver Fechas y Reservar Apto 1707",
-		homeCompareCta1606: "Ver Fechas y Reservar Apto 1606",
+		homeCompareCta1707: "Ver Fechas en Oceanview 1707",
+		homeCompareCta1606: "Ver Fechas en Oceanview 1606",
 	},
 	fr: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Bord de Mer | OceanViewFlats",
@@ -2559,8 +2559,8 @@ export const dict = {
 		homeDirectPillar1Desc:
 			"Évitez les 15 à 20 % de frais ajoutés par les sites tiers et payez le juste tarif propriétaire en COP, directement sans intermédiaire.",
 		homeHostOwnerBadge: "Propriétaire & Hôte Local",
-		homeCompareCta1707: "Voir les Dates — Appt 1707",
-		homeCompareCta1606: "Voir les Dates — Appt 1606",
+		homeCompareCta1707: "Voir les Dates — Oceanview 1707",
+		homeCompareCta1606: "Voir les Dates — Oceanview 1606",
 	},
 	it: {
 		seoHomeTitle: "Playa Salguero, Santa Marta Fronte Mare | OceanViewFlats",
@@ -3414,8 +3414,8 @@ export const dict = {
 		homeDirectPillar1Desc:
 			"Evita il 15–20% di commissioni applicate dai portali esterni e paga la tariffa reale del proprietario in COP, senza intermediari.",
 		homeHostOwnerBadge: "Proprietario e Host Locale",
-		homeCompareCta1707: "Verifica Date — App. 1707",
-		homeCompareCta1606: "Verifica Date — App. 1606",
+		homeCompareCta1707: "Verifica Date — Oceanview 1707",
+		homeCompareCta1606: "Verifica Date — Oceanview 1606",
 	},
 	de: {
 		seoHomeTitle: "Playa Salguero, Santa Marta am Meer | OceanViewFlats",
@@ -4279,8 +4279,8 @@ export const dict = {
 		homeDirectPillar1Desc:
 			"Sparen Sie die 15–20 % Buchungsgebühren externer Portale und zahlen Sie den direkten Eigentümerpreis in COP ohne Zwischenhändler.",
 		homeHostOwnerBadge: "Eigentümer & Lokaler Gastgeber",
-		homeCompareCta1707: "Termine prüfen — Apt. 1707",
-		homeCompareCta1606: "Termine prüfen — Apt. 1606",
+		homeCompareCta1707: "Termine prüfen — Oceanview 1707",
+		homeCompareCta1606: "Termine prüfen — Oceanview 1606",
 	},
 	ja: {
 		seoHomeTitle: "サンタマルタ・プラヤサルグエロ海辺滞在 | OceanViewFlats",
@@ -5126,8 +5126,8 @@ export const dict = {
 		homeDirectPillar1Desc:
 			"外部予約サイトで加算される15〜20%のサービス手数料を省き、仲介なしで透明なオーナー直接料金（COP建て）にてご予約いただけます。",
 		homeHostOwnerBadge: "オーナー兼現地ホスト",
-		homeCompareCta1707: "1707号室の空室確認・予約",
-		homeCompareCta1606: "1606号室の空室確認・予約",
+		homeCompareCta1707: "Oceanview 1707 の空室を確認",
+		homeCompareCta1606: "Oceanview 1606 の空室を確認",
 	},
 };
 

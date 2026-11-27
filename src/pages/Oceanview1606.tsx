@@ -67,7 +67,7 @@ export default function Oceanview1606({ lang, assetPrefix = "./" }: AppProps) {
 					assetPrefix={assetPrefix}
 				/>
 			</main>
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="1606" />
 		</div>
 	);
 }

@@ -10,18 +10,10 @@ import {
 } from "../constants/config";
 import { CHROME_THEME } from "../constants/theme";
 import { dict } from "../i18n/dict";
-import type { Lang } from "../types";
+import type { ActiveNavPage, Lang } from "../types";
 import { LanguageDropdown } from "./LanguageDropdown";
 
-export type ActiveNavPage =
-	| "home"
-	| "1707"
-	| "1606"
-	| "guides"
-	| "contact"
-	| "registry"
-	| "guide"
-	| "privacy";
+export type { ActiveNavPage };
 
 interface NavigationProps {
 	isScrolled: boolean;
@@ -93,6 +85,7 @@ export const Navigation = ({
 							className={CHROME_THEME.navGuides}
 							aria-label={t.navGuidesAriaLabel}
 							aria-current={currentPage === "guides" ? "page" : undefined}
+							data-active={currentPage === "guide-article" ? "true" : undefined}
 						>
 							<span>{t.navGuides}</span>
 						</a>
@@ -211,6 +204,56 @@ export const Navigation = ({
 					<div className={CHROME_THEME.mobileDrawerGroups}>
 						<div>
 							<p className={CHROME_THEME.mobileDrawerGroupHeading}>
+								{t.footerStayingGuestsLabel}
+							</p>
+							<ul className={CHROME_THEME.mobileDrawerList}>
+								<li>
+									<a
+										href={registryHref}
+										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={
+											currentPage === "registry" ? "page" : undefined
+										}
+									>
+										<span>{t.registryTitle}</span>
+										<ArrowRight
+											className={CHROME_THEME.mobileDrawerLinkIcon}
+											aria-hidden="true"
+										/>
+									</a>
+								</li>
+								<li>
+									<a
+										href={guideHref}
+										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={currentPage === "guide" ? "page" : undefined}
+									>
+										<span>{t.navGuestGuide}</span>
+										<ArrowRight
+											className={CHROME_THEME.mobileDrawerLinkIcon}
+											aria-hidden="true"
+										/>
+									</a>
+								</li>
+								<li>
+									<a
+										href={contactHref}
+										className={CHROME_THEME.mobileDrawerLink}
+										aria-current={
+											currentPage === "contact" ? "page" : undefined
+										}
+									>
+										<span>{t.navContact}</span>
+										<ArrowRight
+											className={CHROME_THEME.mobileDrawerLinkIcon}
+											aria-hidden="true"
+										/>
+									</a>
+								</li>
+							</ul>
+						</div>
+						<div>
+							<p className={CHROME_THEME.mobileDrawerGroupHeading}>
 								{t.footerPropertiesLabel}
 							</p>
 							<ul className={CHROME_THEME.mobileDrawerList}>
@@ -252,58 +295,11 @@ export const Navigation = ({
 										href={guidesHref}
 										className={CHROME_THEME.mobileDrawerLink}
 										aria-current={currentPage === "guides" ? "page" : undefined}
+										data-active={
+											currentPage === "guide-article" ? "true" : undefined
+										}
 									>
 										<span>{t.footerGuidesHubLink}</span>
-										<ArrowRight
-											className={CHROME_THEME.mobileDrawerLinkIcon}
-											aria-hidden="true"
-										/>
-									</a>
-								</li>
-							</ul>
-						</div>
-						<div>
-							<p className={CHROME_THEME.mobileDrawerGroupHeading}>
-								{t.footerStayingGuestsLabel}
-							</p>
-							<ul className={CHROME_THEME.mobileDrawerList}>
-								<li>
-									<a
-										href={registryHref}
-										className={CHROME_THEME.mobileDrawerLink}
-										aria-current={
-											currentPage === "registry" ? "page" : undefined
-										}
-									>
-										<span>{t.registryTitle}</span>
-										<ArrowRight
-											className={CHROME_THEME.mobileDrawerLinkIcon}
-											aria-hidden="true"
-										/>
-									</a>
-								</li>
-								<li>
-									<a
-										href={guideHref}
-										className={CHROME_THEME.mobileDrawerLink}
-										aria-current={currentPage === "guide" ? "page" : undefined}
-									>
-										<span>{t.navGuestGuide}</span>
-										<ArrowRight
-											className={CHROME_THEME.mobileDrawerLinkIcon}
-											aria-hidden="true"
-										/>
-									</a>
-								</li>
-								<li>
-									<a
-										href={contactHref}
-										className={CHROME_THEME.mobileDrawerLink}
-										aria-current={
-											currentPage === "contact" ? "page" : undefined
-										}
-									>
-										<span>{t.navContact}</span>
 										<ArrowRight
 											className={CHROME_THEME.mobileDrawerLinkIcon}
 											aria-hidden="true"

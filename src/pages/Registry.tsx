@@ -658,7 +658,7 @@ export default function Registry({ lang, assetPrefix = "../" }: AppProps) {
 				</div>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="registry" />
 		</div>
 	);
 }

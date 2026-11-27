@@ -405,7 +405,7 @@ export default function Privacy({ lang, assetPrefix = "../" }: AppProps) {
 				</section>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="privacy" />
 		</div>
 	);
 }

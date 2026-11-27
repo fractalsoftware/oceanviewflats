@@ -879,7 +879,7 @@ export default function Home({ lang, assetPrefix = "./" }: AppProps) {
 				</section>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="home" />
 		</div>
 	);
 }

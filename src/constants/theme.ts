@@ -180,10 +180,10 @@ export const CHROME_THEME = {
 	navLogoIcon: "w-5 h-5 sm:w-6 sm:h-6 fill-current shrink-0",
 	navActions: "flex items-center gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-4 min-w-0",
 	navGuides:
-		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navCheckinGroup: "hidden md:block relative shrink-0",
 	navCheckinToggle:
-		"inline-flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+		"inline-flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navCheckinChevron:
 		"ovf-checkin-chevron w-3.5 h-3.5 shrink-0 transition-transform duration-200",
 	navCheckinMenuWrapper: "hidden absolute right-0 top-full pt-2 w-60 z-50",
@@ -194,7 +194,7 @@ export const CHROME_THEME = {
 		"flex items-center justify-between gap-2 min-h-[44px] px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 hover:text-coral-horizon-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navCheckinMenuLinkIcon: "w-4 h-4 text-slate-400 shrink-0",
 	navContact:
-		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
+		"hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 lg:px-2.5 text-sm font-semibold transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navBookBtn:
 		"inline-flex items-center justify-center min-h-[44px] px-2.5 sm:px-3.5 lg:px-5 py-2 text-[11px] sm:text-xs lg:text-sm font-bold leading-tight text-center rounded-full bg-coral-horizon-accessible hover:bg-coral-horizon-ink text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	navMenuToggle:
@@ -273,10 +273,10 @@ export const BREADCRUMB_THEME = {
 		container: "max-w-6xl mx-auto px-6 py-3",
 		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
 		item: "inline-flex items-center gap-1.5",
-		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
 		separator: "w-4 h-4 text-slate-400 shrink-0",
 		current:
-			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
 	},
 	warmBar: {
 		nav: "bg-stone-50 border-b border-stone-200/80",
@@ -293,10 +293,10 @@ export const BREADCRUMB_THEME = {
 		container: "w-full",
 		list: "flex flex-wrap items-center gap-1.5 text-sm text-slate-600 list-none m-0 p-0",
 		item: "inline-flex items-center gap-1.5",
-		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
+		link: "text-slate-700 hover:text-slate-900 underline-offset-4 hover:underline transition-colors rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
 		separator: "w-4 h-4 text-slate-400 shrink-0",
 		current:
-			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral-horizon",
+			"font-semibold text-slate-900 no-underline forced-colors:underline rounded-sm relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5A5F]",
 	},
 } as const;
 
@@ -614,10 +614,10 @@ export const HOME_THEME = {
 		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-900 hover:bg-coral-horizon-ink text-white text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
 	faqActionLinkSecondary:
 		"inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 text-xs sm:text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coral-horizon/40",
-	// #333 Warm Sunlit Coastal Bottom CTA (visually distinct from dark global Footer below)
+	// #333 Warm Sunlit Coastal Bottom CTA (Coral Horizon light wash, visually distinct from dark global Footer below)
 	ctaSection: "py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto mb-8",
 	ctaCard:
-		"bg-travertine-mist bg-gradient-to-br from-amber-wash/75 via-travertine-mist to-coral-wash/50 text-deep-caribbean-slate text-center relative overflow-hidden rounded-3xl py-12 sm:py-14 px-5 sm:px-8 lg:px-12 shadow-md border border-travertine-border",
+		"bg-pure-white bg-gradient-to-br from-coral-wash via-pure-white to-coral-wash/80 text-deep-caribbean-slate text-center relative overflow-hidden rounded-3xl py-12 sm:py-14 px-5 sm:px-8 lg:px-12 shadow-md border border-coral-horizon/25",
 	ctaContent: "relative z-10 max-w-5xl mx-auto flex flex-col items-center",
 	ctaTitle:
 		"text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-deep-caribbean-slate text-balance max-w-3xl",

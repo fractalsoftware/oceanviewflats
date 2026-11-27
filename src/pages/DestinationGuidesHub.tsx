@@ -210,7 +210,7 @@ export default function DestinationGuidesHub({
 				/>
 			</main>
 
-			<Footer lang={lang} assetPrefix={assetPrefix} />
+			<Footer lang={lang} assetPrefix={assetPrefix} currentPage="guides" />
 		</div>
 	);
 }
