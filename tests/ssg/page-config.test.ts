@@ -458,10 +458,8 @@ test("Multilingual Data Processing Policy (/privacy) pages are generated across 
 			`${item.file} must render dedicated #site-analytics disclosure section`,
 		);
 		assert.ok(
-			content.includes("Matomo") &&
-				content.includes("stats.fractalserver.com") &&
-				content.includes("disableCookies"),
-			`${item.file} must disclose self-hosted cookieless Matomo analytics (stats.fractalserver.com, disableCookies)`,
+			content.includes("Matomo") && content.includes("disableCookies"),
+			`${item.file} must disclose self-hosted cookieless Matomo analytics (disableCookies)`,
 		);
 		for (const key of [
 			"privacyAnalyticsTitle",

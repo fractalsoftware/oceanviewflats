@@ -7,6 +7,17 @@ import vm from "node:vm";
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const DIST_DIR = path.join(process.cwd(), "dist");
 
+function isExchangeRateApiUrl(url: string): boolean {
+	try {
+		return (
+			new URL(url, "https://www.oceanviewflats.com").hostname ===
+			"open.er-api.com"
+		);
+	} catch {
+		return false;
+	}
+}
+
 type MockEvent = {
 	preventDefault?: () => void;
 	stopPropagation?: () => void;
@@ -414,7 +425,7 @@ async function createCalendarHarness(options: CalendarHarnessOptions = {}) {
 			if (url.includes("prices.json")) {
 				return { ok: true, status: 200, json: async () => [] };
 			}
-			if (url.includes("open.er-api.com")) {
+			if (isExchangeRateApiUrl(url)) {
 				return {
 					ok: true,
 					status: 200,
@@ -736,7 +747,7 @@ test("#344 valid authoritative Quote emits bucketed Demand Signal with rounded C
 			if (url.includes("prices.json")) {
 				return { ok: true, status: 200, json: async () => [] };
 			}
-			if (url.includes("open.er-api.com")) {
+			if (isExchangeRateApiUrl(url)) {
 				return exchangeRatesPromise;
 			}
 			if (url.includes("quote.php")) {
@@ -849,7 +860,7 @@ test("#344 fallback Quote emits fallback source with rounded COP Event Value and
 			if (url.includes("prices.json")) {
 				return pricesPromise;
 			}
-			if (url.includes("open.er-api.com")) {
+			if (isExchangeRateApiUrl(url)) {
 				return { ok: false, status: 503, json: async () => ({}) };
 			}
 			if (url.includes("quote.php")) {
@@ -936,7 +947,7 @@ test("#344 minimum-stay rule violation emits deduplicated min_stay_blocked Deman
 			if (url.includes("prices.json")) {
 				return { ok: true, status: 200, json: async () => [] };
 			}
-			if (url.includes("open.er-api.com")) {
+			if (isExchangeRateApiUrl(url)) {
 				return exchangeRatesPromise;
 			}
 			if (url.includes("quote.php")) {

@@ -405,8 +405,10 @@ test("#340 legacy inline Matomo bootstrap is removed from public/js/main.js with
 	);
 
 	assert.ok(
-		!mainJsSource.includes("stats.fractalserver.com"),
-		"main.js must not contain legacy inline Matomo tracker URL",
+		!mainJsSource.includes("setTrackerUrl") &&
+			!mainJsSource.includes("matomo.php") &&
+			!mainJsSource.includes("matomo.js"),
+		"main.js must not contain legacy inline Matomo tracker bootstrap",
 	);
 	assert.ok(
 		!mainJsSource.includes("setSiteId"),
