@@ -3,7 +3,7 @@
 Single-context domain documentation layout at the repository root:
 
 - **[`CONTEXT.md`](../../CONTEXT.md)**: Canonical domain glossary and ubiquitous language.
-- **[`docs/adr/`](../adr/)**: Architecture Decision Records (`0001`–`0014`).
+- **[`docs/adr/`](../adr/)**: Architecture Decision Records (`0001`–`0015`).
 
 ## Rules
 

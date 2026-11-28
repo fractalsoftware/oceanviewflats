@@ -190,16 +190,121 @@ export const getClientDictionaryForPage = (
 	return common;
 };
 
-export const getClientExtraConfigForPage = (
-	pageId: string,
-): Record<string, unknown> => {
-	if (pageId === "registry") {
+export type PageAnalyticsType =
+	| "home"
+	| "property"
+	| "destination_guide"
+	| "destination_hub"
+	| "contact"
+	| "privacy"
+	| "registry"
+	| "guide"
+	| "booking_result"
+	| "404";
+
+export type AnalyticsPropertyId = "1707" | "1606" | "portfolio";
+
+export interface PageAnalyticsConfig {
+	pageType: PageAnalyticsType;
+	propertyId: AnalyticsPropertyId;
+	guideSlug?: string;
+	enableEngagementTracking: boolean;
+}
+
+const DEFAULT_PAGE_ANALYTICS_CONFIG: PageAnalyticsConfig = {
+	pageType: "404",
+	propertyId: "portfolio",
+	enableEngagementTracking: false,
+};
+
+const PROPERTY_1707_ANALYTICS: PageAnalyticsConfig = {
+	pageType: "property",
+	propertyId: "1707",
+	enableEngagementTracking: true,
+};
+
+const PROPERTY_1606_ANALYTICS: PageAnalyticsConfig = {
+	pageType: "property",
+	propertyId: "1606",
+	enableEngagementTracking: true,
+};
+
+const BOOKING_RESULT_ANALYTICS: PageAnalyticsConfig = {
+	pageType: "booking_result",
+	propertyId: "portfolio",
+	enableEngagementTracking: false,
+};
+
+const STATIC_PAGE_ANALYTICS_MAP: Record<string, PageAnalyticsConfig> = {
+	home: {
+		pageType: "home",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	Oceanview1707: PROPERTY_1707_ANALYTICS,
+	oceanview1707: PROPERTY_1707_ANALYTICS,
+	Oceanview1606: PROPERTY_1606_ANALYTICS,
+	oceanview1606: PROPERTY_1606_ANALYTICS,
+	"destination-guides": {
+		pageType: "destination_hub",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	contact: {
+		pageType: "contact",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	privacy: {
+		pageType: "privacy",
+		propertyId: "portfolio",
+		enableEngagementTracking: true,
+	},
+	registry: {
+		pageType: "registry",
+		propertyId: "portfolio",
+		enableEngagementTracking: false,
+	},
+	guide: {
+		pageType: "guide",
+		propertyId: "portfolio",
+		enableEngagementTracking: false,
+	},
+	"booking-success": BOOKING_RESULT_ANALYTICS,
+	"booking-failure": BOOKING_RESULT_ANALYTICS,
+	"booking-pending": BOOKING_RESULT_ANALYTICS,
+};
+
+export const getPageAnalyticsConfig = (pageId: string): PageAnalyticsConfig => {
+	if (Object.hasOwn(STATIC_PAGE_ANALYTICS_MAP, pageId)) {
+		return { ...STATIC_PAGE_ANALYTICS_MAP[pageId] };
+	}
+
+	if (pageId.startsWith("destination-guide-")) {
 		return {
-			minorDocTypes: [...MINOR_DOC_TYPES],
+			pageType: "destination_guide",
+			propertyId: "portfolio",
+			guideSlug: pageId.slice("destination-guide-".length),
+			enableEngagementTracking: true,
 		};
 	}
 
-	return {};
+	return { ...DEFAULT_PAGE_ANALYTICS_CONFIG };
+};
+
+export const getClientExtraConfigForPage = (
+	pageId: string,
+): Record<string, unknown> => {
+	const analytics = getPageAnalyticsConfig(pageId);
+
+	if (pageId === "registry") {
+		return {
+			minorDocTypes: [...MINOR_DOC_TYPES],
+			analytics,
+		};
+	}
+
+	return { analytics };
 };
 
 export const pages: PageConfig[] = [

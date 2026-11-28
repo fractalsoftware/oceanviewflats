@@ -65,6 +65,7 @@ export const LanguageDropdown = ({
 								<a
 									href={lang.code === "en" ? englishHref : lang.link}
 									className={CHROME_THEME.langDropdownItem}
+									data-lang-target={lang.code}
 								>
 									{lang.label}
 								</a>

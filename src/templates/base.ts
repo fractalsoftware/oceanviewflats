@@ -88,11 +88,17 @@ export const baseTemplate = ({
 			`<script src="${assetPrefix}${withAssetVersion("js/page-config.js", assetVersions)}"></script>`,
 		);
 	}
+	scripts.push(
+		`<script src="${assetPrefix}${withAssetVersion("js/analytics.js", assetVersions)}"></script>`,
+	);
 	for (const src of customScripts) {
 		if (
 			pageConfig &&
 			(src === "js/page-config.js" || src === "page-config.js")
 		) {
+			continue;
+		}
+		if (src === "js/analytics.js" || src === "analytics.js") {
 			continue;
 		}
 		scripts.push(

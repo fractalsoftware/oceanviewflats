@@ -1,20 +1,3 @@
-// Matomo
-let _paq = (window._paq = window._paq || []);
-/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-_paq.push(["trackPageView"]);
-_paq.push(["enableLinkTracking"]);
-(function () {
-	let u = "//stats.fractalserver.com/";
-	_paq.push(["setTrackerUrl", u + "matomo.php"]);
-	_paq.push(["setSiteId", "2"]);
-	let d = document,
-		g = d.createElement("script"),
-		s = d.getElementsByTagName("script")[0];
-	g.async = true;
-	g.src = u + "matomo.js";
-	s.parentNode.insertBefore(g, s);
-})();
-
 function translateKey(key, params, fallback) {
 	return window.t
 		? window.t(key, params, fallback)
@@ -84,6 +67,256 @@ function buildSafeAirbnbBookingUrl(rawUrl, checkInDate, checkOutDate) {
 	} catch (_) {
 		return null;
 	}
+}
+
+// Privacy-first Matomo analytics facade helpers & Demand Signal bucketing (#343 / #344)
+function getAnalyticsFacade() {
+	return window.ovfAnalytics && typeof window.ovfAnalytics === "object"
+		? window.ovfAnalytics
+		: null;
+}
+
+function trackAnalyticsEvent(category, action, name, value) {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.trackEvent === "function") {
+		return analytics.trackEvent(category, action, name, value);
+	}
+	if (
+		!window._paq ||
+		typeof window._paq.push !== "function" ||
+		typeof category !== "string" ||
+		!category ||
+		typeof action !== "string" ||
+		!action
+	) {
+		return false;
+	}
+	const cmd = ["trackEvent", category, action];
+	const hasNumericValue = typeof value === "number" && Number.isFinite(value);
+	const hasName =
+		name !== undefined && name !== null && String(name).length > 0;
+	if (hasNumericValue) {
+		cmd.push(hasName ? String(name) : "");
+		cmd.push(value);
+	} else if (hasName) {
+		cmd.push(String(name));
+	}
+	window._paq.push(cmd);
+	return true;
+}
+
+function trackAnalyticsGoal(goalKeyOrId, customRevenue) {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.trackGoal === "function") {
+		return analytics.trackGoal(goalKeyOrId, customRevenue);
+	}
+	return false;
+}
+
+function advanceAnalyticsFunnelStage(stage) {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.advanceFunnelStage === "function") {
+		return analytics.advanceFunnelStage(stage);
+	}
+	return false;
+}
+
+function resolvePagePropertyId(pageConfig, defaultPropertyId = "1707") {
+	const analytics = getAnalyticsFacade();
+	if (analytics && typeof analytics.getContext === "function") {
+		const ctxProperty = analytics.getContext().propertyId;
+		if (ctxProperty === "1707" || ctxProperty === "1606") {
+			return ctxProperty;
+		}
+	}
+	const cfg =
+		pageConfig && typeof pageConfig === "object"
+			? pageConfig
+			: typeof window.getPageConfig === "function"
+				? window.getPageConfig() || {}
+				: {};
+	const cfgProperty = cfg.analytics?.propertyId;
+	if (cfgProperty === "1707" || cfgProperty === "1606") {
+		return cfgProperty;
+	}
+	const pathname = window.location?.pathname || "";
+	if (pathname.includes("1606")) return "1606";
+	if (pathname.includes("1707")) return "1707";
+	return defaultPropertyId;
+}
+
+function parseCalendarDateParts(input) {
+	if (input instanceof Date) {
+		if (Number.isNaN(input.getTime())) {
+			return null;
+		}
+		return {
+			year: input.getFullYear(),
+			month: input.getMonth() + 1,
+			day: input.getDate(),
+		};
+	}
+	if (typeof input !== "string") {
+		return null;
+	}
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input.trim());
+	if (!match) {
+		return null;
+	}
+	const year = Number.parseInt(match[1], 10);
+	const month = Number.parseInt(match[2], 10);
+	const day = Number.parseInt(match[3], 10);
+	const utcCheck = new Date(Date.UTC(year, month - 1, day));
+	if (
+		utcCheck.getUTCFullYear() !== year ||
+		utcCheck.getUTCMonth() + 1 !== month ||
+		utcCheck.getUTCDate() !== day
+	) {
+		return null;
+	}
+	return { year, month, day };
+}
+
+function formatYearMonth(input) {
+	const parts = parseCalendarDateParts(input);
+	if (!parts) {
+		return null;
+	}
+	return `${parts.year}-${String(parts.month).padStart(2, "0")}`;
+}
+
+function diffCalendarDays(startInput, endInput) {
+	const startParts = parseCalendarDateParts(startInput);
+	const endParts = parseCalendarDateParts(endInput);
+	if (!startParts || !endParts) {
+		return null;
+	}
+	const startUtc = Date.UTC(
+		startParts.year,
+		startParts.month - 1,
+		startParts.day,
+	);
+	const endUtc = Date.UTC(endParts.year, endParts.month - 1, endParts.day);
+	return Math.round((endUtc - startUtc) / 86400000);
+}
+
+function getLeadTimeBucket(checkInInput, referenceInput) {
+	const diff = diffCalendarDays(referenceInput || new Date(), checkInInput);
+	if (diff === null) {
+		return null;
+	}
+	const leadDays = Math.max(0, diff);
+	if (leadDays <= 7) return "0-7d";
+	if (leadDays <= 30) return "8-30d";
+	if (leadDays <= 90) return "31-90d";
+	return "90d+";
+}
+
+function getStayLengthBucket(nights) {
+	if (typeof nights !== "number" || !Number.isFinite(nights) || nights < 1) {
+		return null;
+	}
+	const roundedNights = Math.round(nights);
+	if (roundedNights <= 1) return "1n";
+	if (roundedNights <= 3) return "2-3n";
+	if (roundedNights <= 6) return "4-6n";
+	if (roundedNights <= 13) return "7-13n";
+	return "14n+";
+}
+
+function buildInquiryDemandSignal(checkInInput, checkOutInput, referenceInput) {
+	const checkInMonth = formatYearMonth(checkInInput);
+	const leadTimeBucket = getLeadTimeBucket(checkInInput, referenceInput);
+	const nights = diffCalendarDays(checkInInput, checkOutInput);
+	const stayLengthBucket = getStayLengthBucket(nights);
+	if (!checkInMonth || !leadTimeBucket || !stayLengthBucket) {
+		return null;
+	}
+	return `${checkInMonth}:${leadTimeBucket}:${stayLengthBucket}`;
+}
+
+function classifyContactErrorCode(response, result) {
+	const explicitCode =
+		result && typeof (result.error_code || result.code) === "string"
+			? String(result.error_code || result.code).toLowerCase()
+			: "";
+	if (explicitCode) {
+		if (explicitCode.includes("rate")) return "rate_limited";
+		if (explicitCode.includes("privacy") || explicitCode.includes("consent")) {
+			return "privacy_consent";
+		}
+		if (explicitCode.includes("captcha")) return "captcha_error";
+		if (explicitCode.includes("date")) return "invalid_date_range";
+		if (explicitCode.includes("valid")) return "validation_error";
+		if (explicitCode.includes("server")) return "server_error";
+	}
+
+	const status =
+		response && typeof response.status === "number" ? response.status : 0;
+	if (status === 429) {
+		return "rate_limited";
+	}
+	if (status >= 500) {
+		return "server_error";
+	}
+
+	const rawText =
+		result && typeof (result.error || result.message) === "string"
+			? String(result.error || result.message).toLowerCase()
+			: "";
+
+	if (
+		rawText &&
+		(rawText.includes("privac") ||
+			rawText.includes("consent") ||
+			rawText.includes("personal data") ||
+			rawText.includes("datos personales") ||
+			rawText.includes("données personnelles") ||
+			rawText.includes("dati personali") ||
+			rawText.includes("personenbezogener") ||
+			rawText.includes("datenschutz") ||
+			rawText.includes("autorización") ||
+			rawText.includes("autorisation") ||
+			rawText.includes("autorizzazione") ||
+			rawText.includes("個人情報"))
+	) {
+		return "privacy_consent";
+	}
+
+	if (
+		rawText &&
+		(rawText.includes("captcha") ||
+			rawText.includes("security check") ||
+			rawText.includes("security verification") ||
+			rawText.includes("security question") ||
+			rawText.includes("verification challenge") ||
+			rawText.includes("comprobación de seguridad") ||
+			rawText.includes("verificación de seguridad") ||
+			rawText.includes("desafío de verificación") ||
+			rawText.includes("pregunta de verificación") ||
+			rawText.includes("vérification de sécurité") ||
+			rawText.includes("défi de vérification") ||
+			rawText.includes("question de sécurité") ||
+			rawText.includes("verifica di sicurezza") ||
+			rawText.includes("sotto-verifica") ||
+			rawText.includes("sfida di verifica") ||
+			rawText.includes("domanda di verifica") ||
+			rawText.includes("sicherheitsprüfung") ||
+			rawText.includes("sicherheitsfrage") ||
+			rawText.includes("セキュリティ") ||
+			rawText.includes("認証要請") ||
+			rawText.includes("認証問題"))
+	) {
+		return "captcha_error";
+	}
+
+	if (status === 200) {
+		return result ? "validation_error" : "server_error";
+	}
+	if (status >= 400 && status < 500) {
+		return "validation_error";
+	}
+	return "server_error";
 }
 
 // State-driven scroll effect for navbar (#329)
@@ -187,22 +420,335 @@ function bindDisclosure({ group, toggle, panel }) {
 	return { isOpen, open, close };
 }
 
-// Delegated Matomo CTA tracking for Destination Guide -> Property links (#311)
+// Analytics error/payment normalization helpers (#343)
+const ANALYTICS_MACHINE_CODE_RE = /^[a-z0-9][a-z0-9_-]{1,63}$/i;
+
+function sanitizeAnalyticsSlug(raw, fallback) {
+	if (typeof raw !== "string") return fallback;
+	const slug = raw
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "_")
+		.replace(/^_+|_+$/g, "")
+		.slice(0, 64);
+	return slug || fallback;
+}
+
+function normalizeKnownServerCode(rawCode) {
+	if (typeof rawCode !== "string") return null;
+	const trimmed = rawCode.trim();
+	if (!ANALYTICS_MACHINE_CODE_RE.test(trimmed)) return null;
+	const slug = sanitizeAnalyticsSlug(trimmed, "");
+	if (!slug) return null;
+	if (slug.includes("captcha")) return "captcha_error";
+	if (slug.includes("privacy") || slug.includes("consent")) {
+		return "privacy_consent";
+	}
+	if (
+		slug.includes("conflict") ||
+		slug.includes("overlap") ||
+		slug === "dates_unavailable"
+	) {
+		return "date_conflict";
+	}
+	if (slug.includes("rate_limit") || slug === "too_many_requests") {
+		return "rate_limited";
+	}
+	if (slug.includes("min_stay") || slug.includes("minimum_stay")) {
+		return "min_stay_error";
+	}
+	return slug;
+}
+
+function classifyLocalizedErrorText(rawText) {
+	if (typeof rawText !== "string" || !rawText.trim()) return null;
+	const text = rawText.toLowerCase();
+	if (
+		text.includes("captcha") ||
+		text.includes("security check") ||
+		text.includes("security verification") ||
+		text.includes("verification challenge") ||
+		text.includes("comprobación de seguridad") ||
+		text.includes("verificación de seguridad") ||
+		text.includes("desafío de verificación") ||
+		text.includes("vérification de sécurité") ||
+		text.includes("défi de vérification") ||
+		text.includes("question de sécurité") ||
+		text.includes("verifica di sicurezza") ||
+		text.includes("sotto-verifica") ||
+		text.includes("sfida di verifica") ||
+		text.includes("sicherheitsprüfung") ||
+		text.includes("sicherheitsfrage") ||
+		text.includes("セキュリティ") ||
+		text.includes("認証要請")
+	) {
+		return "captcha_error";
+	}
+	if (
+		text.includes("privacy") ||
+		text.includes("personal data") ||
+		text.includes("datos personales") ||
+		text.includes("données personnelles") ||
+		text.includes("dati personali") ||
+		text.includes("personenbezogener daten") ||
+		text.includes("個人情報")
+	) {
+		return "privacy_consent";
+	}
+	if (
+		text.includes("overlap") ||
+		text.includes("airbnb") ||
+		text.includes("already locked") ||
+		text.includes("maintenance") ||
+		text.includes("conflict") ||
+		text.includes("coinciden") ||
+		text.includes("ya están reservadas") ||
+		text.includes("chevauchent") ||
+		text.includes("déjà bloquées") ||
+		text.includes("coincidono") ||
+		text.includes("già bloccate") ||
+		text.includes("überschneiden") ||
+		text.includes("blockiert") ||
+		text.includes("重複") ||
+		text.includes("既に直接予約")
+	) {
+		return "date_conflict";
+	}
+	if (
+		text.includes("minimum stay") ||
+		text.includes("estadía mínima") ||
+		text.includes("séjour minimum") ||
+		text.includes("soggiorno minimo") ||
+		text.includes("mindestaufenthalt") ||
+		text.includes("最低宿泊日数")
+	) {
+		return "min_stay_error";
+	}
+	if (
+		text.includes("too many") ||
+		text.includes("rate limit") ||
+		text.includes("demasiadas") ||
+		text.includes("trop de") ||
+		text.includes("troppe") ||
+		text.includes("zu viele") ||
+		text.includes("多すぎ")
+	) {
+		return "rate_limited";
+	}
+	return null;
+}
+
+function classifyHoldFailureCode(response, result) {
+	const structuredCode =
+		result && typeof result === "object"
+			? normalizeKnownServerCode(result.error_code || result.code || "")
+			: null;
+	if (structuredCode) return structuredCode;
+
+	const status =
+		response && typeof response.status === "number" ? response.status : 0;
+	if (status === 409) return "date_conflict";
+	if (status === 429) return "rate_limited";
+	if (status === 422) return "min_stay_error";
+	if (status >= 500) return "server_error";
+
+	const localizedClass = classifyLocalizedErrorText(
+		result && typeof result === "object"
+			? result.error || result.message || ""
+			: "",
+	);
+	if (localizedClass) return localizedClass;
+
+	return "validation_error";
+}
+
+function classifyPaymentFailureCode(response, result) {
+	if (result && typeof result === "object") {
+		if (
+			typeof result.status_detail === "string" &&
+			ANALYTICS_MACHINE_CODE_RE.test(result.status_detail.trim())
+		) {
+			return sanitizeAnalyticsSlug(result.status_detail, "payment_declined");
+		}
+		const structuredCode = normalizeKnownServerCode(
+			result.error_code || result.code || "",
+		);
+		if (structuredCode) return structuredCode;
+		if (result.status === "rejected") {
+			return "payment_declined";
+		}
+	}
+
+	const status =
+		response && typeof response.status === "number" ? response.status : 0;
+	if (status === 409) return "date_conflict";
+	if (status === 429) return "rate_limited";
+	if (status === 422) return "min_stay_error";
+	if (status >= 500) return "server_error";
+
+	const localizedClass = classifyLocalizedErrorText(
+		result && typeof result === "object"
+			? result.error || result.message || ""
+			: "",
+	);
+	if (localizedClass) return localizedClass;
+
+	return "payment_declined";
+}
+
+function classifyBrickErrorCode(error) {
+	if (error && typeof error === "object") {
+		const candidate =
+			typeof error.cause === "string"
+				? error.cause.trim()
+				: typeof error.code === "string"
+					? error.code.trim()
+					: "";
+		if (candidate && ANALYTICS_MACHINE_CODE_RE.test(candidate)) {
+			return sanitizeAnalyticsSlug(candidate, "brick_init_error");
+		}
+	}
+	return "brick_init_error";
+}
+
+function normalizePaymentMethod(selectedPaymentMethod, formData) {
+	const rawSelected =
+		typeof selectedPaymentMethod === "string"
+			? selectedPaymentMethod.trim().toLowerCase()
+			: "";
+	const rawFormMethod =
+		formData && typeof formData.payment_method_id === "string"
+			? formData.payment_method_id.trim().toLowerCase()
+			: "";
+
+	if (rawSelected === "pse" || rawFormMethod === "pse") return "pse";
+	if (rawSelected === "efecty" || rawFormMethod === "efecty") return "efecty";
+	if (rawSelected === "credit_card") return "credit_card";
+	if (rawSelected === "debit_card") return "debit_card";
+	if (rawSelected === "bank_transfer") {
+		return rawFormMethod && ANALYTICS_MACHINE_CODE_RE.test(rawFormMethod)
+			? sanitizeAnalyticsSlug(rawFormMethod, "bank_transfer")
+			: "bank_transfer";
+	}
+	if (rawSelected === "ticket") {
+		return rawFormMethod && ANALYTICS_MACHINE_CODE_RE.test(rawFormMethod)
+			? sanitizeAnalyticsSlug(rawFormMethod, "ticket")
+			: "ticket";
+	}
+
+	const candidate = rawSelected || rawFormMethod;
+	if (candidate && ANALYTICS_MACHINE_CODE_RE.test(candidate)) {
+		return sanitizeAnalyticsSlug(candidate, "unknown");
+	}
+	return "unknown";
+}
+
+// Delegated Matomo CTA tracking for Destination Guide -> Property links (#311, #345)
+// and Homepage / Discovery CTAs (#345)
 document.addEventListener("click", (e) => {
 	const target = e && e.target ? e.target : null;
 	if (!target || typeof target.closest !== "function") return;
+
 	const ctaLink = target.closest("[data-guide-cta-property][data-guide-slug]");
-	if (!ctaLink || typeof ctaLink.getAttribute !== "function") return;
-	const propertyId = ctaLink.getAttribute("data-guide-cta-property");
-	const slug = ctaLink.getAttribute("data-guide-slug");
-	if (!propertyId || !slug) return;
-	const paq = (window._paq = window._paq || []);
-	paq.push([
-		"trackEvent",
-		"DestinationGuide",
-		"PropertyCTA",
-		`${slug}:${propertyId}`,
-	]);
+	if (ctaLink && typeof ctaLink.getAttribute === "function") {
+		const propertyId = ctaLink.getAttribute("data-guide-cta-property");
+		const slug = ctaLink.getAttribute("data-guide-slug");
+		if (propertyId && slug) {
+			trackAnalyticsEvent(
+				"DestinationGuide",
+				"PropertyCTA",
+				`${slug}:${propertyId}`,
+			);
+		}
+		return;
+	}
+
+	const discoveryCta = target.closest(
+		"[data-analytics-cta][data-analytics-target]",
+	);
+	if (discoveryCta && typeof discoveryCta.getAttribute === "function") {
+		const placement = discoveryCta.getAttribute("data-analytics-cta");
+		const ctaTarget = discoveryCta.getAttribute("data-analytics-target");
+		if (placement && ctaTarget) {
+			trackAnalyticsEvent(
+				"Discovery",
+				"CTA Click",
+				`${placement}:${ctaTarget}`,
+			);
+		}
+	}
+});
+
+// FAQ <details> accordion open tracking by stable ID (#345)
+(() => {
+	const faqOpenState = new WeakMap();
+	const SAFE_FAQ_ID = /^[a-z0-9][a-z0-9_-]*$/i;
+
+	document.addEventListener("DOMContentLoaded", () => {
+		if (typeof document.querySelectorAll !== "function") return;
+		const items = document.querySelectorAll("details[id]");
+		items.forEach((details) => {
+			if (details && typeof details === "object") {
+				faqOpenState.set(details, Boolean(details.open));
+			}
+		});
+	});
+
+	document.addEventListener(
+		"toggle",
+		(e) => {
+			const target = e?.target;
+			if (!target || typeof target !== "object") return;
+			const tagName = String(target.tagName || "").toUpperCase();
+			if (tagName !== "DETAILS") return;
+
+			const faqId =
+				(typeof target.getAttribute === "function"
+					? target.getAttribute("id")
+					: null) ||
+				target.id ||
+				"";
+			if (!faqId || !SAFE_FAQ_ID.test(faqId)) return;
+
+			const isOpen = Boolean(target.open);
+			const wasOpen = faqOpenState.get(target) === true;
+			faqOpenState.set(target, isOpen);
+
+			if (!isOpen || wasOpen) return;
+
+			trackAnalyticsEvent("FAQ", "Open", faqId);
+		},
+		true,
+	);
+})();
+
+// Unified delegated Matomo tracking for public WhatsApp CTAs (Goal 4) (#343)
+document.addEventListener("click", (e) => {
+	const target = e?.target ?? null;
+	if (!target || typeof target.closest !== "function") return;
+	const whatsappLink = target.closest("[data-analytics-whatsapp]");
+	if (!whatsappLink || typeof whatsappLink.getAttribute !== "function") return;
+	const placement = sanitizeAnalyticsSlug(
+		whatsappLink.getAttribute("data-analytics-whatsapp"),
+		"",
+	);
+	if (!placement) return;
+	trackAnalyticsEvent("Contact", "WhatsApp Click", placement);
+	trackAnalyticsGoal("WHATSAPP_CONTACT");
+});
+
+// Delegated Matomo tracking for Airbnb review-verification links (non-Goal trust event) (#343)
+document.addEventListener("click", (e) => {
+	const target = e?.target ?? null;
+	if (!target || typeof target.closest !== "function") return;
+	const reviewLink = target.closest("[data-analytics-airbnb-review]");
+	if (!reviewLink || typeof reviewLink.getAttribute !== "function") return;
+	const placement = sanitizeAnalyticsSlug(
+		reviewLink.getAttribute("data-analytics-airbnb-review"),
+		"",
+	);
+	if (!placement) return;
+	trackAnalyticsEvent("Trust", "Airbnb Review Verification Click", placement);
 });
 
 // Language Dropdown Mobile & Keyboard Toggle
@@ -232,16 +778,51 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Save language preference on click
+	// Save language preference on click & track manual locale switch (#345)
 	langLinks.forEach((link) => {
 		link.addEventListener("click", () => {
-			const href = link.getAttribute("href") || "";
+			const dataLangTarget =
+				typeof link.getAttribute === "function"
+					? link.getAttribute("data-lang-target") ||
+						link.getAttribute("data-lang")
+					: null;
+			const href =
+				typeof link.getAttribute === "function"
+					? link.getAttribute("href") || ""
+					: "";
 			let clickedLang = "en";
-			if (href.includes(".html") && !href.includes("index.html")) {
-				clickedLang = href.split("?")[0].replace(".html", "");
+			if (dataLangTarget) {
+				clickedLang = dataLangTarget;
+			} else if (
+				href.includes(".html") &&
+				!href.includes("index.html") &&
+				!href.includes("404.html")
+			) {
+				clickedLang =
+					href.split("?")[0].replace(".html", "").split("/").pop() || "en";
 			}
 			if (typeof localStorage !== "undefined") {
 				localStorage.setItem("lang-pref", clickedLang);
+			}
+			const analytics = getAnalyticsFacade();
+			if (analytics) {
+				const fromLang =
+					(typeof analytics.getContext === "function" &&
+						analytics.getContext().lang) ||
+					(typeof window.getPageConfig === "function" &&
+						window.getPageConfig()?.lang) ||
+					currentLang ||
+					"en";
+				if (typeof analytics.setLanguageAcquisition === "function") {
+					analytics.setLanguageAcquisition("manual_switched");
+				}
+				if (clickedLang && clickedLang !== fromLang) {
+					trackAnalyticsEvent(
+						"Language",
+						"Manual Switch",
+						`${fromLang}->${clickedLang}`,
+					);
+				}
 			}
 		});
 	});
@@ -676,10 +1257,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	const txtReady = btnBook.getAttribute("data-text-ready");
 	const txtDefault = btnBook.getAttribute("data-text-default");
 
-	// Retrieve property ID from page path (defaults to 1707 if not 1606)
-	const propertyId = window.location.pathname.includes("1606")
-		? "1606"
-		: "1707";
+	// Retrieve property ID from analytics context, pageConfig metadata, or page path (defaults to 1707 if not 1606)
+	const propertyId = resolvePagePropertyId(pageConfig);
 
 	// Fetch live blocked dates from local caching proxy
 	async function fetchBlockedDates() {
@@ -753,11 +1332,14 @@ document.addEventListener("DOMContentLoaded", () => {
 					firstBlockedAfterCheckIn &&
 					dateStr > firstBlockedAfterCheckIn,
 			);
-			const isDisabled = isCheckoutSelectionMode
-				? isPast ||
-					(isBlocked && !isTurnoverCheckoutCandidate) ||
-					isBeyondFirstBlocked
-				: isPast || isBlocked;
+			const isUnavailableBooked = Boolean(
+				!isPast && isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut,
+			);
+			const isNativeDisabled = Boolean(
+				isPast ||
+					(isBeyondFirstBlocked && !isBlocked) ||
+					(isBlocked && isCheckOut),
+			);
 
 			let bgClass = "bg-white hover:bg-slate-100 text-slate-700";
 			if (isPast) {
@@ -775,23 +1357,36 @@ document.addEventListener("DOMContentLoaded", () => {
 				bgClass = "bg-[#FF5A5F]/10 text-[#FF5A5F] font-medium";
 			}
 
+			btn.type = "button";
 			btn.className =
 				"calendar-day w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm transition-all relative overflow-hidden " +
 				bgClass;
 			btn.textContent = i;
-			btn.disabled = isDisabled;
+			btn.disabled = isNativeDisabled;
 			btn.setAttribute("data-date", dateStr);
 
-			// Accessible label for screen readers
-			if (isBlocked && !isTurnoverCheckoutCandidate && !isCheckOut) {
+			// Accessible booked state using aria-disabled="true" so clicks emit an Unavailable Date Clicked Demand Signal without selecting the date (#344)
+			if (isUnavailableBooked) {
+				btn.setAttribute("aria-disabled", "true");
 				btn.setAttribute("title", "Already Booked");
 				btn.setAttribute(
 					"aria-label",
 					`${i} ${monthNames[lang][month]}, Booked`,
 				);
-			}
-
-			if (!isDisabled) {
+				btn.addEventListener("click", (e) => {
+					if (e && typeof e.preventDefault === "function") {
+						e.preventDefault();
+					}
+					const clickedMonth = formatYearMonth(thisDate);
+					if (clickedMonth) {
+						trackAnalyticsEvent(
+							"Demand",
+							"Unavailable Date Clicked",
+							`${propertyId}:${clickedMonth}`,
+						);
+					}
+				});
+			} else if (!isNativeDisabled) {
 				btn.addEventListener("click", () => {
 					if (!checkIn || (checkIn && checkOut)) {
 						checkIn = thisDate;
@@ -852,6 +1447,68 @@ document.addEventListener("DOMContentLoaded", () => {
 	let exchangeRates = null;
 	let activeQuoteRequestId = 0;
 	let lastQuoteDetails = null;
+	let lastTrackedQuoteKey = null;
+
+	function trackQuoteDemandSignal(start, end, details) {
+		if (!start || !end || !details) {
+			return;
+		}
+		const checkInStr = formatDate(start);
+		const checkOutStr = formatDate(end);
+		const checkInMonth = formatYearMonth(start);
+		const nightsCount =
+			typeof details.nights === "number" && details.nights > 0
+				? Math.round(details.nights)
+				: diffCalendarDays(start, end);
+		const stayLengthBucket = getStayLengthBucket(nightsCount);
+		if (!checkInMonth || !stayLengthBucket) {
+			return;
+		}
+
+		const isMinStayBlocked = details.isValid === false;
+		const outcomeKey = isMinStayBlocked
+			? "min_stay_blocked"
+			: "quote_generated";
+		const dedupeKey = `${propertyId}|${checkInStr}|${checkOutStr}|${outcomeKey}`;
+		if (dedupeKey === lastTrackedQuoteKey) {
+			return;
+		}
+		lastTrackedQuoteKey = dedupeKey;
+
+		if (isMinStayBlocked) {
+			const minStayRequired =
+				typeof details.minimumStayRequired === "number" &&
+				Number.isFinite(details.minimumStayRequired) &&
+				details.minimumStayRequired > 0
+					? Math.round(details.minimumStayRequired)
+					: 2;
+			trackAnalyticsEvent(
+				"Demand",
+				"min_stay_blocked",
+				`${propertyId}:${checkInMonth}:${stayLengthBucket}:min_${minStayRequired}n`,
+			);
+			return;
+		}
+
+		advanceAnalyticsFunnelStage("quote_generated");
+		const leadTimeBucket = getLeadTimeBucket(start);
+		if (!leadTimeBucket) {
+			return;
+		}
+		const quoteSource =
+			details.source === "authoritative" ? "authoritative" : "fallback";
+		const roundedTotalCop = Math.round(Number(details.totalCOP));
+		const copEventValue =
+			Number.isFinite(roundedTotalCop) && roundedTotalCop >= 0
+				? roundedTotalCop
+				: undefined;
+		trackAnalyticsEvent(
+			"Demand",
+			"Quote Generated",
+			`${propertyId}:${checkInMonth}:${leadTimeBucket}:${stayLengthBucket}:${quoteSource}`,
+			copEventValue,
+		);
+	}
 
 	// Fetch build-time or admin-synced seasonal prices json
 	async function fetchPrices() {
@@ -1168,6 +1825,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				);
 			}
 		}
+
+		if (checkIn && checkOut) {
+			trackQuoteDemandSignal(checkIn, checkOut, details);
+		}
 	}
 
 	async function fetchAuthoritativeQuote(start, end) {
@@ -1263,6 +1924,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		} else {
 			activeQuoteRequestId++;
 			lastQuoteDetails = null;
+			lastTrackedQuoteKey = null;
 			if (minStayWarning) {
 				minStayWarning.classList.add("hidden");
 				minStayWarning.textContent = "";
@@ -1333,6 +1995,32 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	function resolveAuthoritativeTotalCop(explicitAmount) {
+		if (
+			typeof explicitAmount === "number" &&
+			Number.isFinite(explicitAmount) &&
+			explicitAmount >= 0
+		) {
+			return Math.round(explicitAmount);
+		}
+		if (
+			lastQuoteDetails &&
+			typeof lastQuoteDetails.totalCOP === "number" &&
+			Number.isFinite(lastQuoteDetails.totalCOP) &&
+			lastQuoteDetails.totalCOP >= 0
+		) {
+			return Math.round(lastQuoteDetails.totalCOP);
+		}
+		const hiddenTotalEl = document.getElementById("form-total-price-cop");
+		if (hiddenTotalEl && hiddenTotalEl.value) {
+			const parsed = parseFloat(hiddenTotalEl.value);
+			if (Number.isFinite(parsed) && parsed >= 0) {
+				return Math.round(parsed);
+			}
+		}
+		return undefined;
+	}
+
 	async function initPaymentBrick(
 		publicKey,
 		totalAmount,
@@ -1345,6 +2033,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				await loadMercadoPagoSDK();
 			} catch (err) {
 				console.error("Failed to load MercadoPago SDK:", err);
+				trackAnalyticsEvent(
+					"Booking Funnel",
+					"Payment Brick Error",
+					"sdk_load_error",
+				);
 				const msgBox = document.getElementById("booking-form-message");
 				if (msgBox) {
 					msgBox.textContent = t(
@@ -1357,7 +2050,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				const btnSubmit = document.getElementById("btn-direct-submit");
 				const btnSubmitText = document.getElementById("btn-direct-submit-text");
-				const formEl = document.getElementById("direct-booking-form");
 				const msgSubmitDefault = t("dbSubmit", {}, "Send Booking Request");
 				if (btnSubmit) btnSubmit.disabled = false;
 				if (btnSubmitText) btnSubmitText.textContent = msgSubmitDefault;
@@ -1365,29 +2057,30 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 
-		if (!mpInstance) {
-			mpInstance = new window.MercadoPago(publicKey, { locale: "es-CO" });
-		}
-
-		if (paymentBrickController) {
-			try {
-				await paymentBrickController.unmount();
-			} catch (unmountErr) {
-				console.warn("Unmount failed or container already empty:", unmountErr);
-			}
-		}
-
-		const bricksBuilder = mpInstance.bricks();
-		const container = document.getElementById("payment-brick-container");
-		if (container) {
-			container.classList.remove("hidden");
-		}
-
-		const propertyId = window.location.pathname.includes("1606")
-			? "1606"
-			: "1707";
+		const brickPropertyId = resolvePagePropertyId(pageConfig);
 
 		try {
+			if (!mpInstance) {
+				mpInstance = new window.MercadoPago(publicKey, { locale: "es-CO" });
+			}
+
+			if (paymentBrickController) {
+				try {
+					await paymentBrickController.unmount();
+				} catch (unmountErr) {
+					console.warn(
+						"Unmount failed or container already empty:",
+						unmountErr,
+					);
+				}
+			}
+
+			const bricksBuilder = mpInstance.bricks();
+			const container = document.getElementById("payment-brick-container");
+			if (container) {
+				container.classList.remove("hidden");
+			}
+
 			paymentBrickController = await bricksBuilder.create(
 				"payment",
 				"payment-brick-container",
@@ -1421,6 +2114,12 @@ document.addEventListener("DOMContentLoaded", () => {
 					callbacks: {
 						onReady: () => {
 							console.log("Payment Brick mounted successfully.");
+							advanceAnalyticsFunnelStage("payment_brick_ready");
+							trackAnalyticsEvent(
+								"Booking Funnel",
+								"Payment Brick Ready",
+								brickPropertyId,
+							);
 							const btnSubmit = document.getElementById("btn-direct-submit");
 							if (btnSubmit) btnSubmit.style.display = "none"; // Hide old submit button permanently
 						},
@@ -1432,7 +2131,8 @@ document.addEventListener("DOMContentLoaded", () => {
 									reservationUid,
 									guestEmail,
 									guestName,
-									propertyId,
+									brickPropertyId,
+									totalAmount,
 								)
 									.then(resolve)
 									.catch(reject);
@@ -1440,12 +2140,22 @@ document.addEventListener("DOMContentLoaded", () => {
 						},
 						onError: (error) => {
 							console.error("Payment Brick initialization error:", error);
+							trackAnalyticsEvent(
+								"Booking Funnel",
+								"Payment Brick Error",
+								classifyBrickErrorCode(error),
+							);
 						},
 					},
 				},
 			);
 		} catch (brickErr) {
 			console.error("Error creating Payment Brick:", brickErr);
+			trackAnalyticsEvent(
+				"Booking Funnel",
+				"Payment Brick Error",
+				classifyBrickErrorCode(brickErr),
+			);
 		}
 	}
 
@@ -1456,7 +2166,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		guestEmail,
 		guestName,
 		propertyId,
+		authoritativeTotalAmount,
 	) {
+		const paymentMethod = normalizePaymentMethod(
+			selectedPaymentMethod,
+			formData,
+		);
+		advanceAnalyticsFunnelStage("payment_submitted");
+		trackAnalyticsEvent("Booking Funnel", "Payment Submitted", paymentMethod);
+
 		const privacyCheckboxEl = document.getElementById(
 			"booking-privacy-consent",
 		);
@@ -1477,7 +2195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			privacy_policy_version:
 				privacyVersionEl && privacyVersionEl.value
 					? privacyVersionEl.value
-					: "2026-10",
+					: "2026-11",
 			captcha_challenge: document.getElementById("booking-captcha-challenge")
 				? document.getElementById("booking-captcha-challenge").value
 				: "",
@@ -1491,13 +2209,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		bookingPaymentToken = "";
 
 		const msgBox = document.getElementById("booking-form-message");
-		const formEl = document.getElementById("direct-booking-form");
 		const msgDeclined = t(
 			"dbDeclined",
 			{},
 			"Your payment was declined. Please try another payment option or verify your details.",
 		);
 
+		let paymentFailureTracked = false;
 		try {
 			const paymentEndpoint = `${resolveApiBase(pageConfig)}payment.php`;
 			const response = await fetch(paymentEndpoint, {
@@ -1511,17 +2229,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			const result = await response.json();
 
 			if (response.ok && result.success) {
-				// Track Successful Direct Booking Conversion (Goal 5)
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Booking",
-						"Transparent Payment Success",
-						propertyId,
-					]);
-					window._paq.push(["trackGoal", 5]);
-				}
-
 				if (result.reservation_code && typeof sessionStorage !== "undefined") {
 					try {
 						sessionStorage.setItem(
@@ -1587,8 +2294,20 @@ document.addEventListener("DOMContentLoaded", () => {
 						? sanitizeTrustedPaymentUrl(result.external_resource_url)
 						: null;
 
-				// Route dynamically based on status and method
+				// Route dynamically based on status and method, splitting Instant vs Asynchronous Settlement (#343)
 				if (result.status === "approved") {
+					const revenueCop = resolveAuthoritativeTotalCop(
+						authoritativeTotalAmount,
+					);
+					advanceAnalyticsFunnelStage("confirmed");
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Direct Reservation Confirmed",
+						`${propertyId}:${paymentMethod}`,
+						revenueCop,
+					);
+					trackAnalyticsGoal("DIRECT_RESERVATION_CONFIRMED", revenueCop);
+
 					const params = new URLSearchParams({
 						id: String(result.payment_id || ""),
 						code: String(result.reservation_code || ""),
@@ -1596,9 +2315,24 @@ document.addEventListener("DOMContentLoaded", () => {
 					});
 					window.location.href = `${assetPrefix}${successPage}?${params.toString()}`;
 				} else if (safePseUrl) {
+					// Asynchronous Settlement (PSE): emit non-Goal pending event, never Goal 5
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"PSE Redirect Initiated",
+						propertyId,
+					);
 					// Redirection for bank payment authorization (strict HTTPS allowlist)
 					window.location.href = safePseUrl;
-				} else if (selectedPaymentMethod === "efecty") {
+				} else if (
+					selectedPaymentMethod === "efecty" ||
+					paymentMethod === "efecty"
+				) {
+					// Asynchronous Settlement (Cash Voucher): emit non-Goal pending event, never Goal 5
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Cash Voucher Issued",
+						propertyId,
+					);
 					// Redirection to booking-pending page, passing Efecty voucher print parameters
 					const params = new URLSearchParams({
 						id: String(result.payment_id || ""),
@@ -1611,6 +2345,12 @@ document.addEventListener("DOMContentLoaded", () => {
 					});
 					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
 				} else {
+					// Generic Asynchronous Settlement pending fallback: never Goal 5
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Payment Pending",
+						`${propertyId}:${paymentMethod}`,
+					);
 					// Standard pending screen fallback
 					const params = new URLSearchParams({
 						id: String(result.payment_id || ""),
@@ -1620,11 +2360,21 @@ document.addEventListener("DOMContentLoaded", () => {
 					window.location.href = `${assetPrefix}${pendingPage}?${params.toString()}`;
 				}
 			} else {
+				const failureCode = classifyPaymentFailureCode(response, result);
+				paymentFailureTracked = true;
+				trackAnalyticsEvent("Booking Funnel", "Payment Failed", failureCode);
 				loadBookingCaptcha();
 				throw new Error(result.error || msgDeclined);
 			}
 		} catch (err) {
 			console.error("Transparent Payment Error:", err);
+			if (!paymentFailureTracked) {
+				trackAnalyticsEvent(
+					"Booking Funnel",
+					"Payment Failed",
+					"network_error",
+				);
+			}
 			if (msgBox) {
 				msgBox.textContent = err.message || msgDeclined;
 				msgBox.className =
@@ -1681,6 +2431,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					msgBox.className =
 						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
 				}
+				trackAnalyticsEvent(
+					"Booking Funnel",
+					"Hold Failed",
+					"validation_error",
+				);
 				return;
 			}
 
@@ -1690,12 +2445,14 @@ document.addEventListener("DOMContentLoaded", () => {
 					msgBox.className =
 						"p-3 rounded-xl text-sm font-semibold mb-4 bg-red-50 text-red-800 border border-red-200 block";
 				}
+				trackAnalyticsEvent("Booking Funnel", "Hold Failed", "privacy_consent");
 				return;
 			}
 
 			if (btnSubmit) btnSubmit.disabled = true;
 			if (btnSubmitText) btnSubmitText.textContent = msgVerifying;
 
+			let holdSucceeded = false;
 			try {
 				const formData = new URLSearchParams(new FormData(directFormElement));
 				formData.append("lang", lang || document.documentElement.lang || "en");
@@ -1711,6 +2468,15 @@ document.addEventListener("DOMContentLoaded", () => {
 				const result = await response.json();
 
 				if (response.ok && result.success) {
+					holdSucceeded = true;
+					advanceAnalyticsFunnelStage("hold_created");
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Pending Reservation Created",
+						propertyId,
+					);
+					trackAnalyticsGoal("PENDING_RESERVATION_CREATED");
+
 					if (msgBox) {
 						msgBox.textContent = msgSecured;
 						msgBox.className =
@@ -1735,6 +2501,11 @@ document.addEventListener("DOMContentLoaded", () => {
 						name,
 					);
 				} else {
+					trackAnalyticsEvent(
+						"Booking Funnel",
+						"Hold Failed",
+						classifyHoldFailureCode(response, result),
+					);
 					if (msgBox) {
 						msgBox.textContent = result.error || msgNetworkError;
 						msgBox.className =
@@ -1746,6 +2517,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			} catch (err) {
 				console.error("Error submitting direct booking inquiry:", err);
+				if (!holdSucceeded) {
+					trackAnalyticsEvent("Booking Funnel", "Hold Failed", "network_error");
+				}
 				if (msgBox) {
 					msgBox.textContent = msgNetworkError;
 					msgBox.className =
@@ -1758,13 +2532,31 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	btnPrev.addEventListener("click", () => {
+		currentDate.setDate(1);
 		currentDate.setMonth(currentDate.getMonth() - 1);
 		renderCalendar();
+		const targetMonth = formatYearMonth(currentDate);
+		if (targetMonth) {
+			trackAnalyticsEvent(
+				"Demand",
+				"Calendar Month Browsed",
+				`${propertyId}:${targetMonth}`,
+			);
+		}
 	});
 
 	btnNext.addEventListener("click", () => {
+		currentDate.setDate(1);
 		currentDate.setMonth(currentDate.getMonth() + 1);
 		renderCalendar();
+		const targetMonth = formatYearMonth(currentDate);
+		if (targetMonth) {
+			trackAnalyticsEvent(
+				"Demand",
+				"Calendar Month Browsed",
+				`${propertyId}:${targetMonth}`,
+			);
+		}
 	});
 
 	// Matomo Tracking for Airbnb booking redirection (Goal 3)
@@ -1780,37 +2572,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				return;
 			}
-			if (window._paq) {
-				const propId = window.location.pathname.includes("1606")
-					? "1606"
-					: "1707";
-				window._paq.push([
-					"trackEvent",
-					"Booking",
-					"Redirect to Airbnb",
-					propId,
-				]);
-				window._paq.push(["trackGoal", 3]);
-			}
-		});
-	}
-
-	// Matomo Tracking for WhatsApp direct booking click (Goal 4)
-	const btnWhatsapp = document.getElementById("whatsapp-booking-link");
-	if (btnWhatsapp) {
-		btnWhatsapp.addEventListener("click", () => {
-			if (window._paq) {
-				const propId = window.location.pathname.includes("1606")
-					? "1606"
-					: "1707";
-				window._paq.push([
-					"trackEvent",
-					"Contact",
-					"WhatsApp Booking Click",
-					propId,
-				]);
-				window._paq.push(["trackGoal", 4]);
-			}
+			const propId = resolvePagePropertyId(pageConfig);
+			trackAnalyticsEvent("Booking", "Redirect to Airbnb", propId);
+			trackAnalyticsGoal("AIRBNB_REDIRECT");
 		});
 	}
 
@@ -1831,22 +2595,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			: fallback !== undefined
 				? fallback
 				: key;
-
-	// Matomo Tracking for WhatsApp Sidebar Link (Goal 4)
-	const whatsappContactLink = document.getElementById("whatsapp-contact-link");
-	if (whatsappContactLink) {
-		whatsappContactLink.addEventListener("click", () => {
-			if (window._paq) {
-				window._paq.push([
-					"trackEvent",
-					"Contact",
-					"WhatsApp Sidebar Click",
-					"Contact Page",
-				]);
-				window._paq.push(["trackGoal", 4]);
-			}
-		});
-	}
 
 	const btnSubmit = document.getElementById("submit-button");
 	const txtSubmit = document.getElementById("submit-text");
@@ -1961,11 +2709,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (!nameVal || !emailVal || !phoneVal || !messageVal || !captchaVal) {
 			showMsg(msgError, false);
+			trackAnalyticsEvent(
+				"Contact Form",
+				"Validation Error",
+				"validation_error",
+			);
 			return;
 		}
 
-		if (!privacyConsent || !privacyConsent.checked) {
+		if (!privacyConsent?.checked) {
 			showMsg(msgPrivacyError, false);
+			trackAnalyticsEvent(
+				"Contact Form",
+				"Validation Error",
+				"privacy_consent",
+			);
 			return;
 		}
 
@@ -1976,16 +2734,17 @@ document.addEventListener("DOMContentLoaded", () => {
 			checkInInput.value &&
 			checkOutInput.value
 		) {
-			if (new Date(checkInInput.value) >= new Date(checkOutInput.value)) {
+			const stayNights = diffCalendarDays(
+				checkInInput.value,
+				checkOutInput.value,
+			);
+			if (stayNights === null || stayNights <= 0) {
 				showMsg(msgDateError, false);
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Contact Form",
-						"Validation Error",
-						"Check-out date before check-in",
-					]);
-				}
+				trackAnalyticsEvent(
+					"Contact Form",
+					"Validation Error",
+					"invalid_date_range",
+				);
 				return;
 			}
 		}
@@ -2010,68 +2769,62 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 			});
 
-			const result = await response.json();
+			let result = null;
+			try {
+				result = await response.json();
+			} catch (_) {
+				result = null;
+			}
 
-			if (response.ok && result.success) {
+			if (response.ok && result?.success) {
 				showMsg(msgSuccess, true);
 
-				// Matomo Goal & Event Tracking
-				if (window._paq) {
-					const hasDates =
-						checkInInput &&
+				// Matomo Goal & Normalized Demand Signal Tracking (#344)
+				const hasDates = Boolean(
+					checkInInput &&
 						checkOutInput &&
 						checkInInput.value &&
-						checkOutInput.value;
-					if (hasDates) {
-						// Goal 2: Booking Form Submitted
-						window._paq.push([
-							"trackEvent",
-							"Contact Form",
-							"Booking Inquiry Success",
-							`${checkInInput.value} to ${checkOutInput.value}`,
-						]);
-						window._paq.push(["trackGoal", 2]);
-					} else {
-						// Goal 1: Contact Form Inquiry
-						window._paq.push([
-							"trackEvent",
-							"Contact Form",
-							"Contact Inquiry Success",
-						]);
-						window._paq.push(["trackGoal", 1]);
-					}
+						checkOutInput.value,
+				);
+				if (hasDates) {
+					const demandSignal = buildInquiryDemandSignal(
+						checkInInput.value,
+						checkOutInput.value,
+					);
+					// Goal 2: Date-Specific Contact Inquiry Submitted
+					trackAnalyticsEvent(
+						"Contact Form",
+						"Date Inquiry Submitted",
+						demandSignal || undefined,
+					);
+					trackAnalyticsGoal("CONTACT_DATED");
+				} else {
+					// Goal 1: General Contact Inquiry Submitted
+					trackAnalyticsEvent("Contact Form", "General Inquiry Submitted");
+					trackAnalyticsGoal("CONTACT_GENERAL");
 				}
 
 				form.reset();
 				loadCaptcha();
 			} else {
-				const errorMsg = result.message || msgError;
+				const errorMsg =
+					(result && (result.error || result.message)) || msgError;
 				showMsg(errorMsg, false);
 
-				// Matomo Event Tracking for submission failure
-				if (window._paq) {
-					window._paq.push([
-						"trackEvent",
-						"Contact Form",
-						"Submission Failure",
-						errorMsg,
-					]);
-				}
+				// Matomo Event Tracking for submission failure (locale-independent machine code)
+				trackAnalyticsEvent(
+					"Contact Form",
+					"Submission Failure",
+					classifyContactErrorCode(response, result),
+				);
 
 				loadCaptcha();
 			}
-		} catch (err) {
+		} catch (_) {
 			showMsg(msgError, false);
 
-			// Matomo Event Tracking for network or script error
-			if (window._paq) {
-				window._paq.push([
-					"trackEvent",
-					"Contact Form",
-					"Submission Error",
-					err.message || "Network Error",
-				]);
-			}
+			// Matomo Event Tracking for network error (locale-independent machine code)
+			trackAnalyticsEvent("Contact Form", "Submission Error", "network_error");
 
 			loadCaptcha();
 		} finally {
@@ -2108,6 +2861,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	let currentIndex = 0;
 	let lastFocusedElement = null;
 	const imagesData = [];
+	const viewedPhotoIndices = new Set();
+
+	const trackGalleryEvent = (action, name, value) => {
+		trackAnalyticsEvent("Gallery", action, name, value);
+	};
+
+	const galleryPropertyId = resolvePagePropertyId(null, "portfolio");
 
 	// Parse image configurations from HTML attributes
 	triggers.forEach((trigger) => {
@@ -2135,6 +2895,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			currentIndex = index;
 		}
 
+		if (!viewedPhotoIndices.has(currentIndex)) {
+			viewedPhotoIndices.add(currentIndex);
+			trackGalleryEvent(
+				"Photo Viewed",
+				`${galleryPropertyId}:photo_${currentIndex + 1}`,
+				viewedPhotoIndices.size,
+			);
+		}
+
 		const activeImg = cleanImages[currentIndex];
 
 		// Soft visual fade cross-transition
@@ -2160,7 +2929,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}, 150);
 	}
 
-	function openLightbox(index) {
+	function openLightbox(index, source = "thumbnail") {
 		lastFocusedElement = document.activeElement;
 
 		// Open natively
@@ -2172,6 +2941,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// Prevent body backdrop scrolling
 		document.body.style.overflow = "hidden";
+
+		const triggerSource = source === "view_all" ? "view_all" : "thumbnail";
+		trackGalleryEvent("Lightbox Open", `${galleryPropertyId}:${triggerSource}`);
 
 		showImage(index);
 
@@ -2203,14 +2975,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		trigger.addEventListener("click", (e) => {
 			e.preventDefault();
 			const index = parseInt(trigger.getAttribute("data-index"), 10);
-			openLightbox(isNaN(index) ? 0 : index);
+			openLightbox(isNaN(index) ? 0 : index, "thumbnail");
 		});
 	});
 
 	if (btnViewAll) {
 		btnViewAll.addEventListener("click", (e) => {
 			e.preventDefault();
-			openLightbox(0);
+			openLightbox(0, "view_all");
 		});
 	}
 

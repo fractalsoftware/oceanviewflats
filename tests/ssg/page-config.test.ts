@@ -3,7 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import vm from "node:vm";
+import { PRIVACY_POLICY_VERSION } from "../../src/constants/config";
+import { dict } from "../../src/i18n/dict";
 import { baseTemplate } from "../../src/templates/base";
+import type { Lang } from "../../src/types";
 
 const noopMercadoPago = () => {};
 
@@ -347,15 +350,57 @@ test("Registry page pre-renders 12 guest cards and registry.js honors max_guests
 	);
 });
 
-test("Multilingual Data Processing Policy (/privacy) pages are generated across all 6 locales with canonical Data Controller and ARCO SLAs", () => {
+test("Multilingual Data Processing Policy (/privacy) pages are generated across all 6 locales with canonical Data Controller, ARCO SLAs, and cookieless Matomo analytics disclosure", () => {
 	const distDir = path.join(process.cwd(), "dist");
-	const privacyFiles = [
-		{ file: "privacy/index.html", lang: "en" },
-		{ file: "privacy/es.html", lang: "es" },
-		{ file: "privacy/fr.html", lang: "fr" },
-		{ file: "privacy/it.html", lang: "it" },
-		{ file: "privacy/de.html", lang: "de" },
-		{ file: "privacy/ja.html", lang: "ja" },
+	const escapeReactHtml = (value: string) =>
+		value
+			.replace(/&/g, "&amp;")
+			.replace(/'/g, "&#x27;")
+			.replace(/"/g, "&quot;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;");
+
+	assert.equal(
+		PRIVACY_POLICY_VERSION,
+		"2026-11",
+		"PRIVACY_POLICY_VERSION must be bumped to 2026-11",
+	);
+
+	const privacyFiles: Array<{
+		file: string;
+		lang: Lang;
+		expectedEffectiveDate: string;
+	}> = [
+		{
+			file: "privacy/index.html",
+			lang: "en",
+			expectedEffectiveDate: "Effective November 2026",
+		},
+		{
+			file: "privacy/es.html",
+			lang: "es",
+			expectedEffectiveDate: "Vigente desde Noviembre de 2026",
+		},
+		{
+			file: "privacy/fr.html",
+			lang: "fr",
+			expectedEffectiveDate: "En vigueur depuis novembre 2026",
+		},
+		{
+			file: "privacy/it.html",
+			lang: "it",
+			expectedEffectiveDate: "In vigore da novembre 2026",
+		},
+		{
+			file: "privacy/de.html",
+			lang: "de",
+			expectedEffectiveDate: "Gültig ab November 2026",
+		},
+		{
+			file: "privacy/ja.html",
+			lang: "ja",
+			expectedEffectiveDate: "2026年11月発効",
+		},
 	];
 
 	for (const item of privacyFiles) {
@@ -365,6 +410,7 @@ test("Multilingual Data Processing Policy (/privacy) pages are generated across 
 			`Privacy policy file must exist: ${item.file}`,
 		);
 		const content = fs.readFileSync(fullPath, "utf-8");
+		const t = dict[item.lang];
 
 		assert.ok(
 			content.includes(`lang="${item.lang}"`),
@@ -391,8 +437,12 @@ test("Multilingual Data Processing Policy (/privacy) pages are generated across 
 			`${item.file} must display contact phone`,
 		);
 		assert.ok(
-			content.includes("2026-10"),
-			`${item.file} must display PRIVACY_POLICY_VERSION 2026-10`,
+			content.includes("2026-11") && !content.includes("2026-10"),
+			`${item.file} must display PRIVACY_POLICY_VERSION 2026-11 (not stale 2026-10)`,
+		);
+		assert.ok(
+			content.includes(escapeReactHtml(item.expectedEffectiveDate)),
+			`${item.file} must display November 2026 effective date "${item.expectedEffectiveDate}"`,
 		);
 		assert.ok(
 			content.includes("Mercado Pago") &&
@@ -404,63 +454,107 @@ test("Multilingual Data Processing Policy (/privacy) pages are generated across 
 			`${item.file} must display 10 and 15 business day ARCO SLAs`,
 		);
 		assert.ok(
+			content.includes('id="site-analytics"'),
+			`${item.file} must render dedicated #site-analytics disclosure section`,
+		);
+		assert.ok(
+			content.includes("Matomo") && content.includes("disableCookies"),
+			`${item.file} must disclose self-hosted cookieless Matomo analytics (disableCookies)`,
+		);
+		for (const key of [
+			"privacyAnalyticsTitle",
+			"privacyAnalyticsIntro",
+			"privacyAnalyticsCookielessTitle",
+			"privacyAnalyticsCookielessDesc",
+			"privacyAnalyticsIpTitle",
+			"privacyAnalyticsIpDesc",
+			"privacyAnalyticsZeroPiiTitle",
+			"privacyAnalyticsZeroPiiDesc",
+			"privacyAnalyticsSanitizationTitle",
+			"privacyAnalyticsSanitizationDesc",
+			"privacyAnalyticsCallout",
+		] as const) {
+			assert.ok(
+				content.includes(escapeReactHtml(t[key])),
+				`${item.file} must render localized ${key}`,
+			);
+		}
+		assert.ok(
 			content.includes('id="footer-privacy-link"'),
 			`${item.file} must contain the global footer privacy link`,
 		);
 	}
 });
 
-test("Contact and Direct Booking forms render unchecked-by-default required privacy_consent checkboxes linking to localized /privacy", () => {
+test("Contact and Direct Booking forms render unchecked-by-default required privacy_consent checkboxes with privacy_policy_version=2026-11 linking to localized /privacy", () => {
 	const distDir = path.join(process.cwd(), "dist");
+	const locales = [
+		{ lang: "en", suffix: "index.html", privacyHref: "../privacy/" },
+		{ lang: "es", suffix: "es.html", privacyHref: "../privacy/es.html" },
+		{ lang: "fr", suffix: "fr.html", privacyHref: "../privacy/fr.html" },
+		{ lang: "it", suffix: "it.html", privacyHref: "../privacy/it.html" },
+		{ lang: "de", suffix: "de.html", privacyHref: "../privacy/de.html" },
+		{ lang: "ja", suffix: "ja.html", privacyHref: "../privacy/ja.html" },
+	];
 
-	const contactEn = fs.readFileSync(
-		path.join(distDir, "contact", "index.html"),
-		"utf-8",
-	);
-	assert.ok(
-		contactEn.includes('id="privacy-consent"') &&
-			contactEn.includes('name="privacy_consent"') &&
-			contactEn.includes('name="privacy_policy_version" value="2026-10"'),
-		"Contact page must render #privacy-consent checkbox and privacy_policy_version=2026-10",
-	);
-	assert.ok(
-		!contactEn.includes('id="privacy-consent" checked'),
-		"Contact #privacy-consent must be unchecked by default",
-	);
-	assert.ok(
-		contactEn.includes('href="../privacy/"'),
-		"English Contact page must link to ../privacy/",
-	);
-
-	const contactEs = fs.readFileSync(
-		path.join(distDir, "contact", "es.html"),
-		"utf-8",
-	);
-	assert.ok(
-		contactEs.includes('href="../privacy/es.html"'),
-		"Spanish Contact page must link to ../privacy/es.html",
-	);
-
-	for (const prop of ["Oceanview1707", "Oceanview1606"]) {
-		const propEn = fs.readFileSync(
-			path.join(distDir, prop, "index.html"),
+	for (const locale of locales) {
+		const contactHtml = fs.readFileSync(
+			path.join(distDir, "contact", locale.suffix),
 			"utf-8",
 		);
 		assert.ok(
-			propEn.includes('id="booking-privacy-consent"') &&
-				propEn.includes('name="privacy_consent"') &&
-				propEn.includes('name="privacy_policy_version" value="2026-10"'),
-			`${prop} must render #booking-privacy-consent checkbox and privacy_policy_version=2026-10`,
+			contactHtml.includes('id="privacy-consent"') &&
+				contactHtml.includes('name="privacy_consent"') &&
+				contactHtml.includes('name="privacy_policy_version" value="2026-11"'),
+			`contact/${locale.suffix} must render #privacy-consent checkbox and privacy_policy_version=2026-11`,
 		);
 		assert.ok(
-			!propEn.includes('id="booking-privacy-consent" checked'),
-			`${prop} #booking-privacy-consent must be unchecked by default`,
+			!contactHtml.includes('id="privacy-consent" checked'),
+			`contact/${locale.suffix} #privacy-consent must be unchecked by default`,
 		);
 		assert.ok(
-			propEn.includes('href="../privacy/"'),
-			`${prop} English page must link to ../privacy/`,
+			contactHtml.includes(`href="${locale.privacyHref}"`),
+			`contact/${locale.suffix} must link to ${locale.privacyHref}`,
 		);
+
+		for (const prop of ["Oceanview1707", "Oceanview1606"]) {
+			const propHtml = fs.readFileSync(
+				path.join(distDir, prop, locale.suffix),
+				"utf-8",
+			);
+			assert.ok(
+				propHtml.includes('id="booking-privacy-consent"') &&
+					propHtml.includes('name="privacy_consent"') &&
+					propHtml.includes('name="privacy_policy_version" value="2026-11"'),
+				`${prop}/${locale.suffix} must render #booking-privacy-consent checkbox and privacy_policy_version=2026-11`,
+			);
+			assert.ok(
+				!propHtml.includes('id="booking-privacy-consent" checked'),
+				`${prop}/${locale.suffix} #booking-privacy-consent must be unchecked by default`,
+			);
+			assert.ok(
+				propHtml.includes(`href="${locale.privacyHref}"`),
+				`${prop}/${locale.suffix} must link to ${locale.privacyHref}`,
+			);
+		}
 	}
+
+	const mainJsSource = fs.readFileSync(
+		path.join(process.cwd(), "public", "js", "main.js"),
+		"utf-8",
+	);
+	assert.ok(
+		mainJsSource.includes('"2026-11"') && !mainJsSource.includes('"2026-10"'),
+		"public/js/main.js fallback privacy_policy_version default must be 2026-11",
+	);
+	const mainJsDist = fs.readFileSync(
+		path.join(distDir, "js", "main.js"),
+		"utf-8",
+	);
+	assert.ok(
+		mainJsDist.includes('"2026-11"') && !mainJsDist.includes('"2026-10"'),
+		"dist/js/main.js fallback privacy_policy_version default must be 2026-11",
+	);
 
 	const homeEs = fs.readFileSync(path.join(distDir, "es.html"), "utf-8");
 	assert.ok(
@@ -492,8 +586,8 @@ test("Guest Registry pages render Personal Data Authorization and hidden disable
 		assert.ok(
 			content.includes('id="privacy-consent"') &&
 				content.includes('name="privacy_consent"') &&
-				content.includes('name="privacy_policy_version" value="2026-10"'),
-			`${item.file} must render #privacy-consent checkbox and privacy_policy_version=2026-10`,
+				content.includes('name="privacy_policy_version" value="2026-11"'),
+			`${item.file} must render #privacy-consent checkbox and privacy_policy_version=2026-11`,
 		);
 		assert.ok(
 			!content.includes('id="privacy-consent" checked'),
@@ -2766,36 +2860,64 @@ test("main.js #calendar-widget fetches blocked dates via pageConfig.apiBase and 
 		return found;
 	};
 
-	// 2. In Check-in selection mode: blocked dates (10, 15, 16) are disabled and have line-through
-	assert.equal(getDayButton(10).disabled, true);
+	// 2. In Check-in selection mode: blocked dates (10, 15, 16) use aria-disabled="true", remain non-selectable, announce Booked to screen readers, and have line-through (#344)
+	assert.equal(getDayButton(10).disabled, false);
+	assert.equal(getDayButton(10).getAttribute("aria-disabled"), "true");
+	assert.ok(getDayButton(10).getAttribute("aria-label")?.includes("Booked"));
 	assert.ok(getDayButton(10).className.includes("line-through"));
+	getDayButton(10).dispatchEvent("click");
+	assert.equal(
+		formCheckIn.value,
+		"",
+		"Clicking an aria-disabled booked date must not select check-in",
+	);
 	assert.equal(getDayButton(12).disabled, false);
-	assert.equal(getDayButton(15).disabled, true);
+	assert.equal(getDayButton(12).getAttribute("aria-disabled"), null);
+	assert.equal(getDayButton(15).disabled, false);
+	assert.equal(getDayButton(15).getAttribute("aria-disabled"), "true");
+	assert.ok(getDayButton(15).getAttribute("aria-label")?.includes("Booked"));
 	assert.ok(getDayButton(15).className.includes("line-through"));
-	assert.equal(getDayButton(16).disabled, true);
+	assert.equal(getDayButton(16).disabled, false);
+	assert.equal(getDayButton(16).getAttribute("aria-disabled"), "true");
+	assert.ok(getDayButton(16).getAttribute("aria-label")?.includes("Booked"));
 	assert.equal(getDayButton(17).disabled, false);
 
 	// 3. Click day 12 as Check-in Date -> enters Check-out selection mode
 	getDayButton(12).dispatchEvent("click");
 	assert.ok(getDayButton(12).className.includes("bg-[#FF5A5F]"));
 
-	// Blocked date <= checkIn (day 10) remains disabled
-	assert.equal(getDayButton(10).disabled, true);
+	// Blocked date <= checkIn (day 10) remains aria-disabled="true" and non-selectable
+	assert.equal(getDayButton(10).disabled, false);
+	assert.equal(getDayButton(10).getAttribute("aria-disabled"), "true");
+	getDayButton(10).dispatchEvent("click");
+	assert.equal(formCheckOut.value, "");
 	// Available days 13 and 14 are enabled
 	assert.equal(getDayButton(13).disabled, false);
 	assert.equal(getDayButton(14).disabled, false);
-	// First blocked Night after checkIn (day 15) is enabled as same-day Turnover Check-out candidate without line-through
+	// First blocked Night after checkIn (day 15) is enabled as same-day Turnover Check-out candidate without line-through or aria-disabled
 	assert.equal(
 		getDayButton(15).disabled,
 		false,
 		"First blocked Night after checkIn (day 15) must be enabled for same-day Turnover check-out",
 	);
+	assert.equal(
+		getDayButton(15).getAttribute("aria-disabled"),
+		null,
+		"Turnover check-out candidate must not carry aria-disabled while selectable",
+	);
 	assert.ok(
 		!getDayButton(15).className.includes("line-through"),
 		"Turnover check-out candidate must not render line-through while in Check-out selection mode",
 	);
-	// Dates strictly after firstBlockedAfterCheckIn (days 16, 17, 18) are disabled
-	assert.equal(getDayButton(16).disabled, true);
+	// Dates strictly after firstBlockedAfterCheckIn: booked day 16 uses aria-disabled="true" (non-selectable), unblocked days 17 & 18 are natively disabled
+	assert.equal(getDayButton(16).disabled, false);
+	assert.equal(getDayButton(16).getAttribute("aria-disabled"), "true");
+	getDayButton(16).dispatchEvent("click");
+	assert.equal(
+		formCheckOut.value,
+		"",
+		"Clicking booked day 16 beyond firstBlockedAfterCheckIn must not select check-out",
+	);
 	assert.equal(
 		getDayButton(17).disabled,
 		true,

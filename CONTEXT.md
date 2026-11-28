@@ -241,14 +241,26 @@ _Avoid_: Door Password, Key Code, Room Key
 
 ### Editorial & Discovery
 
+**Site Visitor**:
+An anonymous, unauthenticated individual browsing public OceanViewFlats pages prior to holding a **Reservation**. Distinct from a **Guest** or **Primary Guest**, who is an identified individual associated with a specific **Reservation**.
+_Avoid_: Visitor, User, Browser, Prospect, Traffic
+
+**Booking Funnel**:
+The progression of a **Site Visitor** through the direct reservation journey on OceanViewFlats, from **Property** discovery and date selection through **Quote** evaluation, **Pending Reservation** hold creation, and **Confirmed Reservation** settlement, including alternative exit paths via **Inquiry**, WhatsApp, or external OTA links.
+_Avoid_: Conversion Path, Checkout Flow, Sales Pipeline, User Journey
+
+**Demand Signal**:
+An anonymized, PII-free behavioral indicator of **Site Visitor** intent or booking friction—such as desired stay dates, stay length in **Nights**, **Property** interest, minimum-stay rejections, or unavailable-date encounters—used to inform pricing, availability, and content decisions without identifying any individual.
+_Avoid_: Lead Signal, Search Log, Clickstream, Telemetry Event
+
 **Destination Guide**:
-A public, multilingual editorial resource published by OceanViewFlats providing prospective travelers with authoritative local guidance on Playa Salguero, Santa Marta, remote work, day trips, and Direct Reservation procedures, connecting discovery queries to specific Properties. Distinct from the *Guest Guide*, which is private post-registration fulfillment documentation.
+A public, multilingual editorial resource published by OceanViewFlats providing **Site Visitors** with authoritative local guidance on Playa Salguero, Santa Marta, remote work, day trips, and **Direct Reservation** procedures, connecting discovery queries to specific **Properties**. Distinct from the **Guest Guide**, which is private post-registration fulfillment documentation.
 _Avoid_: Blog Post, Travel Manual, Guest Guide, Article, Guide Page
 
 ### Communications & Inquiries
 
 **Inquiry**:
-A pre-booking question or message submitted by a prospective visitor via the contact form. Inquiries may reference desired stay dates but never create a calendar hold or reservation record; visitors must always complete direct checkout to book.
+A pre-booking question or message submitted by a **Site Visitor** via the contact form. Inquiries may reference desired stay dates but never create a calendar hold or reservation record; **Site Visitors** must always complete direct checkout to book.
 _Avoid_: Contact Message, Lead, Ticket, Support Request
 
 **Guest Review**:

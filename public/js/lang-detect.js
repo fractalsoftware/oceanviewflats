@@ -72,6 +72,18 @@
 		}
 
 		if (newHref && newHref !== currentHref) {
+			const matchedFromLang = supportedLangs.find(
+				(l) =>
+					pathName.endsWith(`/${l}.html`) || pathName.endsWith(`${l}.html`),
+			);
+			const fromLang = matchedFromLang || "en";
+			try {
+				if (typeof sessionStorage !== "undefined") {
+					sessionStorage.setItem("ovf_lang_redirect", `${fromLang}->${lang}`);
+				}
+			} catch (_) {
+				// Ignore storage failures in restricted contexts
+			}
 			window.location.replace(newHref);
 		}
 	}
